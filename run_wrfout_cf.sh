@@ -59,7 +59,7 @@ DATE_SUBDIR=/wrfout
 OUT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/interpolation_sensitivity
 
 # define control flow to analyze 
-CTR_FLW=NRT_gfs
+CTR_FLW=NRT_ecmwf
 
 # define the case study for sub-directory nesting
 CSE=DD
@@ -185,7 +185,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYCLE_INT} )); do
         cmd+="'file_out=\"${out_name}\"' wrfout_to_cf.ncl "
         echo ${cmd}; eval ${cmd}
 
-        if [ ${RGRD} = "TRUE" ]; then
+        if [ ${RGRD} = TRUE ]; then
           # regrids to lat / lon from native grid with CDO
           cmd="cdo -f nc4 sellonlatbox,${lon1},${lon2},${lat1},${lat2} "
           cmd+="-remapbil,global_${gres} "
@@ -211,7 +211,8 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYCLE_INT} )); do
   fi
 done
 
-echo "Script completed at `date`, verify outputs at out_root ${out_root}"
+echo "Script completed at `date +%Y-%m-%d_%H_%M_%S`."
+echo "Verify outputs at out_root ${out_root}."
 
 #################################################################################
 # end

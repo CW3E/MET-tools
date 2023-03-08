@@ -1,6 +1,16 @@
 # MET-tools
 
 ## Getting started
+
+## Installing software
+
+### Installing MET
+MET can be installed as a singularity container from the Dockerhub image without
+needing sudo privileges.  This is performed as with the [instructions](https://docs.sylabs.io/guides/2.6/user-guide/build_a_container.html#downloading-a-existing-container-from-docker-hub)
+for building a singularity container from a Dockherub image, with the
+[MET Dockerhub](https://hub.docker.com/r/dtcenter/met) latest image.
+
+### Conda Environments
 To get started with this repository you will need to use conda to install 
 software dependencies. Bash scripts use the Conda environment `ncl` to process
 NetCDF files. This environment can be created as follows:
@@ -17,11 +27,12 @@ be created as follows:
 ```
 conda create --name ipython
 conda install ipython
-
 ```
 
 
-README FOR CONVERTING WRFOUT TO CF-COMPLIANT FILES
+## Workflow for generating precipitation diagnostics
+
+### Converting wrfout to cf-compliant files
 
 wrfout_to_cf.ncl is a modified version of the original wrfout_to_cf specifically for west-wrf output
 that includes added variables of ivt and precipitation. 
@@ -39,3 +50,11 @@ Below is an example of the commands used to run the ncl file from a shell script
 
 * Note, two files are needed because the 24-hr accumulation of precipitation is calculated by
 subtracting the simulation accumulation variables for rain at t=valid time and t=valid_time-1
+
+### Running gridstat on cf-compliant wrfout
+
+### Running gridstat on pre-processed background data (GFS / ECMWF)
+
+### Processing gridstat outputs
+
+### Plotting from pickled data frames

@@ -5,17 +5,26 @@
 ## Installing software
 
 ### Installing MET
-MET can be installed as a singularity container from the Dockerhub image without
-needing sudo privileges.  This is performed as with the [instructions](https://docs.sylabs.io/guides/2.6/user-guide/build_a_container.html#downloading-a-existing-container-from-docker-hub)
-for building a singularity container from a Dockherub image, with the
-[MET Dockerhub](https://hub.docker.com/r/dtcenter/met) latest image.
+MET can be installed as a singularity container from the Dockerhub image
+[without needing sudo privileges](https://docs.sylabs.io/guides/2.6/user-guide/introduction.html#security-and-privilege-escalation)
+on large-scale, shared computing resources.  This is performed as with the
+[instructions](https://docs.sylabs.io/guides/2.6/user-guide/build_a_container.html#downloading-a-existing-container-from-docker-hub)
+for building a singularity container from a Dockherub image, using a tagged image
+from [MET Dockerhub](https://hub.docker.com/r/dtcenter/met). 
+This workflow has been tested with MET version 10.0.1, installing the tagged version
+10.0.1 from DockerHub can be performed as
+```
+singularity build met-10.0.1.simg docker://dtcenter/met:10.0.1
+```
+where the executable singularity image is the output file `met-10.0.1.simg`.
 
 ### Conda Environments
 To get started with this repository you will need to use conda to install 
-software dependencies. Bash scripts use the Conda environment `ncl` to process
+software dependencies. Bash scripts use the Conda environment `netcdf` to process
 NetCDF files. This environment can be created as follows:
 ```
-conda create --name ncl
+conda create --name netcdf
+conda activate netcdf
 conda install -c conda-forge ncl
 conda install -c conda-forge cdo
 conda install -c conda-forge nco
@@ -26,9 +35,11 @@ are implemented with the Conda environment `ipython`.  This environment can
 be created as follows:
 ```
 conda create --name ipython
+conda activate ipython
 conda install ipython
+conda install matplotlib
+conda install seaborn
 ```
-
 
 ## Workflow for generating precipitation diagnostics
 

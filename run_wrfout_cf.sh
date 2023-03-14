@@ -2,7 +2,7 @@
 #SBATCH --partition=shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 00:30:00
+#SBATCH -t 04:30:00
 #SBATCH --job-name="wrfcf"
 #SBATCH --export=ALL
 #SBATCH --account=cwp106
@@ -43,12 +43,12 @@ conda init bash
 source /home/cgrudzien/.bashrc
 
 # set local environment for ncl and related dependencies
-conda activate ncl
+conda activate netcdf
 
 # root directory for MET-tools git clone
 USR_HME=/cw3e/mead/projects/cwp106/scratch/cgrudzien/MET-tools
 
-# root directory for cycle time (YYYYMMDDHH) directories
+# root directory for cycle time (YYYYMMDDHH) directories of wrf outputs
 IN_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA
 
 # Subdirectory for wrfoutputs in cycle time directories
@@ -59,7 +59,7 @@ DATE_SUBDIR=/wrfout
 OUT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/interpolation_sensitivity
 
 # define control flow to analyze 
-CTR_FLW=NRT_ecmwf
+CTR_FLW=NRT_gfs
 
 # define the case study for sub-directory nesting
 CSE=DD
@@ -69,7 +69,7 @@ STRT_DT=2022121600
 END_DT=2023011800
 
 # define the interval between forecast initializations (HH)
-CYCLE_INT=24
+CYC_INT=24
 
 # define min / max forecast hours for forecast outputs to be processed
 ANL_MIN=24
@@ -94,17 +94,17 @@ RGRD=TRUE
 # define derived data paths
 cse=${CSE}/${CTR_FLW}
 
-# create output directory if does not exist
-out_root=${OUT_ROOT}/${cse}/MET_analysis
-cmd="mkdir -p ${out_root}"
-echo ${cmd}; eval ${cmd}
-
 # check for input data root
 in_root="${IN_ROOT}/${cse}"
 if [ ! -d ${in_root} ]; then
   echo "ERROR: input data root directory ${in_root} does not exist."
   exit 1
 fi
+
+# create output directory if does not exist
+out_root=${OUT_ROOT}/${cse}/MET_analysis
+cmd="mkdir -p ${out_root}"
+echo ${cmd}; eval ${cmd}
 
 # change to scripts directory
 cmd="cd ${USR_HME}"
@@ -146,7 +146,7 @@ fi
 # define the number of dates to loop
 fcst_hrs=$(( (`date +%s -d "${end_dt}"` - `date +%s -d "${strt_dt}"`) / 3600 ))
 
-for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYCLE_INT} )); do
+for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
   # directory string for forecast analysis initialization time
   dirstr=`date +%Y%m%d%H -d "${strt_dt} ${cyc_hr} hours"`
 

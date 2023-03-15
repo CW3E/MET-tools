@@ -51,8 +51,8 @@ from proc_gridstat import OUT_ROOT
 ##################################################################################
 # define control flows to analyze 
 CTR_FLWS = [
-            'NRT_gfs'
-            #'NRT_ecmwf'
+            #'NRT_gfs'
+            'NRT_ecmwf'
             #'GFS',
             #'ECMWF',
            ]
@@ -89,7 +89,7 @@ STRT_DT = '2022121600'
 END_DT = '2023011800'
 
 # valid date for the verification
-VALID_DT = '2023010100'
+VALID_DT = '2023011100'
 
 # MET stat file type -- should be leveled data
 #TYPE = 'cts'
@@ -114,6 +114,9 @@ TITLE='24hr accumulated precip at ' + VALID_DT
 
 # plot sub-title title
 SUBTITLE='Verification region -- ' + LND_MSK + ' Threshold ' + LEV + ' mm'
+
+# fig root
+FIG_ROOT = '/home/cgrudzien/interpolation_analysis'
 
 ##################################################################################
 # Begin plotting
@@ -302,12 +305,14 @@ fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws * num_pfxs, 2),
            loc='center', bbox_to_anchor=[0.5, 0.83])
 
 # save figure and display
-out_path = OUT_ROOT + '/' + CSE + '/' + VALID_DT + '_' +\
+out_dir = FIG_ROOT + '/' + CSE 
+os.system('mkdir -p ' + out_dir)
+out_path = out_dir + '/' + VALID_DT + '_' +\
            LND_MSK + '_' + stat0 + '_' +\
-           stat1 + '_lev_' + LEV + '_lineplot.png'
+           stat1 + '_lev_' + LEV + '_' + ctr_flw + '_' + GRD + '_lineplot.png'
     
 plt.savefig(out_path)
-plt.show()
+#plt.show()
 
 ##################################################################################
 # end

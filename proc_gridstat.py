@@ -69,8 +69,10 @@ PRFX = INT_MTHD + '_' + INT_WDTH
 # standard string indentation
 STR_INDT = "    "
 
-# root directory for MET-tools git clone
+# root directory for gridstat outputs
 IN_ROOT = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/interpolation_sensitivity'
+
+# root directory for processed pandas outputs
 OUT_ROOT = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/interpolation_sensitivity'
 
 ##################################################################################

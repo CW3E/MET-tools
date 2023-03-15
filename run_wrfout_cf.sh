@@ -2,7 +2,7 @@
 #SBATCH --partition=shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 04:30:00
+#SBATCH -t 01:30:00
 #SBATCH --job-name="wrfcf"
 #SBATCH --export=ALL
 #SBATCH --account=cwp106
@@ -49,31 +49,31 @@ conda activate netcdf
 USR_HME=/cw3e/mead/projects/cwp106/scratch/cgrudzien/MET-tools
 
 # root directory for cycle time (YYYYMMDDHH) directories of wrf outputs
-IN_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA
+IN_ROOT=/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template/data/simulation_io
 
 # Subdirectory for wrfoutputs in cycle time directories
 # includes leading '/', set to empty string if not needed
-DATE_SUBDIR=/wrfout
+DATE_SUBDIR=/wrfprd/ens_00
 
 # directory for MET analysis outputs
-OUT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/interpolation_sensitivity
+OUT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/cycling_sensitivity_testing
 
 # define control flow to analyze 
-CTR_FLW=NRT_gfs
+CTR_FLW=deterministic_forecast_lag00_b0.00_v06_h0900
 
 # define the case study for sub-directory nesting
-CSE=DD
+CSE=VD
 
 # define first and last date time for forecast initialization (YYYYMMDDHH)
-STRT_DT=2022121600
-END_DT=2023011800
+STRT_DT=2019021100
+END_DT=2019021400
 
 # define the interval between forecast initializations (HH)
 CYC_INT=24
 
 # define min / max forecast hours for forecast outputs to be processed
 ANL_MIN=24
-ANL_MAX=240
+ANL_MAX=96
 
 # define the interval at which to process forecast outputs (HH)
 ANL_INT=24
@@ -82,11 +82,11 @@ ANL_INT=24
 ACC_INT=24
 
 # verification domain for the forecast data (e.g., d01)
-GRD=d01
+GRD=d02
 
 # set to regrid to lat / long for MET compatibility when handling grid errors
 # must be equal to TRUE or FALSE
-RGRD=TRUE
+RGRD=FALSE
 
 #################################################################################
 # Process data
@@ -128,7 +128,7 @@ else
   end_dt=`date -d "${end_dt}"`
 fi
 
-if [ ${RGRD} = "TRUE" ]; then
+if [ ${RGRD} = TRUE ]; then
   # standard coordinates that can be used to regrid westwrf
   echo "WRF outputs will be regridded for MET compatibility." 
   gres=(0.08 0.027 0.009)
@@ -136,10 +136,10 @@ if [ ${RGRD} = "TRUE" ]; then
   lat2=(65 51 40.5)
   lon1=(162 223.5 235)
   lon2=(272 253.5 240.5)
-elif [ ${RGRD} = "FALSE"]; then
+elif [ ${RGRD} = FALSE ]; then
   echo "WRF outputs will be used with MET in their native grid."
 else
-  "ERROR: \${RGRD} must equal 'TRUE' or 'FALSE' (case sensitive)."
+  echo "ERROR: \${RGRD} must equal 'TRUE' or 'FALSE' (case sensitive)."
   exit 1
 fi
 

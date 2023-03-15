@@ -41,35 +41,43 @@ from matplotlib.cm import get_cmap
 from matplotlib.colorbar import Colorbar as cb
 import seaborn as sns
 import numpy as np
+import pandas as pd
 import pickle
 import os
-from py_plt_utilities import USR_HME, get_anls
+from proc_gridstat import OUT_ROOT
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'deterministic_forecast_lag00_b1.00'
+CTR_FLW = 'ECMWF'
+
+# define optional gridstat prefix 
+PRFX = 'DW_MEAN_3'
 
 # define case-wise sub-directory
-CSE = 'VD'
+CSE = 'DD'
 
 # verification domain for the forecast data
-GRD='d02'
+GRD='0.25'
 
-# starting date and zero hour of forecast cycles
-START_DT = '2019-02-11T00:00:00'
+# starting date and zero hour of forecast cycles (string YYYYMMDDHH)
+STRT_DT = '2022121600'
 
-# final date and zero hour of data of forecast cycles
-END_DT = '2019-02-14T00:00:00'
+# final date and zero hour of data of forecast cycles (string YYYYMMDDHH)
+END_DT = '2023011800'
 
-# number of hours between zero hours for forecast data
-CYCLE_INT = 24
+# number of hours between zero hours for forecast data (string HH)
+CYC_INT = '24'
 
-# start date, end date and cycle interval for validation
-ANL_START = '2019-02-14T00:00:00'
-ANL_END = '2019-02-15T00:00:00'
-ANL_INT = 24
+# first valid time for verification (string YYYYMMDDHH)
+ANL_STRT = '2022122600'
+
+# final valid time (string YYYYMMDDHH)
+ANL_END = '2023011900'
+
+# cycle interval verification valid times (string HH)
+ANL_INT = '24'
 
 # MET stat file type -- should be leveled data
 TYPE = 'cnt'
@@ -80,12 +88,55 @@ STAT = 'RMSE'
 #STAT = 'PR_CORR'
 
 # landmask for verification region -- need to be set in earlier preprocessing
-LND_MSK = 'CALatLonPoints'
+LND_MSK = 'CA_Climate_Zone_16_Sierra'
+#LND_MSK = 'CALatLonPoints'
 #LND_MSK = 'FULL'
+
+# define control flow plotting name
+TITLE = STAT + ' - ' + LND_MSK + ' - ' + CTR_FLW + ' ' + PRFX
 
 ##################################################################################
 # Begin plotting
 ##################################################################################
+# convert to date times
+if len(STRT_DT) != 10:
+    print('ERROR: STRT_DT, ' + STRT_DT + ', is not in YYYYMMDDHH format.')
+    sys.exit(1)
+
+if len(END_DT) != 10:
+    print('ERROR: END_DT, ' + END_DT + ', is not in YYYYMMDDHH format.')
+    sys.exit(1)
+
+if len(CYC_INT) != 2:
+    print('ERROR: CYC_INT, ' + CYC_INT + ', is not in HH format.')
+    sys.exit(1)
+    
+if len(ANL_STRT) != 10:
+    print('ERROR: ANL_STRT, ' + ANL_STRT + ', is not in YYYYMMDDHH format.')
+    sys.exit(1)
+else:
+    s_iso = ANL_STRT[:4] + '-' + ANL_STRT[4:6] + '-' + ANL_STRT[6:8] +\
+            '_' + ANL_STRT[8:]
+    anl_strt = dt.fromisoformat(s_iso)
+
+if len(ANL_END) != 10:
+    print('ERROR: ANL_END, ' + ANL_END + ', is not in YYYYMMDDHH format.')
+    sys.exit(1)
+else:
+    e_iso = ANL_END[:4] + '-' + ANL_END[4:6] + '-' + ANL_END[6:8] +\
+            '_' + ANL_END[8:]
+    anl_end = dt.fromisoformat(e_iso)
+
+if len(ANL_INT) != 2:
+    print('ERROR: ANL_INT, ' + ANL_INT + ', is not in HH format.')
+    sys.exit(1)
+else:
+    anl_int = ANL_INT + 'H'
+    
+# generate the date range for the analyses
+anl_dates = pd.date_range(start=anl_strt, end=anl_end,
+                          freq=anl_int).to_pydatetime()
+
 # Create a figure
 fig = plt.figure(figsize=(11.25,8.63))
 
@@ -94,15 +145,14 @@ ax0 = fig.add_axes([.92, .18, .03, .77])
 ax1 = fig.add_axes([.07, .18, .84, .77])
 
 # define derived data paths 
-param = CTR_FLW.split('_')[-1]
 cse = CSE + '/' + CTR_FLW
-data_root = USR_HME + '/data/analysis/' + cse + '/MET_analysis'
+data_root = OUT_ROOT + '/' + cse + '/MET_analysis'
 
 # define the output name
-in_path = data_root + '/grid_stats_' + GRD + '_' + START_DT +\
+in_path = data_root + '/grid_stats_' + PRFX + '_' + GRD + '_' + STRT_DT +\
           '_to_' + END_DT + '.bin'
 
-out_path = data_root + '/' + START_DT + '_' + END_DT +\
+out_path = data_root + '/' + STRT_DT + '_' + END_DT +\
            '_' + LND_MSK + '_' + STAT + '_heatplot.png'
 
 f = open(in_path, 'rb')
@@ -120,12 +170,6 @@ vals += [STAT]
 # cut down df to specified region and level of data 
 stat_data = data[TYPE][vals]
 stat_data = stat_data.loc[(stat_data['VX_MASK'] == LND_MSK)]
-
-# obtain the range of valid dates for verification
-anl_start = dt.fromisoformat(ANL_START)
-anl_end = dt.fromisoformat(ANL_END)
-analyses = get_anls(anl_start, anl_end, ANL_INT)
-anl_dates, anl_strgs = zip(*analyses)
 
 # NOTE: sorting below is designed to handle the issue of string sorting with
 # symbols and non-left-padded decimals
@@ -199,7 +243,6 @@ ax1.tick_params(
         labelsize=16
         )
 
-title2= STAT + ' - ' + LND_MSK + ' - ' + param
 lab1='Verification Valid Date'
 lab2='Forecast Lead Hrs From Valid Date'
 plt.figtext(.5, .02, lab1, horizontalalignment='center',
@@ -208,7 +251,7 @@ plt.figtext(.5, .02, lab1, horizontalalignment='center',
 plt.figtext(.02, .565, lab2, horizontalalignment='center',
             verticalalignment='center', fontsize=20, rotation=90)
 
-plt.figtext(.5, .98, title2, horizontalalignment='center',
+plt.figtext(.5, .98, TITLE, horizontalalignment='center',
             verticalalignment='center', fontsize=20)
 
 # save figure and display

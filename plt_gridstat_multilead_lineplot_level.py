@@ -44,32 +44,33 @@ import seaborn as sns
 import numpy as np
 import pickle
 import os
-from py_plt_utilities import USR_HME
-import ipdb
+from proc_gridstat import OUT_ROOT
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flows to analyze 
 CTR_FLWS = [
-            'WWRF'
+            'NRT_gfs'
+            #'NRT_ecmwf'
             #'GFS',
             #'ECMWF',
            ]
 
 # define optional list of stats files prefixes
 PRFXS = [
-        'SQUARE_BILIN_3',
-        'SQUARE_DW_MEAN_3',
-        'SQUARE_BUDGET_3',
-        'SQUARE_NEAREST_1',
+        'BILIN_27',
+        'BUDGET_27',
+        'DW_MEAN_27',
+        'NEAREST_1',
         ]
 
+
 # define case-wise sub-directory
-CSE = 'VD'
+CSE = 'DD'
 
 # verification domain for the forecast data
-GRD='d02'
+GRD='d03'
 
 # verification domain for the calibration data
 REF='0.25'
@@ -82,16 +83,13 @@ LEV = '>=25.4'
 #LEV = '>=101.6'
 
 # starting date and zero hour of forecast cycles
-START_DT = '2019-02-08T00:00:00'
+STRT_DT = '2022121600'
 
 # final date and zero hour of data of forecast cycles
-END_DT = '2019-02-14T00:00:00'
+END_DT = '2023011800'
 
 # valid date for the verification
-VALID_DT = '2019-02-15T00:00:00'
-
-# number of hours between zero hours for forecast data
-CYCLE_INT = 24
+VALID_DT = '2023010100'
 
 # MET stat file type -- should be leveled data
 #TYPE = 'cts'
@@ -111,9 +109,31 @@ LND_MSK = 'CA_Climate_Zone_16_Sierra'
 #LND_MSK = 'CALatLonPoints'
 #LND_MSK = 'FULL'
 
+# plot title
+TITLE='24hr accumulated precip at ' + VALID_DT
+
+# plot sub-title title
+SUBTITLE='Verification region -- ' + LND_MSK + ' Threshold ' + LEV + ' mm'
+
 ##################################################################################
 # Begin plotting
 ##################################################################################
+if len(STRT_DT) != 10:
+    print('ERROR: STRT_DT, ' + STRT_DT + ', is not in YYYYMMDDHH format.')
+    sys.exit(1)
+
+if len(END_DT) != 10:
+    print('ERROR: END_DT, ' + END_DT + ', is not in YYYYMMDDHH format.')
+    sys.exit(1)
+
+if len(VALID_DT) != 10:
+    print('ERROR: VALID_DT, ' + VALID_DT + ', is not in YYYYMMDDHH format.')
+    sys.exit(1)
+else:
+    v_iso = VALID_DT[:4] + '-' + VALID_DT[4:6] + '-' + VALID_DT[6:8] +\
+            '_' + VALID_DT[8:]
+    valid_dt = dt.fromisoformat(v_iso)
+
 # create a figure
 fig = plt.figure(figsize=(11.25,8.63))
 num_flws = len(CTR_FLWS)
@@ -129,33 +149,29 @@ ax1 = fig.add_axes([.110, .10, .85, .33])
 line_list = []
 line_labs = []
 
-# create date time object from string
-valid_dt = dt.fromisoformat(VALID_DT)
-
 for i in range(num_flws):
     # loop on control flows
     ctr_flw = CTR_FLWS[i]
-    param = ctr_flw.split('_')[-1]
 
     for m in range(num_pfxs):
         # loop on prefixes
         pfx = PRFXS[m]
-        line_lab = param + '_' + pfx
+        line_lab = ctr_flw + '_' + pfx
         line_labs.append(line_lab)
 
         # define derived data paths 
         cse = CSE + '/' + ctr_flw
-        data_root = USR_HME + '/data/analysis/' + cse + '/MET_analysis'
+        data_root = OUT_ROOT + '/' + cse + '/MET_analysis'
         stat0 = STATS[0]
         stat1 = STATS[1]
         
         # define the input name
         if ctr_flw == 'ECMWF' or ctr_flw == 'GFS':
-            in_path = data_root + '/grid_stats_' + pfx + '_' + REF + '_' + START_DT +\
+            in_path = data_root + '/grid_stats_' + pfx + '_' + REF + '_' + STRT_DT +\
                       '_to_' + END_DT + '.bin'
     
         else:
-            in_path = data_root + '/grid_stats_' + pfx + '_' + GRD + '_' + START_DT +\
+            in_path = data_root + '/grid_stats_' + pfx + '_' + GRD + '_' + STRT_DT +\
                       '_to_' + END_DT + '.bin'
         
         f = open(in_path, 'rb')
@@ -215,7 +231,8 @@ for i in range(num_flws):
                 ax.fill_between(range(num_leads), tmp[:, 1], tmp[:, 2], alpha=0.5,
                         color=line_colors[i * num_pfxs + m])
                 l, = ax.plot(range(num_leads), tmp[:, 0], linewidth=2,
-                        marker=(3 + i * num_pfxs + m, 0, 0) , markersize=18, color=line_colors[i * num_pfxs + m])
+                             marker=(3 + i * num_pfxs + m, 0, 0) , markersize=18,
+                             color=line_colors[i * num_pfxs + m])
     
             else:
                 tmp = np.zeros([num_leads])
@@ -225,10 +242,12 @@ for i in range(num_flws):
                     tmp[j] = val[STATS[k]]
                 
                 l, = ax.plot(range(num_leads), tmp[:], linewidth=2,
-                        marker=(3 + i * num_pfxs + m, 0, 0) , markersize=18, color=line_colors[i * num_pfxs + m])
+                             marker=(3 + i * num_pfxs + m, 0, 0) , markersize=18,
+                             color=line_colors[i * num_pfxs + m])
     
                 ax.plot(range(num_leads), tmp[:], linewidth=2,
-                        marker=(3 + i * num_pfxs + m, 0, 0) , markersize=18, color=line_colors[i * num_pfxs + m])
+                        marker=(3 + i * num_pfxs + m, 0, 0) , markersize=18,
+                        color=line_colors[i * num_pfxs + m])
             
             
         # add the line type to the legend
@@ -261,15 +280,13 @@ ax0.tick_params(
         labelright=False,
         )
 
-title1='24hr accumulated precip at ' + VALID_DT
-title2='Verification region -- ' + LND_MSK + ' Threshold ' + LEV + ' mm'
 lab0=STATS[0]
 lab1=STATS[1]
 lab2='Forecast lead hrs'
-plt.figtext(.5, .98, title1, horizontalalignment='center',
+plt.figtext(.5, .98, TITLE, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
-plt.figtext(.5, .93, title2, horizontalalignment='center',
+plt.figtext(.5, .93, SUBTITLE, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
 plt.figtext(.05, .595, lab0, horizontalalignment='right', rotation=90,
@@ -285,7 +302,7 @@ fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws * num_pfxs, 2),
            loc='center', bbox_to_anchor=[0.5, 0.83])
 
 # save figure and display
-out_path = USR_HME + '/data/analysis/' + CSE + '/' + VALID_DT + '_' +\
+out_path = OUT_ROOT + '/' + CSE + '/' + VALID_DT + '_' +\
            LND_MSK + '_' + stat0 + '_' +\
            stat1 + '_lev_' + LEV + '_lineplot.png'
     

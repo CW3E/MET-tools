@@ -2,14 +2,11 @@
 #SBATCH --partition=shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 24:00:00
+#SBATCH -t 02:30:00
 #SBATCH --job-name="gridstat"
 #SBATCH --export=ALL
 #SBATCH --account=cwp106
 #SBATCH --mail-user cgrudzien@ucsd.edu
-#SBATCH --mail-type BEGIN
-#SBATCH --mail-type END
-#SBATCH --mail-type FAIL
 #################################################################################
 # Description
 #################################################################################
@@ -47,10 +44,10 @@
 #set -x
 
 # control flow to be processed
-CTR_FLW=NRT_gfs
+CTR_FLW=ECMWF
 
 # verification domain for the forecast data
-GRD=d03
+GRD=0.25
 
 # define the case-wise sub-directory
 CSE=DD
@@ -59,15 +56,15 @@ CSE=DD
 USR_HME=/cw3e/mead/projects/cwp106/scratch/cgrudzien/MET-tools
 
 # root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
-IN_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/interpolation_sensitivity
+IN_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA
 
 # Fixed path that preceeds cycle time directories in ${IN_ROOT}
 # includes leading '/', set to empty string if not needed
-DATE_ROOT=/MET_analysis
+DATE_ROOT=/Precip
 
 # Subdirectory for wrfoutputs in cycle time directories
 # includes leading '/', set to empty string if not needed
-DATE_SUBDIR=/${GRD}
+DATE_SUBDIR=""
 
 # root directory for cycle time (YYYYMMDDHH) directories of gridstat outputs
 OUT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/interpolation_sensitivity
@@ -81,17 +78,19 @@ MET_SNG=${SOFT_ROOT}/met-10.0.1.simg
 
 ## landmask settings for verification region
 # File name / figure label
+#MSK=CALatLonPoints
 MSK=CA_Climate_Zone_16_Sierra
 
 # File extension
 MSK_EXT=.poly
 
 # Root directory for landmask
+#MSK_ROOT=${SOFT_ROOT}/polygons/region
 MSK_ROOT=${SOFT_ROOT}/polygons/CA_Climate_Zone
 
 # define first and last date time for forecast initialization (YYYYMMDDHH)
-STRT_DT=2022121600
-END_DT=2023011800
+STRT_DT=2022122900
+END_DT=2022123100
 
 # define the interval between forecast initializations (HH)
 CYC_INT=24
@@ -114,8 +113,8 @@ CAT_THR="[ >0.0, >=10.0, >=25.4, >=50.8, >=101.6 ]"
 
 # define the interpolation method and related parameters
 INT_SHPE=SQUARE
-INT_MTHD=NEAREST
-INT_WDTH=1
+INT_MTHD=DW_MEAN
+INT_WDTH=3
 
 # neighborhood width for neighborhood methods
 NBRHD_WDTH=9
@@ -127,7 +126,7 @@ BTSTRP=0
 RNK_CRR=FALSE
 
 # compute accumulation from cf file, TRUE or FALSE
-CMP_ACC=TRUE
+CMP_ACC=FALSE
 
 # optionally define an output prefix based on settings, leave as a blank string
 # to have no prefix on gridstat outputs

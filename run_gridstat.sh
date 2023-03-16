@@ -2,7 +2,7 @@
 #SBATCH --partition=shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 02:30:00
+#SBATCH -t 01:00:00
 #SBATCH --job-name="gridstat"
 #SBATCH --export=ALL
 #SBATCH --account=cwp106
@@ -44,33 +44,34 @@
 #set -x
 
 # control flow to be processed
-CTR_FLW=ECMWF
+CTR_FLW=deterministic_forecast_lag00_b0.00_v03_h0150
 
 # verification domain for the forecast data
-GRD=0.25
+GRD=d02
 
 # define the case-wise sub-directory
-CSE=DD
+CSE=VD
 
 # root directory for MET-tools git clone
 USR_HME=/cw3e/mead/projects/cwp106/scratch/cgrudzien/MET-tools
 
 # root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
-IN_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA
+IN_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/cycling_sensitivity_testing
 
 # Fixed path that preceeds cycle time directories in ${IN_ROOT}
 # includes leading '/', set to empty string if not needed
-DATE_ROOT=/Precip
+DATE_ROOT=/MET_analysis
 
 # Subdirectory for wrfoutputs in cycle time directories
 # includes leading '/', set to empty string if not needed
-DATE_SUBDIR=""
+DATE_SUBDIR=/${GRD}
 
 # root directory for cycle time (YYYYMMDDHH) directories of gridstat outputs
-OUT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/interpolation_sensitivity
+OUT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/cycling_sensitivity_testing
 
 # root directory for verification data
-DATA_ROOT=/cw3e/mead/projects/cnt102/METMODE_PreProcessing/data/StageIV
+DATA_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA/StageIV
+#DATA_ROOT=/cw3e/mead/projects/cnt102/METMODE_PreProcessing/data/StageIV
 
 # root directory for MET software
 SOFT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/SOFT_ROOT/MET_CODE
@@ -78,26 +79,26 @@ MET_SNG=${SOFT_ROOT}/met-10.0.1.simg
 
 ## landmask settings for verification region
 # File name / figure label
-#MSK=CALatLonPoints
-MSK=CA_Climate_Zone_16_Sierra
+MSK=CALatLonPoints
+#MSK=CA_Climate_Zone_16_Sierra
 
 # File extension
-MSK_EXT=.poly
+MSK_EXT=.txt
 
 # Root directory for landmask
-#MSK_ROOT=${SOFT_ROOT}/polygons/region
-MSK_ROOT=${SOFT_ROOT}/polygons/CA_Climate_Zone
+MSK_ROOT=${SOFT_ROOT}/polygons/region
+#MSK_ROOT=${SOFT_ROOT}/polygons/CA_Climate_Zone
 
 # define first and last date time for forecast initialization (YYYYMMDDHH)
-STRT_DT=2022122900
-END_DT=2022123100
+STRT_DT=2019021100
+END_DT=2019021400
 
 # define the interval between forecast initializations (HH)
 CYC_INT=24
 
 # define min / max forecast hours for forecast outputs to be processed
 ANL_MIN=24
-ANL_MAX=240
+ANL_MAX=96
 
 # define the interval at which to process forecast outputs (HH)
 ANL_INT=24
@@ -114,23 +115,24 @@ CAT_THR="[ >0.0, >=10.0, >=25.4, >=50.8, >=101.6 ]"
 # define the interpolation method and related parameters
 INT_SHPE=SQUARE
 INT_MTHD=DW_MEAN
-INT_WDTH=3
+INT_WDTH=9
 
 # neighborhood width for neighborhood methods
 NBRHD_WDTH=9
 
 # number of bootstrap resamplings, set 0 for off
-BTSTRP=0
+BTSTRP=1000
 
 # rank correlation computation flag, TRUE or FALSE
-RNK_CRR=FALSE
+RNK_CRR=TRUE
 
 # compute accumulation from cf file, TRUE or FALSE
-CMP_ACC=FALSE
+CMP_ACC=TRUE
 
 # optionally define an output prefix based on settings, leave as a blank string
 # to have no prefix on gridstat outputs
-PRFX="${INT_MTHD}_${INT_WDTH}"
+PRFX=""
+#PRFX="${INT_MTHD}_${INT_WDTH}"
 
 #################################################################################
 # Process data

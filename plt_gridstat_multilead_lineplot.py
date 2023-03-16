@@ -44,43 +44,88 @@ import numpy as np
 import pickle
 import os
 from proc_gridstat import OUT_ROOT
+import ipdb
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flows to analyze 
 CTR_FLWS = [
-            #'NRT_gfs'
-            'NRT_ecmwf'
-            #'GFS',
-            #'ECMWF',
+            'deterministic_forecast_lag00_b0.00_v03_h0150',
+            'deterministic_forecast_lag00_b0.00_v03_h0300',
+            'deterministic_forecast_lag00_b0.00_v03_h0450',
+            'deterministic_forecast_lag00_b0.00_v03_h0600',
+            'deterministic_forecast_lag00_b0.00_v03_h0900',
+            #'deterministic_forecast_lag06_b0.00_v03_h0150',
+            #'deterministic_forecast_lag06_b0.00_v03_h0300',
+            ##'deterministic_forecast_lag06_b0.00_v03_h0450',
+            #'deterministic_forecast_lag06_b0.00_v03_h0600',
+            #'deterministic_forecast_lag06_b0.00_v03_h0900',
+            #'deterministic_forecast_lag00_b0.00_v06_h0150',
+            #'deterministic_forecast_lag00_b0.00_v06_h0300',
+            #'deterministic_forecast_lag00_b0.00_v06_h0450',
+            #'deterministic_forecast_lag00_b0.00_v06_h0600',
+            #'deterministic_forecast_lag00_b0.00_v06_h0900',
+            #'deterministic_forecast_lag06_b0.00_v06_h0150',
+            #'deterministic_forecast_lag06_b0.00_v06_h0300',
+            #'deterministic_forecast_lag06_b0.00_v06_h0450',
+            #'deterministic_forecast_lag06_b0.00_v06_h0600',
+            #'deterministic_forecast_lag06_b0.00_v06_h0900',
+            #'deterministic_forecast_lag00_b0.00',
+            #'deterministic_forecast_lag00_b0.10',
+            #'deterministic_forecast_lag00_b0.20',
+            #'deterministic_forecast_lag00_b0.30',
+            #'deterministic_forecast_lag00_b0.40',
+            #'deterministic_forecast_lag00_b0.50',
+            #'deterministic_forecast_lag00_b0.60',
+            #'deterministic_forecast_lag00_b0.70',
+            #'deterministic_forecast_lag00_b0.80',
+            #'deterministic_forecast_lag00_b0.90',
+            #'deterministic_forecast_lag06_b0.00',
+            #'deterministic_forecast_lag06_b0.10',
+            #'deterministic_forecast_lag06_b0.20',
+            #'deterministic_forecast_lag06_b0.30',
+            #'deterministic_forecast_lag06_b0.40',
+            #'deterministic_forecast_lag06_b0.50',
+            #'deterministic_forecast_lag06_b0.60',
+            #'deterministic_forecast_lag06_b0.70',
+            #'deterministic_forecast_lag06_b0.80',
+            #'deterministic_forecast_lag06_b0.90',
+            #'deterministic_forecast_lag00_b1.00',
+            #'NRT_gfs',
+            #'NRT_ecmwf',
+            'GFS',
+            'ECMWF',
            ]
 
-# define optional list of stats files prefixes
+# define optional list of stats files prefixes, include empty string to ignore
 PRFXS = [
-        'BILIN_27',
-        'BUDGET_27',
-        'DW_MEAN_27',
-        'NEAREST_1',
+        '',
+        #'DW_MEAN_3',
+        #'DW_MEAN_9',
+        #'BILIN_27',
+        #'BUDGET_27',
+        #'DW_MEAN_27',
+        #'NEAREST_1',
         ]
 
 # define case-wise sub-directory
-CSE = 'DD'
+CSE = 'VD'
 
 # verification domain for the forecast data
-GRD='d03'
+GRD='d02'
 
 # verification domain for the calibration data
 REF='0.25'
 
 # starting date and zero hour of forecast cycles
-STRT_DT = '2022121600'
+STRT_DT = '2019021100'
 
 # final date and zero hour of data of forecast cycles
-END_DT = '2023011800'
+END_DT = '2019021400'
 
 # valid date for the verification
-VALID_DT = '2023011100'
+VALID_DT = '2019021500'
 
 # MET stat file type -- should be non-leveled data
 TYPE = 'cnt'
@@ -90,8 +135,8 @@ STATS = ['RMSE', 'PR_CORR']
 #STATS = ['MAD', 'SP_CORR']
 
 # landmask for verification region -- need to be set in earlier preprocessing
-LND_MSK = 'CA_Climate_Zone_16_Sierra'
-#LND_MSK = 'CALatLonPoints'
+#LND_MSK = 'CA_Climate_Zone_16_Sierra'
+LND_MSK = 'CALatLonPoints'
 #LND_MSK = 'FULL'
 
 # plot title
@@ -101,7 +146,13 @@ TITLE='24hr accumulated precip at ' + VALID_DT
 SUBTITLE='Verification region -- ' + LND_MSK + ' ' + GRD
 
 # fig root
-FIG_ROOT = '/home/cgrudzien/interpolation_analysis'
+FIG_ROOT = '/home/cgrudzien/cycle_analysis'
+
+# fig case directory
+FIG_CSE = 'v03'
+
+# fig label for case directory organization
+FIG_LAB = 'lag06'
 
 ##################################################################################
 # Begin plotting
@@ -137,6 +188,9 @@ ax1 = fig.add_axes([.110, .10, .85, .33])
 line_list = []
 line_labs = []
 
+# increment line count whenever a configuration is plotted
+line_count = -1
+
 for i in range(num_flws):
     # loop on control flows
     ctr_flw = CTR_FLWS[i]
@@ -144,9 +198,7 @@ for i in range(num_flws):
     for m in range(num_pfxs):
         # loop on prefixes
         pfx = PRFXS[m]
-        line_lab = ctr_flw + '_' + pfx
-        line_labs.append(line_lab)
-
+        
         # define derived data paths 
         cse = CSE + '/' + ctr_flw
         data_root = OUT_ROOT + '/' + cse + '/MET_analysis'
@@ -162,9 +214,19 @@ for i in range(num_flws):
             in_path = data_root + '/grid_stats_' + pfx + '_' + GRD + '_' + STRT_DT +\
                       '_to_' + END_DT + '.bin'
         
-        f = open(in_path, 'rb')
-        data = pickle.load(f)
-        f.close()
+        try:
+            f = open(in_path, 'rb')
+            data = pickle.load(f)
+            f.close()
+
+            line_lab = ctr_flw.split('_')[-1]# + '_' + pfx
+            line_labs.append(line_lab)
+            line_count += 1
+
+        except:
+            print('WARNING: input data ' + in_path +\
+                    ' does not exist, skipping this configuration.')
+            continue
         
         # load the values to be plotted along with landmask and lead
         vals = [
@@ -215,9 +277,10 @@ for i in range(num_flws):
                     tmp[j, 2] = val[STATS[k] + cnf_lvs[k] + 'U']
                 
                 ax.fill_between(range(num_leads), tmp[:, 1], tmp[:, 2], alpha=0.5,
-                        color=line_colors[i * num_pfxs + m])
+                                color=line_colors[line_count])
                 l, = ax.plot(range(num_leads), tmp[:, 0], linewidth=2,
-                        marker=(3 + i * num_pfxs + m, 0, 0), markersize=18, color=line_colors[i * num_pfxs + m])
+                             marker=(line_count + 2, 0, 0), markersize=18,
+                             color=line_colors[line_count])
 
             else:
                 tmp = np.zeros([num_leads])
@@ -227,10 +290,12 @@ for i in range(num_flws):
                     tmp[j] = val[STATS[k]]
                 
                 l, = ax.plot(range(num_leads), tmp[:], linewidth=2,
-                        marker=(3 + i * num_pfxs + m, 0, 0), markersize=18, color=line_colors[i * num_pfxs + m])
+                        marker=(line_count + 2, 0, 0), markersize=18,
+                        color=line_colors[line_count])
 
                 ax.plot(range(num_leads), tmp[:], linewidth=2,
-                        marker=(3 + i * num_pfxs + m, 0, 0), markersize=18, color=line_colors[i * num_pfxs + m])
+                        marker=(line_count + 2, 0, 0), markersize=18,
+                        color=line_colors[line_count])
             
         # add the line type to the legend
         line_list.append(l)
@@ -280,18 +345,18 @@ plt.figtext(.05, .265, lab1, horizontalalignment='right', rotation=90,
 plt.figtext(.5, .02, lab2, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
-fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws * num_pfxs, 2),
+fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws * num_pfxs, 5),
            loc='center', bbox_to_anchor=[0.5, 0.83])
 
 # save figure and display
-out_dir = FIG_ROOT + '/' + CSE 
+out_dir = FIG_ROOT + '/' + CSE + '/' + FIG_CSE
 os.system('mkdir -p ' + out_dir)
 out_path = out_dir + '/' + VALID_DT + '_' +\
            LND_MSK + '_' + stat0 + '_' +\
-           stat1 + '_' + ctr_flw + '_' + GRD + '_lineplot.png'
+           stat1 + '_' + FIG_LAB + '_' + GRD + '_lineplot.png'
     
 plt.savefig(out_path)
-#plt.show()
+plt.show()
 
 ##################################################################################
 # end

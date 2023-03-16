@@ -59,7 +59,7 @@ DATE_SUBDIR=/wrfprd/ens_00
 OUT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/cycling_sensitivity_testing
 
 # define control flow to analyze 
-CTR_FLW=deterministic_forecast_lag00_b0.00_v06_h0900
+CTR_FLW=deterministic_forecast_lag00_b0.00
 
 # define the case study for sub-directory nesting
 CSE=VD

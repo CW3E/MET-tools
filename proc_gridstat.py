@@ -42,23 +42,23 @@ from datetime import timedelta
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'ECMWF'
+CTR_FLW = 'deterministic_forecast_lag06_b0.70'
 
 # define the case-wise sub-directory
-CSE = 'DD'
+CSE = 'VD'
 
 # verification domain for the forecast data                                                                           
-GRD = '0.25'
+GRD = 'd02'
 
 # define the interpolation method and related parameters
 INT_MTHD = 'DW_MEAN'
-INT_WDTH = '3'
+INT_WDTH = '9'
 
 # starting date and zero hour of forecast cycles (string YYYYMMDDHH)
-STRT_DT = '2022121600'
+STRT_DT = '2019021100'
 
 # final date and zero hour of data of forecast cycles (string YYYYMMDDHH)
-END_DT = '2023011800'
+END_DT = '2019021400'
 
 # number of hours between zero hours for forecast data (string HH)
 CYC_INT = '24'
@@ -70,10 +70,10 @@ PRFX = INT_MTHD + '_' + INT_WDTH
 STR_INDT = "    "
 
 # root directory for gridstat outputs
-IN_ROOT = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/interpolation_sensitivity'
+IN_ROOT = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/cycling_sensitivity_testing'
 
 # root directory for processed pandas outputs
-OUT_ROOT = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/interpolation_sensitivity'
+OUT_ROOT = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/cycling_sensitivity_testing'
 
 ##################################################################################
 # Process data
@@ -153,46 +153,49 @@ if __name__ == '__main__':
             cols = f.readline()
             cols = cols.split()
             
-            fname_df = {} 
-            tmp_dict = {}
-            df_indx = 1
+            if len(cols) > 0:
+                fname_df = {} 
+                tmp_dict = {}
+                df_indx = 1
     
-            print(STR_INDT + 'Loading columns:')
-            for col_name in cols:
-                print(STR_INDT * 2 + col_name)
-                fname_df[col_name] = [] 
+                print(STR_INDT + 'Loading columns:')
+                for col_name in cols:
+                    print(STR_INDT * 2 + col_name)
+                    fname_df[col_name] = [] 
     
-            fname_df =  pd.DataFrame.from_dict(fname_df, orient='columns')
+                fname_df =  pd.DataFrame.from_dict(fname_df, orient='columns')
     
-            # parse file by line, concatenating columns
-            for line in f:
-                split_line = line.split()
+                # parse file by line, concatenating columns
+                for line in f:
+                    split_line = line.split()
     
-                for i in range(len(split_line)):
-                    val = split_line[i]
+                    for i in range(len(split_line)):
+                        val = split_line[i]
     
-                    # filter NA vals
-                    if val == 'NA':
-                        val = np.nan
-                    tmp_dict[cols[i]] = val
+                        # filter NA vals
+                        if val == 'NA':
+                            val = np.nan
+                        tmp_dict[cols[i]] = val
     
-                tmp_dict['line'] = [df_indx]
-                tmp_dict = pd.DataFrame.from_dict(tmp_dict, orient='columns')
-                fname_df = pd.concat([fname_df, tmp_dict], axis=0)
-                df_indx += 1
+                    tmp_dict['line'] = [df_indx]
+                    tmp_dict = pd.DataFrame.from_dict(tmp_dict, orient='columns')
+                    fname_df = pd.concat([fname_df, tmp_dict], axis=0)
+                    df_indx += 1
     
-            fname_df['line'] = fname_df['line'].astype(int)
-            
-            if postfix in data_dict.keys():
-                last_indx = data_dict[postfix].index[-1]
-                fname_df['line'] = fname_df['line'].add(last_indx)
-                fname_df = fname_df.set_index('line')
-                data_dict[postfix] = pd.concat([data_dict[postfix], fname_df], axis=0)
+                fname_df['line'] = fname_df['line'].astype(int)
+                
+                if postfix in data_dict.keys():
+                    last_indx = data_dict[postfix].index[-1]
+                    fname_df['line'] = fname_df['line'].add(last_indx)
+                    fname_df = fname_df.set_index('line')
+                    data_dict[postfix] = pd.concat([data_dict[postfix], fname_df], axis=0)
+    
+                else:
+                    fname_df = fname_df.set_index('line')
+                    data_dict[postfix] = fname_df
     
             else:
-                fname_df = fname_df.set_index('line')
-                data_dict[postfix] = fname_df
-    
+                print('WARNING: file ' + in_path + ' is empty, skipping this file.')
     
             print(STR_INDT + 'Closing file ' + in_path)
             f.close()

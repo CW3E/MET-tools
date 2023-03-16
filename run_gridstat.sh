@@ -1,12 +1,3 @@
-#!/bin/bash
-#SBATCH --partition=shared
-#SBATCH --nodes=1
-#SBATCH --mem=120G
-#SBATCH -t 01:00:00
-#SBATCH --job-name="gridstat"
-#SBATCH --export=ALL
-#SBATCH --account=cwp106
-#SBATCH --mail-user cgrudzien@ucsd.edu
 #################################################################################
 # Description
 #################################################################################
@@ -38,141 +29,19 @@
 #     limitations under the License.
 #
 #################################################################################
-# SET GLOBAL PARAMETERS 
+# READ WORKFLOW PARAMETERS
 #################################################################################
-# uncoment to make verbose for debugging
-#set -x
-
 # control flow to be processed
-CTR_FLW=deterministic_forecast_lag00_b0.00_v03_h0150
+if [ ! ${CTR_FLW} ]; then
+  echo "ERROR: control flow name \${CTR_FLW} is not defined."
+  exit 1
+fi
 
 # verification domain for the forecast data
-GRD=d02
-
-# define the case-wise sub-directory
-CSE=VD
-
-# root directory for MET-tools git clone
-USR_HME=/cw3e/mead/projects/cwp106/scratch/cgrudzien/MET-tools
-
-# root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
-IN_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/cycling_sensitivity_testing
-
-# Fixed path that preceeds cycle time directories in ${IN_ROOT}
-# includes leading '/', set to empty string if not needed
-DATE_ROOT=/MET_analysis
-
-# Subdirectory for wrfoutputs in cycle time directories
-# includes leading '/', set to empty string if not needed
-DATE_SUBDIR=/${GRD}
-
-# root directory for cycle time (YYYYMMDDHH) directories of gridstat outputs
-OUT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/cycling_sensitivity_testing
-
-# root directory for verification data
-DATA_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA/StageIV
-#DATA_ROOT=/cw3e/mead/projects/cnt102/METMODE_PreProcessing/data/StageIV
-
-# root directory for MET software
-SOFT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/SOFT_ROOT/MET_CODE
-MET_SNG=${SOFT_ROOT}/met-10.0.1.simg
-
-## landmask settings for verification region
-# File name / figure label
-MSK=CALatLonPoints
-#MSK=CA_Climate_Zone_16_Sierra
-
-# File extension
-MSK_EXT=.txt
-
-# Root directory for landmask
-MSK_ROOT=${SOFT_ROOT}/polygons/region
-#MSK_ROOT=${SOFT_ROOT}/polygons/CA_Climate_Zone
-
-# define first and last date time for forecast initialization (YYYYMMDDHH)
-STRT_DT=2019021100
-END_DT=2019021400
-
-# define the interval between forecast initializations (HH)
-CYC_INT=24
-
-# define min / max forecast hours for forecast outputs to be processed
-ANL_MIN=24
-ANL_MAX=96
-
-# define the interval at which to process forecast outputs (HH)
-ANL_INT=24
-
-# define the accumulation interval for verification valid times
-ACC_INT=24
-
-# define the verification field
-VRF_FLD=QPF
-
-# specify thresholds levels for verification
-CAT_THR="[ >0.0, >=10.0, >=25.4, >=50.8, >=101.6 ]"
-
-# define the interpolation method and related parameters
-INT_SHPE=SQUARE
-INT_MTHD=DW_MEAN
-INT_WDTH=9
-
-# neighborhood width for neighborhood methods
-NBRHD_WDTH=9
-
-# number of bootstrap resamplings, set 0 for off
-BTSTRP=1000
-
-# rank correlation computation flag, TRUE or FALSE
-RNK_CRR=TRUE
-
-# compute accumulation from cf file, TRUE or FALSE
-CMP_ACC=TRUE
-
-# optionally define an output prefix based on settings, leave as a blank string
-# to have no prefix on gridstat outputs
-PRFX=""
-#PRFX="${INT_MTHD}_${INT_WDTH}"
-
-#################################################################################
-# Process data
-#################################################################################
-# define derived paths
-cse="${CSE}/${CTR_FLW}"
-
-# check for input data root
-in_root="${IN_ROOT}/${cse}${DATE_ROOT}"
-if [ ! -d ${in_root} ]; then
-  echo "ERROR: input data root directory, ${in_root}, does not exist."
+if [ ! ${GRD} ]; then
+  echo "ERROR: grid name \${GRD} is not defined."
   exit 1
 fi
-
-# create output directory if does not exist
-out_root=${OUT_ROOT}/${cse}/MET_analysis
-cmd="mkdir -p ${out_root}"
-echo ${cmd}; eval ${cmd}
-
-# check for software and data deps.
-if [ ! -d ${DATA_ROOT} ]; then
-  echo "ERROR: StageIV data directory, ${DATA_ROOT}, does not exist."
-  exit 1
-fi
-
-if [ ! -x ${MET_SNG} ]; then
-  echo "MET singularity image, ${MET_SNG}, does not exist or is not executable."
-  exit 1
-fi
-
-if [ ! -r "${MSK_ROOT}/${MSK}${MSK_EXT}"  ]; then
-  msg="ERROR: verification region landmask, ${MSK_ROOT}/${MSK}${MSK_EXT}, "
-  msg+="does not exist or is not readable."
-  echo ${msg}
-  exit 1
-fi
-
-# change to scripts directory
-cmd="cd ${USR_HME}"
-echo ${cmd}; eval ${cmd}
 
 # Convert STRT_DT from 'YYYYMMDDHH' format to strt_dt Unix date format
 if [ ${#STRT_DT} -ne 10 ]; then
@@ -199,6 +68,142 @@ else
   prfx=""
 fi
 
+# define min / max forecast hours for forecast outputs to be processed
+if [ ! ${ANL_MIN} ]; then
+  echo "ERROR: min forecast hour \${ANL_MIN} is not defined."
+  exit 1
+fi
+
+if [ ! ${ANL_MAX} ]; then
+  echo "ERROR: max forecast hour \${ANL_MAX} is not defined."
+  exit 1
+fi
+
+# define the interval at which to process forecast outputs (HH)
+if [ ! ${ANL_INT} ]; then
+  echo "ERROR: hours interval between analyses \${HH} is not defined."
+  exit 1
+fi
+
+# define the accumulation interval for verification valid times
+if [ ! ${ACC_INT} ]; then
+  echo "ERROR: hours accumulation interval for verification not defined."
+  exit 1
+fi
+
+# define the verification field
+if [ ! ${VRF_FLD} ]; then
+  echo "ERROR: verification field \${VRF_FLD} is not defined."
+  exit 1
+fi
+
+# Landmask for verification region file name with extension
+if [ ! ${MSK} ]; then
+  echo "ERROR: landmask \${MSK} is not defined."
+  exit 1
+fi
+
+# define the interpolation method and related parameters
+if [ ! ${INT_MTHD} ]; then
+  echo "ERROR: regridding interpolation method \${INT_MTHD} is not defined."
+  exit 1
+fi
+
+if [ ! ${INT_WDTH} ]; then 
+  echo "ERROR: interpolation neighborhood width \${INT_WDTH} is not defined."
+  exit 1
+fi
+
+# neighborhood width for neighborhood methods
+if [ ! ${NBRHD_WDTH} ]; then
+  echo "ERROR: neighborhood statistics width ${NBRHD_WDTH} is not defined."
+  exit 1
+fi
+
+# number of bootstrap resamplings, set 0 for off
+if [ ! ${BTSTRP} ]; then
+  echo "ERROR: bootstrap resampling number \${BTSRP} is not defined."
+  echo "Set \${BTSTRP} to a positive integer or to 0 to turn off."
+  exit 1
+fi
+
+# rank correlation computation flag, TRUE or FALSE
+if [ ! ${RNK_CRR} ]; then
+  msg="ERROR: \${RNK_CRR} must be set to 'TRUE' or 'FALSE' if computing "
+  msg+=" rank statistics."
+  echo ${msg}
+  exit 1
+fi
+
+# compute accumulation from cf file, TRUE or FALSE
+if [ ! ${CMP_ACC} ]; then
+  msg="ERROR: \${CMP_ACC} must be set to 'TRUE' or 'FALSE' if computing "
+  msg+="accumulation from source input file."
+  exit 1
+fi
+
+if [ -z ${PRFX+x} ]; then
+  echo "ERROR: gridstat output \${PRFX} is unset, set to empty string if not used."
+  exit 1
+fi
+
+if [ -z ${IN_DATE_SUBDIR+x} ]; then
+  echo "ERROR: cycle subdirectory for input data \${IN_DATE_SUBDIR} is unset,"
+  echo " set to empty string if not used."
+  exit 1
+fi
+
+if [ -z ${OUT_DATE_SUBDIR+x} ]; then
+  echo "ERROR: cycle subdirectory for input data \${OUT_DATE_SUBDIR} is unset,"
+  echo " set to empty string if not used."
+  exit 1
+fi
+
+# check for input data root
+if [ ! -d ${IN_CYC_DIR} ]; then
+  echo "ERROR: input data root directory, ${IN_CYC_DIR}, does not exist."
+  exit 1
+fi
+
+# create output directory if does not exist
+cmd="mkdir -p ${OUT_CYC_DIR}"
+echo ${cmd}; eval ${cmd}
+
+# check for software and data deps.
+if [ ! -d ${DATA_ROOT} ]; then
+  echo "ERROR: StageIV data directory, ${DATA_ROOT}, does not exist."
+  exit 1
+fi
+
+if [ ! -x ${MET_SNG} ]; then
+  echo "MET singularity image, ${MET_SNG}, does not exist or is not executable."
+  exit 1
+fi
+
+# read in mask file name and separate name from extension
+IFS="." read -ra split_string <<< ${MSK}
+msk_nme=${split_string[0]}
+msk_ext=${split_string[1]}
+
+if [ ! -r "${MSK_ROOT}/${msk_nme}.${msk_ext}"  ]; then
+  msg="ERROR: verification region landmask, ${MSK_ROOT}/${msk_nme}.${msk_ext}, "
+  msg+="does not exist or is not readable."
+  echo ${msg}
+  exit 1
+fi
+
+if [ ! ${CAT_THR} ]; then
+  echo "ERROR: thresholds \${CAT_THR} is not defined."
+  exit 1
+fi
+
+#################################################################################
+# Process data
+#################################################################################
+# change to scripts directory
+cmd="cd ${USR_HME}"
+echo ${cmd}; eval ${cmd}
+
 # change to scripts directory
 cmd="cd ${USR_HME}"
 echo ${cmd}; eval ${cmd}
@@ -211,10 +216,10 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
   dirstr=`date +%Y%m%d%H -d "${strt_dt} ${cyc_hr} hours"`
 
   # cycle date directory of cf-compliant input files
-  in_dir=${in_root}/${dirstr}${DATE_SUBDIR}
+  in_dir=${IN_CYC_DIR}/${dirstr}${IN_DATE_SUBDIR}
 
   # set and clean working directory based on looped forecast start date
-  work_root=${out_root}/${dirstr}/${GRD}
+  work_root=${OUT_CYC_DIR}/${dirstr}${OUT_DATE_SUBDIR}
   mkdir -p ${work_root}
   rm -f ${work_root}/grid_stat_${PRFX}*.txt
   rm -f ${work_root}/grid_stat_${PRFX}*.stat
@@ -267,10 +272,10 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
         -pcprx \"wrfcf_${GRD}_${anl_strt}_to_${anl_end}.nc\" "
         echo ${cmd}; eval ${cmd}
       else
-        cmd="pcp_combine input file ${in_dir}/wrfcf_${GRD}_${anl_strt}_to_${anl_end}.nc is not "
-        cmd+="readable or does not exist, skipping pcp_combine for "
-        cmd+="forecast initialization ${dirstr}, forecast hour ${lead_hr}." 
-        echo ${cmd}
+        msg="pcp_combine input file ${in_dir}/wrfcf_${GRD}_${anl_strt}_to_${anl_end}.nc is not "
+        msg+="readable or does not exist, skipping pcp_combine for "
+        msg+="forecast initialization ${dirstr}, forecast hour ${lead_hr}." 
+        echo ${msg}
       fi
     else
       # copy the preprocessed data to the working directory from the data root
@@ -287,12 +292,12 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
       if [ -r ${DATA_ROOT}/${obs_f_in} ]; then
         # masks are recreated depending on the existence of files from previous loops
         # NOTE: need to determine under what conditions would this file need to update
-        if [ ! -r ${work_root}/${MSK}_mask_regridded_with_StageIV.nc ]; then
+        if [ ! -r ${work_root}/${msk_nme}_mask_regridded_with_StageIV.nc ]; then
           cmd="singularity exec instance://met1 gen_vx_mask -v 10 \
           /DATA_ROOT/${obs_f_in} \
           -type poly \
-          /MSK_ROOT/${MSK}${MSK_EXT} \
-          /work_root/${MSK}_mask_regridded_with_StageIV.nc"
+          /MSK_ROOT/${msk_nme}.${msk_ext} \
+          /work_root/${msk_nme}_mask_regridded_with_StageIV.nc"
           echo ${cmd}
           eval ${cmd}
         fi
@@ -302,11 +307,10 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
           cat ${USR_HME}/GridStatConfigTemplate \
             | sed "s/INT_MTHD/method = ${INT_MTHD}/" \
             | sed "s/INT_WDTH/width = ${INT_WDTH}/" \
-            | sed "s/INT_SHPE/shape      = ${INT_SHPE}/" \
             | sed "s/RNK_CRR/rank_corr_flag      = ${RNK_CRR}/" \
             | sed "s/VRF_FLD/name       = \"${VRF_FLD}_${ACC_INT}hr\"/" \
             | sed "s/CAT_THR/cat_thresh = ${CAT_THR}/" \
-            | sed "s/PLY_MSK/poly = [ \"\/work_root\/${MSK}_mask_regridded_with_StageIV.nc\" ]/" \
+            | sed "s/PLY_MSK/poly = [ \"\/work_root\/${msk_nme}_mask_regridded_with_StageIV.nc\" ]/" \
             | sed "s/BTSTRP/n_rep    = ${BTSTRP}/" \
             | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
             | sed "s/PRFX/output_prefix    = \"${PRFX}\"/" \
@@ -329,7 +333,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
       fi
 
     else
-      cmd="gridstat input file ${out_root}/${prfx}${for_f_in} is not readable " 
+      cmd="gridstat input file ${work_root}/${prfx}${for_f_in} is not readable " 
       cmd+=" or does not exist, skipping grid_stat for forecast initialization "
       cmd+="${dirstr}, forecast hour ${lead_hr}." 
       echo ${cmd}
@@ -345,7 +349,9 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
   done
 done
 
-echo "Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify outputs at out_root ${out_root}"
+msg= "Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "
+msg+="outputs at OUT_CYC_DIR ${OUT_CYC_DIR}"
+echo ${msg}
 
 #################################################################################
 # end

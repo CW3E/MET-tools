@@ -63,11 +63,11 @@ END_DT = '2019021400'
 # number of hours between zero hours for forecast data (string HH)
 CYC_INT = '24'
 
-# optionally define an output prefix based on settings
-PRFX = INT_MTHD + '_' + INT_WDTH
+# optionally define output prefix, set as empty string if not needed
+PRFX = ''
 
 # standard string indentation
-STR_INDT = "    "
+STR_INDT = '    '
 
 # root directory for gridstat outputs
 IN_ROOT = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/cycling_sensitivity_testing'

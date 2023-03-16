@@ -2,7 +2,7 @@
 #SBATCH -p shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 02:00:00
+#SBATCH -t 00:15:00
 #SBATCH -J batch_gridstat
 #SBATCH --export=ALL
 #SBATCH --array=0
@@ -52,24 +52,16 @@ export MSK_ROOT=${SOFT_ROOT}/polygons/region
 export CAT_THR="[ >0.0, >=10.0, >=25.4, >=50.8, >=101.6 ]"
 
 # array of control flow names to be processed
-CTR_FLWS=( 
-          "deterministic_forecast_lag00_b0.00"
-         )
+CTR_FLWS=( "deterministic_forecast_lag00_b0.00" )
 
 # NOTE: the grids in the GRDS array and the interpolation methods /
 # neighborhbood widths in the below INT_MTHDS and INT_WDTHS must be
 # in 1-1 correspondence
-GRDS=(
-      "d02"
-     )
+GRDS=( "d02" )
 
 # define the interpolation method and related parameters
-INT_MTHDS=(
-           "DW_MEAN"
-          )
-INT_WDTHS=(
-           "9"
-          )
+INT_MTHDS=( "DW_MEAN" )
+INT_WDTHS=( "9" )
 
 # define the case-wise sub-directory
 export CSE=VD
@@ -130,24 +122,42 @@ export OUT_DATE_SUBDIR=/${GRD}
 ##################################################################################
 # create array of arrays to store the hyper-parameter grid settings, configs
 # run based on SLURM job array index
-cnfgs=()
+cfgs=()
 
 num_grds=${#GRDS[@]}
+num_flws=${#CTR_FLWS[@]}
 for (( i = 0; i < ${num_grds}; i++ )); do
-  for CTR_FLW in ${CTR_FLWS}; do
+  for (( j = 0; j < ${num_flws}; j ++ )); do
+    CTR_FLW=${CTR_FLWS[$j]}
     GRD=${GRDS[$i]}
     INT_MTHD=${INT_MTHDS[$i]}
     INT_WDTH=${INT_WDTHS[$i]}
 
-    cnfg=()
-    cnfg+=("export CTR_FLW=${CTR_FLW}")
-    cnfg+=("export GRD=${GRD}")
-    cnfg+=("export INT_MTHD=${INT_MTHD}")
-    cnfg+=("export INT_WDTH=${INT_WDTH}")
-    cnfg+=("export IN_CYC_DIR=${IN_ROOT}/${CSE}/${CTR_FLW}/MET_analysis")
-    cnfg+=("export OUT_CYC_DIR=${OUT_ROOT}/${CSE}/${CTR_FLW}/MET_analysis")
+    cfg_indx="cfg_${i}${j}"
+    cmd="${cfg_indx}=()"
+    echo ${cmd}; eval ${cmd}
 
-    cnfgs+=${cnfg}
+    cmd="${cfg_indx}+=(\"CTR_FLW=${CTR_FLW}\")"
+    echo ${cmd}; eval ${cmd}
+
+    cmd="${cfg_indx}+=(\"GRD=${GRD}\")"
+    echo ${cmd}; eval ${cmd}
+
+    cmd="${cfg_indx}+=(\"INT_MTHD=${INT_MTHD}\")"
+    echo ${cmd} ; eval ${cmd}
+
+    cmd="${cfg_indx}+=(\"INT_WDTH=${INT_WDTH}\")"
+    echo ${cmd}; eval ${cmd}
+
+    cmd="${cfg_indx}+=(\"IN_CYC_DIR=${IN_ROOT}/${CSE}/${CTR_FLW}/MET_analysis\")"
+    echo ${cmd}; eval ${cmd}
+
+    cmd="${cfg_indx}+=(\"OUT_CYC_DIR=${OUT_ROOT}/${CSE}/${CTR_FLW}/MET_analysis\")"
+    echo ${cmd}; eval ${cmd}
+
+    cmd="cfgs+=( \"${cfg_indx}\" )"
+    echo ${cmd}; eval ${cmd}
+
   done
 done
 
@@ -156,17 +166,20 @@ done
 indx=${SLURM_ARRAY_TASK_ID}
 
 echo "Processing data for job index ${indx}."
-echo "Loading configuration parameters:"
+echo "Loading configuration parameters ${cfgs[$indx]}:"
 
-job_cnfg=${cnfgs[$indx]}
-for cmd in ${job_cnfg[@]}; do
+# extract the confiugration key name corresponding to the slurm index
+cfg=${cfgs[$indx]}
+job="${cfgs}[@]"
+for cfg in ${!job}; do
+  cmd="export ${cfg}"
   echo ${cmd}; eval ${cmd}
 done
 
 cmd="cd ${USR_HME}"
 echo ${cmd}; eval ${cmd}
 
-cmd="./run_gridstat"
+cmd="./run_gridstat.sh"
 echo ${cmd}; eval ${cmd}
 
 ##################################################################################

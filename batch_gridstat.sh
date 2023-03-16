@@ -107,15 +107,8 @@ export PRFX=""
 # root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
 export IN_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/cycling_sensitivity_testing
 
-# subdirectory of cycle-named directory containing data to be analyzed,
-# includes leading '/', left as blank string if not needed
-export IN_DATE_SUBDIR=/${GRD}
-
 # root directory for cycle time (YYYYMMDDHH) directories of gridstat outputs
 export OUT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/cycling_sensitivity_testing
-
-# subdirectory of cycle-named directory where output is to be saved
-export OUT_DATE_SUBDIR=/${GRD}
 
 ##################################################################################
 # Contruct job array and environment for submission
@@ -153,6 +146,15 @@ for (( i = 0; i < ${num_grds}; i++ )); do
     echo ${cmd}; eval ${cmd}
 
     cmd="${cfg_indx}+=(\"OUT_CYC_DIR=${OUT_ROOT}/${CSE}/${CTR_FLW}/MET_analysis\")"
+    echo ${cmd}; eval ${cmd}
+
+    # subdirectory of cycle-named directory containing data to be analyzed,
+    # includes leading '/', left as blank string if not needed
+    cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/${GRD}\")"
+    echo ${cmd}; eval ${cmd}
+    
+    # subdirectory of cycle-named directory where output is to be saved
+    cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/${GRD}\")"
     echo ${cmd}; eval ${cmd}
 
     cmd="cfgs+=( \"${cfg_indx}\" )"

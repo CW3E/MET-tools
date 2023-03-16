@@ -147,14 +147,14 @@ if [ -z ${PRFX+x} ]; then
   exit 1
 fi
 
-if [ -z ${IN_DATE_SUBDIR+x} ]; then
-  echo "ERROR: cycle subdirectory for input data \${IN_DATE_SUBDIR} is unset,"
+if [ -z ${IN_DT_SUBDIR+x} ]; then
+  echo "ERROR: cycle subdirectory for input data \${IN_DT_SUBDIR} is unset,"
   echo " set to empty string if not used."
   exit 1
 fi
 
-if [ -z ${OUT_DATE_SUBDIR+x} ]; then
-  echo "ERROR: cycle subdirectory for input data \${OUT_DATE_SUBDIR} is unset,"
+if [ -z ${OUT_DT_SUBDIR+x} ]; then
+  echo "ERROR: cycle subdirectory for input data \${OUT_DT_SUBDIR} is unset,"
   echo " set to empty string if not used."
   exit 1
 fi
@@ -216,10 +216,10 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
   dirstr=`date +%Y%m%d%H -d "${strt_dt} ${cyc_hr} hours"`
 
   # cycle date directory of cf-compliant input files
-  in_dir=${IN_CYC_DIR}/${dirstr}${IN_DATE_SUBDIR}
+  in_dir=${IN_CYC_DIR}/${dirstr}${IN_DT_SUBDIR}
 
   # set and clean working directory based on looped forecast start date
-  work_root=${OUT_CYC_DIR}/${dirstr}${OUT_DATE_SUBDIR}
+  work_root=${OUT_CYC_DIR}/${dirstr}${OUT_DT_SUBDIR}
   mkdir -p ${work_root}
   rm -f ${work_root}/grid_stat_${PRFX}*.txt
   rm -f ${work_root}/grid_stat_${PRFX}*.stat

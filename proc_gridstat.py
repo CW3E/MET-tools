@@ -42,17 +42,15 @@ from datetime import timedelta
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'deterministic_forecast_lag06_b0.70'
+CTR_FLW = 'GFS'
 
 # define the case-wise sub-directory
 CSE = 'VD'
 
 # verification domain for the forecast data                                                                           
-GRD = 'd02'
+GRD = '0.25'
 
 # define the interpolation method and related parameters
-INT_MTHD = 'DW_MEAN'
-INT_WDTH = '9'
 
 # starting date and zero hour of forecast cycles (string YYYYMMDDHH)
 STRT_DT = '2019021100'

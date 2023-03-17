@@ -2,10 +2,10 @@
 #SBATCH -p shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 00:15:00
+#SBATCH -t 01:00:00
 #SBATCH -J batch_gridstat
 #SBATCH --export=ALL
-#SBATCH --array=0
+#SBATCH --array=0-1
 ##################################################################################
 # Description
 ##################################################################################
@@ -52,16 +52,23 @@ export MSK_ROOT=${SOFT_ROOT}/polygons/region
 export CAT_THR="[ >0.0, >=10.0, >=25.4, >=50.8, >=101.6 ]"
 
 # array of control flow names to be processed
-CTR_FLWS=( "deterministic_forecast_lag00_b0.00" )
+CTR_FLWS=( 
+          "ECMWF"
+          "GFS"
+         )
 
 # NOTE: the grids in the GRDS array and the interpolation methods /
 # neighborhbood widths in the below INT_MTHDS and INT_WDTHS must be
 # in 1-1 correspondence
-GRDS=( "d02" )
+GRDS=( "0.25" )
 
 # define the interpolation method and related parameters
-INT_MTHDS=( "DW_MEAN" )
-INT_WDTHS=( "9" )
+INT_MTHDS=( 
+           "DW_MEAN"
+          )
+INT_WDTHS=( 
+           "3"
+          )
 
 # define the case-wise sub-directory
 export CSE=VD
@@ -99,13 +106,13 @@ export BTSTRP=1000
 export RNK_CRR=TRUE
 
 # compute accumulation from cf file, TRUE or FALSE
-export CMP_ACC=TRUE
+export CMP_ACC=FALSE
 
 # optionally define a gridstat output prefix, use a blank string for no prefix
 export PRFX=""
 
 # root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
-export IN_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/cycling_sensitivity_testing
+export IN_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/cycling_sensitivity_testing/verification
 
 # root directory for cycle time (YYYYMMDDHH) directories of gridstat outputs
 export OUT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/cycling_sensitivity_testing
@@ -142,7 +149,7 @@ for (( i = 0; i < ${num_grds}; i++ )); do
     cmd="${cfg_indx}+=(\"INT_WDTH=${INT_WDTH}\")"
     echo ${cmd}; eval ${cmd}
 
-    cmd="${cfg_indx}+=(\"IN_CYC_DIR=${IN_ROOT}/${CSE}/${CTR_FLW}/MET_analysis\")"
+    cmd="${cfg_indx}+=(\"IN_CYC_DIR=${IN_ROOT}/${CSE}/${CTR_FLW}/Precip\")"
     echo ${cmd}; eval ${cmd}
 
     cmd="${cfg_indx}+=(\"OUT_CYC_DIR=${OUT_ROOT}/${CSE}/${CTR_FLW}/MET_analysis\")"
@@ -150,7 +157,7 @@ for (( i = 0; i < ${num_grds}; i++ )); do
 
     # subdirectory of cycle-named directory containing data to be analyzed,
     # includes leading '/', left as blank string if not needed
-    cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/${GRD}\")"
+    cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=\"\"\")"
     echo ${cmd}; eval ${cmd}
     
     # subdirectory of cycle-named directory where output is to be saved
@@ -172,16 +179,12 @@ echo "Loading configuration parameters ${cfgs[$indx]}:"
 
 # extract the confiugration key name corresponding to the slurm index
 cfg=${cfgs[$indx]}
-job="${cfgs}[@]"
-for cfg in ${!job}; do
-  cmd="export ${cfg}"
-  echo ${cmd}; eval ${cmd}
-done
+job="${cfg}[@]"
 
 cmd="cd ${USR_HME}"
 echo ${cmd}; eval ${cmd}
 
-cmd="./run_gridstat.sh"
+cmd="./run_gridstat.sh ${!job} > gridstat_${indx}.log 2>&1"
 echo ${cmd}; eval ${cmd}
 
 ##################################################################################

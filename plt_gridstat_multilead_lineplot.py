@@ -56,31 +56,6 @@ CTR_FLWS = [
             'deterministic_forecast_lag00_b0.00_v03_h0450',
             'deterministic_forecast_lag00_b0.00_v03_h0600',
             'deterministic_forecast_lag00_b0.00_v03_h0900',
-            #'deterministic_forecast_lag06_b0.00_v03_h0150',
-            #'deterministic_forecast_lag06_b0.00_v03_h0300',
-            ##'deterministic_forecast_lag06_b0.00_v03_h0450',
-            #'deterministic_forecast_lag06_b0.00_v03_h0600',
-            #'deterministic_forecast_lag06_b0.00_v03_h0900',
-            #'deterministic_forecast_lag00_b0.00_v06_h0150',
-            #'deterministic_forecast_lag00_b0.00_v06_h0300',
-            #'deterministic_forecast_lag00_b0.00_v06_h0450',
-            #'deterministic_forecast_lag00_b0.00_v06_h0600',
-            #'deterministic_forecast_lag00_b0.00_v06_h0900',
-            #'deterministic_forecast_lag06_b0.00_v06_h0150',
-            #'deterministic_forecast_lag06_b0.00_v06_h0300',
-            #'deterministic_forecast_lag06_b0.00_v06_h0450',
-            #'deterministic_forecast_lag06_b0.00_v06_h0600',
-            #'deterministic_forecast_lag06_b0.00_v06_h0900',
-            #'deterministic_forecast_lag00_b0.00',
-            #'deterministic_forecast_lag00_b0.10',
-            #'deterministic_forecast_lag00_b0.20',
-            #'deterministic_forecast_lag00_b0.30',
-            #'deterministic_forecast_lag00_b0.40',
-            #'deterministic_forecast_lag00_b0.50',
-            #'deterministic_forecast_lag00_b0.60',
-            #'deterministic_forecast_lag00_b0.70',
-            #'deterministic_forecast_lag00_b0.80',
-            #'deterministic_forecast_lag00_b0.90',
             #'deterministic_forecast_lag06_b0.00',
             #'deterministic_forecast_lag06_b0.10',
             #'deterministic_forecast_lag06_b0.20',
@@ -92,21 +67,13 @@ CTR_FLWS = [
             #'deterministic_forecast_lag06_b0.80',
             #'deterministic_forecast_lag06_b0.90',
             #'deterministic_forecast_lag00_b1.00',
-            #'NRT_gfs',
-            #'NRT_ecmwf',
-            'GFS',
-            'ECMWF',
+            #'GFS',
+            #'ECMWF',
            ]
 
 # define optional list of stats files prefixes, include empty string to ignore
 PRFXS = [
         '',
-        #'DW_MEAN_3',
-        #'DW_MEAN_9',
-        #'BILIN_27',
-        #'BUDGET_27',
-        #'DW_MEAN_27',
-        #'NEAREST_1',
         ]
 
 # define case-wise sub-directory
@@ -178,15 +145,14 @@ fig = plt.figure(figsize=(11.25,8.63))
 num_flws = len(CTR_FLWS)
 num_pfxs = len(PRFXS)
 
-# set colors and storage for looping
-line_colors = sns.color_palette("husl", num_flws * num_pfxs)
-
 # Set the axes
 ax0 = fig.add_axes([.110, .43, .85, .33])
 ax1 = fig.add_axes([.110, .10, .85, .33])
 
 line_list = []
 line_labs = []
+ax0_l = []
+ax1_l = []
 
 # increment line count whenever a configuration is plotted
 line_count = -1
@@ -276,11 +242,11 @@ for i in range(num_flws):
                     tmp[j, 1] = val[STATS[k] + cnf_lvs[k] + 'L']
                     tmp[j, 2] = val[STATS[k] + cnf_lvs[k] + 'U']
                 
-                ax.fill_between(range(num_leads), tmp[:, 1], tmp[:, 2], alpha=0.5,
-                                color=line_colors[line_count])
-                l, = ax.plot(range(num_leads), tmp[:, 0], linewidth=2,
-                             marker=(line_count + 2, 0, 0), markersize=18,
-                             color=line_colors[line_count])
+                l0 = ax.fill_between(range(num_leads), tmp[:, 1], tmp[:, 2], alpha=0.5)
+                l1, = ax.plot(range(num_leads), tmp[:, 0], linewidth=2)
+                exec('ax%s_l.append([l1,l0])'%k)
+                l = l1
+                
 
             else:
                 tmp = np.zeros([num_leads])
@@ -289,16 +255,34 @@ for i in range(num_flws):
                     val = stat_data.loc[(stat_data['FCST_LEAD'] == data_leads[j])]
                     tmp[j] = val[STATS[k]]
                 
-                l, = ax.plot(range(num_leads), tmp[:], linewidth=2,
-                        marker=(line_count + 2, 0, 0), markersize=18,
-                        color=line_colors[line_count])
+                l, = ax.plot(range(num_leads), tmp[:], linewidth=2)
+                exec('ax%s_l.append([l])'%k)
 
-                ax.plot(range(num_leads), tmp[:], linewidth=2,
-                        marker=(line_count + 2, 0, 0), markersize=18,
-                        color=line_colors[line_count])
+                ax.plot(range(num_leads), tmp[:], linewidth=2)
             
         # add the line type to the legend
         line_list.append(l)
+
+
+# set colors and markers
+line_colors = sns.color_palette("husl", line_count + 1)
+for i in range(len(ax0_l)):
+    ax = ax0_l[i]
+    for j in range(len(ax)):
+        l = ax[j]
+        l.set_color(line_colors[i])
+        if j == 0:
+          l.set_marker((i + 2, 0, 0))
+          l.set_markersize(18)
+
+for i in range(len(ax1_l)):
+    ax = ax1_l[i]
+    for j in range(len(ax)):
+        l = ax[j]
+        l.set_color(line_colors[i])
+        if j == 0:
+          l.set_marker((i + 2, 0, 0))
+          l.set_markersize(18)
 
 ##################################################################################
 # define display parameters

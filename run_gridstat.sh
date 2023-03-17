@@ -31,6 +31,12 @@
 #################################################################################
 # READ WORKFLOW PARAMETERS
 #################################################################################
+# export all configurations supplied as an array of string definitions
+for cmd in "$@"; do
+  echo ${cmd}; eval ${cmd}
+done
+
+
 # control flow to be processed
 if [ ! ${CTR_FLW} ]; then
   echo "ERROR: control flow name \${CTR_FLW} is not defined."

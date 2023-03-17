@@ -51,22 +51,28 @@ import ipdb
 ##################################################################################
 # define control flows to analyze 
 CTR_FLWS = [
+            'deterministic_forecast_lag00_b0.00_v03_h0900',
+            'deterministic_forecast_lag00_b0.00_v06_h0900',
+            'deterministic_forecast_lag06_b0.00_v03_h0900',
+            'deterministic_forecast_lag06_b0.00_v06_h0900',
+            #'deterministic_forecast_lag06_b0.00_v03_h0900',
+            #'deterministic_forecast_lag06_b0.00_v06_h0900',
             #'deterministic_forecast_lag00_b0.00_v06_h0150',
             #'deterministic_forecast_lag00_b0.00_v06_h0300',
             #'deterministic_forecast_lag00_b0.00_v06_h0450',
             #'deterministic_forecast_lag00_b0.00_v06_h0600',
             #'deterministic_forecast_lag00_b0.00_v06_h0900',
-            'deterministic_forecast_lag00_b0.00',
-            'deterministic_forecast_lag00_b0.10',
-            'deterministic_forecast_lag00_b0.20',
-            'deterministic_forecast_lag00_b0.30',
-            'deterministic_forecast_lag00_b0.40',
-            'deterministic_forecast_lag00_b0.50',
-            'deterministic_forecast_lag00_b0.60',
-            'deterministic_forecast_lag00_b0.70',
-            'deterministic_forecast_lag00_b0.80',
-            'deterministic_forecast_lag00_b0.90',
-            'deterministic_forecast_lag00_b1.00',
+            #'deterministic_forecast_lag06_b0.00',
+            #'deterministic_forecast_lag06_b0.10',
+            #'deterministic_forecast_lag06_b0.20',
+            #'deterministic_forecast_lag06_b0.30',
+            #'deterministic_forecast_lag06_b0.40',
+            #'deterministic_forecast_lag06_b0.50',
+            #'deterministic_forecast_lag06_b0.60',
+            #'deterministic_forecast_lag06_b0.70',
+            #'deterministic_forecast_lag06_b0.80',
+            #'deterministic_forecast_lag06_b0.90',
+            #'deterministic_forecast_lag06_b1.00',
             'GFS',
             'ECMWF',
            ]
@@ -77,10 +83,10 @@ PRFXS = [
         ]
 
 # fig label for output file organization
-FIG_LAB = 'lag00'
+FIG_LAB = 'h0900'
 
 # fig case directory
-FIG_CSE = 'beta'
+FIG_CSE = 'multi_axis'
 
 # define case-wise sub-directory
 CSE = 'VD'
@@ -146,8 +152,8 @@ num_flws = len(CTR_FLWS)
 num_pfxs = len(PRFXS)
 
 # Set the axes
-ax0 = fig.add_axes([.110, .43, .85, .33])
-ax1 = fig.add_axes([.110, .10, .85, .33])
+ax0 = fig.add_axes([.110, .41, .85, .33])
+ax1 = fig.add_axes([.110, .08, .85, .33])
 
 line_list = []
 line_labs = []
@@ -187,14 +193,25 @@ for i in range(num_flws):
             data = pickle.load(f)
             f.close()
 
-            line_lab = ctr_flw.split('_')[-1]# + '_' + pfx
-            line_labs.append(line_lab)
-            line_count += 1
-
         except:
             print('WARNING: input data ' + in_path +\
                     ' does not exist, skipping this configuration.')
             continue
+
+        #line_lab = ctr_flw.split('_')[-1]# + '_' + pfx
+        split_string = ctr_flw.split('_')
+        line_lab = ''
+        if len(split_string) > 1:
+            for i in range(4,1,-1):
+                line_lab += split_string[-i] + '_'
+            line_lab += split_string[-1]
+
+        else:
+            line_lab += ctr_flw
+
+        line_labs.append(line_lab)
+        line_count += 1
+
         
         # load the values to be plotted along with landmask and lead
         vals = [
@@ -313,6 +330,13 @@ ax0.tick_params(
         labelright=False,
         )
 
+ax0.set_ylim([15, 40])
+ax1.set_ylim([.4,0.9])
+
+ax0.set_yticks(ax0.get_yticks(), ax0.get_yticklabels(), va='bottom')
+ax1.set_yticks(ax1.get_yticks(), ax1.get_yticklabels(), va='top')
+
+
 lab0=STATS[0]
 lab1=STATS[1]
 lab2='Forecast lead hrs'
@@ -322,16 +346,16 @@ plt.figtext(.5, .98, TITLE, horizontalalignment='center',
 plt.figtext(.5, .93, SUBTITLE, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
-plt.figtext(.05, .595, lab0, horizontalalignment='right', rotation=90,
+plt.figtext(.03, .595, lab0, horizontalalignment='right', rotation=90,
             verticalalignment='center', fontsize=22)
 
-plt.figtext(.05, .265, lab1, horizontalalignment='right', rotation=90,
+plt.figtext(.03, .265, lab1, horizontalalignment='right', rotation=90,
             verticalalignment='center', fontsize=22)
 
-plt.figtext(.5, .02, lab2, horizontalalignment='center',
+plt.figtext(.5, .01, lab2, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
-fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws * num_pfxs, 4),
+fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws * num_pfxs, 3),
            loc='center', bbox_to_anchor=[0.5, 0.83])
 
 # save figure and display

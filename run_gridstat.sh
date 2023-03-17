@@ -32,6 +32,7 @@
 # READ WORKFLOW PARAMETERS
 #################################################################################
 # export all configurations supplied as an array of string definitions
+echo "Loading configuration parameters:"
 for cmd in "$@"; do
   echo ${cmd}; eval ${cmd}
 done

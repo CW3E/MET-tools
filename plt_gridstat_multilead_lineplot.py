@@ -51,30 +51,36 @@ import ipdb
 ##################################################################################
 # define control flows to analyze 
 CTR_FLWS = [
-            'deterministic_forecast_lag00_b0.00_v03_h0150',
-            'deterministic_forecast_lag00_b0.00_v03_h0300',
-            'deterministic_forecast_lag00_b0.00_v03_h0450',
-            'deterministic_forecast_lag00_b0.00_v03_h0600',
-            'deterministic_forecast_lag00_b0.00_v03_h0900',
-            #'deterministic_forecast_lag06_b0.00',
-            #'deterministic_forecast_lag06_b0.10',
-            #'deterministic_forecast_lag06_b0.20',
-            #'deterministic_forecast_lag06_b0.30',
-            #'deterministic_forecast_lag06_b0.40',
-            #'deterministic_forecast_lag06_b0.50',
-            #'deterministic_forecast_lag06_b0.60',
-            #'deterministic_forecast_lag06_b0.70',
-            #'deterministic_forecast_lag06_b0.80',
-            #'deterministic_forecast_lag06_b0.90',
-            #'deterministic_forecast_lag00_b1.00',
-            #'GFS',
-            #'ECMWF',
+            #'deterministic_forecast_lag00_b0.00_v06_h0150',
+            #'deterministic_forecast_lag00_b0.00_v06_h0300',
+            #'deterministic_forecast_lag00_b0.00_v06_h0450',
+            #'deterministic_forecast_lag00_b0.00_v06_h0600',
+            #'deterministic_forecast_lag00_b0.00_v06_h0900',
+            'deterministic_forecast_lag00_b0.00',
+            'deterministic_forecast_lag00_b0.10',
+            'deterministic_forecast_lag00_b0.20',
+            'deterministic_forecast_lag00_b0.30',
+            'deterministic_forecast_lag00_b0.40',
+            'deterministic_forecast_lag00_b0.50',
+            'deterministic_forecast_lag00_b0.60',
+            'deterministic_forecast_lag00_b0.70',
+            'deterministic_forecast_lag00_b0.80',
+            'deterministic_forecast_lag00_b0.90',
+            'deterministic_forecast_lag00_b1.00',
+            'GFS',
+            'ECMWF',
            ]
 
 # define optional list of stats files prefixes, include empty string to ignore
 PRFXS = [
         '',
         ]
+
+# fig label for output file organization
+FIG_LAB = 'lag00'
+
+# fig case directory
+FIG_CSE = 'beta'
 
 # define case-wise sub-directory
 CSE = 'VD'
@@ -110,16 +116,10 @@ LND_MSK = 'CALatLonPoints'
 TITLE='24hr accumulated precip at ' + VALID_DT
 
 # plot sub-title title
-SUBTITLE='Verification region -- ' + LND_MSK + ' ' + GRD
+SUBTITLE='Verification region -- ' + LND_MSK
 
 # fig root
 FIG_ROOT = '/home/cgrudzien/cycle_analysis'
-
-# fig case directory
-FIG_CSE = 'v03'
-
-# fig label for case directory organization
-FIG_LAB = 'lag06'
 
 ##################################################################################
 # Begin plotting
@@ -164,6 +164,8 @@ for i in range(num_flws):
     for m in range(num_pfxs):
         # loop on prefixes
         pfx = PRFXS[m]
+        if len(pfx) > 0:
+            pfx += '_'
         
         # define derived data paths 
         cse = CSE + '/' + ctr_flw
@@ -173,11 +175,11 @@ for i in range(num_flws):
         
         # define the input name
         if ctr_flw == 'ECMWF' or ctr_flw == 'GFS':
-            in_path = data_root + '/grid_stats_' + pfx + '_' + REF + '_' + STRT_DT +\
+            in_path = data_root + '/grid_stats_' + pfx + REF + '_' + STRT_DT +\
                       '_to_' + END_DT + '.bin'
 
         else:
-            in_path = data_root + '/grid_stats_' + pfx + '_' + GRD + '_' + STRT_DT +\
+            in_path = data_root + '/grid_stats_' + pfx + GRD + '_' + STRT_DT +\
                       '_to_' + END_DT + '.bin'
         
         try:
@@ -329,7 +331,7 @@ plt.figtext(.05, .265, lab1, horizontalalignment='right', rotation=90,
 plt.figtext(.5, .02, lab2, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
-fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws * num_pfxs, 5),
+fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws * num_pfxs, 4),
            loc='center', bbox_to_anchor=[0.5, 0.83])
 
 # save figure and display
@@ -337,7 +339,7 @@ out_dir = FIG_ROOT + '/' + CSE + '/' + FIG_CSE
 os.system('mkdir -p ' + out_dir)
 out_path = out_dir + '/' + VALID_DT + '_' +\
            LND_MSK + '_' + stat0 + '_' +\
-           stat1 + '_' + FIG_LAB + '_' + GRD + '_lineplot.png'
+           stat1 + '_' + FIG_LAB + '_lineplot.png'
     
 plt.savefig(out_path)
 plt.show()

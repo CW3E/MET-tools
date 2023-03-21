@@ -51,26 +51,46 @@ from proc_gridstat import OUT_ROOT
 ##################################################################################
 # define control flows to analyze 
 CTR_FLWS = [
-            #'NRT_gfs'
-            'NRT_ecmwf'
-            #'GFS',
-            #'ECMWF',
+            #'deterministic_forecast_lag00_b0.00_v03_h0900',
+            #'deterministic_forecast_lag00_b0.00_v06_h0900',
+            #'deterministic_forecast_lag06_b0.00_v03_h0900',
+            #'deterministic_forecast_lag06_b0.00_v06_h0900',
+            #'deterministic_forecast_lag06_b0.00_v06_h0150',
+            #'deterministic_forecast_lag06_b0.00_v06_h0300',
+            #'deterministic_forecast_lag06_b0.00_v06_h0450',
+            #'deterministic_forecast_lag06_b0.00_v06_h0600',
+            #'deterministic_forecast_lag06_b0.00_v06_h0900',
+            'deterministic_forecast_lag06_b0.00',
+            'deterministic_forecast_lag06_b0.10',
+            'deterministic_forecast_lag06_b0.20',
+            'deterministic_forecast_lag06_b0.30',
+            'deterministic_forecast_lag06_b0.40',
+            'deterministic_forecast_lag06_b0.50',
+            'deterministic_forecast_lag06_b0.60',
+            'deterministic_forecast_lag06_b0.70',
+            'deterministic_forecast_lag06_b0.80',
+            'deterministic_forecast_lag06_b0.90',
+            'deterministic_forecast_lag06_b1.00',
+            'GFS',
+            'ECMWF',
            ]
 
 # define optional list of stats files prefixes
 PRFXS = [
-        'BILIN_27',
-        'BUDGET_27',
-        'DW_MEAN_27',
-        'NEAREST_1',
+         '',
         ]
 
+# fig label for output file organization
+FIG_LAB = 'beta'
+
+# fig case directory
+FIG_CSE = 'lag06'
 
 # define case-wise sub-directory
-CSE = 'DD'
+CSE = 'VD'
 
 # verification domain for the forecast data
-GRD='d03'
+GRD='d02'
 
 # verification domain for the calibration data
 REF='0.25'
@@ -83,13 +103,13 @@ LEV = '>=25.4'
 #LEV = '>=101.6'
 
 # starting date and zero hour of forecast cycles
-STRT_DT = '2022121600'
+STRT_DT = '2019021100'
 
 # final date and zero hour of data of forecast cycles
-END_DT = '2023011800'
+END_DT = '2019021400'
 
 # valid date for the verification
-VALID_DT = '2023011100'
+VALID_DT = '2019021500'
 
 # MET stat file type -- should be leveled data
 #TYPE = 'cts'
@@ -105,8 +125,8 @@ TYPE = 'nbrcnt'
 STATS = ['FSS', 'AFSS']
 
 # landmask for verification region -- need to be set in earlier preprocessing
-LND_MSK = 'CA_Climate_Zone_16_Sierra'
-#LND_MSK = 'CALatLonPoints'
+#LND_MSK = 'CA_Climate_Zone_16_Sierra'
+LND_MSK = 'CALatLonPoints'
 #LND_MSK = 'FULL'
 
 # plot title
@@ -117,6 +137,15 @@ SUBTITLE='Verification region -- ' + LND_MSK + ' Threshold ' + LEV + ' mm'
 
 # fig root
 FIG_ROOT = '/home/cgrudzien/interpolation_analysis'
+
+# plot title
+TITLE='24hr accumulated precip at ' + VALID_DT
+
+# plot sub-title title
+SUBTITLE='Verification region -- ' + LND_MSK
+
+# fig root
+FIG_ROOT = '/home/cgrudzien/cycle_analysis'
 
 ##################################################################################
 # Begin plotting
@@ -142,15 +171,17 @@ fig = plt.figure(figsize=(11.25,8.63))
 num_flws = len(CTR_FLWS)
 num_pfxs = len(PRFXS)
 
-# set colors and storage for looping
-line_colors = sns.color_palette("husl", num_flws * num_pfxs)
-
 # Set the axes
-ax0 = fig.add_axes([.110, .43, .85, .33])
-ax1 = fig.add_axes([.110, .10, .85, .33])
+ax0 = fig.add_axes([.110, .395, .85, .33])
+ax1 = fig.add_axes([.110, .065, .85, .33])
 
 line_list = []
 line_labs = []
+ax0_l = []
+ax1_l = []
+
+# increment line count whenever a configuration is plotted
+line_count = -1
 
 for i in range(num_flws):
     # loop on control flows
@@ -159,27 +190,45 @@ for i in range(num_flws):
     for m in range(num_pfxs):
         # loop on prefixes
         pfx = PRFXS[m]
-        line_lab = ctr_flw + '_' + pfx
-        line_labs.append(line_lab)
-
+        if len(pfx) > 0:
+            pfx += '_'
+        
         # define derived data paths 
-        cse = CSE + '/' + ctr_flw
-        data_root = OUT_ROOT + '/' + cse + '/MET_analysis'
+        data_root = OUT_ROOT + '/' + CSE + '/' + ctr_flw + '/MET_analysis'
         stat0 = STATS[0]
         stat1 = STATS[1]
         
         # define the input name
         if ctr_flw == 'ECMWF' or ctr_flw == 'GFS':
-            in_path = data_root + '/grid_stats_' + pfx + '_' + REF + '_' + STRT_DT +\
+            in_path = data_root + '/grid_stats_' + pfx + REF + '_' + STRT_DT +\
                       '_to_' + END_DT + '.bin'
     
         else:
-            in_path = data_root + '/grid_stats_' + pfx + '_' + GRD + '_' + STRT_DT +\
+            in_path = data_root + '/grid_stats_' + pfx + GRD + '_' + STRT_DT +\
                       '_to_' + END_DT + '.bin'
         
-        f = open(in_path, 'rb')
-        data = pickle.load(f)
-        f.close()
+        try:
+            f = open(in_path, 'rb')
+            data = pickle.load(f)
+            f.close()
+
+        except:
+            print('WARNING: input data ' + in_path +\
+                    ' does not exist, skipping this configuration.')
+            continue
+
+        split_string = ctr_flw.split('_')
+        line_lab = pfx
+        if len(split_string) > 1:
+            for i in range(1,1,-1):
+                line_lab += split_string[-i] + '_'
+            line_lab += split_string[-1] 
+
+        else:
+            line_lab += ctr_flw
+
+        line_labs.append(line_lab)
+        line_count += 1
         
         # load the values to be plotted along with landmask, lead and threshold
         vals = [
@@ -231,11 +280,10 @@ for i in range(num_flws):
                     tmp[j, 1] = val[STATS[k] + cnf_lvs[k] + 'L']
                     tmp[j, 2] = val[STATS[k] + cnf_lvs[k] + 'U']
                 
-                ax.fill_between(range(num_leads), tmp[:, 1], tmp[:, 2], alpha=0.5,
-                        color=line_colors[i * num_pfxs + m])
-                l, = ax.plot(range(num_leads), tmp[:, 0], linewidth=2,
-                             marker=(3 + i * num_pfxs + m, 0, 0) , markersize=18,
-                             color=line_colors[i * num_pfxs + m])
+                l0 = ax.fill_between(range(num_leads), tmp[:, 1], tmp[:, 2], alpha=0.5)
+                l1, = ax.plot(range(num_leads), tmp[:, 0], linewidth=2)
+                exec('ax%s_l.append([l1,l0])'%k)
+                l = l1
     
             else:
                 tmp = np.zeros([num_leads])
@@ -244,17 +292,33 @@ for i in range(num_flws):
                     val = stat_data.loc[(stat_data['FCST_LEAD'] == data_leads[j])]
                     tmp[j] = val[STATS[k]]
                 
-                l, = ax.plot(range(num_leads), tmp[:], linewidth=2,
-                             marker=(3 + i * num_pfxs + m, 0, 0) , markersize=18,
-                             color=line_colors[i * num_pfxs + m])
-    
-                ax.plot(range(num_leads), tmp[:], linewidth=2,
-                        marker=(3 + i * num_pfxs + m, 0, 0) , markersize=18,
-                        color=line_colors[i * num_pfxs + m])
-            
+                l, = ax.plot(range(num_leads), tmp[:], linewidth=2)
+                exec('ax%s_l.append([l])'%k)
+
+                ax.plot(range(num_leads), tmp[:], linewidth=2)
             
         # add the line type to the legend
         line_list.append(l)
+
+# set colors and markers
+line_colors = sns.color_palette("husl", line_count + 1)
+for i in range(len(ax0_l)):
+    ax = ax0_l[i]
+    for j in range(len(ax)):
+        l = ax[j]
+        l.set_color(line_colors[i])
+        if j == 0:
+          l.set_marker((i + 2, 0, 0))
+          l.set_markersize(18)
+
+for i in range(len(ax1_l)):
+    ax = ax1_l[i]
+    for j in range(len(ax)):
+        l = ax[j]
+        l.set_color(line_colors[i])
+        if j == 0:
+          l.set_marker((i + 2, 0, 0))
+          l.set_markersize(18)
 
 ##################################################################################
 # define display parameters
@@ -283,6 +347,12 @@ ax0.tick_params(
         labelright=False,
         )
 
+ax0.set_ylim([.4, 1.0])
+ax1.set_ylim([.4, 1.0])
+
+ax0.set_yticks(ax0.get_yticks(), ax0.get_yticklabels(), va='bottom')
+ax1.set_yticks(ax1.get_yticks(), ax1.get_yticklabels(), va='top')
+
 lab0=STATS[0]
 lab1=STATS[1]
 lab2='Forecast lead hrs'
@@ -292,27 +362,27 @@ plt.figtext(.5, .98, TITLE, horizontalalignment='center',
 plt.figtext(.5, .93, SUBTITLE, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
-plt.figtext(.05, .595, lab0, horizontalalignment='right', rotation=90,
+plt.figtext(.03, .595, lab0, horizontalalignment='right', rotation=90,
             verticalalignment='center', fontsize=22)
 
-plt.figtext(.04, .265, lab1, horizontalalignment='right', rotation=90,
+plt.figtext(.03, .265, lab1, horizontalalignment='right', rotation=90,
             verticalalignment='center', fontsize=22)
 
-plt.figtext(.5, .02, lab2, horizontalalignment='center',
+plt.figtext(.5, .01, lab2, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
-fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws * num_pfxs, 2),
+fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws * num_pfxs, 4),
            loc='center', bbox_to_anchor=[0.5, 0.83])
 
 # save figure and display
-out_dir = FIG_ROOT + '/' + CSE 
+out_dir = FIG_ROOT + '/' + CSE + '/' + FIG_CSE
 os.system('mkdir -p ' + out_dir)
 out_path = out_dir + '/' + VALID_DT + '_' +\
            LND_MSK + '_' + stat0 + '_' +\
-           stat1 + '_lev_' + LEV + '_' + ctr_flw + '_' + GRD + '_lineplot.png'
+           stat1 + '_lev_' + LEV + '_' + FIG_LAB + '_lineplot.png'
     
 plt.savefig(out_path)
-#plt.show()
+plt.show()
 
 ##################################################################################
 # end

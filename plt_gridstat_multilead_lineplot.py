@@ -51,17 +51,15 @@ import ipdb
 ##################################################################################
 # define control flows to analyze 
 CTR_FLWS = [
-            'deterministic_forecast_lag00_b0.00_v03_h0900',
-            'deterministic_forecast_lag00_b0.00_v06_h0900',
-            'deterministic_forecast_lag06_b0.00_v03_h0900',
-            'deterministic_forecast_lag06_b0.00_v06_h0900',
+            #'deterministic_forecast_lag00_b0.00_v03_h0900',
+            #'deterministic_forecast_lag00_b0.00_v06_h0900',
             #'deterministic_forecast_lag06_b0.00_v03_h0900',
             #'deterministic_forecast_lag06_b0.00_v06_h0900',
-            #'deterministic_forecast_lag00_b0.00_v06_h0150',
-            #'deterministic_forecast_lag00_b0.00_v06_h0300',
-            #'deterministic_forecast_lag00_b0.00_v06_h0450',
-            #'deterministic_forecast_lag00_b0.00_v06_h0600',
-            #'deterministic_forecast_lag00_b0.00_v06_h0900',
+            'deterministic_forecast_lag00_b0.00_v06_h0150',
+            'deterministic_forecast_lag00_b0.00_v06_h0300',
+            'deterministic_forecast_lag00_b0.00_v06_h0450',
+            'deterministic_forecast_lag00_b0.00_v06_h0600',
+            'deterministic_forecast_lag00_b0.00_v06_h0900',
             #'deterministic_forecast_lag06_b0.00',
             #'deterministic_forecast_lag06_b0.10',
             #'deterministic_forecast_lag06_b0.20',
@@ -72,7 +70,7 @@ CTR_FLWS = [
             #'deterministic_forecast_lag06_b0.70',
             #'deterministic_forecast_lag06_b0.80',
             #'deterministic_forecast_lag06_b0.90',
-            #'deterministic_forecast_lag06_b1.00',
+            #'deterministic_forecast_lag00_b1.00',
             'GFS',
             'ECMWF',
            ]
@@ -83,10 +81,10 @@ PRFXS = [
         ]
 
 # fig label for output file organization
-FIG_LAB = 'h0900'
+FIG_LAB = 'v06'
 
 # fig case directory
-FIG_CSE = 'multi_axis'
+FIG_CSE = 'lag00'
 
 # define case-wise sub-directory
 CSE = 'VD'
@@ -152,8 +150,8 @@ num_flws = len(CTR_FLWS)
 num_pfxs = len(PRFXS)
 
 # Set the axes
-ax0 = fig.add_axes([.110, .41, .85, .33])
-ax1 = fig.add_axes([.110, .08, .85, .33])
+ax0 = fig.add_axes([.110, .395, .85, .33])
+ax1 = fig.add_axes([.110, .065, .85, .33])
 
 line_list = []
 line_labs = []
@@ -174,8 +172,7 @@ for i in range(num_flws):
             pfx += '_'
         
         # define derived data paths 
-        cse = CSE + '/' + ctr_flw
-        data_root = OUT_ROOT + '/' + cse + '/MET_analysis'
+        data_root = OUT_ROOT + '/' + CSE + '/' + ctr_flw + '/MET_analysis'
         stat0 = STATS[0]
         stat1 = STATS[1]
         
@@ -198,20 +195,18 @@ for i in range(num_flws):
                     ' does not exist, skipping this configuration.')
             continue
 
-        #line_lab = ctr_flw.split('_')[-1]# + '_' + pfx
         split_string = ctr_flw.split('_')
-        line_lab = ''
+        line_lab = pfx 
         if len(split_string) > 1:
-            for i in range(4,1,-1):
+            for i in range(1,1,-1):
                 line_lab += split_string[-i] + '_'
-            line_lab += split_string[-1]
+            line_lab += split_string[-1] 
 
         else:
             line_lab += ctr_flw
 
         line_labs.append(line_lab)
         line_count += 1
-
         
         # load the values to be plotted along with landmask and lead
         vals = [
@@ -265,7 +260,6 @@ for i in range(num_flws):
                 l1, = ax.plot(range(num_leads), tmp[:, 0], linewidth=2)
                 exec('ax%s_l.append([l1,l0])'%k)
                 l = l1
-                
 
             else:
                 tmp = np.zeros([num_leads])
@@ -336,7 +330,6 @@ ax1.set_ylim([.4,0.9])
 ax0.set_yticks(ax0.get_yticks(), ax0.get_yticklabels(), va='bottom')
 ax1.set_yticks(ax1.get_yticks(), ax1.get_yticklabels(), va='top')
 
-
 lab0=STATS[0]
 lab1=STATS[1]
 lab2='Forecast lead hrs'
@@ -355,7 +348,7 @@ plt.figtext(.03, .265, lab1, horizontalalignment='right', rotation=90,
 plt.figtext(.5, .01, lab2, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
-fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws * num_pfxs, 3),
+fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws * num_pfxs, 4),
            loc='center', bbox_to_anchor=[0.5, 0.83])
 
 # save figure and display

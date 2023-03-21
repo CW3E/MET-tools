@@ -33,82 +33,25 @@
 #     limitations under the License.
 #
 #################################################################################
-# SET GLOBAL PARAMETERS 
-#################################################################################
-# uncoment to make verbose for debugging
-#set -x
-
-# initiate bash and source bashrc to initialize environement
-conda init bash
-source /home/cgrudzien/.bashrc
-
-# set local environment for ncl and related dependencies
-conda activate netcdf
-
-# root directory for MET-tools git clone
-USR_HME=/cw3e/mead/projects/cwp106/scratch/cgrudzien/MET-tools
-
-# root directory for cycle time (YYYYMMDDHH) directories of wrf outputs
-IN_ROOT=/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template/data/simulation_io
-
-# Subdirectory for wrfoutputs in cycle time directories
-# includes leading '/', set to empty string if not needed
-DATE_SUBDIR=/wrfprd/ens_00
-
-# directory for MET analysis outputs
-OUT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/cycling_sensitivity_testing
-
-# define control flow to analyze 
-CTR_FLW=deterministic_forecast_lag00_b0.00
-
-# define the case study for sub-directory nesting
-CSE=VD
-
-# define first and last date time for forecast initialization (YYYYMMDDHH)
-STRT_DT=2019021100
-END_DT=2019021400
-
-# define the interval between forecast initializations (HH)
-CYC_INT=24
-
-# define min / max forecast hours for forecast outputs to be processed
-ANL_MIN=24
-ANL_MAX=96
-
-# define the interval at which to process forecast outputs (HH)
-ANL_INT=24
-
-# define the accumulation interval for verification valid times
-ACC_INT=24
-
-# verification domain for the forecast data (e.g., d01)
-GRD=d02
-
-# set to regrid to lat / long for MET compatibility when handling grid errors
-# must be equal to TRUE or FALSE
-RGRD=FALSE
-
-#################################################################################
 # Process data
 #################################################################################
-# define derived data paths
-cse=${CSE}/${CTR_FLW}
+# export all configurations supplied as an array of string definitions
+echo "Loading configuration parameters:"
+for cmd in "$@"; do
+  echo ${cmd}; eval ${cmd}
+done
 
-# check for input data root
-in_root="${IN_ROOT}/${cse}"
-if [ ! -d ${in_root} ]; then
-  echo "ERROR: input data root directory ${in_root} does not exist."
+# control flow to be processed
+if [ ! ${CTR_FLW} ]; then
+  echo "ERROR: control flow name \${CTR_FLW} is not defined."
   exit 1
 fi
 
-# create output directory if does not exist
-out_root=${OUT_ROOT}/${cse}/MET_analysis
-cmd="mkdir -p ${out_root}"
-echo ${cmd}; eval ${cmd}
-
-# change to scripts directory
-cmd="cd ${USR_HME}"
-echo ${cmd}; eval ${cmd}
+# verification domain for the forecast data
+if [ ! ${GRD} ]; then
+  echo "ERROR: grid name \${GRD} is not defined."
+  exit 1
+fi
 
 # Convert STRT_DT from 'YYYYMMDDHH' format to strt_dt Unix date format
 if [ ${#STRT_DT} -ne 10 ]; then
@@ -128,6 +71,39 @@ else
   end_dt=`date -d "${end_dt}"`
 fi
 
+# define min / max forecast hours for forecast outputs to be processed
+if [ ! ${ANL_MIN} ]; then
+  echo "ERROR: min forecast hour \${ANL_MIN} is not defined."
+  exit 1
+fi
+
+if [ ! ${ANL_MAX} ]; then
+  echo "ERROR: max forecast hour \${ANL_MAX} is not defined."
+  exit 1
+fi
+
+# define the interval at which to process forecast outputs (HH)
+if [ ! ${ANL_INT} ]; then
+  echo "ERROR: hours interval between analyses \${HH} is not defined."
+  exit 1
+fi
+
+# define the accumulation interval for verification valid times
+if [ ! ${ACC_INT} ]; then
+  echo "ERROR: hours accumulation interval for verification not defined."
+  exit 1
+fi
+
+# check for input data root
+if [ ! -d ${IN_CYC_DIR} ]; then
+  echo "ERROR: input data root directory, ${IN_CYC_DIR}, does not exist."
+  exit 1
+fi
+
+# create output directory if does not exist
+cmd="mkdir -p ${OUT_CYC_DIR}"
+echo ${cmd}; eval ${cmd}
+
 if [ ${RGRD} = TRUE ]; then
   # standard coordinates that can be used to regrid westwrf
   echo "WRF outputs will be regridded for MET compatibility." 
@@ -143,20 +119,29 @@ else
   exit 1
 fi
 
+# change to scripts directory
+cmd="cd ${USR_HME}"
+echo ${cmd}; eval ${cmd}
+
 # define the number of dates to loop
 fcst_hrs=$(( (`date +%s -d "${end_dt}"` - `date +%s -d "${strt_dt}"`) / 3600 ))
 
 for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
   # directory string for forecast analysis initialization time
   dirstr=`date +%Y%m%d%H -d "${strt_dt} ${cyc_hr} hours"`
+  in_dir=${IN_CYC_DIR}/${dirstr}${IN_DT_SUBDIR}
 
+  # set output path
+  work_root=${OUT_CYC_DIR}/${dirstr}${OUT_DT_SUBDIR}
+  cmd="mkdir -p ${work_root}"
+  echo ${cmd}; eval ${cmd}
+      
   # set input paths
-  input_path="${in_root}/${dirstr}${DATE_SUBDIR}"
-  if [ ! -d ${input_path} ]; then
-    echo "WARNING: data input path ${input_path} does not exist."
+  if [ ! -d ${in_dir} ]; then
+    echo "WARNING: data input path ${in_dir} does not exist."
     echo "Skipping analysis for ${dirstr}."
   else
-    echo "Processing forecasts in ${input_path} directory."
+    echo "Processing forecasts in ${in_dir} directory."
   
     # loop lead hours for forecast valid time for each initialization time
     for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INT} )); do
@@ -167,17 +152,12 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
       anl_strt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_strt_hr} hours"`
 
       # set input file names
-      file_1="${input_path}/wrfout_${GRD}_${anl_strt}"
-      file_2="${input_path}/wrfout_${GRD}_${anl_end}"
-      
-      # set output path
-      output_path="${out_root}/${dirstr}/${GRD}"
-      cmd="mkdir -p ${output_path}"
-      echo ${cmd}; eval ${cmd}
+      file_1="${in_dir}/wrfout_${GRD}_${anl_strt}"
+      file_2="${in_dir}/wrfout_${GRD}_${anl_end}"
       
       # set output file name
       output_file="wrfcf_${GRD}_${anl_strt}_to_${anl_end}.nc"
-      out_name="${output_path}/${output_file}"
+      out_name="${work_root}/${output_file}"
       
       if [[ -r ${file_1} && -r ${file_2} ]]; then
         cmd="ncl 'file_in=\"${file_2}\"' "

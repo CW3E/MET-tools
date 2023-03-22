@@ -38,8 +38,8 @@
 export USR_HME=/cw3e/mead/projects/cwp106/scratch/cgrudzien/MET-tools
 
 # root directory for verification data
-export DATA_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA/StageIV
-#DATA_ROOT=/cw3e/mead/projects/cnt102/METMODE_PreProcessing/data/StageIV
+#export DATA_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA/StageIV
+export DATA_ROOT=/cw3e/mead/projects/cnt102/METMODE_PreProcessing/data/StageIV
 
 # root directory for MET software
 export SOFT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/SOFT_ROOT/MET_CODE
@@ -71,11 +71,11 @@ INT_WDTHS=(
           )
 
 # define the case-wise sub-directory
-export CSE=VD
+export CSE=CC
 
 # define first and last date time for forecast initialization (YYYYMMDDHH)
-export STRT_DT=2019021100
-export END_DT=2019021400
+export STRT_DT=2021012400
+export END_DT=2021012700
 
 # define the interval between forecast initializations (HH)
 export CYC_INT=24
@@ -172,6 +172,7 @@ done
 
 ##################################################################################
 # run the processing script looping parameter arrays
+jbid=${SLURM_ARRAY_JOB_ID}
 indx=${SLURM_ARRAY_TASK_ID}
 
 echo "Processing data for job index ${indx}."
@@ -184,7 +185,7 @@ job="${cfg}[@]"
 cmd="cd ${USR_HME}"
 echo ${cmd}; eval ${cmd}
 
-cmd="./run_gridstat.sh ${!job} > gridstat_${indx}.log 2>&1"
+cmd="./run_gridstat.sh ${!job} > gridstat_${jbid}_${indx}.log 2>&1"
 echo ${cmd}; eval ${cmd}
 
 ##################################################################################

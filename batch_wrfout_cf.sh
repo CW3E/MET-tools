@@ -135,6 +135,7 @@ done
 
 ##################################################################################
 # run the processing script looping parameter arrays
+jbid=${SLURM_ARRAY_JOB_ID}
 indx=${SLURM_ARRAY_TASK_ID}
 
 echo "Processing data for job index ${indx}."
@@ -147,7 +148,7 @@ job="${cfg}[@]"
 cmd="cd ${USR_HME}"
 echo ${cmd}; eval ${cmd}
 
-cmd="./run_wrfout_cf.sh ${!job} > wrfout_cf_${indx}.log 2>&1"
+cmd="./run_wrfout_cf.sh ${!job} > wrfout_cf_${jbid}_${indx}.log 2>&1"
 echo ${cmd}; eval ${cmd}
 
 ##################################################################################

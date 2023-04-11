@@ -37,7 +37,7 @@ where the executable singularity image is the output file `met-10.0.1.simg`.
 ### Conda Environments
 To get started with this repository you will need to use conda to install 
 software dependencies. Sofware environments that are not containerized are
-managed by creating appropriate [Conda environments](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html)
+managed by creating appropriate [Conda environments](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html).
 Bash scripts use the Conda environment `netcdf` to process
 NetCDF files. This environment can be created as follows:
 ```

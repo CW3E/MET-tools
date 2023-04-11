@@ -37,7 +37,6 @@ for cmd in "$@"; do
   echo ${cmd}; eval ${cmd}
 done
 
-
 # control flow to be processed
 if [ ! ${CTR_FLW} ]; then
   echo "ERROR: control flow name \${CTR_FLW} is not defined."

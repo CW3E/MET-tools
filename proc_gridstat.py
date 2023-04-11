@@ -50,6 +50,12 @@ import ipdb
 ##################################################################################
 # define control flow to analyze 
 CTR_FLWS = [
+            'deterministic_forecast_b0.50',
+            #'deterministic_forecast_b0.10',
+            #'deterministic_forecast_b0.30',
+            #'deterministic_forecast_b0.60',
+            #'deterministic_forecast_b0.70',
+            #'deterministic_forecast_b0.80',
             #'deterministic_forecast_lag06_b0.00',
             #'deterministic_forecast_lag06_b0.10',
             #'deterministic_forecast_lag06_b0.20',
@@ -91,24 +97,24 @@ CTR_FLWS = [
             #'deterministic_forecast_lag06_b0.00_v06_h0450',
             #'deterministic_forecast_lag06_b0.00_v06_h0600',
             #'deterministic_forecast_lag06_b0.00_v06_h0900',
-            'ECMWF',
-            'GFS',
+            #'ECMWF',
+            #'GFS',
            ]
 
 # define the case-wise sub-directory
-CSE = 'VD'
+CSE = 'CC'
 
 # verification domain for the forecast data                                                                           
 GRDS = [
-        #'d02',
-        '0.25',
+        'd02',
+        #'0.25',
        ]
 
 # starting date and zero hour of forecast cycles (string YYYYMMDDHH)
-STRT_DT = '2019021100'
+STRT_DT = '2021012400'
 
 # final date and zero hour of data of forecast cycles (string YYYYMMDDHH)
-END_DT = '2019021400'
+END_DT = '2021012700'
 
 # number of hours between zero hours for forecast data (string HH)
 CYC_INT = '24'

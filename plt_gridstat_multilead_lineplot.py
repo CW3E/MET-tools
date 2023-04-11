@@ -51,25 +51,36 @@ import ipdb
 ##################################################################################
 # define control flows to analyze 
 CTR_FLWS = [
-            #'deterministic_forecast_lag00_b0.00_v03_h0900',
+            'deterministic_forecast_b0.00',
+            'deterministic_forecast_b0.10',
+            'deterministic_forecast_b0.20',
+            'deterministic_forecast_b0.30',
+            'deterministic_forecast_b0.40',
+            'deterministic_forecast_b0.50',
+            'deterministic_forecast_b0.60',
+            'deterministic_forecast_b0.70',
+            'deterministic_forecast_b0.80',
+            'deterministic_forecast_b0.90',
+            'deterministic_forecast_b1.00',
+            #'deterministic_forecast_lag00_b0.00_v03_h0300',
+            #'deterministic_forecast_lag00_b0.00_v06_h0300',
+            #'deterministic_forecast_lag06_b0.00_v03_h0300',
+            #'deterministic_forecast_lag06_b0.00_v06_h0300',
+            #'deterministic_forecast_lag00_b0.00_v06_h0150',
+            #'deterministic_forecast_lag00_b0.00_v06_h0300',
+            #'deterministic_forecast_lag00_b0.00_v06_h0450',
+            #'deterministic_forecast_lag00_b0.00_v06_h0600',
             #'deterministic_forecast_lag00_b0.00_v06_h0900',
-            #'deterministic_forecast_lag06_b0.00_v03_h0900',
-            #'deterministic_forecast_lag06_b0.00_v06_h0900',
-            'deterministic_forecast_lag00_b0.00_v06_h0150',
-            'deterministic_forecast_lag00_b0.00_v06_h0300',
-            'deterministic_forecast_lag00_b0.00_v06_h0450',
-            'deterministic_forecast_lag00_b0.00_v06_h0600',
-            'deterministic_forecast_lag00_b0.00_v06_h0900',
-            #'deterministic_forecast_lag06_b0.00',
-            #'deterministic_forecast_lag06_b0.10',
-            #'deterministic_forecast_lag06_b0.20',
-            #'deterministic_forecast_lag06_b0.30',
-            #'deterministic_forecast_lag06_b0.40',
-            #'deterministic_forecast_lag06_b0.50',
-            #'deterministic_forecast_lag06_b0.60',
-            #'deterministic_forecast_lag06_b0.70',
-            #'deterministic_forecast_lag06_b0.80',
-            #'deterministic_forecast_lag06_b0.90',
+            #'deterministic_forecast_lag00_b0.00',
+            #'deterministic_forecast_lag00_b0.10',
+            #'deterministic_forecast_lag00_b0.20',
+            #'deterministic_forecast_lag00_b0.30',
+            #'deterministic_forecast_lag00_b0.40',
+            #'deterministic_forecast_lag00_b0.50',
+            #'deterministic_forecast_lag00_b0.60',
+            #'deterministic_forecast_lag00_b0.70',
+            #'deterministic_forecast_lag00_b0.80',
+            #'deterministic_forecast_lag00_b0.90',
             #'deterministic_forecast_lag00_b1.00',
             'GFS',
             'ECMWF',
@@ -81,13 +92,13 @@ PRFXS = [
         ]
 
 # fig label for output file organization
-FIG_LAB = 'v06'
+FIG_LAB = 'lag00'
 
 # fig case directory
-FIG_CSE = 'lag00'
+FIG_CSE = 'beta'
 
 # define case-wise sub-directory
-CSE = 'VD'
+CSE = 'CC'
 
 # verification domain for the forecast data
 GRD='d02'
@@ -96,13 +107,13 @@ GRD='d02'
 REF='0.25'
 
 # starting date and zero hour of forecast cycles
-STRT_DT = '2019021100'
+STRT_DT = '2021012400'
 
 # final date and zero hour of data of forecast cycles
-END_DT = '2019021400'
+END_DT = '2021012700'
 
 # valid date for the verification
-VALID_DT = '2019021500'
+VALID_DT = '2021012800'
 
 # MET stat file type -- should be non-leveled data
 TYPE = 'cnt'
@@ -271,8 +282,6 @@ for i in range(num_flws):
                 l, = ax.plot(range(num_leads), tmp[:], linewidth=2)
                 exec('ax%s_l.append([l])'%k)
 
-                ax.plot(range(num_leads), tmp[:], linewidth=2)
-            
         # add the line type to the legend
         line_list.append(l)
 
@@ -324,8 +333,8 @@ ax0.tick_params(
         labelright=False,
         )
 
-ax0.set_ylim([15, 40])
-ax1.set_ylim([.4,0.9])
+#ax0.set_ylim([10, 30])
+#ax1.set_ylim([.6,1.0])
 
 ax0.set_yticks(ax0.get_yticks(), ax0.get_yticklabels(), va='bottom')
 ax1.set_yticks(ax1.get_yticks(), ax1.get_yticklabels(), va='top')
@@ -348,7 +357,7 @@ plt.figtext(.03, .265, lab1, horizontalalignment='right', rotation=90,
 plt.figtext(.5, .01, lab2, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
-fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws * num_pfxs, 4),
+fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws * num_pfxs, 5),
            loc='center', bbox_to_anchor=[0.5, 0.83])
 
 # save figure and display

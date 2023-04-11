@@ -3,9 +3,9 @@
 #SBATCH --nodes=1
 #SBATCH --mem=120G
 #SBATCH -t 00:30:00
-#SBATCH -J batch_gridstat
+#SBATCH -J batch_wrfout
 #SBATCH --export=ALL
-#SBATCH --array=0-4
+#SBATCH --array=0
 ##################################################################################
 # Description
 ##################################################################################
@@ -46,11 +46,7 @@ export USR_HME=/cw3e/mead/projects/cwp106/scratch/cgrudzien/MET-tools
 
 # array of control flow names to be processed
 CTR_FLWS=( 
-          "deterministic_forecast_b0.00"
-          "deterministic_forecast_b0.20"
-          "deterministic_forecast_b0.40"
-          "deterministic_forecast_b0.90"
-          "deterministic_forecast_b1.00"
+          "deterministic_forecast_b0.50"
          )
 
 # NOTE: the grids in the GRDS array and the interpolation methods /

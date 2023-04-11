@@ -51,26 +51,37 @@ from proc_gridstat import OUT_ROOT
 ##################################################################################
 # define control flows to analyze 
 CTR_FLWS = [
-            #'deterministic_forecast_lag00_b0.00_v03_h0900',
-            #'deterministic_forecast_lag00_b0.00_v06_h0900',
-            #'deterministic_forecast_lag06_b0.00_v03_h0900',
-            #'deterministic_forecast_lag06_b0.00_v06_h0900',
+            #'deterministic_forecast_b0.00',
+            #'deterministic_forecast_b0.10',
+            #'deterministic_forecast_b0.20',
+            #'deterministic_forecast_b0.30',
+            #'deterministic_forecast_b0.40',
+            #'deterministic_forecast_b0.50',
+            'deterministic_forecast_b0.60',
+            'deterministic_forecast_b0.70',
+            'deterministic_forecast_b0.80',
+            'deterministic_forecast_b0.90',
+            'deterministic_forecast_b1.00',
+            #'deterministic_forecast_lag00_b0.00_v03_h0300',
+            #'deterministic_forecast_lag00_b0.00_v06_h0300',
+            #'deterministic_forecast_lag06_b0.00_v03_h0300',
+            #'deterministic_forecast_lag06_b0.00_v06_h0300',
             #'deterministic_forecast_lag06_b0.00_v06_h0150',
             #'deterministic_forecast_lag06_b0.00_v06_h0300',
             #'deterministic_forecast_lag06_b0.00_v06_h0450',
             #'deterministic_forecast_lag06_b0.00_v06_h0600',
             #'deterministic_forecast_lag06_b0.00_v06_h0900',
-            'deterministic_forecast_lag06_b0.00',
-            'deterministic_forecast_lag06_b0.10',
-            'deterministic_forecast_lag06_b0.20',
-            'deterministic_forecast_lag06_b0.30',
-            'deterministic_forecast_lag06_b0.40',
-            'deterministic_forecast_lag06_b0.50',
-            'deterministic_forecast_lag06_b0.60',
-            'deterministic_forecast_lag06_b0.70',
-            'deterministic_forecast_lag06_b0.80',
-            'deterministic_forecast_lag06_b0.90',
-            'deterministic_forecast_lag06_b1.00',
+            #'deterministic_forecast_lag00_b0.00',
+            #'deterministic_forecast_lag00_b0.10',
+            #'deterministic_forecast_lag00_b0.20',
+            #'deterministic_forecast_lag00_b0.30',
+            #'deterministic_forecast_lag00_b0.40',
+            #'deterministic_forecast_lag00_b0.50',
+            #'deterministic_forecast_lag00_b0.60',
+            #'deterministic_forecast_lag00_b0.70',
+            #'deterministic_forecast_lag00_b0.80',
+            #'deterministic_forecast_lag00_b0.90',
+            #'deterministic_forecast_lag00_b1.00',
             'GFS',
             'ECMWF',
            ]
@@ -81,13 +92,13 @@ PRFXS = [
         ]
 
 # fig label for output file organization
-FIG_LAB = 'beta'
+FIG_LAB = 'lag00_high_beta'
 
 # fig case directory
-FIG_CSE = 'lag06'
+FIG_CSE = 'beta'
 
 # define case-wise sub-directory
-CSE = 'VD'
+CSE = 'CC'
 
 # verification domain for the forecast data
 GRD='d02'
@@ -103,13 +114,13 @@ LEV = '>=25.4'
 #LEV = '>=101.6'
 
 # starting date and zero hour of forecast cycles
-STRT_DT = '2019021100'
+STRT_DT = '2021012400'
 
 # final date and zero hour of data of forecast cycles
-END_DT = '2019021400'
+END_DT = '2021012700'
 
 # valid date for the verification
-VALID_DT = '2019021500'
+VALID_DT = '2021012800'
 
 # MET stat file type -- should be leveled data
 #TYPE = 'cts'
@@ -134,15 +145,6 @@ TITLE='24hr accumulated precip at ' + VALID_DT
 
 # plot sub-title title
 SUBTITLE='Verification region -- ' + LND_MSK + ' Threshold ' + LEV + ' mm'
-
-# fig root
-FIG_ROOT = '/home/cgrudzien/interpolation_analysis'
-
-# plot title
-TITLE='24hr accumulated precip at ' + VALID_DT
-
-# plot sub-title title
-SUBTITLE='Verification region -- ' + LND_MSK
 
 # fig root
 FIG_ROOT = '/home/cgrudzien/cycle_analysis'
@@ -294,8 +296,6 @@ for i in range(num_flws):
                 
                 l, = ax.plot(range(num_leads), tmp[:], linewidth=2)
                 exec('ax%s_l.append([l])'%k)
-
-                ax.plot(range(num_leads), tmp[:], linewidth=2)
             
         # add the line type to the legend
         line_list.append(l)
@@ -347,8 +347,8 @@ ax0.tick_params(
         labelright=False,
         )
 
-ax0.set_ylim([.4, 1.0])
-ax1.set_ylim([.4, 1.0])
+ax0.set_ylim([.7, 1.0])
+ax1.set_ylim([.9, 1.0])
 
 ax0.set_yticks(ax0.get_yticks(), ax0.get_yticklabels(), va='bottom')
 ax1.set_yticks(ax1.get_yticks(), ax1.get_yticklabels(), va='top')
@@ -371,7 +371,7 @@ plt.figtext(.03, .265, lab1, horizontalalignment='right', rotation=90,
 plt.figtext(.5, .01, lab2, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
-fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws * num_pfxs, 4),
+fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws * num_pfxs, 5),
            loc='center', bbox_to_anchor=[0.5, 0.83])
 
 # save figure and display

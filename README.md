@@ -2,7 +2,7 @@
 
 ## Description
 This is a working template repository for tools for batch processing numerical
-weather prediction (NWP) data with [the Model Evaluation Tools (MET)](https://met.readthedocs.io/en/latest/index.html)
+weather prediction (NWP) data with the [Model Evaluation Tools (MET)](https://met.readthedocs.io/en/latest/index.html)
 framework, and for batch processing MET output products for rapid plotting,
 forecast verification and diagnostics. These tools are designed for use in the
 CW3E near-real-time (NRT) system and for research purposes. Tools are in
@@ -36,7 +36,9 @@ where the executable singularity image is the output file `met-10.0.1.simg`.
 
 ### Conda Environments
 To get started with this repository you will need to use conda to install 
-software dependencies. Bash scripts use the Conda environment `netcdf` to process
+software dependencies. Sofware environments that are not containerized are
+managed by creating appropriate [Conda environments](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html)
+Bash scripts use the Conda environment `netcdf` to process
 NetCDF files. This environment can be created as follows:
 ```
 conda create --name netcdf

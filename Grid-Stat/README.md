@@ -31,22 +31,22 @@ The wrfout_to_cf.ncl script is called on a loop in the execution of the
 run_wrfout_cf.sh script included in this directory. This script requires the
 following configuration parameters to be defined:
 
- * CTR_FLW       -- the name of the control flow, e.g., "NRT_gfs".
- * GRD           -- the grid to be analyzed, e.g., d01 indicating the domain of the native WRF grid.
- * STRT_DT       -- start date time of first forecast zero hour to be analyzed in YYYYMMDDHH format.
- * END_DT        -- end date time of last forecast zero hour to be analyzed in YYYYMMDDHH format.
- * ANL_MIN       -- first forecast hour to be analyzed for each forecast initial time
- * ANL_MAX       -- last forecast hour to be analyzed for each forecast initial time
- * ANL_INT       -- interval of forecast analyses to be performed between ANL_MIN and ANL_MAX, HH format.
- * ACC_INT       -- the accumulation interval to compute precipitation over.
- * IN_CYC_DIR    -- the root directory of ISO style directories for input files organizing forecast initial valid times.
- * OUT_CYC_DIR   -- the root directory of ISO style directories for output files organizing forecast initial valid times.
- * RGRD          -- TRUE or FALSE, whether to regrid the native WRF domain to a generic MET compatible grid.
+ * CTR_FLW       &ndash; the name of the control flow, e.g., "NRT_gfs".
+ * GRD           &ndash; the grid to be analyzed, e.g., d01 indicating the domain of the native WRF grid.
+ * STRT_DT       &ndash; start date time of first forecast zero hour to be analyzed in YYYYMMDDHH format.
+ * END_DT        &ndash; end date time of last forecast zero hour to be analyzed in YYYYMMDDHH format.
+ * ANL_MIN       &ndash; first forecast hour to be analyzed for each forecast initial time
+ * ANL_MAX       &ndash; last forecast hour to be analyzed for each forecast initial time
+ * ANL_INT       &ndash; interval of forecast analyses to be performed between ANL_MIN and ANL_MAX, HH format.
+ * ACC_INT       &ndash; the accumulation interval to compute precipitation over.
+ * IN_CYC_DIR    &ndash; the root directory of ISO style directories for input files organizing forecast initial valid times.
+ * OUT_CYC_DIR   &ndash; the root directory of ISO style directories for output files organizing forecast initial valid times.
+ * RGRD          &ndash; TRUE or FALSE, whether to regrid the native WRF domain to a generic MET compatible grid.
 
 In addition to the above required arguments, optional arguments can be supplied as follows:
  
- * IN_DT_SUBDIR  -- provides the sub-path from ISO style directories to wrfout files including leading "/", e.g, "/wrfout". This can be left as a blank string if not needed.
- * OUT_DT_SUBDIR -- provides the sub-path from ISO style directories to output cf-compliant files including leading "/", e.g, "/${GRD}". This can be left as a blank string if not needed.
+ * IN_DT_SUBDIR  &ndash; provides the sub-path from ISO style directories to wrfout files including leading "/", e.g, "/wrfout". This can be left as a blank string if not needed.
+ * OUT_DT_SUBDIR &ndash; provides the sub-path from ISO style directories to output cf-compliant files including leading "/", e.g, "/${GRD}". This can be left as a blank string if not needed.
 
 ### Running gridstat on cf-compliant wrfout
 

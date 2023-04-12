@@ -93,7 +93,11 @@ a job array defined as
 ```
 #SBATCH --array=0-5
 ```
-to run each sub-analysis over the date range and forecast horizons.
+to run each sub-analysis over the date range and forecast horizons. Outputs
+from this analysis will be written to the `OUT_ROOT` variable defined in
+the batch_wrfout_cf.sh, this and other settings in the job array construction
+should be defined accordingly by the user. Logs for each of the SLURM array
+tasks will be written in the working directory of batch_wrfout_cf.sh.
 
 ## Running gridstat on cf-compliant wrfout
 

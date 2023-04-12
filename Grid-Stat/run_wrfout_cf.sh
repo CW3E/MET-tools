@@ -37,6 +37,21 @@ for cmd in "$@"; do
   echo ${cmd}; eval ${cmd}
 done
 
+# define the working scripts directory
+if [ ! ${USR_HME} ]; then
+  echo "ERROR: MET-tools clone directory \${USR_HME} is not defined."
+  exit 1
+elif [ ! -d ${USR_HME} ]; then
+  echo "ERROR: MET-tools clone directory ${USR_HME} does not exist."
+  exit 1
+else
+  script_dir=${USR_HME}/Grid-Stat
+  if [ ! -d ${script_dir} ];
+    echo "ERROR: Grid-Stat script directory ${script_dir} does not exist."
+    exit 1
+  fi
+fi
+
 # control flow to be processed
 if [ ! ${CTR_FLW} ]; then
   echo "ERROR: control flow name \${CTR_FLW} is not defined."
@@ -96,19 +111,31 @@ if [ ! -d ${IN_CYC_DIR} ]; then
   exit 1
 fi
 
-# check for output data root
+# create output directory if does not exist
+cmd="mkdir -p ${OUT_CYC_DIR}"
+echo ${cmd}; eval ${cmd}
+
+# check for output data root created successfully
 if [ ! -d ${OUT_CYC_DIR} ]; then
   echo "ERROR: output data root directory, ${OUT_CYC_DIR}, does not exist."
+  exit 1
+fi
+
+if [ -z ${IN_DT_SUBDIR+x} ]; then
+  echo "ERROR: cycle subdirectory for input data \${IN_DT_SUBDIR} is unset,"
+  echo " set to empty string if not used."
+  exit 1
+fi
+
+if [ -z ${OUT_DT_SUBDIR+x} ]; then
+  echo "ERROR: cycle subdirectory for input data \${OUT_DT_SUBDIR} is unset,"
+  echo " set to empty string if not used."
   exit 1
 fi
 
 #################################################################################
 # Process data
 #################################################################################
-# create output directory if does not exist
-cmd="mkdir -p ${OUT_CYC_DIR}"
-echo ${cmd}; eval ${cmd}
-
 if [ ${RGRD} = TRUE ]; then
   # standard coordinates that can be used to regrid West-WRF
   echo "WRF outputs will be regridded for MET compatibility." 
@@ -125,7 +152,7 @@ else
 fi
 
 # change to Grid-Stat scripts directory
-cmd="cd ${USR_HME}/Grid-Stat"
+cmd="cd ${script_dir}"
 echo ${cmd}; eval ${cmd}
 
 # define the number of dates to loop

@@ -5,7 +5,7 @@
 #SBATCH -t 02:00:00
 #SBATCH -J batch_gridstat
 #SBATCH --export=ALL
-#SBATCH --array=0
+#SBATCH --array=0-5
 ##################################################################################
 # Description
 ##################################################################################
@@ -35,10 +35,10 @@
 #set -x
 
 # root directory for MET-tools git clone
-export USR_HME=/cw3e/mead/projects/cwp106/scratch/cgrudzien/MET-tools
+export USR_HME=/cw3e/mead/projects/cwp106/scratch/MET-tools
 
 # root directory for verification data
-export DATA_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA/CC/verification/StageIV
+export DATA_ROOT=/cw3e/mead/projects/cnt102/METMODE_PreProcessing/data/StageIV
 
 # root directory for MET software
 export SOFT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/SOFT_ROOT/MET_CODE
@@ -52,35 +52,45 @@ export CAT_THR="[ >0.0, >=10.0, >=25.4, >=50.8, >=101.6 ]"
 
 # array of control flow names to be processed
 CTR_FLWS=( 
-          "deterministic_forecast_b0.50"
+          "NRT_gfs"
+          "NRT_ecmwf"
          )
 
 # NOTE: the grids in the GRDS array and the interpolation methods /
 # neighborhbood widths in the below INT_MTHDS and INT_WDTHS must be
-# in 1-1 correspondence
-GRDS=( "d02" )
+# in 1-1 correspondence to define the interpolation method / width
+# specific to each grid
+GRDS=( 
+      "d01"
+      "d02"
+      "d03"
+     )
 
 # define the interpolation method and related parameters
 INT_MTHDS=( 
            "DW_MEAN"
+           "DW_MEAN"
+           "DW_MEAN"
           )
 INT_WDTHS=( 
+           "3"
            "9"
+           "27"
           )
 
 # define the case-wise sub-directory
-export CSE=CC
+export CSE=DeepDive
 
 # define first and last date time for forecast initialization (YYYYMMDDHH)
-export STRT_DT=2021012400
-export END_DT=2021012800
+export STRT_DT=2022121400
+export END_DT=2023011800
 
 # define the interval between forecast initializations (HH)
 export CYC_INT=24
 
 # define min / max forecast hours for forecast outputs to be processed
 export ANL_MIN=24
-export ANL_MAX=120
+export ANL_MAX=240
 
 # define the interval at which to process forecast outputs (HH)
 export ANL_INT=24
@@ -98,10 +108,10 @@ export MSK=CALatLonPoints.txt
 export NBRHD_WDTH=9
 
 # number of bootstrap resamplings, set 0 for off
-export BTSTRP=1000
+export BTSTRP=0
 
 # rank correlation computation flag, TRUE or FALSE
-export RNK_CRR=TRUE
+export RNK_CRR=FALSE
 
 # compute accumulation from cf file, TRUE or FALSE
 export CMP_ACC=TRUE
@@ -110,10 +120,10 @@ export CMP_ACC=TRUE
 export PRFX=""
 
 # root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
-export IN_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/cycling_sensitivity_testing
+export IN_ROOT=/cw3e/mead/projects/cwp106/scratch/${CSE}
 
 # root directory for cycle time (YYYYMMDDHH) directories of gridstat outputs
-export OUT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/cycling_sensitivity_testing
+export OUT_ROOT=/cw3e/mead/projects/cwp106/scratch/${CSE}
 
 ##################################################################################
 # Contruct job array and environment for submission
@@ -147,10 +157,10 @@ for (( i = 0; i < ${num_grds}; i++ )); do
     cmd="${cfg_indx}+=(\"INT_WDTH=${INT_WDTH}\")"
     echo ${cmd}; eval ${cmd}
 
-    cmd="${cfg_indx}+=(\"IN_CYC_DIR=${IN_ROOT}/${CSE}/${CTR_FLW}/MET_analysis\")"
+    cmd="${cfg_indx}+=(\"IN_CYC_DIR=${IN_ROOT}/${CTR_FLW}/MET_analysis\")"
     echo ${cmd}; eval ${cmd}
 
-    cmd="${cfg_indx}+=(\"OUT_CYC_DIR=${OUT_ROOT}/${CSE}/${CTR_FLW}/MET_analysis\")"
+    cmd="${cfg_indx}+=(\"OUT_CYC_DIR=${OUT_ROOT}/${CTR_FLW}/MET_analysis\")"
     echo ${cmd}; eval ${cmd}
 
     # subdirectory of cycle-named directory containing data to be analyzed,
@@ -180,7 +190,7 @@ echo "Loading configuration parameters ${cfgs[$indx]}:"
 cfg=${cfgs[$indx]}
 job="${cfg}[@]"
 
-cmd="cd ${USR_HME}"
+cmd="cd ${USR_HME}/Grid-Stat"
 echo ${cmd}; eval ${cmd}
 
 cmd="./run_gridstat.sh ${!job} > gridstat_${jbid}_${indx}.log 2>&1"

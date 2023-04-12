@@ -11,7 +11,9 @@
 ##################################################################################
 # This script utilizes SLURM job arrays to batch process collections of WRF model
 # outputs as a preprocessing step to ingestion into the MET Grid-Stat tool. This
-# script is designed to 
+# script is designed to set the parameters for the companion run_wrfout_cf.sh
+# script as a job array map, allowing easy batch processing over multiple
+# configurations simultaneously.
 ##################################################################################
 # License Statement
 ##################################################################################
@@ -53,7 +55,11 @@ CTR_FLWS=(
          )
 
 # model grid / domain to be processed
-GRDS=( "d01" "d02" "d03" )
+GRDS=( 
+      "d01"
+      "d02"
+      "d03"
+     )
 
 # define the case-wise sub-directory for path names, leave as empty string if not needed
 export CSE=DeepDive
@@ -133,7 +139,6 @@ for (( i = 0; i < ${num_grds}; i++ )); do
 
     cmd="cfgs+=( \"${cfg_indx}\" )"
     echo ${cmd}; eval ${cmd}
-
   done
 done
 

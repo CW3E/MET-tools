@@ -37,6 +37,24 @@ for cmd in "$@"; do
   echo ${cmd}; eval ${cmd}
 done
 
+#################################################################################
+# these parameters are shared with run_wrfout_cf.sh
+
+# define the working scripts directory
+if [ ! ${USR_HME} ]; then
+  echo "ERROR: MET-tools clone directory \${USR_HME} is not defined."
+  exit 1
+elif [ ! -d ${USR_HME} ]; then
+  echo "ERROR: MET-tools clone directory ${USR_HME} does not exist."
+  exit 1
+else
+  script_dir=${USR_HME}/Grid-Stat
+  if [ ! -d ${script_dir} ]; then
+    echo "ERROR: Grid-Stat script directory ${script_dir} does not exist."
+    exit 1
+  fi
+fi
+
 # control flow to be processed
 if [ ! ${CTR_FLW} ]; then
   echo "ERROR: control flow name \${CTR_FLW} is not defined."
@@ -67,13 +85,6 @@ else
   end_dt=`date -d "${end_dt}"`
 fi
 
-if [ ${#PRFX} -gt 0 ]; then
-  # for a non-empty prefix, append an underscore for compound names
-  prfx="${PRFX}_"
-else
-  prfx=""
-fi
-
 # define min / max forecast hours for forecast outputs to be processed
 if [ ! ${ANL_MIN} ]; then
   echo "ERROR: min forecast hour \${ANL_MIN} is not defined."
@@ -96,6 +107,37 @@ if [ ! ${ACC_INT} ]; then
   echo "ERROR: hours accumulation interval for verification not defined."
   exit 1
 fi
+
+# check for input data root
+if [ ! -d ${IN_CYC_DIR} ]; then
+  echo "ERROR: input data root directory, ${IN_CYC_DIR}, does not exist."
+  exit 1
+fi
+
+# create output directory if does not exist
+cmd="mkdir -p ${OUT_CYC_DIR}"
+echo ${cmd}; eval ${cmd}
+
+# check for output data root created successfully
+if [ ! -d ${OUT_CYC_DIR} ]; then
+  echo "ERROR: output data root directory, ${OUT_CYC_DIR}, does not exist."
+  exit 1
+fi
+
+if [ -z ${IN_DT_SUBDIR+x} ]; then
+  echo "ERROR: cycle subdirectory for input data \${IN_DT_SUBDIR} is unset,"
+  echo " set to empty string if not used."
+  exit 1
+fi
+
+if [ -z ${OUT_DT_SUBDIR+x} ]; then
+  echo "ERROR: cycle subdirectory for input data \${OUT_DT_SUBDIR} is unset,"
+  echo " set to empty string if not used."
+  exit 1
+fi
+
+#################################################################################
+# these parameters are gridstat specific
 
 # define the verification field
 if [ ! ${VRF_FLD} ]; then
@@ -142,7 +184,7 @@ if [ ! ${RNK_CRR} ]; then
 fi
 
 # compute accumulation from cf file, TRUE or FALSE
-if [ ! ${CMP_ACC} ]; then
+if [[ ${CMP_ACC} != "TRUE" && ${CMP_ACC} != "FALSE" ]]; then
   msg="ERROR: \${CMP_ACC} must be set to 'TRUE' or 'FALSE' if computing "
   msg+="accumulation from source input file."
   exit 1
@@ -151,29 +193,12 @@ fi
 if [ -z ${PRFX+x} ]; then
   echo "ERROR: gridstat output \${PRFX} is unset, set to empty string if not used."
   exit 1
+elif [ ${#PRFX} -gt 0 ]; then
+  # for a non-empty prefix, append an underscore for compound names
+  prfx="${PRFX}_"
+else
+  prfx=""
 fi
-
-if [ -z ${IN_DT_SUBDIR+x} ]; then
-  echo "ERROR: cycle subdirectory for input data \${IN_DT_SUBDIR} is unset,"
-  echo " set to empty string if not used."
-  exit 1
-fi
-
-if [ -z ${OUT_DT_SUBDIR+x} ]; then
-  echo "ERROR: cycle subdirectory for input data \${OUT_DT_SUBDIR} is unset,"
-  echo " set to empty string if not used."
-  exit 1
-fi
-
-# check for input data root
-if [ ! -d ${IN_CYC_DIR} ]; then
-  echo "ERROR: input data root directory, ${IN_CYC_DIR}, does not exist."
-  exit 1
-fi
-
-# create output directory if does not exist
-cmd="mkdir -p ${OUT_CYC_DIR}"
-echo ${cmd}; eval ${cmd}
 
 # check for software and data deps.
 if [ ! -d ${DATA_ROOT} ]; then
@@ -198,7 +223,7 @@ if [ ! -r "${MSK_ROOT}/${msk_nme}.${msk_ext}"  ]; then
   exit 1
 fi
 
-if [ ! ${CAT_THR} ]; then
+if [ ! "${CAT_THR}" ]; then
   echo "ERROR: thresholds \${CAT_THR} is not defined."
   exit 1
 fi
@@ -207,11 +232,7 @@ fi
 # Process data
 #################################################################################
 # change to scripts directory
-cmd="cd ${USR_HME}"
-echo ${cmd}; eval ${cmd}
-
-# change to scripts directory
-cmd="cd ${USR_HME}"
+cmd="cd ${script_dir}"
 echo ${cmd}; eval ${cmd}
 
 # define the number of dates to loop
@@ -255,7 +276,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
     # Set up singularity container with directory privileges
     cmd="singularity instance start -B ${work_root}:/work_root:rw,"
     cmd+="${DATA_ROOT}:/DATA_ROOT:ro,${MSK_ROOT}:/MSK_ROOT:ro,"
-    cmd+="${in_dir}:/in_dir:ro,${USR_HME}:/USR_HME:ro"
+    cmd+="${in_dir}:/in_dir:ro,${script_dir}:/script_dir:ro"
     cmd+=" ${MET_SNG} met1"
     echo ${cmd}; eval ${cmd}
 
@@ -310,7 +331,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
 
         # update GridStatConfigTemplate archiving file in working directory unchanged on inner loop
         if [ ! -r ${work_root}/${prfx}GridStatConfig ]; then
-          cat ${USR_HME}/GridStatConfigTemplate \
+          cat ${script_dir}/GridStatConfigTemplate \
             | sed "s/INT_MTHD/method = ${INT_MTHD}/" \
             | sed "s/INT_WDTH/width = ${INT_WDTH}/" \
             | sed "s/RNK_CRR/rank_corr_flag      = ${RNK_CRR}/" \
@@ -355,7 +376,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
   done
 done
 
-msg= "Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "
+msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "
 msg+="outputs at OUT_CYC_DIR ${OUT_CYC_DIR}"
 echo ${msg}
 

@@ -23,13 +23,17 @@ become obsolete in future WRF versions.
 
 The modified wrfout_to_cf.ncl script ingests two `wrfout_d0?` files at different
 valid times in order to compute the accumulation period over a desired interval.
-Two files are needed because the, e.g., 24-hr accumulation of precipitation is
+Two files are needed because the, e.g., 24-hour accumulation of precipitation is
 calculated by subtracting the simulation accumulation variables for rain at
 t=valid time and t=valid_time-24_hours.
 
 The wrfout_to_cf.ncl script is called on a loop in the execution of the
-run_wrfout_cf.sh script included in this directory. This script requires the
-following configuration parameters to be defined:
+run_wrfout_cf.sh script included in this directory. The run_wrfout_cf.sh script
+will run through a range of valid date times for zero hours and a range of forecast
+hours for each valid zero hour to produce cf-compliant accumulation files. This
+assumes that wrfout history files are organized according to ISO style directories
+corresponding to forecast zero hours, each of the format YYYYMMDDHH. This script
+requires the following configuration parameters to be defined:
 
  * CTR_FLW       &ndash; the name of the control flow, e.g., "NRT_gfs".
  * GRD           &ndash; the grid to be analyzed, e.g., d01 indicating the domain of the native WRF grid.
@@ -47,6 +51,51 @@ In addition to the above required arguments, optional arguments can be supplied 
  
  * IN_DT_SUBDIR  &ndash; provides the sub-path from ISO style directories to wrfout files including leading "/", e.g, "/wrfout". This can be left as a blank string if not needed.
  * OUT_DT_SUBDIR &ndash; provides the sub-path from ISO style directories to output cf-compliant files including leading "/", e.g, "/${GRD}". This can be left as a blank string if not needed.
+
+The run_wrfout_cf.sh script is designed to be run with the batch_wrfout_cf.sh
+script supplying the above arguments, as defined over a mapping of different
+combinations of control flows and grids to process. For example, the settings
+in the template for the batch_wrfout_cf.sh,
+```{bash}
+# array of control flow names to be processed
+CTR_FLWS=(
+          "NRT_gfs"
+          "NRT_ecmwf"
+         )
+
+# model grid / domain to be processed
+GRDS=( "d01" "d02" "d03" )
+
+# define first and last date time for forecast initialization (YYYYMMDDHH)
+export STRT_DT=2022121400
+export END_DT=2023011800
+
+# define the interval between forecast initializations (HH)
+export CYC_INT=24
+
+# define min / max forecast hours for forecast outputs to be processed
+export ANL_MIN=24
+export ANL_MAX=240
+
+# define the interval at which to process forecast outputs (HH)
+export ANL_INT=24
+
+# define the accumulation interval for verification valid times
+export ACC_INT=24
+```
+defines an analysis of the 24-hour precipitation accumulation for NRT_gfs
+and NRT_ecmwf forecasts in domains d01, d02 and d03 for all forecast zero
+hours in the range from 2022-12-14_00 to 2023-01-18_00 with initial times
+at 00-Z and forecast horizons rangeing from 1 up to 10 days. This entire
+analysis will be run by submitting batch_wrfout_cf.sh to the scheduler,
+where each configuration corresponds to a sub-task of a SLURM job array.
+In particular, there is one configuration defined for each control flow
+and grid combination, meaning that the batch_wrfout_cf.sh should have
+a job array defined as
+```
+#SBATCH --array=0-5
+```
+to run each sub-analysis over the date range and forecast horizons.
 
 ### Running gridstat on cf-compliant wrfout
 

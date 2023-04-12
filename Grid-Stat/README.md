@@ -1,6 +1,4 @@
-# Grid-Stat Tools
-
-## Workflow for generating precipitation diagnostics
+# Workflow for generating precipitation diagnostics in Grid-Stat
 This template analysis is designed around the 2022-2023 DeepDive analysis, batch
 processing West-WRF NRT data over a range of valid dates and forecast lead times
 as an example use-case. The goal of this tutorial README is to guide how one
@@ -11,7 +9,7 @@ MET, then post-processing the MET Grid-Stat ASCII text file outputs into
 [Pandas](https://pandas.pydata.org/) data frames for plotting and analysis in
 the [ipython conda environment](https://github.com/CW3E/MET-tools#conda-environments).
 
-### Converting wrfout history files to cf-compliant files
+## Converting wrfout history files to cf-compliant files
 
 Included in this workflow is the NCL script wrfout_to_cf.ncl. This is a modified
 version of the original wrfout_to_cf specifically for West-WRF output that
@@ -97,10 +95,10 @@ a job array defined as
 ```
 to run each sub-analysis over the date range and forecast horizons.
 
-### Running gridstat on cf-compliant wrfout
+## Running gridstat on cf-compliant wrfout
 
-### Running gridstat on pre-processed background data (GFS / ECMWF)
+## Running gridstat on pre-processed background data (GFS / ECMWF)
 
-### Processing gridstat outputs
+## Processing gridstat outputs
 
-### Plotting from pickled data frames
+## Plotting from pickled data frames

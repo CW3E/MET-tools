@@ -6,7 +6,6 @@
 
 wrfout_to_cf.ncl is a modified version of the original wrfout_to_cf specifically for west-wrf output
 that includes added variables of ivt and precipitation. 
-
 You will set output variables to TRUE within this code to convert them into cf-compliant netcdf
 files.  The cf-compliant files are neccessary (at this time) to import into MET, but will become
 obsolete in future iterations.

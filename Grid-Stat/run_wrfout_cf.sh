@@ -1,19 +1,15 @@
 #!/bin/bash
-#SBATCH --partition=shared
-#SBATCH --nodes=1
-#SBATCH --mem=120G
-#SBATCH -t 01:30:00
-#SBATCH --job-name="wrfcf"
-#SBATCH --export=ALL
-#SBATCH --account=cwp106
 #################################################################################
 # Description
 #################################################################################
-# This driver script is designed as a companion to the WRF preprocessing script
+# This script defines the batch processing routine for a given control flow /
+# grid configuration and date range as defined in the companion batch_wrfout_cf.sh
+# script. This driver script loops the calls to the WRF preprocessing script
 # wrfout_to_cf.ncl to ready WRF outputs for MET. This script is based on original
 # source code provided by Rachel Weihs, Caroline Papadopoulos and Daniel
 # Steinhoff.  This is re-written to homogenize project structure and to include
-# flexibility with batch processing ranges of data from multiple workflows.
+# error handling, process logs and additional flexibility with batch processing 
+# ranges of data from multiple models and / or workflows.
 #
 #################################################################################
 # License Statement
@@ -33,7 +29,7 @@
 #     limitations under the License.
 #
 #################################################################################
-# Process data
+# Check for required fields
 #################################################################################
 # export all configurations supplied as an array of string definitions
 echo "Loading configuration parameters:"
@@ -55,7 +51,7 @@ fi
 
 # Convert STRT_DT from 'YYYYMMDDHH' format to strt_dt Unix date format
 if [ ${#STRT_DT} -ne 10 ]; then
-  echo "ERROR: \${STRT_DT} is not in YYYYMMDDHH  format."
+  echo "ERROR: \${STRT_DT} is not in YYYYMMDDHH format."
   exit 1
 else
   strt_dt="${STRT_DT:0:8} ${STRT_DT:8:2}"
@@ -64,7 +60,7 @@ fi
 
 # Convert END_DT from 'YYYYMMDDHH' format to end_dt Unix date format 
 if [ ${#END_DT} -ne 10 ]; then
-  echo "ERROR: \${END_DT} is not in YYYYMMDDHH  format."
+  echo "ERROR: \${END_DT} is not in YYYYMMDDHH format."
   exit 1
 else
   end_dt="${END_DT:0:8} ${END_DT:8:2}"
@@ -100,12 +96,21 @@ if [ ! -d ${IN_CYC_DIR} ]; then
   exit 1
 fi
 
+# check for output data root
+if [ ! -d ${OUT_CYC_DIR} ]; then
+  echo "ERROR: output data root directory, ${OUT_CYC_DIR}, does not exist."
+  exit 1
+fi
+
+#################################################################################
+# Process data
+#################################################################################
 # create output directory if does not exist
 cmd="mkdir -p ${OUT_CYC_DIR}"
 echo ${cmd}; eval ${cmd}
 
 if [ ${RGRD} = TRUE ]; then
-  # standard coordinates that can be used to regrid westwrf
+  # standard coordinates that can be used to regrid West-WRF
   echo "WRF outputs will be regridded for MET compatibility." 
   gres=(0.08 0.027 0.009)
   lat1=(5 29 35)
@@ -119,8 +124,8 @@ else
   exit 1
 fi
 
-# change to scripts directory
-cmd="cd ${USR_HME}"
+# change to Grid-Stat scripts directory
+cmd="cd ${USR_HME}/Grid-Stat"
 echo ${cmd}; eval ${cmd}
 
 # define the number of dates to loop
@@ -192,7 +197,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
 done
 
 echo "Script completed at `date +%Y-%m-%d_%H_%M_%S`."
-echo "Verify outputs at out_root ${out_root}."
+echo "Verify outputs at out_root ${OUT_CYC_DIR}."
 
 #################################################################################
 # end

@@ -61,8 +61,8 @@ conda install seaborn
 
 ## Repository Organization
 Currently this repository has focused on developing batch processing routines for
-the [GridStat](https://met.readthedocs.io/en/latest/Users_Guide/grid-stat.html)
-module from the MET framework. Related scripts are included in the `GridStat`
+the [Grid-Stat](https://met.readthedocs.io/en/latest/Users_Guide/grid-stat.html)
+module from the MET framework. Related scripts are included in the `Grid-Stat`
 subdirectory. Instructions on how to use these batch processing scripts
 are included in the README therein. New batch processing tools will be
 organized similarly for other MET modules as they are developed.

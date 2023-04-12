@@ -2,14 +2,16 @@
 #SBATCH -p shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 00:30:00
-#SBATCH -J batch_wrfout
+#SBATCH -t 02:30:00
+#SBATCH -J batch_wrfout_cf
 #SBATCH --export=ALL
-#SBATCH --array=0
+#SBATCH --array=0-5
 ##################################################################################
 # Description
 ##################################################################################
-#
+# This script utilizes SLURM job arrays to batch process collections of WRF model
+# outputs as a preprocessing step to ingestion into the MET Grid-Stat tool. This
+# script is designed to 
 ##################################################################################
 # License Statement
 ##################################################################################
@@ -37,36 +39,36 @@
 # initiate bash and source bashrc to initialize environement
 conda init bash
 source /home/cgrudzien/.bashrc
+#source /home/USER/.bashrc
 
 # set local environment for ncl and related dependencies
 conda activate netcdf
 
 # root directory for MET-tools git clone
-export USR_HME=/cw3e/mead/projects/cwp106/scratch/cgrudzien/MET-tools
+export USR_HME=/cw3e/mead/projects/cwp106/scratch/MET-tools
 
 # array of control flow names to be processed
 CTR_FLWS=( 
-          "deterministic_forecast_b0.50"
+          "NRT_gfs"
+          "NRT_ecmwf"
          )
 
-# NOTE: the grids in the GRDS array and the interpolation methods /
-# neighborhbood widths in the below INT_MTHDS and INT_WDTHS must be
-# in 1-1 correspondence
-GRDS=( "d02" )
+# model grid / domain to be processed
+GRDS=( "d01" "d02" "d03" )
 
-# define the case-wise sub-directory
-export CSE=CC
+# define the case-wise sub-directory for path names, leave as empty string if not needed
+export CSE=DeepDive
 
 # define first and last date time for forecast initialization (YYYYMMDDHH)
-export STRT_DT=2021012400
-export END_DT=2021012700
+export STRT_DT=2022121400
+export END_DT=2023011800
 
 # define the interval between forecast initializations (HH)
 export CYC_INT=24
 
 # define min / max forecast hours for forecast outputs to be processed
 export ANL_MIN=24
-export ANL_MAX=96
+export ANL_MAX=240
 
 # define the interval at which to process forecast outputs (HH)
 export ANL_INT=24
@@ -74,25 +76,30 @@ export ANL_INT=24
 # define the accumulation interval for verification valid times
 export ACC_INT=24
 
-# root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
-export IN_ROOT=/cw3e/mead/projects/cwp106/scratch/GSI-WRF-Cycling-Template/data/simulation_io
+# root directory for cycle time (YYYYMMDDHH) directories of WRF output files
+export IN_ROOT=/cw3e/mead/datasets/cw3e/NRT/2022-2023
 
-# root directory for cycle time (YYYYMMDDHH) directories of gridstat outputs
-export OUT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/cycling_sensitivity_testing
+# root directory for cycle time (YYYYMMDDHH) directories of cf-compliant script outputs
+export OUT_ROOT=/cw3e/mead/projects/cwp106/scratch/${CSE}
 
 # set to regrid to lat / long for MET compatibility when handling grid errors
 # must be equal to TRUE or FALSE
-export RGRD=FALSE
+export RGRD=TRUE
 
 ##################################################################################
 # Contruct job array and environment for submission
 ##################################################################################
-# create array of arrays to store the hyper-parameter grid settings, configs
-# run based on SLURM job array index
+# Create array of arrays to store the hyper-parameter grid settings, configs
+# run based on SLURM job array index.  NOTE: directory paths dependent on control
+# flow and grid settings are defined dynamically in the below and shold be set
+# in the loops.
 cfgs=()
 
 num_grds=${#GRDS[@]}
 num_flws=${#CTR_FLWS[@]}
+
+# NOTE: SLURM JOB ARRAY SHOULD HAVE INDICES CORRESPONDING TO EACH OF THE
+# CONFIGURATIONS DEFINED BELOW
 for (( i = 0; i < ${num_grds}; i++ )); do
   for (( j = 0; j < ${num_flws}; j++ )); do
     CTR_FLW=${CTR_FLWS[$j]}
@@ -108,17 +115,19 @@ for (( i = 0; i < ${num_grds}; i++ )); do
     cmd="${cfg_indx}+=(\"GRD=${GRD}\")"
     echo ${cmd}; eval ${cmd}
 
-    cmd="${cfg_indx}+=(\"IN_CYC_DIR=${IN_ROOT}/${CSE}/${CTR_FLW}\")"
-    echo ${cmd}; eval ${cmd}
-
-    cmd="${cfg_indx}+=(\"OUT_CYC_DIR=${OUT_ROOT}/${CSE}/${CTR_FLW}/MET_analysis\")"
+    # This path defines the location of each cycle directory relative to IN_ROOT
+    cmd="${cfg_indx}+=(\"IN_CYC_DIR=${IN_ROOT}/${CTR_FLW}\")"
     echo ${cmd}; eval ${cmd}
 
     # subdirectory of cycle-named directory containing data to be analyzed,
     # includes leading '/', left as blank string if not needed
-    cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/wrfprd/ens_00\")"
+    cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/wrfout\")"
     echo ${cmd}; eval ${cmd}
     
+    # This path defines the location of each cycle directory relative to OUT_ROOT
+    cmd="${cfg_indx}+=(\"OUT_CYC_DIR=${OUT_ROOT}/${CTR_FLW}/MET_analysis\")"
+    echo ${cmd}; eval ${cmd}
+
     # subdirectory of cycle-named directory where output is to be saved
     cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/${GRD}\")"
     echo ${cmd}; eval ${cmd}
@@ -141,7 +150,7 @@ echo "Loading configuration parameters ${cfgs[$indx]}:"
 cfg=${cfgs[$indx]}
 job="${cfg}[@]"
 
-cmd="cd ${USR_HME}"
+cmd="cd ${USR_HME}/Grid-Stat"
 echo ${cmd}; eval ${cmd}
 
 cmd="./run_wrfout_cf.sh ${!job} > wrfout_cf_${jbid}_${indx}.log 2>&1"

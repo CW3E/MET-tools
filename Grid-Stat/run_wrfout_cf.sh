@@ -37,6 +37,9 @@ for cmd in "$@"; do
   echo ${cmd}; eval ${cmd}
 done
 
+#################################################################################
+# make checks for workflow parameters
+
 # define the working scripts directory
 if [ ! ${USR_HME} ]; then
   echo "ERROR: MET-tools clone directory \${USR_HME} is not defined."

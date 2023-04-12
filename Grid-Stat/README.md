@@ -102,18 +102,44 @@ the batch_wrfout_cf.sh, this and other settings in the job array construction
 should be defined accordingly by the user. Logs for each of the SLURM array
 tasks will be written in the working directory of batch_wrfout_cf.sh.
 
-## Running gridstat on cf-compliant wrfout
+## Running gridstat on cf-compliant WRF outputs
 Once cf-compliant outputs have been written by running the steps above, one
 can ingest these scripts into MET using the run_gridstat.sh script in this
 directory. This script is designed similarly to the run_wrfout_cf.sh script
-discussed above and requires the same arguments with the addition of the
-following:
+discussed above and requires the same arguments with the addition several others
+discussed in the following. MET's Grid-Stat tool settings are controlled with a 
+[GridStatConfig](https://met.readthedocs.io/en/latest/Users_Guide/config_options.html)
+file, which are dynamically updated in this workflow by updating fields in the
+template GridStatConfigTemplate in this directory. In addition to the arguments
+required in the run_wrfout_cf.sh script described above, run_gridstat.sh requires:
 
  * VRF_FLD &ndash; the verification field to be computed, currently only "QPF" tested / supported.
- * MKS &ndash; the name of the landmask polygon (including extension) to be used to define the verfication region.
+ * CAT_THR &ndash; a list of threshold values for verfication statistics, e.g.,
+   "[ >0.0, >=10.0, >=25.4, >=50.8, >=101.6 ]" (including quotations).
+ * MSK &ndash; the name of the landmask polygon (including extension) to be used to define the verfication region.
  * INT_MTHD &ndash; the [interpolation method](https://met.readthedocs.io/en/latest/Users_Guide/config_options.html?highlight=nterp_mthd#interp)
    to be passed to the Grid-Stat configuration file, defining how the native model grid is mapped to the StageIV grid.
- * 
+ * INT_WDTH &ndash; the neighborhood width to be used for the interpolation to StageIV grid, in model-native grid point units.
+ * NBRHD_WDTH &ndash; the neighborhood width to be used for computing
+   [neighborhood statistics](https://met.readthedocs.io/en/latest/Users_Guide/grid-stat.html#neighborhood-methods)
+   in Grid-Stat. Note: the GridStatConfigTemplate defaults to square neighborhoods,
+   though this setting can be changed there.
+ * BTSTRP &ndash; the number of iterations that will be used for resampling to
+   generate bootsrap confidence intervals. Note: this is computationally expensive
+   should be turned off (set to 0) to speed up rapid diagnostics.
+ * RNK_CORR &ndash; TRUE or FALSE, if [Spearman rank correlation](https://met.readthedocs.io/en/latest/Users_Guide/appendixC.html#spearman-rank-correlation-coefficient-rho-s)
+   and [Kendall's Tau](https://met.readthedocs.io/en/latest/Users_Guide/appendixC.html#kendall-s-tau-statistic-tau)
+   robust statistics will be computed. Note: this is computationally expensive and
+   should be turned off (FALSE) to speed up rapid diagnostics.
+ * CMP_ACC &ndash; TRUE or FALSE, if accumulations will be computed by Grid-Stat.
+   This currently must be set to TRUE for WRF data processed in this workflow,
+   but should be set to false for pre-processed background data from global models
+   as is discussed below.
+ * PRFX &ndash; [string prefix](https://met.readthedocs.io/en/latest/Users_Guide/config_options.html#output-prefix)
+   to be used in Grid-Stat tool's outputs. Set to an empty string if not required.
+ * DATA_ROOT &ndash; the directory path to StageIV data pre-processed for usage with MET.
+   This assumes files are following naming patterns of StageIV_QPE_YYYYMMDDHH.nc.
+ * MET_SNG &ndash; full path to the executable MET singularity image to be used.
 
 ## Running gridstat on pre-processed background data (GFS / ECMWF)
 

@@ -38,6 +38,7 @@ for cmd in "$@"; do
 done
 
 #################################################################################
+# make checks for workflow parameters
 # these parameters are shared with run_wrfout_cf.sh
 
 # define the working scripts directory
@@ -145,9 +146,26 @@ if [ ! ${VRF_FLD} ]; then
   exit 1
 fi
 
+if [ ! "${CAT_THR}" ]; then
+  echo "ERROR: thresholds \${CAT_THR} is not defined."
+  exit 1
+fi
+
 # Landmask for verification region file name with extension
 if [ ! ${MSK} ]; then
   echo "ERROR: landmask \${MSK} is not defined."
+  exit 1
+fi
+
+# read in mask file name and separate name from extension
+IFS="." read -ra split_string <<< ${MSK}
+msk_nme=${split_string[0]}
+msk_ext=${split_string[1]}
+
+if [ ! -r "${MSK_ROOT}/${msk_nme}.${msk_ext}"  ]; then
+  msg="ERROR: verification region landmask, ${MSK_ROOT}/${msk_nme}.${msk_ext}, "
+  msg+="does not exist or is not readable."
+  echo ${msg}
   exit 1
 fi
 
@@ -176,7 +194,7 @@ if [ ! ${BTSTRP} ]; then
 fi
 
 # rank correlation computation flag, TRUE or FALSE
-if [ ! ${RNK_CRR} ]; then
+if [[ ${RNK_CRR} != "TRUE" && ${RNK_CRR} != "FALSE" ]]; then
   msg="ERROR: \${RNK_CRR} must be set to 'TRUE' or 'FALSE' if computing "
   msg+=" rank statistics."
   echo ${msg}
@@ -208,23 +226,6 @@ fi
 
 if [ ! -x ${MET_SNG} ]; then
   echo "MET singularity image, ${MET_SNG}, does not exist or is not executable."
-  exit 1
-fi
-
-# read in mask file name and separate name from extension
-IFS="." read -ra split_string <<< ${MSK}
-msk_nme=${split_string[0]}
-msk_ext=${split_string[1]}
-
-if [ ! -r "${MSK_ROOT}/${msk_nme}.${msk_ext}"  ]; then
-  msg="ERROR: verification region landmask, ${MSK_ROOT}/${msk_nme}.${msk_ext}, "
-  msg+="does not exist or is not readable."
-  echo ${msg}
-  exit 1
-fi
-
-if [ ! "${CAT_THR}" ]; then
-  echo "ERROR: thresholds \${CAT_THR} is not defined."
   exit 1
 fi
 

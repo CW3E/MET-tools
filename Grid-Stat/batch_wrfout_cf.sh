@@ -38,8 +38,7 @@
 
 # initiate bash and source bashrc to initialize environement
 conda init bash
-source /home/cgrudzien/.bashrc
-#source /home/USER/.bashrc
+source /home/USER/.bashrc
 
 # set local environment for ncl and related dependencies
 conda activate netcdf

@@ -43,78 +43,31 @@ from datetime import datetime as dt
 from datetime import timedelta
 import multiprocessing 
 from multiprocessing import Pool
-import ipdb
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
 CTR_FLWS = [
-            'deterministic_forecast_b0.50',
-            #'deterministic_forecast_b0.10',
-            #'deterministic_forecast_b0.30',
-            #'deterministic_forecast_b0.60',
-            #'deterministic_forecast_b0.70',
-            #'deterministic_forecast_b0.80',
-            #'deterministic_forecast_lag06_b0.00',
-            #'deterministic_forecast_lag06_b0.10',
-            #'deterministic_forecast_lag06_b0.20',
-            #'deterministic_forecast_lag06_b0.30',
-            #'deterministic_forecast_lag06_b0.40',
-            #'deterministic_forecast_lag06_b0.50',
-            #'deterministic_forecast_lag06_b0.60',
-            #'deterministic_forecast_lag06_b0.70',
-            #'deterministic_forecast_lag06_b0.80',
-            #'deterministic_forecast_lag06_b0.90',
-            #'deterministic_forecast_lag00_b0.00',
-            #'deterministic_forecast_lag00_b0.10',
-            #'deterministic_forecast_lag00_b0.20',
-            #'deterministic_forecast_lag00_b0.30',
-            #'deterministic_forecast_lag00_b0.40',
-            #'deterministic_forecast_lag00_b0.50',
-            #'deterministic_forecast_lag00_b0.60',
-            #'deterministic_forecast_lag00_b0.70',
-            #'deterministic_forecast_lag00_b0.80',
-            #'deterministic_forecast_lag00_b0.90',
-            #'deterministic_forecast_lag00_b1.00',
-            #'deterministic_forecast_lag00_b0.00_v03_h0150',
-            #'deterministic_forecast_lag00_b0.00_v03_h0300',
-            #'deterministic_forecast_lag00_b0.00_v03_h0450',
-            #'deterministic_forecast_lag00_b0.00_v03_h0600',
-            #'deterministic_forecast_lag00_b0.00_v03_h0900',
-            #'deterministic_forecast_lag06_b0.00_v03_h0150',
-            #'deterministic_forecast_lag06_b0.00_v03_h0300',
-            #'deterministic_forecast_lag06_b0.00_v03_h0450',
-            #'deterministic_forecast_lag06_b0.00_v03_h0600',
-            #'deterministic_forecast_lag06_b0.00_v03_h0900',
-            #'deterministic_forecast_lag00_b0.00_v06_h0150',
-            #'deterministic_forecast_lag00_b0.00_v06_h0300',
-            #'deterministic_forecast_lag00_b0.00_v06_h0450',
-            #'deterministic_forecast_lag00_b0.00_v06_h0600',
-            #'deterministic_forecast_lag00_b0.00_v06_h0900',
-            #'deterministic_forecast_lag06_b0.00_v06_h0150',
-            #'deterministic_forecast_lag06_b0.00_v06_h0300',
-            #'deterministic_forecast_lag06_b0.00_v06_h0450',
-            #'deterministic_forecast_lag06_b0.00_v06_h0600',
-            #'deterministic_forecast_lag06_b0.00_v06_h0900',
-            #'ECMWF',
-            #'GFS',
+            'NRT_gfs',
+            'NRT_ecmwf',
            ]
 
 # define the case-wise sub-directory
-CSE = 'CC'
+CSE = 'DeepDive'
 
 # verification domain for the forecast data                                                                           
 GRDS = [
+        'd01',
         'd02',
-        #'0.25',
+        'd03',
        ]
 
 # starting date and zero hour of forecast cycles (string YYYYMMDDHH)
-STRT_DT = '2021012400'
+STRT_DT = '2022121400'
 
 # final date and zero hour of data of forecast cycles (string YYYYMMDDHH)
-END_DT = '2021012700'
+END_DT = '2023011800'
 
 # number of hours between zero hours for forecast data (string HH)
 CYC_INT = '24'
@@ -128,10 +81,10 @@ PRFXS = [
 STR_INDT = '    '
 
 # root directory for gridstat outputs
-IN_ROOT = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/cycling_sensitivity_testing'
+IN_ROOT = '/cw3e/mead/projects/cwp106/scratch/' + CSE
 
 # root directory for processed pandas outputs
-OUT_ROOT = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/cycling_sensitivity_testing'
+OUT_ROOT = '/cw3e/mead/projects/cwp106/scratch/' + CSE
 
 ##################################################################################
 # Construct hyper-paramter array for batch processing gridstat data
@@ -143,6 +96,8 @@ for CTR_FLW in CTR_FLWS:
     for GRD in GRDS:
         for PRFX in PRFXS:
             # storage for configuration settings as arguments of proc_gridstat
+            # the function definition and role of these arguments are in the
+            # next section directly below
             CNFG = []
 
             # control flow / directory name
@@ -155,13 +110,13 @@ for CTR_FLW in CTR_FLWS:
             CNFG.append(GRD)
 
             # path to cycle directories from IN_ROOT
-            CNFG.append('/' + CSE + '/' + CTR_FLW + '/MET_analysis')
+            CNFG.append('/' + CTR_FLW + '/MET_analysis')
             
             # path to gridstat outputs from cycle directory
             CNFG.append('/' + GRD)
 
             # path to pandas output directories from OUT_ROOT
-            CNFG.append('/' + CSE + '/' + CTR_FLW + '/MET_analysis')
+            CNFG.append('/' + CTR_FLW + '/MET_analysis')
 
             # append configuration to be mapped
             CNFGS.append(CNFG)
@@ -181,7 +136,6 @@ def proc_gridstat(cnfg):
     os.system('mkdir -p ' + out_data_root)
     out_path = out_data_root + '/grid_stats_' + prfx + grd + '_' + STRT_DT +\
                '_to_' + END_DT + '.bin'
-    
     
     with open(out_data_root + '/proc_gridstat_log.txt', 'w') as log_f:
         # check for input root directory

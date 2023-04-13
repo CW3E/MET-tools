@@ -257,9 +257,11 @@ This script requires the following arguments:
 
 With the parameters appropriately set as above, one can call `proc_gristat.py` as
 ```
-python proc_gridstat.py
+python -u proc_gridstat.py
 ```
-to parse all files available within these directories. 
+to parse all files available within these directories. Note: the `-u` flag is
+is optional and is only to set this to write logs in real-time instead of at the
+time of script completion.
 
 The `proc_gridstat.py` script is designed to
 be agnostic of what statistics are available at each directory, using 
@@ -289,14 +291,12 @@ for later analysis and suppression of entries during plotting.
 Having run `proc_gridstat.py` as above for this case study, one has files
 of the form:
 ```
-grid_stats_d01_2022121400_to_2023011800.bin
-grid_stats_d02_2022121400_to_2023011800.bin
-grid_stats_d03_2022121400_to_2023011800.bin
-proc_gridstat_log.txt
+grid_stats_d0?_2022121400_to_2023011800.bin
+proc_gridstat_NRT_*_d0?_log.txt
 ```
 written to each `out_cyc_dir` parent directory to ISO style forecast zero
-hour directories. The log file contains the log of the script for
-processing the associated control flow, grids and date range, while the
+hour directories. The log files contain the log of the script for
+processing the associated control flow, grid and date range, while the
 `*.bin` files are binary files containing [Python pickled](https://docs.python.org/3/library/pickle.html)
 binary data, where the above dictionaries of dataframes are serialized,
 preserving the full object structure discussed above. To open such a file,

@@ -129,6 +129,10 @@ def proc_gridstat(cnfg):
     # unpack argument list
     ctr_flw, prfx, grd, in_cyc_dir, in_dt_subdir, out_cyc_dir = cnfg
 
+    # include underscore if prefix is of nonzero length
+    if len(prfx) > 0:
+        prfx =+ '_'
+
     # define derived data paths 
     in_data_root = IN_ROOT + in_cyc_dir 
 
@@ -137,7 +141,8 @@ def proc_gridstat(cnfg):
     out_path = out_data_root + '/grid_stats_' + prfx + grd + '_' + STRT_DT +\
                '_to_' + END_DT + '.bin'
     
-    with open(out_data_root + '/proc_gridstat_log.txt', 'w') as log_f:
+    with open(out_data_root + '/proc_gridstat_' + prfx + ctr_flw + '_' + grd +\
+              '_log.txt', 'w') as log_f:
         # check for input root directory
         if not os.path.isdir(in_data_root):
             print('ERROR: input data root directory ' + in_data_root +\
@@ -170,10 +175,6 @@ def proc_gridstat(cnfg):
         else:
             cyc_int = CYC_INT + 'H'
         
-        # define the output name
-        if len(prfx) > 0:
-            prfx =+ '_'
-
         # generate the date range for the analyses
         analyses = pd.date_range(start=strt_dt, end=end_dt,
                                  freq=cyc_int).to_pydatetime()
@@ -261,7 +262,7 @@ def proc_gridstat(cnfg):
         pickle.dump(data_dict, f)
         f.close()
 
-        return 'Completed: ' + ctr_flw + ' ' + prfx + ' ' + grd + '\n'
+        return 'Completed: ' + prfx + ctr_flw + ' ' + grd + '\n'
 
 ##################################################################################
 # Runs multiprocessing on parameter grid

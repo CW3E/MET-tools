@@ -286,5 +286,39 @@ missing values, replacing them with entries of
 [Numpy NaN](https://numpy.org/doc/stable/reference/constants.html#numpy.NAN)
 for later analysis and suppression of entries during plotting.
 
+Having run `proc_gridstat.py` as above for this case study, one has files
+of the form:
+```
+grid_stats_d01_2022121400_to_2023011800.bin
+grid_stats_d02_2022121400_to_2023011800.bin
+grid_stats_d03_2022121400_to_2023011800.bin
+proc_gridstat_log.txt
+```
+written to each `out_cyc_dir` parent directory to ISO style forecast zero
+hour directories. The log file contains the log of the script for
+processing the associated control flow, grids and date range, while the
+`*.bin` files are binary files containing [Python pickled](https://docs.python.org/3/library/pickle.html)
+binary data, where the above dictionaries of dataframes are serialized,
+preserving the full object structure discussed above. To open such a file,
+one needs to unpickle the contents of this file, e.g., in a Python script or
+interactive session one may write
+```{python}
+import pickle
+import pandas as pd
+f = open('grid_stats_d01_2022121400_to_2023011800.bin', 'rb')
+gridstat_data = pickle.load(f)
+f.close()
+```
+where the variable `gridstat_data` now references our dictionary of dataframes.
+To view the dataframe key names which call the parsed data, one may write
+```{python}
+gridstat_data.keys()
+Out: dict_keys(['cnt', 'ctc', 'cts', 'fho', 'nbrcnt', 'nbrctc', 'nbrcts'])
+```
+To, e.g., call the dataframe of neighborhood continuous statistics, one may call
+```{python}
+nbrcnt = gridstat_data['nbrcnt']
+```
+and work with the `nbrcnt` variable to analyze and plot the data.
 
 ## Plotting from pickled data frames

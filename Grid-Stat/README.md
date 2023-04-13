@@ -44,8 +44,8 @@ requires the following configuration parameters to be defined:
  * `${IN_CYC_DIR}`    &ndash; the root directory of ISO style directories for input files organizing forecast initial valid times.
  * `${OUT_CYC_DIR}`   &ndash; the root directory of ISO style directories for output files organizing forecast initial valid times.
  * `${RGRD}`          &ndash; TRUE or FALSE, whether to regrid the native WRF domain to a generic MET compatible grid.
- * `${IN_DT_SUBDIR}`  &ndash; provides the sub-path from ISO style directories to wrfout files including leading "/", e.g, "/wrfout". This is left as an empty string `""` if not needed.
- * `${OUT_DT_SUBDIR}` &ndash; provides the sub-path from ISO style directories to output cf-compliant files including leading "/", e.g, "/${GRD}". This is left as an empty string `""` if not needed.
+ * `${IN_DT_SUBDIR}`  &ndash; provides the sub-path from ISO style directories to wrfout files including leading `"/"`, e.g, `"/wrfout"`. This is left as an empty string `""` if not needed.
+ * `${OUT_DT_SUBDIR}` &ndash; provides the sub-path from ISO style directories to output cf-compliant files including leading `"/"`, e.g, `"/${GRD}"`. This is left as an empty string `""` if not needed.
 
 The `run_wrfout_cf.sh` script is designed to be run with the `batch_wrfout_cf.sh`
 script supplying the above arguments, as defined over a mapping of different

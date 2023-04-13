@@ -10,8 +10,8 @@ MET, and then to post-process the MET Grid-Stat ASCII text file outputs into
 the [ipython conda environment](https://github.com/CW3E/MET-tools#conda-environments).
 
 ## Converting wrfout history files to cf-compliant files
-Included in this workflow is the NCL script wrfout_to_cf.ncl. This is a modified
-version of the original wrfout_to_cf specifically for West-WRF output that
+Included in this workflow is the NCL script `wrfout_to_cf.ncl`. This is a modified
+version of the original `wrfout_to_cf.ncl` specifically for West-WRF output that
 includes added variables of IVT and precipitation. One must set output variables
 to TRUE within this code to convert them into cf-compliant netcdf files. The
 conversion of raw wrfout history files to cf-compliant NetCDF files is neccessary
@@ -33,14 +33,14 @@ corresponding to forecast zero hours, each of the format `YYYYMMDDHH`. This scri
 requires the following configuration parameters to be defined:
 
  * `${USR_HME}`       &ndash; the directory path for the MET-tools clone.
- * `${CTR_FLW}`       &ndash; the name of the control flow, e.g., "NRT_gfs".
+ * `${CTR_FLW}`       &ndash; the name of the control flow, e.g., `"NRT_gfs"`.
  * `${GRD}`           &ndash; the grid to be analyzed, e.g., `d01` indicating the domain of the native WRF grid.
  * `${STRT_DT}`       &ndash; start date time of first forecast zero hour to be analyzed in `YYYYMMDDHH` format.
  * `${END_DT}`        &ndash; end date time of last forecast zero hour to be analyzed in `YYYYMMDDHH` format.
  * `${ANL_MIN}`       &ndash; first forecast hour to be analyzed for each forecast initial time.
  * `${ANL_MAX}`       &ndash; last forecast hour to be analyzed for each forecast initial time.
  * `${ANL_INT}`       &ndash; interval of forecast analyses to be performed between `${ANL_MIN}` and `${ANL_MAX}`, `HH` format.
- * `${ACC_INT}`       &ndash; the accumulation interval to compute precipitation over in hours (values other than 24 pending testing).
+ * `${ACC_INT}`       &ndash; the accumulation interval to compute precipitation over in hours (values other than `24` pending testing).
  * `${IN_CYC_DIR}`    &ndash; the root directory of ISO style directories for input files organizing forecast initial valid times.
  * `${OUT_CYC_DIR}`   &ndash; the root directory of ISO style directories for output files organizing forecast initial valid times.
  * `${RGRD}`          &ndash; TRUE or FALSE, whether to regrid the native WRF domain to a generic MET compatible grid.
@@ -206,8 +206,8 @@ to `FALSE` in the batch_gridstat.sh settings above. However, in all
 other respects the analysis is the same, up to defining the appropriate
 paths, interpolation schemes, neighborhood sizes, etc.
 
-## Processing gridstat outputs
-The MET Grid-Stat tool used in this workflow outputs
+## Processing Grid-Stat outputs
+The MET Grid-Stat tool used in this workflow writes outputs to
 [ASCII text files](https://met.readthedocs.io/en/latest/Users_Guide/grid-stat.html#grid-stat-output)
 with naming patterns following a general form of
 ```
@@ -215,9 +215,72 @@ grid_stat_${PRFX}_HHMMSSL_YYYYMMDD_HHMMSSV_${STAT}.txt
 ```
 where `${PRFX}` indicates the user-defined output prefix (if one is defined above),
 `HHMMSSL` indicates the forecast lead time and `YYYYMMDD_HHMMSSV` indicates the
-forecast valid time. These text files are thus organized relative to the
+forecast valid time and `${STAT}` is a category of statistics that are contained
+in the given file. These text files are thus organized relative to the
 valid date time for the forecast zero hour, with ISO date directories located
-in the `${OUT_CYC_DIR}` defined in the batch_gridstat.sh script.
+in the `${OUT_CYC_DIR}` defined for each control flow in the `batch_gridstat.sh`
+script. In this workflow, the Grid-Stat outputs for each domain for a given
+controlflow are organized into a sub-directory of the ISO named directory for the
+forecast zero hour, e.g.,
+```
+/cw3e/mead/projects/cwp106/scratch/DeepDive/NRT_gfs/MET_analysis/2022121400/d01
+```
+contains the `grid_stat_*.txt` files for all `d01` forecasts up to the
+`${ANL_MAX}` time that are initialized at `2022121400`.
+
+These Grid-Stat text files are human-readable as column-organized data, and in
+order to parse the text into a statistical and graphical language, this
+workflow has implemented the `proc_gridstat.py` script to efficiently batch
+process all control flows, statisics types, domains and valid dates for forecast
+zero hours and verification times at once using
+[Python multiprocessing](https://docs.python.org/3/library/multiprocessing.html).
+This script requires the following arguments:
+
+ * `CTR_FLWS` &ndash; a list of all control flows to be processed.
+ * `CSE`      &ndash; the name of the case study being performed.
+ * `GRDS`     &ndash; the model grids to be processed.
+ * `START_DT` &ndash; the first valid date time for a forecast to be processed
+   (`YYYYMMDDHH` format).
+ * `END_DT`   &ndash; the last valid date time for a forecast to be processed
+   (`YYYYMMDDHH` format).
+ * `CYC_INT`  &ndash; the interval between valid date times to be processed.
+ * `PRFXS`    &ndash; a list of all prefixes for Grid-Stat output files to be processed.
+ * `IN_ROOT`  &ndash; the directory path for all control flow-named directories containing
+   Grid-Stat outputs to be processed.
+ * `OUT_ROOT` &ndash; the directory path for all `proc_gridstat.py` outputs to be
+   written, sub-organized by control flow names. Logs for `proc_gridstat.py` are
+   written in the same location.
+
+With the parameters appropriately set as above, one can call `proc_gristat.py` as
+```
+python proc_gridstat.py
+```
+to parse all files available within these directories. 
+
+The `proc_gridstat.py` script is designed to
+be agnostic of what statistics are available at each directory, using 
+[glob](https://docs.python.org/3/library/glob.html) and
+Bash wildcards to search for any files available matching the specified patterns.
+Dates will be processed sequentially between `START_DT` and `END_DT`, where for
+each file of the type
+```
+grid_stat_${PRFX}_HHMMSSL_YYYYMMDD_HHMMSSV_${STAT}.txt
+```
+the `${STAT}` variable will be read as the key name for a
+[Python dictionary](https://docs.python.org/3/tutorial/datastructures.html#dictionaries)
+entry, with a matching value equal to a [Pandas](https://pandas.pydata.org/)
+dataframe which inherits all column names and values from the corresponding
+ASCII file. As dates are processed sequentially in valid initialization
+time, new files with type `${STAT}` will be parsed and concatenated
+vertically to an existing `${STAT}` dataframe associated to the dictionary
+key `${STAT}`, if it already exists, or this will be newly created if it does
+not exist already. When there exists multiple valid dates for verfication
+for a single initialization time, valid dates for verification will be sorted
+sequentially so that rows of the dataframe are organized by valid zero-hour /
+valid verfication date precedence. This script also filters missing values,
+replacing them with entries of
+[Numpy NaN](https://numpy.org/doc/stable/reference/constants.html#numpy.NAN)
+for later analysis and suppression of entries during plotting.
 
 
 ## Plotting from pickled data frames

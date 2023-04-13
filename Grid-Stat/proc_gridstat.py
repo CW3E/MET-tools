@@ -77,9 +77,6 @@ PRFXS = [
          '',
         ]
 
-# standard string indentation
-STR_INDT = '    '
-
 # root directory for gridstat outputs
 IN_ROOT = '/cw3e/mead/projects/cwp106/scratch/' + CSE
 
@@ -89,6 +86,9 @@ OUT_ROOT = '/cw3e/mead/projects/cwp106/scratch/' + CSE
 ##################################################################################
 # Construct hyper-paramter array for batch processing gridstat data
 ##################################################################################
+# standard string indentation
+STR_INDT = '    '
+
 # container for map
 CNFGS = []
 

@@ -1,15 +1,13 @@
 #################################################################################
 # Description
 #################################################################################
-# This driver script is based on original source code provided by Rachel Weihs
-# and Caroline Papadopoulos.  This is re-written to homogenize project structure
-# and to include flexibility with batch processing date ranges of data.
-#
 # The purpose of this script is to compute grid statistics using MET
 # after pre-procssing WRF forecast data and StageIV precip data for
-# validating the forecast peformance. Note, bootstrapped confidence intervals
-# and rank correlation statitistics are costly to compute and significantly
-# increase run time.  For rapid diagnostics these options should be turned off.
+# validating the forecast peformance. This script is based on original
+# source code provided by Rachel Weihs, Caroline Papadopoulos and Daniel
+# Steinhoff.  This is re-written to homogenize project structure and to include
+# error handling, process logs and additional flexibility with batch processing 
+# ranges of data from multiple models and / or workflows.
 #
 #################################################################################
 # License Statement

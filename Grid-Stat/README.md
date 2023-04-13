@@ -40,7 +40,7 @@ requires the following configuration parameters to be defined:
  * ANL_MIN       &ndash; first forecast hour to be analyzed for each forecast initial time.
  * ANL_MAX       &ndash; last forecast hour to be analyzed for each forecast initial time.
  * ANL_INT       &ndash; interval of forecast analyses to be performed between ANL_MIN and ANL_MAX, HH format.
- * ACC_INT       &ndash; the accumulation interval to compute precipitation over.
+ * ACC_INT       &ndash; the accumulation interval to compute precipitation over in hours (values other than 24 pending testing).
  * IN_CYC_DIR    &ndash; the root directory of ISO style directories for input files organizing forecast initial valid times.
  * OUT_CYC_DIR   &ndash; the root directory of ISO style directories for output files organizing forecast initial valid times.
  * RGRD          &ndash; TRUE or FALSE, whether to regrid the native WRF domain to a generic MET compatible grid.
@@ -104,17 +104,18 @@ tasks will be written in the working directory of batch_wrfout_cf.sh.
 
 ## Running gridstat on cf-compliant WRF outputs
 Once cf-compliant outputs have been written by running the steps above, one
-can ingest these scripts into MET using the run_gridstat.sh script in this
+can ingest this data into MET using the run_gridstat.sh script in this
 directory. This script is designed similarly to the run_wrfout_cf.sh script
 discussed above and requires the same arguments with the addition several others
 discussed in the following. MET's Grid-Stat tool settings are controlled with a 
 [GridStatConfig](https://met.readthedocs.io/en/latest/Users_Guide/config_options.html)
-file, which are dynamically updated in this workflow by updating fields in the
+file. This workflow generates a GridStatConfig file in the working
+directory for Grid-Stat by copying and updating the fields in the
 template GridStatConfigTemplate in this directory. In addition to the arguments
 required in the run_wrfout_cf.sh script described above, run_gridstat.sh requires:
 
  * VRF_FLD &ndash; the verification field to be computed, currently only "QPF" tested / supported.
- * CAT_THR &ndash; a list of threshold values for verfication statistics, e.g.,
+ * CAT_THR &ndash; a list of threshold values for verfication statistics in mm units, e.g.,
    "[ >0.0, >=10.0, >=25.4, >=50.8, >=101.6 ]" (including quotations).
  * MSK &ndash; the name of the landmask polygon (including extension) to be used to define the verfication region.
  * INT_MTHD &ndash; the [interpolation method](https://met.readthedocs.io/en/latest/Users_Guide/config_options.html?highlight=nterp_mthd#interp)
@@ -123,7 +124,9 @@ required in the run_wrfout_cf.sh script described above, run_gridstat.sh require
  * NBRHD_WDTH &ndash; the neighborhood width to be used for computing
    [neighborhood statistics](https://met.readthedocs.io/en/latest/Users_Guide/grid-stat.html#neighborhood-methods)
    in Grid-Stat. Note: the GridStatConfigTemplate defaults to square neighborhoods,
-   though this setting can be changed there.
+   though this setting can be changed there. This workflow always computes neighborhood
+   statistics using the StageIV grid, so that NBHD_WDTH corresponds to the number
+   of grid points to compute, e.g., the FSS in 4km grid spaces.
  * BTSTRP &ndash; the number of iterations that will be used for resampling to
    generate bootsrap confidence intervals. Note: this is computationally expensive
    should be turned off (set to 0) to speed up rapid diagnostics.
@@ -141,7 +144,55 @@ required in the run_wrfout_cf.sh script described above, run_gridstat.sh require
    This assumes files are following naming patterns of StageIV_QPE_YYYYMMDDHH.nc.
  * MET_SNG &ndash; full path to the executable MET singularity image to be used.
 
+The run_gridstat.sh script is designed to be run with the batch_gridstat.sh
+script supplying the above arguments as defined over a mapping of different
+combinations of control flows and grids to process. Note: the performance
+of the interpolation method, and the required number of gridpoints, used
+to regrid WRF outputs to the StageIV grid depend sstrongly depends on the
+native WRF grid. It is required that each grid to be batch processed (d01/d02/d03)
+has a corresponding setting for the INT_MTHD and the INT_WDTH. For example,
+in the batch_gridstat.sh template,
+```{bash}
+GRDS=(
+      "d01"
+      "d02"
+      "d03"
+     )
+
+# define the interpolation method and related parameters
+INT_MTHDS=(
+           "DW_MEAN"
+           "DW_MEAN"
+           "DW_MEAN"
+          )
+INT_WDTHS=(
+           "3"
+           "9"
+           "27"
+          )
+```
+each of grids d01, d02 and d03 will used the distance-weighted mean interpolation
+scheme, but the number of WRF grid points used to compute the distance-weighted mean
+in the StageIV grid depends on the resolution of d01, d02 and d03 respectively. For
+9km, 3km and 1km domains, this corresponds to taking a 27km neighborhood in the
+WRF domain around each StageIV gridpoint and defining the WRF forecast as the
+distance-weighted mean value over this neighborhood.
+
+The batch_gridstat.sh likewise uses job arrays to submit multiple configurations
+at once and run them as indices of a parameter map. The parameter
+map constructor and the SLURM job array should be set like the batch_wrf_cf.sh
+as discussed above.
+
 ## Running gridstat on pre-processed background data (GFS / ECMWF)
+There are two differences in running this workflow on preprocessed
+background data from global models such as GFS and the deterministic
+ECMWF. Firstly, for files of the form ECMWF_24QPF_YYYYMMDDHH_FZZZ.nc
+one does not need to run the cf compliant conversion as above for the
+NRT data. Secondly, the accumulation has already been computed
+in the above file. In this respect, CMP_ACC should be set equal
+to FALSE in the batch_gridstat.sh settings above. However, in all
+other respects the analysis is the same, up to defining the appropriate
+paths, interpolation schemes, neighborhood sizes, etc.
 
 ## Processing gridstat outputs
 

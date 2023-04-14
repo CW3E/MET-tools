@@ -157,7 +157,10 @@ job="${cfg}[@]"
 cmd="cd ${USR_HME}/Grid-Stat"
 echo ${cmd}; eval ${cmd}
 
-cmd="./run_wrfout_cf.sh ${!job} > wrfout_cf_${jbid}_${indx}.log 2>&1"
+cmd="mkdir -p ${OUT_ROOT}"
+echo ${cmd}; eval ${cmd}
+
+cmd="./run_wrfout_cf.sh ${!job} > ${OUT_ROOT}/wrfout_cf_${jbid}_${indx}.log 2>&1"
 echo ${cmd}; eval ${cmd}
 
 ##################################################################################

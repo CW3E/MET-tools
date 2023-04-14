@@ -2,7 +2,7 @@
 # Description
 ##################################################################################
 # This script is designed to generate line plots in Matplotlib from MET grid_stat
-# output files, preprocessed with the companion script proc_24hr_QPF.py.  This
+# output files, preprocessed with the companion script proc_gridstat.py.  This
 # plotting scheme is designed to plot non-threshold data as lines in the vertical
 # axis and the number of lead hours to the valid time for verification from the
 # forecast initialization in the horizontal axis. The global parameters for the
@@ -14,7 +14,7 @@
 # License Statement
 ##################################################################################
 #
-# Copyright 2022 Colin Grudzien, cgrudzien@ucsd.edu
+# Copyright 2023 Colin Grudzien, cgrudzien@ucsd.edu
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,88 +44,63 @@ import numpy as np
 import pickle
 import os
 from proc_gridstat import OUT_ROOT
-import ipdb
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flows to analyze 
 CTR_FLWS = [
-            'deterministic_forecast_b0.00',
-            'deterministic_forecast_b0.10',
-            'deterministic_forecast_b0.20',
-            'deterministic_forecast_b0.30',
-            'deterministic_forecast_b0.40',
-            'deterministic_forecast_b0.50',
-            'deterministic_forecast_b0.60',
-            'deterministic_forecast_b0.70',
-            'deterministic_forecast_b0.80',
-            'deterministic_forecast_b0.90',
-            'deterministic_forecast_b1.00',
-            #'deterministic_forecast_lag00_b0.00_v03_h0300',
-            #'deterministic_forecast_lag00_b0.00_v06_h0300',
-            #'deterministic_forecast_lag06_b0.00_v03_h0300',
-            #'deterministic_forecast_lag06_b0.00_v06_h0300',
-            #'deterministic_forecast_lag00_b0.00_v06_h0150',
-            #'deterministic_forecast_lag00_b0.00_v06_h0300',
-            #'deterministic_forecast_lag00_b0.00_v06_h0450',
-            #'deterministic_forecast_lag00_b0.00_v06_h0600',
-            #'deterministic_forecast_lag00_b0.00_v06_h0900',
-            #'deterministic_forecast_lag00_b0.00',
-            #'deterministic_forecast_lag00_b0.10',
-            #'deterministic_forecast_lag00_b0.20',
-            #'deterministic_forecast_lag00_b0.30',
-            #'deterministic_forecast_lag00_b0.40',
-            #'deterministic_forecast_lag00_b0.50',
-            #'deterministic_forecast_lag00_b0.60',
-            #'deterministic_forecast_lag00_b0.70',
-            #'deterministic_forecast_lag00_b0.80',
-            #'deterministic_forecast_lag00_b0.90',
-            #'deterministic_forecast_lag00_b1.00',
-            'GFS',
-            'ECMWF',
+            'NRT_gfs',
+            'NRT_ecmwf',
            ]
+
+# Define the max number of underscore components of control flow names to include in
+# fig legend. This includes components of the strings above from last to first. Set to
+# number of underscore separated compenents in the string to obtain the full
+# name as the legend label. Note: a non-empty prefix value below will always be
+# included in the legend label
+LAB_LEN = 2
+
+# define if legend label includes grid
+GRD_LAB = True
 
 # define optional list of stats files prefixes, include empty string to ignore
 PRFXS = [
         '',
         ]
 
-# fig label for output file organization
-FIG_LAB = 'lag00'
+# fig file label for output file organization
+FIG_LAB = ''
 
 # fig case directory
-FIG_CSE = 'beta'
+FIG_CSE = ''
 
 # define case-wise sub-directory
-CSE = 'CC'
+CSE = 'DeepDive'
 
 # verification domain for the forecast data
-GRD='d02'
+GRD='d01'
 
-# verification domain for the calibration data
+# verification domain for global calibration data
 REF='0.25'
 
 # starting date and zero hour of forecast cycles
-STRT_DT = '2021012400'
+STRT_DT = '2022121400'
 
 # final date and zero hour of data of forecast cycles
-END_DT = '2021012700'
+END_DT = '2023011800'
 
 # valid date for the verification
-VALID_DT = '2021012800'
+VALID_DT = '2023010100'
 
 # MET stat file type -- should be non-leveled data
 TYPE = 'cnt'
 
 # MET stat column names to be made to heat plots / labels
 STATS = ['RMSE', 'PR_CORR']
-#STATS = ['MAD', 'SP_CORR']
 
 # landmask for verification region -- need to be set in earlier preprocessing
-#LND_MSK = 'CA_Climate_Zone_16_Sierra'
 LND_MSK = 'CALatLonPoints'
-#LND_MSK = 'FULL'
 
 # plot title
 TITLE='24hr accumulated precip at ' + VALID_DT
@@ -133,8 +108,12 @@ TITLE='24hr accumulated precip at ' + VALID_DT
 # plot sub-title title
 SUBTITLE='Verification region -- ' + LND_MSK
 
-# fig root
-FIG_ROOT = '/home/cgrudzien/cycle_analysis'
+# fig saved automatically to OUT_PATH
+FIG_ROOT = '/cw3e/mead/projects/cwp106/scratch'
+OUT_DIR = FIG_ROOT + '/' + CSE + '/' + FIG_CSE
+OUT_PATH = OUT_DIR + '/' + VALID_DT + '_' +\
+           LND_MSK + '_' + STATS[0] + '_' +\
+           STATS[1] + '_' + FIG_LAB + '_lineplot.png'
 
 ##################################################################################
 # Begin plotting
@@ -158,7 +137,7 @@ else:
 # create a figure
 fig = plt.figure(figsize=(11.25,8.63))
 num_flws = len(CTR_FLWS)
-num_pfxs = len(PRFXS)
+num_prfxs = len(PRFXS)
 
 # Set the axes
 ax0 = fig.add_axes([.110, .395, .85, .33])
@@ -176,24 +155,24 @@ for i in range(num_flws):
     # loop on control flows
     ctr_flw = CTR_FLWS[i]
 
-    for m in range(num_pfxs):
+    for m in range(num_prfxs):
         # loop on prefixes
-        pfx = PRFXS[m]
-        if len(pfx) > 0:
-            pfx += '_'
+        prfx = PRFXS[m]
+        if len(prfx) > 0:
+            prfx += '_'
         
         # define derived data paths 
-        data_root = OUT_ROOT + '/' + CSE + '/' + ctr_flw + '/MET_analysis'
+        data_root = OUT_ROOT + '/' + ctr_flw + '/MET_analysis'
         stat0 = STATS[0]
         stat1 = STATS[1]
         
         # define the input name
         if ctr_flw == 'ECMWF' or ctr_flw == 'GFS':
-            in_path = data_root + '/grid_stats_' + pfx + REF + '_' + STRT_DT +\
+            in_path = data_root + '/grid_stats_' + prfx + REF + '_' + STRT_DT +\
                       '_to_' + END_DT + '.bin'
 
         else:
-            in_path = data_root + '/grid_stats_' + pfx + GRD + '_' + STRT_DT +\
+            in_path = data_root + '/grid_stats_' + prfx + GRD + '_' + STRT_DT +\
                       '_to_' + END_DT + '.bin'
         
         try:
@@ -207,14 +186,15 @@ for i in range(num_flws):
             continue
 
         split_string = ctr_flw.split('_')
-        line_lab = pfx 
-        if len(split_string) > 1:
-            for i in range(1,1,-1):
-                line_lab += split_string[-i] + '_'
-            line_lab += split_string[-1] 
+        split_len = len(split_string)
+        line_lab = prfx 
+        lab_len = min(LAB_LEN, split_len)
+        for i in range(split_len - lab_len, -1, -1):
+            line_lab += split_string[-i] + '_'
 
-        else:
-            line_lab += ctr_flw
+        line_lab += split_string[-1] 
+        if GRD_LAB:
+            line_lab += '_' + GRD
 
         line_labs.append(line_lab)
         line_count += 1
@@ -285,7 +265,6 @@ for i in range(num_flws):
         # add the line type to the legend
         line_list.append(l)
 
-
 # set colors and markers
 line_colors = sns.color_palette("husl", line_count + 1)
 for i in range(len(ax0_l)):
@@ -333,9 +312,6 @@ ax0.tick_params(
         labelright=False,
         )
 
-#ax0.set_ylim([10, 30])
-#ax1.set_ylim([.6,1.0])
-
 ax0.set_yticks(ax0.get_yticks(), ax0.get_yticklabels(), va='bottom')
 ax1.set_yticks(ax1.get_yticks(), ax1.get_yticklabels(), va='top')
 
@@ -357,17 +333,12 @@ plt.figtext(.03, .265, lab1, horizontalalignment='right', rotation=90,
 plt.figtext(.5, .01, lab2, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
-fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws * num_pfxs, 5),
+fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws * num_prfxs, 5),
            loc='center', bbox_to_anchor=[0.5, 0.83])
 
 # save figure and display
-out_dir = FIG_ROOT + '/' + CSE + '/' + FIG_CSE
-os.system('mkdir -p ' + out_dir)
-out_path = out_dir + '/' + VALID_DT + '_' +\
-           LND_MSK + '_' + stat0 + '_' +\
-           stat1 + '_' + FIG_LAB + '_lineplot.png'
-    
-plt.savefig(out_path)
+os.system('mkdir -p ' + OUT_DIR)
+plt.savefig(OUT_PATH)
 plt.show()
 
 ##################################################################################

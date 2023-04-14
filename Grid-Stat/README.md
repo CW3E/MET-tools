@@ -90,7 +90,7 @@ hours in the range from 2022-12-14_00 to 2023-01-18_00 with initial times
 at 00-Z and forecast horizons rangeing from 1 up to 10 days. Control flow
 and grid combinations that do not have forecasts as long as 10 days will
 be analyzed for as many forecast days are available in the source data.
-This entire analysis will be run by submitting batch_wrfout_cf.sh to the
+This entire analysis will be run by submitting `batch_wrfout_cf.sh` to the
 scheduler, where each configuration corresponds to a sub-task of a SLURM
 job array. In particular, there is one configuration defined for each control
 flow and grid combination, meaning that the `batch_wrfout_cf.sh` should have
@@ -102,7 +102,7 @@ to run each sub-analysis over the date range and forecast horizons. Outputs
 from this analysis will be written to the `${OUT_ROOT}` variable defined in
 the `batch_wrfout_cf.sh`, this and other settings in the job array construction
 should be defined accordingly by the user. Logs for each of the SLURM array
-tasks will be written in the working directory of `batch_wrfout_cf.sh`.
+tasks will be written in `${OUT_ROOT}` defined in `batch_wrfout_cf.sh`.
 
 ## Running gridstat on cf-compliant WRF outputs
 Once cf-compliant outputs have been written by running the steps above, one
@@ -197,7 +197,8 @@ distance-weighted mean value over this neighborhood.
 The `batch_gridstat.sh` likewise uses job arrays to submit multiple configurations
 at once and run them as indices of a parameter map. The parameter
 map constructor and the SLURM job array should be set like the `batch_wrf_cf.sh`
-as discussed above.
+as discussed above. Logs for `batch_gridstat.sh` will be written in
+the `${OUT_ROOT}` directory set in the script.
 
 ## Running gridstat on pre-processed background data (GFS / ECMWF)
 There are two differences in running this workflow on preprocessed

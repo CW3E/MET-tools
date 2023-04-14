@@ -50,19 +50,19 @@ from proc_gridstat import OUT_ROOT
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'ECMWF'
+CTR_FLW = 'NRT_ecmwf'
 
 # define optional gridstat prefix 
-PRFX = 'DW_MEAN_3'
+PRFX = ''
 
 # define case-wise sub-directory
-CSE = 'DD'
+CSE = 'DeepDive'
 
 # verification domain for the forecast data
-GRD='0.25'
+GRD='d01'
 
 # starting date and zero hour of forecast cycles (string YYYYMMDDHH)
-STRT_DT = '2022121600'
+STRT_DT = '2022121400'
 
 # final date and zero hour of data of forecast cycles (string YYYYMMDDHH)
 END_DT = '2023011800'
@@ -71,7 +71,7 @@ END_DT = '2023011800'
 CYC_INT = '24'
 
 # first valid time for verification (string YYYYMMDDHH)
-ANL_STRT = '2022122600'
+ANL_STRT = '2022122400'
 
 # final valid time (string YYYYMMDDHH)
 ANL_END = '2023011900'
@@ -79,18 +79,19 @@ ANL_END = '2023011900'
 # cycle interval verification valid times (string HH)
 ANL_INT = '24'
 
-# MET stat file type -- should be leveled data
+# MET stat file type -- should not be leveled data
 TYPE = 'cnt'
 
 # MET stat column names to be made to heat plots / labels
 STAT = 'RMSE'
-#STAT = 'ME'
-#STAT = 'PR_CORR'
 
 # landmask for verification region -- need to be set in earlier preprocessing
-LND_MSK = 'CA_Climate_Zone_16_Sierra'
-#LND_MSK = 'CALatLonPoints'
-#LND_MSK = 'FULL'
+LND_MSK = 'CALatLonPoints'
+
+# use dynamic color bar scale depending on data percentiles, True / False
+# Use this as True by default unless specifying a specific color bar scale and
+# scheme in the below
+DYN_SCL = True
 
 # define control flow plotting name
 TITLE = STAT + ' - ' + LND_MSK + ' - ' + CTR_FLW + ' ' + PRFX
@@ -202,7 +203,13 @@ for i in range(num_leads):
             tmp[i, j] = np.nan
 
 # find the max / min value over the inner 100 - alpha percentile range of the data
-if STAT == 'ME':
+if DYN_SCL:
+    scale = tmp[~np.isnan(tmp)]
+    alpha = 1
+    max_scale, min_scale = np.percentile(scale, [100 - alpha / 2, alpha / 2])
+    color_map = sns.color_palette('viridis', as_cmap=True)
+
+elif STAT == 'ME':
     abs_scale = 30
     min_scale = -abs_scale
     max_scale = abs_scale
@@ -212,13 +219,6 @@ elif STAT == 'PR_CORR':
     min_scale = -1.0
     max_scale = 1.0
     color_map = sns.diverging_palette(145, 300, s=60, as_cmap=True, center='dark')
-else:
-    #scale = tmp[~np.isnan(tmp)]
-    #alpha = 1
-    #max_scale, min_scale = np.percentile(scale, [100 - alpha / 2, alpha / 2])
-    max_scale = 40.0
-    min_scale = 0.0
-    color_map = sns.color_palette('viridis', as_cmap=True)
 
 sns.heatmap(tmp[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale,
             vmax=max_scale, cmap=color_map)
@@ -255,7 +255,7 @@ plt.figtext(.5, .98, TITLE, horizontalalignment='center',
             verticalalignment='center', fontsize=20)
 
 # save figure and display
-plt.savefig(out_path)
+#plt.savefig(out_path)
 plt.show()
 
 ##################################################################################

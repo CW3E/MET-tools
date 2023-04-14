@@ -193,7 +193,10 @@ job="${cfg}[@]"
 cmd="cd ${USR_HME}/Grid-Stat"
 echo ${cmd}; eval ${cmd}
 
-cmd="./run_gridstat.sh ${!job} > gridstat_${jbid}_${indx}.log 2>&1"
+cmd="mkdir -p ${OUT_ROOT}"
+echo ${cmd}; eval ${cmd}
+
+cmd="./run_gridstat.sh ${!job} > ${OUT_ROOT}/gridstat_${jbid}_${indx}.log 2>&1"
 echo ${cmd}; eval ${cmd}
 
 ##################################################################################

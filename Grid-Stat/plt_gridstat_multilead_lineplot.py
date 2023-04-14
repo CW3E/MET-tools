@@ -80,7 +80,7 @@ FIG_CSE = ''
 # define case-wise sub-directory
 CSE = 'DeepDive'
 
-# verification domain for the forecast data
+# verification domains for the forecast data
 GRDS = [
         'd01',
         'd02',
@@ -97,13 +97,13 @@ END_DT = '2023011800'
 # valid date for the verification
 VALID_DT = '2023010100'
 
-# MET stat file type -- should be non-leveled data
+# MET stat file type - should be non-leveled data
 TYPE = 'cnt'
 
 # MET stat column names to be made to heat plots / labels
 STATS = ['RMSE', 'PR_CORR']
 
-# landmask for verification region -- need to be set in earlier preprocessing
+# landmask for verification region
 LND_MSK = 'CALatLonPoints'
 
 # plot title
@@ -138,30 +138,22 @@ else:
             '_' + VALID_DT[8:]
     valid_dt = dt.fromisoformat(v_iso)
 
-num_flws = len(CTR_FLWS)
-num_prfxs = len(PRFXS)
-num_grds = len(GRDS)
 fcst_leads = []
-
-for i_nf in range(num_flws):
-    # loop on control flows
-    ctr_flw = CTR_FLWS[i_nf]
-
-    for i_np in range(num_prfxs):
-        # loop on prefixes
-        prfx = PRFXS[i_np]
+for ctr_flw in CTR_FLWS:
+    for prfx in PRFXS:
         if len(prfx) > 0:
-            prfx += '_'
+            pfx = prfx + '_'
+        else:
+            pfx = ''
         
         # define derived data paths 
         data_root = OUT_ROOT + '/' + ctr_flw
         stat0 = STATS[0]
         stat1 = STATS[1]
         
-        for i_ng in range(num_grds):
+        for grd in GRDS:
             # define the input name
-            grd = GRDS[i_ng]
-            in_path = data_root + '/grid_stats_' + prfx + grd + '_' + STRT_DT +\
+            in_path = data_root + '/grid_stats_' + pfx + grd + '_' + STRT_DT +\
                       '_to_' + END_DT + '.bin'
             
             try:
@@ -211,27 +203,23 @@ ax0_l = []
 ax1_l = []
 
 # increment line count whenever a configuration is plotted
-line_count = -1
+line_count = 0
 
-for i_nf in range(num_flws):
-    # loop on control flows
-    ctr_flw = CTR_FLWS[i_nf]
-
-    for i_np in range(num_prfxs):
-        # loop on prefixes
-        prfx = PRFXS[i_np]
+for ctr_flw in CTR_FLWS:
+    for prfx in PRFXS:
         if len(prfx) > 0:
-            prfx += '_'
+            pfx = prfx + '_'
+        else:
+            pfx = ''
         
         # define derived data paths 
         data_root = OUT_ROOT + '/' + ctr_flw
         stat0 = STATS[0]
         stat1 = STATS[1]
         
-        for i_ng in range(num_grds):
+        for grd in GRDS:
             # define the input name
-            grd = GRDS[i_ng]
-            in_path = data_root + '/grid_stats_' + prfx + grd + '_' + STRT_DT +\
+            in_path = data_root + '/grid_stats_' + pfx + grd + '_' + STRT_DT +\
                       '_to_' + END_DT + '.bin'
             
             try:
@@ -243,7 +231,7 @@ for i_nf in range(num_flws):
 
             split_string = ctr_flw.split('_')
             split_len = len(split_string)
-            line_lab = prfx 
+            line_lab = pfx 
             lab_len = min(LAB_LEN, split_len)
             if lab_len > 1:
                 for i_ll in range(split_len - lab_len, -1, -1):
@@ -324,24 +312,16 @@ for i_nf in range(num_flws):
             line_list.append(l)
 
 # set colors and markers
-line_colors = sns.color_palette("husl", line_count + 1)
-for i_nl in range(len(ax0_l)):
-    ax = ax0_l[i_nl]
-    for i_na in range(len(ax)):
-        l = ax[i_na]
-        l.set_color(line_colors[i_nl])
-        if i_na == 0:
-          l.set_marker((i_nl + 2, 0, 0))
-          l.set_markersize(18)
-
-for i_nl in range(len(ax1_l)):
-    ax = ax1_l[i_nl]
-    for i_na in range(len(ax)):
-        l = ax[i_na]
-        l.set_color(line_colors[i_nl])
-        if i_na == 0:
-          l.set_marker((i_nl + 2, 0, 0))
-          l.set_markersize(18)
+line_colors = sns.color_palette("husl", line_count)
+for i_lc in range(line_count):
+    for i_ns in range(2):
+        exec('axl = ax%s_l[i_lc]'%i_ns)
+        for i_na in range(len(axl)):
+            l = axl[i_na]
+            l.set_color(line_colors[i_lc])
+            if i_na == 0:
+              l.set_marker((i_lc + 2, 0, 0))
+              l.set_markersize(18)
 
 ##################################################################################
 # define display parameters
@@ -390,9 +370,6 @@ plt.figtext(.03, .265, lab1, horizontalalignment='right', rotation=90,
 
 plt.figtext(.5, .01, lab2, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
-
-# update the line count to the full number, instead of index
-line_count += 1
 
 if line_count <= 3:
     ncols = line_count

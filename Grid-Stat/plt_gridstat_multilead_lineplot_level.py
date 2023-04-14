@@ -82,7 +82,12 @@ FIG_CSE = ''
 CSE = 'DeepDive'
 
 # verification domain for the forecast data
-GRD='d02'
+GRDS = [
+        'd01',
+        'd02',
+        'd03',
+        '0.25',
+       ]
 
 # verification domain for the calibration data
 REF='0.25'
@@ -99,20 +104,21 @@ END_DT = '2023011800'
 # valid date for the verification
 VALID_DT = '2023010100'
 
-# MET stat file type -- should be leveled data
+# MET stat file type - should be leveled data
 TYPE = 'nbrcnt'
 
 # MET stat column names to be made to leveled line data
 STATS = ['FSS', 'AFSS']
 
-# landmask for verification region -- need to be set in earlier preprocessing
+# landmask for verification region
 LND_MSK = 'CALatLonPoints'
 
 # plot title
-TITLE='24hr accumulated precip at ' + VALID_DT
+TITLE='24hr accumulated precip at ' + VALID_DT[:4] + '-' + VALID_DT[4:6] + '-' +\
+        VALID_DT[6:8] + '_' + VALID_DT[8:]
 
 # plot sub-title title
-SUBTITLE='Verification region -- ' + LND_MSK + ' Threshold ' + LEV + ' mm'
+SUBTITLE='Verification region - ' + LND_MSK + ' Threshold ' + LEV + ' mm'
 
 # fig saved automatically to OUT_PATH
 FIG_ROOT = '/cw3e/mead/projects/cwp106/scratch'

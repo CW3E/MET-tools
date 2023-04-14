@@ -228,7 +228,7 @@ script. In this workflow, the Grid-Stat outputs for each domain for a given
 control flow are organized into a sub-directory of the ISO named directory for the
 forecast zero hour, e.g.,
 ```
-/cw3e/mead/projects/cwp106/scratch/DeepDive/NRT_gfs/MET_analysis/2022121400/d01
+/cw3e/mead/projects/cwp106/scratch/DeepDive/NRT_gfs/2022121400/d01
 ```
 contains the `grid_stat_*.txt` files for all `d01` forecasts up to the
 `${ANL_MAX}` time that are initialized at `2022121400`.

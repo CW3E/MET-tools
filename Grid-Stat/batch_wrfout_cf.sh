@@ -40,7 +40,7 @@
 
 # initiate bash and source bashrc to initialize environement
 conda init bash
-source /home/USER/.bashrc
+source /home/cgrudzien/.bashrc
 
 # set local environment for ncl and related dependencies
 conda activate netcdf
@@ -130,7 +130,7 @@ for (( i = 0; i < ${num_grds}; i++ )); do
     echo ${cmd}; eval ${cmd}
     
     # This path defines the location of each cycle directory relative to OUT_ROOT
-    cmd="${cfg_indx}+=(\"OUT_CYC_DIR=${OUT_ROOT}/${CTR_FLW}/MET_analysis\")"
+    cmd="${cfg_indx}+=(\"OUT_CYC_DIR=${OUT_ROOT}/${CTR_FLW}\")"
     echo ${cmd}; eval ${cmd}
 
     # subdirectory of cycle-named directory where output is to be saved
@@ -157,10 +157,11 @@ job="${cfg}[@]"
 cmd="cd ${USR_HME}/Grid-Stat"
 echo ${cmd}; eval ${cmd}
 
-cmd="mkdir -p ${OUT_ROOT}"
+log_dir=${OUT_ROOT}/batch_logs
+cmd="mkdir -p ${log_dir}"
 echo ${cmd}; eval ${cmd}
 
-cmd="./run_wrfout_cf.sh ${!job} > ${OUT_ROOT}/wrfout_cf_${jbid}_${indx}.log 2>&1"
+cmd="./run_wrfout_cf.sh ${!job} > ${log_dir}/wrfout_cf_${jbid}_${indx}.log 2>&1"
 echo ${cmd}; eval ${cmd}
 
 ##################################################################################

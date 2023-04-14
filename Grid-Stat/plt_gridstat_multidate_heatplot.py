@@ -147,7 +147,7 @@ ax1 = fig.add_axes([.07, .18, .84, .77])
 
 # define derived data paths 
 cse = CSE + '/' + CTR_FLW
-data_root = OUT_ROOT + '/' + cse + '/MET_analysis'
+data_root = OUT_ROOT + '/' + cse
 
 # define the output name
 in_path = data_root + '/grid_stats_' + PRFX + '_' + GRD + '_' + STRT_DT +\
@@ -156,9 +156,8 @@ in_path = data_root + '/grid_stats_' + PRFX + '_' + GRD + '_' + STRT_DT +\
 out_path = data_root + '/' + STRT_DT + '_' + END_DT +\
            '_' + LND_MSK + '_' + STAT + '_heatplot.png'
 
-f = open(in_path, 'rb')
-data = pickle.load(f)
-f.close()
+with open(in_path, 'rb') as f:
+    data = pickle.load(f)
 
 # load the values to be plotted along with landmask, lead and threshold
 vals = [

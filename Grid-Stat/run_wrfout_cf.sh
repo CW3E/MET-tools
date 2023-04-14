@@ -49,7 +49,7 @@ elif [ ! -d ${USR_HME} ]; then
   exit 1
 else
   script_dir=${USR_HME}/Grid-Stat
-  if [ ! -d ${script_dir} ];
+  if [ ! -d ${script_dir} ]; then
     echo "ERROR: Grid-Stat script directory ${script_dir} does not exist."
     exit 1
   fi

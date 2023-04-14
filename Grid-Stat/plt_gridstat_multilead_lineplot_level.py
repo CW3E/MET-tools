@@ -114,9 +114,9 @@ SUBTITLE='Verification region -- ' + LND_MSK + ' Threshold ' + LEV + ' mm'
 
 # fig saved automatically to OUT_PATH
 FIG_ROOT = '/cw3e/mead/projects/cwp106/scratch'
-OUT_DIR = FIG_ROOT + '/' + CSE + '/' + FIG_CSE
-OUT_PATH = OUT_DIR + '/' + VALID_DT + '_' +\
-           LND_MSK + '_' + STATS[0] + '_' +\
+OUT_DIR = 
+OUT_PATH = FIG_ROOT + '/' + CSE + '/figures/' + FIG_CSE +\
+           '/' + VALID_DT + '_' + LND_MSK + '_' + STATS[0] + '_' +\
            STATS[1] + '_lev_' + LEV + '_' + FIG_LAB + '_lineplot.png'
     
 
@@ -167,7 +167,7 @@ for i in range(num_flws):
             prfx += '_'
         
         # define derived data paths 
-        data_root = OUT_ROOT + '/' + ctr_flw + '/MET_analysis'
+        data_root = OUT_ROOT + '/' + ctr_flw
         stat0 = STATS[0]
         stat1 = STATS[1]
         
@@ -181,9 +181,8 @@ for i in range(num_flws):
                       '_to_' + END_DT + '.bin'
         
         try:
-            f = open(in_path, 'rb')
-            data = pickle.load(f)
-            f.close()
+            with open(in_path, 'rb') as f:
+                data = pickle.load(f)
 
         except:
             print('WARNING: input data ' + in_path +\

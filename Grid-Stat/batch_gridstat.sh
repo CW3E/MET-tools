@@ -157,10 +157,10 @@ for (( i = 0; i < ${num_grds}; i++ )); do
     cmd="${cfg_indx}+=(\"INT_WDTH=${INT_WDTH}\")"
     echo ${cmd}; eval ${cmd}
 
-    cmd="${cfg_indx}+=(\"IN_CYC_DIR=${IN_ROOT}/${CTR_FLW}/MET_analysis\")"
+    cmd="${cfg_indx}+=(\"IN_CYC_DIR=${IN_ROOT}/${CTR_FLW}\")"
     echo ${cmd}; eval ${cmd}
 
-    cmd="${cfg_indx}+=(\"OUT_CYC_DIR=${OUT_ROOT}/${CTR_FLW}/MET_analysis\")"
+    cmd="${cfg_indx}+=(\"OUT_CYC_DIR=${OUT_ROOT}/${CTR_FLW}\")"
     echo ${cmd}; eval ${cmd}
 
     # subdirectory of cycle-named directory containing data to be analyzed,
@@ -193,10 +193,11 @@ job="${cfg}[@]"
 cmd="cd ${USR_HME}/Grid-Stat"
 echo ${cmd}; eval ${cmd}
 
-cmd="mkdir -p ${OUT_ROOT}"
+log_dir=${OUT_ROOT}/batch_logs
+cmd="mkdir -p ${log_dir}"
 echo ${cmd}; eval ${cmd}
 
-cmd="./run_gridstat.sh ${!job} > ${OUT_ROOT}/gridstat_${jbid}_${indx}.log 2>&1"
+cmd="./run_gridstat.sh ${!job} > ${log_dir}/gridstat_${jbid}_${indx}.log 2>&1"
 echo ${cmd}; eval ${cmd}
 
 ##################################################################################

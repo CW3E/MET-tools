@@ -110,13 +110,13 @@ for CTR_FLW in CTR_FLWS:
             CNFG.append(GRD)
 
             # path to cycle directories from IN_ROOT
-            CNFG.append('/' + CTR_FLW + '/MET_analysis')
+            CNFG.append('/' + CTR_FLW)
             
             # path to gridstat outputs from cycle directory
             CNFG.append('/' + GRD)
 
             # path to pandas output directories from OUT_ROOT
-            CNFG.append('/' + CTR_FLW + '/MET_analysis')
+            CNFG.append('/' + CTR_FLW)
 
             # append configuration to be mapped
             CNFGS.append(CNFG)
@@ -205,62 +205,63 @@ def proc_gridstat(cnfg):
                 postfix = postfix[0]
         
                 # open file, load column names, then loop lines
-                f = open(in_path)
-                cols = f.readline()
-                cols = cols.split()
-                
-                if len(cols) > 0:
-                    fname_df = {} 
-                    tmp_dict = {}
-                    df_indx = 1
-        
-                    print(STR_INDT + 'Loading columns:', file=log_f)
-                    for col_name in cols:
-                        print(STR_INDT * 2 + col_name, file=log_f)
-                        fname_df[col_name] = [] 
-        
-                    fname_df =  pd.DataFrame.from_dict(fname_df, orient='columns')
-        
-                    # parse file by line, concatenating columns
-                    for line in f:
-                        split_line = line.split()
-        
-                        for i in range(len(split_line)):
-                            val = split_line[i]
-        
-                            # filter NA vals
-                            if val == 'NA':
-                                val = np.nan
-                            tmp_dict[cols[i]] = val
-        
-                        tmp_dict['line'] = [df_indx]
-                        tmp_dict = pd.DataFrame.from_dict(tmp_dict, orient='columns')
-                        fname_df = pd.concat([fname_df, tmp_dict], axis=0)
-                        df_indx += 1
-        
-                    fname_df['line'] = fname_df['line'].astype(int)
+                with open(in_path) as f:
+                    cols = f.readline()
+                    cols = cols.split()
                     
-                    if postfix in data_dict.keys():
-                        last_indx = data_dict[postfix].index[-1]
-                        fname_df['line'] = fname_df['line'].add(last_indx)
-                        fname_df = fname_df.set_index('line')
-                        data_dict[postfix] = pd.concat([data_dict[postfix], fname_df], axis=0)
+                    if len(cols) > 0:
+                        fname_df = {} 
+                        tmp_dict = {}
+                        df_indx = 1
+        
+                        print(STR_INDT + 'Loading columns:', file=log_f)
+                        for col_name in cols:
+                            print(STR_INDT * 2 + col_name, file=log_f)
+                            fname_df[col_name] = [] 
+        
+                        fname_df =  pd.DataFrame.from_dict(fname_df,
+                                                           orient='columns')
+        
+                        # parse file by line, concatenating columns
+                        for line in f:
+                            split_line = line.split()
+        
+                            for i in range(len(split_line)):
+                                val = split_line[i]
+        
+                                # filter NA vals
+                                if val == 'NA':
+                                    val = np.nan
+                                tmp_dict[cols[i]] = val
+        
+                            tmp_dict['line'] = [df_indx]
+                            tmp_dict = pd.DataFrame.from_dict(tmp_dict,
+                                                              orient='columns')
+                            fname_df = pd.concat([fname_df, tmp_dict], axis=0)
+                            df_indx += 1
+        
+                        fname_df['line'] = fname_df['line'].astype(int)
+                        
+                        if postfix in data_dict.keys():
+                            last_indx = data_dict[postfix].index[-1]
+                            fname_df['line'] = fname_df['line'].add(last_indx)
+                            fname_df = fname_df.set_index('line')
+                            data_dict[postfix] = pd.concat([data_dict[postfix],
+                                                            fname_df], axis=0)
+        
+                        else:
+                            fname_df = fname_df.set_index('line')
+                            data_dict[postfix] = fname_df
         
                     else:
-                        fname_df = fname_df.set_index('line')
-                        data_dict[postfix] = fname_df
+                        print('WARNING: file ' + in_path +\
+                                ' is empty, skipping this file.', file=log_f)
         
-                else:
-                    print('WARNING: file ' + in_path +\
-                            ' is empty, skipping this file.', file=log_f)
-        
-                print(STR_INDT + 'Closing file ' + in_path, file=log_f)
-                f.close()
+                    print(STR_INDT + 'Closing file ' + in_path, file=log_f)
         
         print('Writing out data to ' + out_path, file=log_f)
-        f = open(out_path, 'wb')
-        pickle.dump(data_dict, f)
-        f.close()
+        with open(out_path, 'wb') as f:
+            pickle.dump(data_dict, f)
 
         return 'Completed: ' + prfx + ctr_flw + ' ' + grd + '\n'
 

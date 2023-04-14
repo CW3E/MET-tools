@@ -126,7 +126,6 @@ OUT_DIR = FIG_ROOT + '/' + CSE + '/figures' + FIG_CSE
 OUT_PATH = OUT_DIR + '/' + VALID_DT + '_' + LND_MSK + '_' + STATS[0] + '_' +\
            STATS[1] + '_lev_' + LEV + '_' + FIG_LAB + '_lineplot.png'
     
-
 ##################################################################################
 # Begin plotting
 ##################################################################################
@@ -146,10 +145,59 @@ else:
             '_' + VALID_DT[8:]
     valid_dt = dt.fromisoformat(v_iso)
 
+fcst_leads = []
+for ctr_flw in CTR_FLWS:
+    for prfx in PRFXS:
+        if len(prfx) > 0:
+            pfx = prfx + '_'
+        else:
+            pfx = ''
+        
+        # define derived data paths 
+        data_root = OUT_ROOT + '/' + ctr_flw
+        stat0 = STATS[0]
+        stat1 = STATS[1]
+        
+        for grd in GRDS:
+            in_path = data_root + '/grid_stats_' + pfx + grd + '_' + STRT_DT +\
+                      '_to_' + END_DT + '.bin'
+            
+            try:
+                with open(in_path, 'rb') as f:
+                    data = pickle.load(f)
+
+            except:
+                print('WARNING: input data ' + in_path +\
+                        ' does not exist, skipping this configuration.')
+                continue
+
+            # load the values to be plotted along with landmask and lead
+            vals = [
+                    'VX_MASK',
+                    'FCST_LEAD',
+                    'FCST_VALID_END',
+                   ]
+            vals += STATS
+            
+            # cut down df to specified valid date / region and obtain leads of data 
+            stat_data = data[TYPE][vals]
+            stat_data = stat_data.loc[(stat_data['VX_MASK'] == LND_MSK)]
+            stat_data = stat_data.loc[(stat_data['FCST_VALID_END'] ==
+                                       valid_dt.strftime('%Y%m%d_%H%M%S'))]
+            leads = sorted(list(set(stat_data['FCST_LEAD'].values)),
+                           key=lambda x:(len(x), x))
+
+            fcst_leads += leads
+
+# find all unique values for forecast leads, sorted for plotting
+fcst_leads = sorted(list(set(fcst_leads)), key=lambda x:(len(x), x))
+num_leads = len(fcst_leads)
+            
+##################################################################################
+# Begin plotting
+##################################################################################
 # create a figure
-fig = plt.figure(figsize=(11.25,8.63))
-num_flws = len(CTR_FLWS)
-num_prfxs = len(PRFXS)
+fig = plt.figure(figsize=(12,9.6))
 
 # Set the axes
 ax0 = fig.add_axes([.110, .395, .85, .33])
@@ -161,152 +209,137 @@ ax0_l = []
 ax1_l = []
 
 # increment line count whenever a configuration is plotted
-line_count = -1
+line_count = 0
 
-for i in range(num_flws):
-    # loop on control flows
-    ctr_flw = CTR_FLWS[i]
-
-    for m in range(num_prfxs):
-        # loop on prefixes
-        prfx = PRFXS[m]
+for ctr_flw in CTR_FLWS:
+    for prfx in PRFXS:
         if len(prfx) > 0:
-            prfx += '_'
+            pfx = prfx + '_'
+        else:
+            pfx = ''
         
         # define derived data paths 
         data_root = OUT_ROOT + '/' + ctr_flw
         stat0 = STATS[0]
         stat1 = STATS[1]
         
-        # define the input name
-        if ctr_flw == 'ECMWF' or ctr_flw == 'GFS':
-            in_path = data_root + '/grid_stats_' + prfx + REF + '_' + STRT_DT +\
+        for grd in GRDS:
+            # define the input name
+            in_path = data_root + '/grid_stats_' + pfx + grd + '_' + STRT_DT +\
                       '_to_' + END_DT + '.bin'
-    
-        else:
-            in_path = data_root + '/grid_stats_' + prfx + GRD + '_' + STRT_DT +\
-                      '_to_' + END_DT + '.bin'
-        
-        try:
-            with open(in_path, 'rb') as f:
-                data = pickle.load(f)
-
-        except:
-            print('WARNING: input data ' + in_path +\
-                    ' does not exist, skipping this configuration.')
-            continue
-
-        split_string = ctr_flw.split('_')
-        split_len = len(split_string)
-        line_lab = prfx 
-        lab_len = min(LAB_LEN, split_len)
-        for i in range(split_len - lab_len, -1, -1):
-            line_lab += split_string[-i] + '_'
-
-        line_lab += split_string[-1] 
-        if GRD_LAB:
-            line_lab += '_' + GRD
-
-        line_labs.append(line_lab)
-        line_count += 1
-        
-        # load the values to be plotted along with landmask, lead and threshold
-        vals = [
-                'VX_MASK',
-                'FCST_LEAD',
-                'FCST_THRESH',
-                'FCST_VALID_END',
-               ]
-        vals += STATS
-    
-        # infer existence of confidence intervals with precedence for bootstrap
-        cnf_lvs = []
-        for k in range(2):
-            stat = STATS[k]
-            if stat + '_BCL' in data[TYPE] and\
-                not (data[TYPE][stat + '_BCL'].isnull().values.any()):
-                    vals.append(stat + '_BCL')
-                    vals.append(stat + '_BCU')
-                    cnf_lvs.append('_BC')
-    
-            elif stat + '_NCL' in data[TYPE] and\
-                not (data[TYPE][stat + '_NCL'].isnull().values.any()):
-                    vals.append(stat + '_NCL')
-                    vals.append(stat + '_NCU')
-                    cnf_lvs.append('_NC')
-    
-            else:
-                cnf_lvs.append(False)
-    
-        # cut down df to specified valid date / region and obtain leads of data 
-        stat_data = data[TYPE][vals]
-        stat_data = stat_data.loc[(stat_data['VX_MASK'] == LND_MSK)]
-        stat_data = stat_data.loc[(stat_data['FCST_THRESH'] == LEV)]
-        stat_data = stat_data.loc[(stat_data['FCST_VALID_END'] ==
-                                   valid_dt.strftime('%Y%m%d_%H%M%S'))]
-        data_leads = sorted(list(set(stat_data['FCST_LEAD'].values)),
-                            key=lambda x:(len(x), x))
-        num_leads = len(data_leads)
-        
-        # create array storage for stats and plot
-        for k in range(2):
-            exec('ax = ax%s'%k)
-            if cnf_lvs[k]:
-                tmp = np.zeros([num_leads, 3])
-        
-                for j in range(num_leads):
-                    val = stat_data.loc[(stat_data['FCST_LEAD'] == data_leads[j])]
-                    tmp[j, 0] = val[STATS[k]]
-                    tmp[j, 1] = val[STATS[k] + cnf_lvs[k] + 'L']
-                    tmp[j, 2] = val[STATS[k] + cnf_lvs[k] + 'U']
-                
-                l0 = ax.fill_between(range(num_leads), tmp[:, 1], tmp[:, 2], alpha=0.5)
-                l1, = ax.plot(range(num_leads), tmp[:, 0], linewidth=2)
-                exec('ax%s_l.append([l1,l0])'%k)
-                l = l1
-    
-            else:
-                tmp = np.zeros([num_leads])
             
-                for j in range(num_leads):
-                    val = stat_data.loc[(stat_data['FCST_LEAD'] == data_leads[j])]
-                    tmp[j] = val[STATS[k]]
-                
-                l, = ax.plot(range(num_leads), tmp[:], linewidth=2)
-                exec('ax%s_l.append([l])'%k)
+            try:
+                with open(in_path, 'rb') as f:
+                    data = pickle.load(f)
+
+            except:
+                continue
+
+            split_string = ctr_flw.split('_')
+            split_len = len(split_string)
+            line_lab = pfx 
+            lab_len = min(LAB_LEN, split_len)
+            if lab_len > 1:
+                for i_ll in range(split_len - lab_len, -1, -1):
+                    line_lab += split_string[-i_ll] + '_'
+
+            line_lab += split_string[-1] 
+            if GRD_LAB:
+                line_lab += '_' + grd
+
+            line_labs.append(line_lab)
+            line_count += 1
             
-        # add the line type to the legend
-        line_list.append(l)
+            # load the values to be plotted along with landmask, lead and threshold
+            vals = [
+                    'VX_MASK',
+                    'FCST_LEAD',
+                    'FCST_THRESH',
+                    'FCST_VALID_END',
+                   ]
+            vals += STATS
+    
+            # infer existence of confidence intervals with precedence for bootstrap
+            cnf_lvs = []
+            for i_ns in range(2):
+                stat = STATS[i_ns]
+                if stat + '_BCL' in data[TYPE] and\
+                    not (data[TYPE][stat + '_BCL'].isnull().values.any()):
+                        vals.append(stat + '_BCL')
+                        vals.append(stat + '_BCU')
+                        cnf_lvs.append('_BC')
+    
+                elif stat + '_NCL' in data[TYPE] and\
+                    not (data[TYPE][stat + '_NCL'].isnull().values.any()):
+                        vals.append(stat + '_NCL')
+                        vals.append(stat + '_NCU')
+                        cnf_lvs.append('_NC')
+    
+                else:
+                    cnf_lvs.append(False)
+    
+            # cut down df to specified valid date / region and obtain leads of data 
+            stat_data = data[TYPE][vals]
+            stat_data = stat_data.loc[(stat_data['VX_MASK'] == LND_MSK)]
+            stat_data = stat_data.loc[(stat_data['FCST_THRESH'] == LEV)]
+            stat_data = stat_data.loc[(stat_data['FCST_VALID_END'] ==
+                                       valid_dt.strftime('%Y%m%d_%H%M%S'))]
+            
+            # create array storage for stats and plot
+            for i_ns in range(2):
+                exec('ax = ax%s'%i_ns)
+                if cnf_lvs[i_ns]:
+                    tmp = np.empty([num_leads, 3])
+                    tmp[:] = np.nan
+            
+                    for i_nl in range(num_leads):
+                        val = stat_data.loc[(stat_data['FCST_LEAD'] == fcst_leads[i_nl])]
+                        if not val.empty:
+                            tmp[i_nl, 0] = val[STATS[i_ns]]
+                            tmp[i_nl, 1] = val[STATS[i_ns] + cnf_lvs[i_ns] + 'L']
+                            tmp[i_nl, 2] = val[STATS[i_ns] + cnf_lvs[i_ns] + 'U']
+                    
+                    l0 = ax.fill_between(range(num_leads), tmp[:, 1], tmp[:, 2], alpha=0.5)
+                    l1, = ax.plot(range(num_leads), tmp[:, 0], linewidth=2)
+                    exec('ax%s_l.append([l1,l0])'%i_ns)
+                    l = l1
+
+                else:
+                    tmp = np.empty([num_leads])
+                    tmp[:] = np.nan
+                
+                    for i_nl in range(num_leads):
+                        val = stat_data.loc[(stat_data['FCST_LEAD'] == fcst_leads[i_nl])]
+                        if not val.empty:
+                            tmp[i_nl] = val[STATS[i_ns]]
+                    
+                    l, = ax.plot(range(num_leads), tmp[:], linewidth=2)
+                    exec('ax%s_l.append([l])'%i_ns)
+
+            # add the line type to the legend
+            line_list.append(l)
 
 # set colors and markers
-line_colors = sns.color_palette("husl", line_count + 1)
-for i in range(len(ax0_l)):
-    ax = ax0_l[i]
-    for j in range(len(ax)):
-        l = ax[j]
-        l.set_color(line_colors[i])
-        if j == 0:
-          l.set_marker((i + 2, 0, 0))
-          l.set_markersize(18)
-
-for i in range(len(ax1_l)):
-    ax = ax1_l[i]
-    for j in range(len(ax)):
-        l = ax[j]
-        l.set_color(line_colors[i])
-        if j == 0:
-          l.set_marker((i + 2, 0, 0))
-          l.set_markersize(18)
+line_colors = sns.color_palette("husl", line_count)
+for i_lc in range(line_count):
+    for i_ns in range(2):
+        exec('axl = ax%s_l[i_lc]'%i_ns)
+        for i_na in range(len(axl)):
+            l = axl[i_na]
+            l.set_color(line_colors[i_lc])
+            if i_na == 0:
+              l.set_marker((i_lc + 2, 0, 0))
+              l.set_markersize(18)
 
 ##################################################################################
 # define display parameters
 
 # generate tic labels based on hour values
 for i in range(num_leads):
-    data_leads[i] = data_leads[i][:-4]
+    fcst_leads[i] = fcst_leads[i][:-4]
 
 ax1.set_xticks(range(num_leads))
-ax1.set_xticklabels(data_leads)
+ax1.set_xticklabels(fcst_leads)
 
 # tick parameters
 ax1.tick_params(
@@ -346,8 +379,18 @@ plt.figtext(.03, .265, lab1, horizontalalignment='right', rotation=90,
 plt.figtext(.5, .01, lab2, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
-fig.legend(line_list, line_labs, fontsize=18, ncol=min(num_flws * num_prfxs, 5),
-           loc='center', bbox_to_anchor=[0.5, 0.83])
+if line_count <= 3:
+    ncols = line_count
+else:
+    rmdr_3 = line_count % 3
+    rmdr_4 = line_count % 4
+    if rmdr_3 < rmdr_4:
+        ncols = 3
+    else:
+        ncols = 4
+
+fig.legend(line_list, line_labs, fontsize=18, ncol=ncols, loc='center',
+           bbox_to_anchor=[0.5, 0.83])
 
 # save figure and display
 os.system('mkdir -p ' + OUT_DIR)

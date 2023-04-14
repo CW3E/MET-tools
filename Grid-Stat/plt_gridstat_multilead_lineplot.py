@@ -381,8 +381,8 @@ else:
     else:
         ncols = 4
 
-fig.legend(line_list, line_labs, fontsize=18,
-           ncol=ncols, loc='center', bbox_to_anchor=[0.5, 0.83])
+fig.legend(line_list, line_labs, fontsize=18, ncol=ncols, loc='center',
+           bbox_to_anchor=[0.5, 0.83])
 
 # save figure and display
 os.system('mkdir -p ' + OUT_DIR)

@@ -53,6 +53,8 @@ from proc_gridstat import OUT_ROOT
 CTR_FLWS = [
             'NRT_gfs',
             'NRT_ecmwf',
+            'GFS',
+            'ECMWF',
            ]
 
 # Define the max number of underscore components of control flow names to include in
@@ -70,10 +72,10 @@ PRFXS = [
          '',
         ]
 
-# fig label for output file organization
+# fig label for output file organization, included in figure file name
 FIG_LAB = ''
 
-# fig case directory
+# fig case directory, includes leading '/', leave as empty string if not needed
 FIG_CSE = ''
 
 # define case-wise sub-directory
@@ -114,9 +116,8 @@ SUBTITLE='Verification region -- ' + LND_MSK + ' Threshold ' + LEV + ' mm'
 
 # fig saved automatically to OUT_PATH
 FIG_ROOT = '/cw3e/mead/projects/cwp106/scratch'
-OUT_DIR = 
-OUT_PATH = FIG_ROOT + '/' + CSE + '/figures/' + FIG_CSE +\
-           '/' + VALID_DT + '_' + LND_MSK + '_' + STATS[0] + '_' +\
+OUT_DIR = FIG_ROOT + '/' + CSE + '/figures' + FIG_CSE
+OUT_PATH = OUT_DIR + '/' + VALID_DT + '_' + LND_MSK + '_' + STATS[0] + '_' +\
            STATS[1] + '_lev_' + LEV + '_' + FIG_LAB + '_lineplot.png'
     
 

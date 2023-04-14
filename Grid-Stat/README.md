@@ -203,7 +203,7 @@ the `${OUT_ROOT}` directory set in the script.
 ## Running gridstat on pre-processed background data (GFS / ECMWF)
 There are two differences in running this workflow on preprocessed
 background data from global models such as GFS and the deterministic
-ECMWF. Firstly, for files of the form `ECMWF_24QPF_YYYYMMDDHH_FZZZ.nc`
+ECMWF. Firstly, for files of the form `*_24QPF_YYYYMMDDHH_FZZZ.nc`
 one does not need to run the cf compliant conversion as above for the
 NRT data. Secondly, the accumulation has already been computed
 in the above file. In this respect, `${CMP_ACC}` should be set equal
@@ -323,3 +323,24 @@ nbrcnt = gridstat_data['nbrcnt']
 and work with the `nbrcnt` variable to analyze and plot the data.
 
 ## Plotting from pickled data frames
+Several examples of plottting from processed gridstat data binary files
+```{bash}
+grid_stats_${GRD}_YYYYMMDDHH_to_YYYYMMDDHH.bin
+```
+are provided, where the plotting routines therein are integrated to this
+workflow. Specifically, all scripts import the path variable
+```{python}
+from proc_gridstat import OUT_ROOT 
+```
+so that the path to the binary files can be used for sourcing the data
+and writing out saved figures automatically. Secondly, plotting routines
+are designed to be robust to missing data, and to non-existing configurations
+while looping over various combinations of control flows, grids and
+valid dates / lead times for verification. Discussing all options in these
+routines is beyond the current scope of the documentation and it is recommended
+instead to follow the steps up to this point, and to learn the plotting features
+from running the `plot_*.py` scripts and changing the options. For
+specific, publication-quality figures, it is expected that a user will
+modify these scripts themselves to set the needed stylistic options, etc. These
+are templates only, and performing a specific study may involve rewriting
+these templates to one's own needs.

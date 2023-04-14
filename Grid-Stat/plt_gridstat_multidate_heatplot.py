@@ -44,19 +44,33 @@ import numpy as np
 import pandas as pd
 import pickle
 import os
+import sys
 from proc_gridstat import OUT_ROOT
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'NRT_ecmwf'
+CTR_FLW = 'NRT_gfs'
+
+# Define the max number of underscore components of control flow names to include in
+# fig title. This includes components of the strings above from last to first. Set to
+# number of underscore separated compenents in the string to obtain the full
+# name in the fig title. Note: a non-empty prefix value below will always be
+# included in the fig title
+LAB_LEN = 2
+
+# define if fig title includes grid
+GRD_LAB = True
 
 # define optional gridstat prefix 
 PRFX = ''
 
-# define case-wise sub-directory
-CSE = 'DeepDive'
+# fig label for output file organization, included in figure file name
+FIG_LAB = ''
+
+# fig case directory, includes leading '/', leave as empty string if not needed
+FIG_CSE = ''
 
 # verification domain for the forecast data
 GRD='d01'
@@ -74,7 +88,7 @@ CYC_INT = '24'
 ANL_STRT = '2022122400'
 
 # final valid time (string YYYYMMDDHH)
-ANL_END = '2023011900'
+ANL_END = '2023012800'
 
 # cycle interval verification valid times (string HH)
 ANL_INT = '24'
@@ -85,6 +99,9 @@ TYPE = 'cnt'
 # MET stat column names to be made to heat plots / labels
 STAT = 'RMSE'
 
+# define color map to be used for heat plot color bar
+COLOR_MAP = sns.color_palette('viridis', as_cmap=True)
+
 # landmask for verification region -- need to be set in earlier preprocessing
 LND_MSK = 'CALatLonPoints'
 
@@ -93,8 +110,33 @@ LND_MSK = 'CALatLonPoints'
 # scheme in the below
 DYN_SCL = True
 
-# define control flow plotting name
-TITLE = STAT + ' - ' + LND_MSK + ' - ' + CTR_FLW + ' ' + PRFX
+# define plot title
+TITLE = STAT + ' - '
+split_string = CTR_FLW.split('_')
+split_len = len(split_string)
+flw_len = min(LAB_LEN, split_len)
+if flw_len > 1:
+    for i_fl in range(split_len - flw_len, -1, -1):
+        TITLE += split_string[-i_fl] + '_'
+TITLE += split_string[-1] 
+
+if GRD_LAB:
+    TITLE += ' ' + GRD
+
+if PRFX:
+    TITLE += ' ' + PRFX
+
+TITLE += ' ' + LND_MSK
+
+# fig saved automatically to OUT_PATH
+OUT_DIR = OUT_ROOT + '/figures' + FIG_CSE
+OUT_PATH = OUT_DIR + '/' + STRT_DT + '_' + END_DT + '_' + LND_MSK + '_' +\
+           STAT + '_' + CTR_FLW + '_' + GRD
+
+if PRFX:
+    OUT_PATH += ' ' + PRFX
+
+OUT_PATH += FIG_LAB + '_heatplot.png'
 
 ##################################################################################
 # Begin plotting
@@ -139,25 +181,26 @@ anl_dates = pd.date_range(start=anl_strt, end=anl_end,
                           freq=anl_int).to_pydatetime()
 
 # Create a figure
-fig = plt.figure(figsize=(11.25,8.63))
+fig = plt.figure(figsize=(12,9.6))
 
 # Set the axes
 ax0 = fig.add_axes([.92, .18, .03, .77])
 ax1 = fig.add_axes([.07, .18, .84, .77])
 
 # define derived data paths 
-cse = CSE + '/' + CTR_FLW
-data_root = OUT_ROOT + '/' + cse
+if len(PRFX) > 0:
+    PRFX += '_'
 
 # define the output name
-in_path = data_root + '/grid_stats_' + PRFX + '_' + GRD + '_' + STRT_DT +\
-          '_to_' + END_DT + '.bin'
+in_path = OUT_ROOT + '/' + CTR_FLW + '/grid_stats_' + PRFX + GRD + '_' +\
+          STRT_DT + '_to_' + END_DT + '.bin'
 
-out_path = data_root + '/' + STRT_DT + '_' + END_DT +\
-           '_' + LND_MSK + '_' + STAT + '_heatplot.png'
-
-with open(in_path, 'rb') as f:
-    data = pickle.load(f)
+try:
+    with open(in_path, 'rb') as f:
+        data = pickle.load(f)
+except:
+    print('ERROR: input data ' + in_path + ' does not exist.')
+    sys.exit(1)
 
 # load the values to be plotted along with landmask, lead and threshold
 vals = [
@@ -182,45 +225,42 @@ num_leads = len(data_leads)
 num_dates = len(anl_dates)
 
 # create array storage for probs
-tmp = np.zeros([num_leads, num_dates])
+tmp = np.empty([num_leads, num_dates])
+tmp[:] = np.nan
 
-for i in range(num_leads):
-    for j in range(num_dates):
-        if i == 0:
-            if ( j % 2 ) == 0 or num_dates < 10:
-              # on the first loop pack the tick labels
-              data_dates.append(anl_dates[j].strftime('%Y%m%d'))
+for i_nd in range(num_dates):
+    for i_nl in range(num_leads):
+        if i_nl == 0:
+            # on the first loop pack the tick labels
+            if ( i_nd % 2 ) == 0 or num_dates < 10:
+              # if 10 or more leads, only use every other as a label
+              data_dates.append(anl_dates[i_nd].strftime('%Y%m%d'))
             else:
                 data_dates.append('')
 
         try:
-            val = stat_data.loc[(stat_data['FCST_LEAD'] == data_leads[i]) &
-                                 (stat_data['FCST_VALID_END'] == anl_dates[j].strftime('%Y%m%d_%H%M%S'))]
+            val = stat_data.loc[(stat_data['FCST_LEAD'] == data_leads[i_nl]) &
+                                (stat_data['FCST_VALID_END'] == anl_dates[i_nd].strftime('%Y%m%d_%H%M%S'))]
             
-            tmp[i, j] = val[STAT]
-        except:
-            tmp[i, j] = np.nan
+            if not val.empty:
+                tmp[i_nl, i_nd] = val[STAT]
 
-# find the max / min value over the inner 100 - alpha percentile range of the data
+        except:
+            continue
+
 if DYN_SCL:
+    # find the max / min value over the inner 100 - alpha range of the data
     scale = tmp[~np.isnan(tmp)]
     alpha = 1
     max_scale, min_scale = np.percentile(scale, [100 - alpha / 2, alpha / 2])
-    color_map = sns.color_palette('viridis', as_cmap=True)
 
-elif STAT == 'ME':
-    abs_scale = 30
-    min_scale = -abs_scale
-    max_scale = abs_scale
-    color_map = sns.diverging_palette(250, 30, l=65, center='dark', as_cmap=True)
-
-elif STAT == 'PR_CORR':
-    min_scale = -1.0
-    max_scale = 1.0
-    color_map = sns.diverging_palette(145, 300, s=60, as_cmap=True, center='dark')
+else:
+    # min scale and max scale are set in the above
+    min_scale = MIN_SCALE
+    max_scale = MAX_SCALE
 
 sns.heatmap(tmp[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale,
-            vmax=max_scale, cmap=color_map)
+            vmax=max_scale, cmap=COLOR_MAP)
 
 ##################################################################################
 # define display parameters
@@ -243,7 +283,7 @@ ax1.tick_params(
         )
 
 lab1='Verification Valid Date'
-lab2='Forecast Lead Hrs From Valid Date'
+lab2='Forecast Lead Hrs'
 plt.figtext(.5, .02, lab1, horizontalalignment='center',
             verticalalignment='center', fontsize=20)
 
@@ -254,7 +294,7 @@ plt.figtext(.5, .98, TITLE, horizontalalignment='center',
             verticalalignment='center', fontsize=20)
 
 # save figure and display
-#plt.savefig(out_path)
+plt.savefig(OUT_PATH)
 plt.show()
 
 ##################################################################################

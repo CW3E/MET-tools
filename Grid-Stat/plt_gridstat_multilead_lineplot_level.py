@@ -44,6 +44,7 @@ import seaborn as sns
 import numpy as np
 import pickle
 import os
+import sys
 from proc_gridstat import OUT_ROOT
 
 ##################################################################################
@@ -77,9 +78,6 @@ FIG_LAB = ''
 
 # fig case directory, includes leading '/', leave as empty string if not needed
 FIG_CSE = ''
-
-# define case-wise sub-directory
-CSE = 'DeepDive'
 
 # verification domain for the forecast data
 GRDS = [
@@ -121,8 +119,7 @@ TITLE='24hr accumulated precip at ' + VALID_DT[:4] + '-' + VALID_DT[4:6] + '-' +
 SUBTITLE='Verification region - ' + LND_MSK + ' Threshold ' + LEV + ' mm'
 
 # fig saved automatically to OUT_PATH
-FIG_ROOT = '/cw3e/mead/projects/cwp106/scratch'
-OUT_DIR = FIG_ROOT + '/' + CSE + '/figures' + FIG_CSE
+OUT_DIR = OUT_ROOT + '/figures' + FIG_CSE
 OUT_PATH = OUT_DIR + '/' + VALID_DT + '_' + LND_MSK + '_' + STATS[0] + '_' +\
            STATS[1] + '_lev_' + LEV + '_' + FIG_LAB + '_lineplot.png'
     

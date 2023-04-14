@@ -77,9 +77,6 @@ FIG_LAB = ''
 # fig case directory, includes leading '/', leave as empty string if not needed
 FIG_CSE = ''
 
-# define case-wise sub-directory
-CSE = 'DeepDive'
-
 # verification domains for the forecast data
 GRDS = [
         'd01',
@@ -114,8 +111,7 @@ TITLE='24hr accumulated precip at ' + VALID_DT[:4] + '-' + VALID_DT[4:6] + '-' +
 SUBTITLE='Verification region - ' + LND_MSK
 
 # fig saved automatically to OUT_PATH
-FIG_ROOT = '/cw3e/mead/projects/cwp106/scratch'
-OUT_DIR = FIG_ROOT + '/' + CSE + '/figures' + FIG_CSE
+OUT_DIR = OUT_ROOT + '/figures' + FIG_CSE
 OUT_PATH = OUT_DIR + '/' + VALID_DT + '_' + LND_MSK + '_' + STATS[0] + '_' +\
            STATS[1] + '_' + FIG_LAB + '_lineplot.png'
 

@@ -10,7 +10,7 @@ continuous development with direct and indirect contributions from multiple
 authors. This repository has benefitted from source code and other
 contributions by Colin Grudzien, Rachel Weihs, Caroline Papadopoulos,
 Dan Stienhoff, Laurel Dehaan, Matthew Simpson, Brian Kawzenuck, Nora Mascioli,
-Minghua Zheng, Patrick Mulrooney and others.
+Minghua Zheng, Ivette Hernandez Ba&ntilde;os, Patrick Mulrooney and others.
 
 ## Installing software
 The tools for batch processing NWP data and MET outputs are designed to be

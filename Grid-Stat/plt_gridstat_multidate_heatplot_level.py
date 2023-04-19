@@ -45,25 +45,39 @@ import seaborn as sns
 import numpy as np
 import pickle
 import os
+import sys
 from proc_gridstat import OUT_ROOT
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLW = 'ECMWF'
+CTR_FLW = 'NRT_gfs'
+
+# Define the max number of underscore components of control flow names to include in
+# fig title. This includes components of the strings above from last to first. Set to
+# number of underscore separated compenents in the string to obtain the full
+# name in the fig title. Note: a non-empty prefix value below will always be
+# included in the fig title
+LAB_LEN = 2
+
+# define if fig title includes grid
+GRD_LAB = True
 
 # define optional gridstat prefix 
-PRFX = 'DW_MEAN_3'
+PRFX = ''
 
-# define case-wise sub-directory
-CSE = 'DD'
+# fig label for output file organization, included in figure file name
+FIG_LAB = ''
+
+# fig case directory, includes leading '/', leave as empty string if not needed
+FIG_CSE = ''
 
 # verification domain for the forecast data
-GRD='0.25'
+GRD='d01'
 
 # starting date and zero hour of forecast cycles (string YYYYMMDDHH)
-STRT_DT = '2022121600'
+STRT_DT = '2022121400'
 
 # final date and zero hour of data of forecast cycles (string YYYYMMDDHH)
 END_DT = '2023011800'
@@ -72,37 +86,66 @@ END_DT = '2023011800'
 CYC_INT = '24'
 
 # first valid time for verification (string YYYYMMDDHH)
-ANL_STRT = '2022122600'
+ANL_STRT = '2022122400'
 
 # final valid time (string YYYYMMDDHH)
-ANL_END = '2023011900'
+ANL_END = '2023012800'
 
 # cycle interval verification valid times (string HH)
 ANL_INT = '24'
 
 # threshold level to plot
-#LEV = '>0.0'
-#LEV = '>=10.0'
 LEV = '>=25.4'
-#LEV = '>=50.8'
-#LEV = '>=101.6'
 
 # MET stat file type -- should be leveled data
-#TYPE = 'nbrcts'
 TYPE = 'nbrcnt'
 
 # MET stat column names to be made to heat plots / labels
-#STAT = 'FBIAS'
 STAT = 'FSS'
 
-# landmask for verification region -- need to be set in earlier preprocessing
-LND_MSK = 'CA_Climate_Zone_16_Sierra'
-#LND_MSK = 'CALatLonPoints'
-#LND_MSK = 'FULL'
+# define color map to be used for heat plot color bar
+COLOR_MAP = sns.cubehelix_palette(20, start=.75, rot=1.50, as_cmap=True,
+                                          reverse=True, dark=0.25)
 
-# define control flow plotting name
-TITLE = STAT + ' - Precip Thresh ' + LEV + ' mm - ' + LND_MSK + ' - ' +\
-        CTR_FLW + ' ' + PRFX
+# use dynamic color bar scale depending on data percentiles, True / False
+# Use this as True by default unless specifying a specific color bar scale and
+# scheme in the below
+DYN_SCL = True
+
+# these values will only be used if the DYN_SCL above is set to False
+MIN_SCALE = 0.0
+MAX_SCALE = 1.0
+
+# landmask for verification region -- needs to be set in gridstat options
+LND_MSK = 'CALatLonPoints'
+
+# define plot title
+TITLE = STAT + ' - '
+split_string = CTR_FLW.split('_')
+split_len = len(split_string)
+lab_len = min(LAB_LEN, split_len)
+if lab_len > 1:
+    for i_ll in range(lab_len, 1, -1):
+        TITLE += split_string[-i_ll] + '_'
+TITLE += split_string[-1] 
+
+if GRD_LAB:
+    TITLE += ' ' + GRD
+
+if PRFX:
+    TITLE += ' ' + PRFX
+
+TITLE += ' ' + LND_MSK + ' - Precip Thresh ' + LEV + ' mm'
+
+# fig saved automatically to OUT_PATH
+OUT_DIR = OUT_ROOT + '/figures' + FIG_CSE
+OUT_PATH = OUT_DIR + '/' + STRT_DT + '_' + END_DT + '_' + LND_MSK + '_' +\
+           STAT + '_' + CTR_FLW + '_' + GRD + '_' + LEV
+
+if PRFX:
+    OUT_PATH += '_' + PRFX
+
+OUT_PATH += FIG_LAB + '_heatplot.png'
 
 ##################################################################################
 # Begin plotting
@@ -147,26 +190,26 @@ anl_dates = pd.date_range(start=anl_strt, end=anl_end,
                           freq=anl_int).to_pydatetime()
 
 # Create a figure
-fig = plt.figure(figsize=(11.25,8.63))
+fig = plt.figure(figsize=(12,9.6))
 
 # Set the axes
 ax0 = fig.add_axes([.92, .18, .03, .77])
 ax1 = fig.add_axes([.07, .18, .84, .77])
 
 # define derived data paths 
-cse = CSE + '/' + CTR_FLW
-data_root = OUT_ROOT + '/' + cse + '/MET_analysis'
+if len(PRFX) > 0:
+    PRFX += '_'
 
 # define the output name
-in_path = data_root + '/grid_stats_' + PRFX + '_' + GRD + '_' + STRT_DT +\
-          '_to_' + END_DT + '.bin'
+in_path = OUT_ROOT + '/' + CTR_FLW + '/grid_stats_' + PRFX + GRD + '_' +\
+          STRT_DT + '_to_' + END_DT + '.bin'
 
-out_path = data_root + '/' + STRT_DT + '_' + END_DT + '_lev_' + LEV +\
-           '_' + LND_MSK + '_' + STAT + '_heatplot.png'
-
-f = open(in_path, 'rb')
-data = pickle.load(f)
-f.close()
+try:
+    with open(in_path, 'rb') as f:
+        data = pickle.load(f)
+except:
+    print('ERROR: input data ' + in_path + ' does not exist.')
+    sys.exit(1)
 
 # load the values to be plotted along with landmask, lead and threshold
 vals = [
@@ -192,49 +235,42 @@ num_leads = len(data_leads)
 num_dates = len(anl_dates)
 
 # create array storage for probs
-tmp = np.zeros([num_leads, num_dates])
+tmp = np.empty([num_leads, num_dates])
+tmp[:] = np.nan
 
-for i in range(num_leads):
-    for j in range(num_dates):
-        if i == 0:
-            if ( j % 2 ) == 0 or num_dates < 10:
-              # on the first loop pack the tick labels
-              data_dates.append(anl_dates[j].strftime('%Y%m%d'))
+for i_nd in range(num_dates):
+    for i_nl in range(num_leads):
+        if i_nl == 0:
+            # on the first loop pack the tick labels
+            if ( i_nd % 2 ) == 0 or num_dates < 10:
+              # if 10 or more leads, only use every other as a label
+              data_dates.append(anl_dates[i_nd].strftime('%Y%m%d'))
             else:
                 data_dates.append('')
 
         try:
-            val = stat_data.loc[(stat_data['FCST_LEAD'] == data_leads[i]) &
-                                 (stat_data['FCST_VALID_END'] == anl_dates[j].strftime('%Y%m%d_%H%M%S'))]
+            val = stat_data.loc[(stat_data['FCST_LEAD'] == data_leads[i_nl]) &
+                                (stat_data['FCST_VALID_END'] == anl_dates[i_nd].strftime('%Y%m%d_%H%M%S'))]
             
-            tmp[i, j] = val[STAT]
+            if not val.empty:
+                tmp[i_nl, i_nd] = val[STAT]
+
         except:
-            tmp[i, j] = np.nan
+            continue
 
-# define the color bar scale depending on the stat
-color_map = sns.cubehelix_palette(20, start=.75, rot=1.50, as_cmap=True,
-                                  reverse=True, dark=0.25)
-
-if (STAT == 'GSS') or\
-   (STAT == 'BAGSS') or\
-   (STAT == 'HK'):
-    min_scale = -0.25
-    max_scale = 1.0
-    sns.heatmap(tmp[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale,
-                vmax=max_scale, cmap=color_map)
-
-elif (STAT == 'FBIAS'):
+if DYN_SCL:
+    # find the max / min value over the inner 100 - alpha range of the data
     scale = tmp[~np.isnan(tmp)]
     alpha = 1
     max_scale, min_scale = np.percentile(scale, [100 - alpha / 2, alpha / 2])
-    sns.heatmap(tmp[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale,
-                vmax=max_scale, cmap=color_map, norm=LogNorm())
 
 else:
-    max_scale = 1.0
-    min_scale = 0.0
-    sns.heatmap(tmp[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale,
-                vmax=max_scale, cmap=color_map)
+    # min scale and max scale are set in the above
+    min_scale = MIN_SCALE
+    max_scale = MAX_SCALE
+
+sns.heatmap(tmp[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale,
+            vmax=max_scale, cmap=COLOR_MAP)
 
 ##################################################################################
 # define display parameters
@@ -257,7 +293,7 @@ ax1.tick_params(
         )
 
 lab1='Verification Valid Date'
-lab2='Forecast Lead Hrs From Valid Date'
+lab2='Forecast Lead Hrs'
 plt.figtext(.5, .02, lab1, horizontalalignment='center',
             verticalalignment='center', fontsize=20)
 
@@ -268,7 +304,7 @@ plt.figtext(.5, .98, TITLE, horizontalalignment='center',
             verticalalignment='center', fontsize=20)
 
 # save figure and display
-plt.savefig(out_path)
+plt.savefig(OUT_PATH)
 plt.show()
 
 ##################################################################################

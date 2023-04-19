@@ -102,22 +102,26 @@ STAT = 'RMSE'
 # define color map to be used for heat plot color bar
 COLOR_MAP = sns.color_palette('viridis', as_cmap=True)
 
-# landmask for verification region -- need to be set in earlier preprocessing
-LND_MSK = 'CALatLonPoints'
-
 # use dynamic color bar scale depending on data percentiles, True / False
 # Use this as True by default unless specifying a specific color bar scale and
 # scheme in the below
 DYN_SCL = True
 
+# these values will only be used if the DYN_SCL above is set to False
+MIN_SCALE = 0.0
+MAX_SCALE = 1.0
+
+# landmask for verification region -- need to be set in gridstat options
+LND_MSK = 'CALatLonPoints'
+
 # define plot title
 TITLE = STAT + ' - '
 split_string = CTR_FLW.split('_')
 split_len = len(split_string)
-flw_len = min(LAB_LEN, split_len)
-if flw_len > 1:
-    for i_fl in range(split_len - flw_len, -1, -1):
-        TITLE += split_string[-i_fl] + '_'
+lab_len = min(LAB_LEN, split_len)
+if lab_len > 1:
+    for i_ll in range(lab_len, 1, -1):
+        TITLE += split_string[-i_ll] + '_'
 TITLE += split_string[-1] 
 
 if GRD_LAB:
@@ -134,7 +138,7 @@ OUT_PATH = OUT_DIR + '/' + STRT_DT + '_' + END_DT + '_' + LND_MSK + '_' +\
            STAT + '_' + CTR_FLW + '_' + GRD
 
 if PRFX:
-    OUT_PATH += ' ' + PRFX
+    OUT_PATH += '_' + PRFX
 
 OUT_PATH += FIG_LAB + '_heatplot.png'
 

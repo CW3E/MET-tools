@@ -61,8 +61,9 @@ if [ ! ${CTR_FLW} ]; then
 fi
 
 # verification domain for the forecast data
-if [ ! ${GRD} ]; then
-  echo "ERROR: grid name \${GRD} is not defined."
+if [ -z ${GRD+x} ]; then
+  msg="ERROR: grid name \${GRD} is not defined, set to an empty string"
+  msg+="if not needed."
   exit 1
 fi
 

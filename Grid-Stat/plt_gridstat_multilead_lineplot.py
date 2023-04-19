@@ -231,7 +231,7 @@ for ctr_flw in CTR_FLWS:
             line_lab = pfx 
             lab_len = min(LAB_LEN, split_len)
             if lab_len > 1:
-                for i_ll in range(split_len - lab_len, -1, -1):
+                for i_ll in range(lab_len, 1, -1):
                     line_lab += split_string[-i_ll] + '_'
 
             line_lab += split_string[-1] 

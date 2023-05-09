@@ -34,6 +34,9 @@
 # uncoment to make verbose for debugging
 #set -x
 
+# Using GMT time zone for time computations
+export TZ="GMT"
+
 # root directory for MET-tools git clone
 export USR_HME=/cw3e/mead/projects/cwp106/scratch/MET-tools
 

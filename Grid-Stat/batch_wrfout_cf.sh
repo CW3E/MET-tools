@@ -38,6 +38,9 @@
 # uncoment to make verbose for debugging
 #set -x
 
+# Using GMT time zone for time computations
+export TZ="GMT"
+
 # initiate bash and source bashrc to initialize environement
 conda init bash
 source /home/cgrudzien/.bashrc

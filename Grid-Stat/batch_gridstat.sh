@@ -2,7 +2,7 @@
 #SBATCH -p shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 02:00:00
+#SBATCH -t 12:00:00
 #SBATCH -J batch_gridstat
 #SBATCH --export=ALL
 #SBATCH --array=0-5
@@ -37,21 +37,27 @@
 # Using GMT time zone for time computations
 export TZ="GMT"
 
-# root directory for MET-tools git clone
+# Root directory for MET-tools git clone
 export USR_HME=/cw3e/mead/projects/cwp106/scratch/MET-tools
 
-# root directory for verification data
+# Root directory for verification data
 export DATA_ROOT=/cw3e/mead/projects/cnt102/METMODE_PreProcessing/data/StageIV
 
-# root directory for MET software
+# Root directory for MET software
 export SOFT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/SOFT_ROOT/MET_CODE
 export MET_SNG=${SOFT_ROOT}/met-10.0.1.simg
 
-# Root directory for landmask
-export MSK_ROOT=${SOFT_ROOT}/polygons/region
+# Root directory for landmasks, must contain lat-lon .txt files or regridded .nc
+export MSK_ROOT=${SOFT_ROOT}/polygons/NRT
 
-# specify thresholds levels for verification
-export CAT_THR="[ >0.0, >=10.0, >=25.4, >=50.8, >=101.6 ]"
+# Path to file with list of landmasks for verification regions
+export MSKS=${SOFT_ROOT}/polygons/NRT_MaskList.txt
+            
+# Output directory for land masks if generated on the fly
+export MSK_OUT=${SOFT_ROOT}/polygons/NRT
+
+# Specify thresholds levels for verification
+export CAT_THR="[ >0.0, >=0.1, >=10.0, >=25.0, >=50.0 ]"
 
 # array of control flow names to be processed
 CTR_FLWS=( 
@@ -93,7 +99,8 @@ export CYC_INT=24
 
 # define min / max forecast hours for forecast outputs to be processed
 export ANL_MIN=24
-export ANL_MAX=240
+export ANL_MAX=24
+#export ANL_MAX=240
 
 # define the interval at which to process forecast outputs (HH)
 export ANL_INT=24
@@ -103,9 +110,6 @@ export ACC_INT=24
 
 # define the verification field
 export VRF_FLD=QPF
-
-# Landmask for verification region file name with extension
-export MSK=CALatLonPoints.txt
 
 # neighborhood width for neighborhood methods
 export NBRHD_WDTH=9

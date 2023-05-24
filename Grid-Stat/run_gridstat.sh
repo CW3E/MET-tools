@@ -150,23 +150,47 @@ if [ ! "${CAT_THR}" ]; then
   exit 1
 fi
 
-# Landmask for verification region file name with extension
-if [ ! ${MSK} ]; then
-  echo "ERROR: landmask \${MSK} is not defined."
+# Landmasks for verification region file name with extension
+if [ ! -r ${MSKS} ]; then
+  echo "ERROR: landmask list file \${MSKS} does not exist or is not readable."
   exit 1
 fi
 
-# read in mask file name and separate name from extension
-IFS="." read -ra split_string <<< ${MSK}
-msk_nme=${split_string[0]}
-msk_ext=${split_string[1]}
-
-if [ ! -r "${MSK_ROOT}/${msk_nme}.${msk_ext}"  ]; then
-  msg="ERROR: verification region landmask, ${MSK_ROOT}/${msk_nme}.${msk_ext}, "
-  msg+="does not exist or is not readable."
-  echo ${msg}
+if [ ! ${MSK_ROOT} ]; then
+  echo "ERROR: landmask root directory \${MSK_ROOT} is not defined."
   exit 1
 fi
+
+if [ ! ${MSK_OUT} ]; then
+  echo "ERROR: landmask output directory \${MSK_OUT} is not defined."
+  exit 1
+fi
+
+# loop lines of the mask file
+while read msk; do
+  fpath=${MSK_ROOT}/${msk}
+  # check for watershed lat-lon and mask files
+  if [ -r "${fpath}.txt" ]; then
+    echo "Found ${fpath}.txt lat-lon file."
+  fi
+  if [ -r "${fpath}_mask_regridded_with_StageIV.nc" ]; then
+    echo "Found ${fpath}_mask_regridded_with_StageIV.nc landmask." 
+  fi
+
+  # if neither lat-lon nor mask files exist
+  if [[ ! -r "${fpath}.txt" && ! -r "${fpath}_mask_regridded_with_StageIV.nc" ]]; then
+    msg="ERROR: verification region landmask, ${fpath}, lat-lon .txt files and"
+    msg+="regridded StageIV .nc files do not exist or or are not readable."
+    echo ${msg}
+
+    # create exit status flag to kill program, after checking all files in list
+    estat=1
+  fi
+
+  if [ ${estat} -eq 1 ]; then
+    exit 1
+  fi
+done <${MSKS}
 
 # define the interpolation method and related parameters
 if [ ! ${INT_MTHD} ]; then
@@ -252,6 +276,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
   rm -f ${work_root}/grid_stat_${PRFX}*.stat
   rm -f ${work_root}/grid_stat_${PRFX}*.nc
   rm -f ${work_root}/${prfx}GridStatConfig
+  rm -f ${work_root}/PLY_MSK.txt
 
   # loop lead hours for forecast valid time for each initialization time
   for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INT} )); do
@@ -273,11 +298,11 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
     # obs file defined in terms of valid time
     obs_f_in=StageIV_QPE_${validyear}${validmon}${validday}${validhr}.nc
 
-    # Set up singularity container with directory privileges
+    # Set up singularity container with specific directory privileges
     cmd="singularity instance start -B ${work_root}:/work_root:rw,"
     cmd+="${DATA_ROOT}:/DATA_ROOT:ro,${MSK_ROOT}:/MSK_ROOT:ro,"
-    cmd+="${in_dir}:/in_dir:ro,${script_dir}:/script_dir:ro"
-    cmd+=" ${MET_SNG} met1"
+    cmd+="${MSK_OUT}:/MSK_OUT:rw,${in_dir}:/in_dir:ro,"
+    cmd+="${script_dir}:/script_dir:ro ${MET_SNG} met1"
     echo ${cmd}; eval ${cmd}
 
     if [[ ${CMP_ACC} = "TRUE" ]]; then
@@ -294,7 +319,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
         -sum ${inityear}${initmon}${initday}_${inithr}0000 ${ACC_INT} \
         ${validyear}${validmon}${validday}_${validhr}0000 ${ACC_INT} \
         /work_root/${prfx}${for_f_in} \
-        -field 'name=\"precip_bkt\";  level=\"(*,*,*)\";' -name \"${VRF_FLD}_${ACC_INT}hr\" \
+        -field 'name=\"precip_bkt\"; level=\"(*,*,*)\";' -name \"${VRF_FLD}_${ACC_INT}hr\" \
         -pcpdir /in_dir \
         -pcprx \"wrfcf_${GRD}_${anl_strt}_to_${anl_end}.nc\" "
         echo ${cmd}; eval ${cmd}
@@ -317,17 +342,45 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
     
     if [ -r ${work_root}/${prfx}${for_f_in} ]; then
       if [ -r ${DATA_ROOT}/${obs_f_in} ]; then
-        # masks are recreated depending on the existence of files from previous loops
-        # NOTE: need to determine under what conditions would this file need to update
-        if [ ! -r ${work_root}/${msk_nme}_mask_regridded_with_StageIV.nc ]; then
-          cmd="singularity exec instance://met1 gen_vx_mask -v 10 \
-          /DATA_ROOT/${obs_f_in} \
-          -type poly \
-          /MSK_ROOT/${msk_nme}.${msk_ext} \
-          /work_root/${msk_nme}_mask_regridded_with_StageIV.nc"
-          echo ${cmd}
-          eval ${cmd}
-        fi
+        # create land mask list replacement string for config file
+        msk_count=`wc -l < ${MSKS}`
+        line_count=1
+
+        while read msk; do
+          # masks are recreated depending on the existence of files from previous analyses
+          msk_nme=${msk}_mask_regridded_with_StageIV.nc
+          if [ ! -r ${work_root}/${msk_nme} ]; then
+            # regridded mask does not exist in working directory, check in mask root
+            fpath=${MSK_ROOT}/${msk_nme}
+
+            if [ ! -r "${fpath}" ]; then
+              # regridded mask does not exist in mask root, create from scratch
+              cmd="singularity exec instance://met1 gen_vx_mask -v 10 \
+              /DATA_ROOT/${obs_f_in} \
+              -type poly \
+              /MSK_ROOT/${msk}.txt \
+              /MSK_OUT/${msk}_mask_regridded_with_StageIV.nc"
+              echo ${cmd}; eval ${cmd}
+
+              # redefine fpath for common copy statement
+              fpath=${MSK_OUT}/${msk_nme}
+            fi
+
+            # copy the regridded land mask from source to working directory
+            cmd="cp -L ${fpath} ${work_root}/"
+            echo ${cmd}; eval ${cmd}
+
+            # append land mask to PLY_MSK.txt list for replacement
+            if [ ${line_count} -lt ${msk_count} ]; then
+              ply_msk="\"/work_root/${msk}_mask_regridded_with_StageIV.nc\","
+              echo ${ply_msk} >> ${work_root}/PLY_MSK.txt
+            else
+              ply_msk="\"/work_root/${msk}_mask_regridded_with_StageIV.nc\""
+              echo ${ply_msk} >> ${work_root}/PLY_MSK.txt
+            fi
+            (( line_count += 1 ))
+          fi
+        done<${MSKS}
 
         # update GridStatConfigTemplate archiving file in working directory unchanged on inner loop
         if [ ! -r ${work_root}/${prfx}GridStatConfig ]; then
@@ -337,7 +390,8 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
             | sed "s/RNK_CRR/rank_corr_flag      = ${RNK_CRR}/" \
             | sed "s/VRF_FLD/name       = \"${VRF_FLD}_${ACC_INT}hr\"/" \
             | sed "s/CAT_THR/cat_thresh = ${CAT_THR}/" \
-            | sed "s/PLY_MSK/poly = [ \"\/work_root\/${msk_nme}_mask_regridded_with_StageIV.nc\" ]/" \
+            | sed "/PLY_MSK/r ${work_root}/PLY_MSK.txt" \
+            | sed "/PLY_MSK/d " \
             | sed "s/BTSTRP/n_rep    = ${BTSTRP}/" \
             | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
             | sed "s/PRFX/output_prefix    = \"${PRFX}\"/" \
@@ -370,10 +424,17 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
     cmd="singularity instance stop met1"
     echo ${cmd}; eval ${cmd}
 
-    # clean up working directory
+    # clean up working directory from accumulation time
     cmd="rm -f ${work_root}/${prfx}${for_f_in}"
     echo ${cmd}; eval ${cmd}
   done
+
+  # clean up working directory from forecast start time
+  cmd="rm -f ${work_root}/*regridded_with_StageIV.nc"
+  echo ${cmd}; eval ${cmd}
+
+  cmd="rm -f ${work_root}/PLY_MSK.txt"
+  echo ${cmd}; eval ${cmd}
 done
 
 msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "

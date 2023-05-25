@@ -5,7 +5,7 @@
 # after pre-procssing WRF forecast data and StageIV precip data for
 # validating the forecast peformance. This script is based on original
 # source code provided by Rachel Weihs, Caroline Papadopoulos and Daniel
-# Steinhoff.  This is re-written to homogenize project structure and to include
+# Steinhoff. This is re-written to homogenize project structure and to include
 # error handling, process logs and additional flexibility with batch processing 
 # ranges of data from multiple models and / or workflows.
 #
@@ -69,7 +69,7 @@ fi
 
 # Convert STRT_DT from 'YYYYMMDDHH' format to strt_dt Unix date format
 if [ ${#STRT_DT} -ne 10 ]; then
-  echo "ERROR: \${STRT_DT} is not in YYYYMMDDHH  format."
+  echo "ERROR: \${STRT_DT} is not in YYYYMMDDHH format."
   exit 1
 else
   strt_dt="${STRT_DT:0:8} ${STRT_DT:8:2}"
@@ -78,7 +78,7 @@ fi
 
 # Convert END_DT from 'YYYYMMDDHH' format to end_dt Unix date format 
 if [ ${#END_DT} -ne 10 ]; then
-  echo "ERROR: \${END_DT} is not in YYYYMMDDHH  format."
+  echo "ERROR: \${END_DT} is not in YYYYMMDDHH format."
   exit 1
 else
   end_dt="${END_DT:0:8} ${END_DT:8:2}"
@@ -166,31 +166,27 @@ if [ ! ${MSK_OUT} ]; then
   exit 1
 fi
 
-# loop lines of the mask file
+# loop lines of the mask file, set temporary exit status before searching for masks
+estat=0
 while read msk; do
-  fpath=${MSK_ROOT}/${msk}
-  # check for watershed lat-lon and mask files
-  if [ -r "${fpath}.txt" ]; then
-    echo "Found ${fpath}.txt lat-lon file."
-  fi
-  if [ -r "${fpath}_mask_regridded_with_StageIV.nc" ]; then
+  fpath=${MSK_ROOT}/${msk}_mask_regridded_with_StageIV.nc
+  if [ -r "${fpath}" ]; then
     echo "Found ${fpath}_mask_regridded_with_StageIV.nc landmask." 
-  fi
-
-  # if neither lat-lon nor mask files exist
-  if [[ ! -r "${fpath}.txt" && ! -r "${fpath}_mask_regridded_with_StageIV.nc" ]]; then
-    msg="ERROR: verification region landmask, ${fpath}, lat-lon .txt files and"
-    msg+="regridded StageIV .nc files do not exist or or are not readable."
+  else
+    msg="ERROR: verification region landmask, ${fpath}"
+    msg+=" does not exist or is not readable."
     echo ${msg}
 
     # create exit status flag to kill program, after checking all files in list
     estat=1
   fi
-
-  if [ ${estat} -eq 1 ]; then
-    exit 1
-  fi
 done <${MSKS}
+
+if [ ${estat} -eq 1 ]; then
+  msg="ERROR: Exiting due to missing land-masks, please see the above error "
+  msg+="messages and verify the location for these files."
+  exit 1
+fi
 
 # define the interpolation method and related parameters
 if [ ! ${INT_MTHD} ]; then

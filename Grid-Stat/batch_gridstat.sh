@@ -2,7 +2,7 @@
 #SBATCH -p shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 12:00:00
+#SBATCH -t 04:00:00
 #SBATCH -J batch_gridstat
 #SBATCH --export=ALL
 #SBATCH --array=0-5
@@ -91,7 +91,7 @@ INT_WDTHS=(
 export CSE=DeepDive
 
 # define first and last date time for forecast initialization (YYYYMMDDHH)
-export STRT_DT=2022121400
+export STRT_DT=2022121500
 export END_DT=2023011800
 
 # define the interval between forecast initializations (HH)

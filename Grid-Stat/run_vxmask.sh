@@ -39,31 +39,29 @@
 # uncoment to make verbose for debugging
 #set -x
 
-# Using GMT time zone for time computations
-TZ="GMT"
-
 # Root directory for MET-tools git clone
 USR_HME=/cw3e/mead/projects/cwp106/scratch/MET-tools
 
 # Root directory for verification data
-DATA_ROOT=/cw3e/mead/projects/cnt102/METMODE_PreProcessing/data/StageIV
+DATA_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA/VD/verification/StageIV
+#DATA_ROOT=/cw3e/mead/projects/cnt102/METMODE_PreProcessing/data/StageIV
 
 # Root directory for MET software
 SOFT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/SOFT_ROOT/MET_CODE
 MET_SNG=${SOFT_ROOT}/met-10.0.1.simg
 
 # Root directory for landmasks, must contain lat-lon .txt files or regridded .nc
-MSK_ROOT=${SOFT_ROOT}/polygons/NRT
+MSK_ROOT=${SOFT_ROOT}/polygons/workflow_test
 
 # Path to file with list of landmasks for verification regions
-MSKS=${SOFT_ROOT}/polygons/NRT_MaskList.txt
+MSKS=${SOFT_ROOT}/polygons/Test_MaskList.txt
             
-# Output directory for land masks if generated on the fly
-MSK_OUT=${SOFT_ROOT}/polygons/NRT
+# Output directory for land masks
+MSK_OUT=${SOFT_ROOT}/polygons/workflow_test_out
 
 # define path to StageIV data product for reference verfication grid 
 # an arbitrary file with the correct grid is sufficient
-OBS_F_IN=${DATA_ROOT}/StageIV_QPE_2019021500.nc
+OBS_F_IN=StageIV_QPE_2019021500.nc
 
 #################################################################################
 # CHECK WORKFLOW PARAMETERS

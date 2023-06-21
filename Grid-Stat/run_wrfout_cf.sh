@@ -115,8 +115,12 @@ if [ ! -d ${IN_CYC_DIR} ]; then
 fi
 
 # create output directory if does not exist
-cmd="mkdir -p ${OUT_CYC_DIR}"
-printf "${cmd}\n"; eval ${cmd}
+if [ ! ${OUT_CYC_DIR} ]; then
+  printf "ERROR: output data root directory \${OUT_CYC_DIR} is not defined.\n"
+else
+  cmd="mkdir -p ${OUT_CYC_DIR}"
+  printf "${cmd}\n"; eval ${cmd}
+fi
 
 # check for output data root created successfully
 if [ ! -d ${OUT_CYC_DIR} ]; then

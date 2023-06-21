@@ -22,7 +22,7 @@ The modified `wrfout_to_cf.ncl` script ingests two `wrfout_d0?` files at differe
 valid times in order to compute the accumulation period over a desired interval.
 Two files are needed because the, e.g., 24-hour accumulation of precipitation is
 calculated by subtracting the simulation accumulation variables for rain at
-t=valid time and t=valid_time-24_hours.
+t=valid_time and t=valid_time-24_hours.
 
 The `wrfout_to_cf.ncl` script is called in a loop in the execution of the
 `run_wrfout_cf.sh` script included in this directory. The `run_wrfout_cf.sh` script
@@ -43,11 +43,11 @@ requires the following configuration parameters to be defined:
  * `${ACC_INT}`       &ndash; the accumulation interval to compute precipitation over in hours (values other than `24` pending testing).
  * `${IN_CYC_DIR}`    &ndash; the root directory of ISO style directories for input files organizing forecast initial valid times.
  * `${OUT_CYC_DIR}`   &ndash; the root directory of ISO style directories for output files organizing forecast initial valid times.
- * `${RGRD}`          &ndash; `TRUE` or `FALSE`, whether to regrid the native WRF domain to a generic
-   MET compatible grid.
  * `${IN_DT_SUBDIR}`  &ndash; provides the sub-path from ISO style directories to
    wrfout files including leading `"/"`, e.g, `"/wrfout"`. This is left as an empty string `""` if not needed.
  * `${OUT_DT_SUBDIR}` &ndash; provides the sub-path from ISO style directories to output cf-compliant files including leading `"/"`, e.g, `"/${GRD}"`. This is left as an empty string `""` if not needed.
+ * `${RGRD}`          &ndash; `TRUE` or `FALSE`, whether to regrid the native WRF domain to a generic
+   MET compatible lat-lon grid.
 
 The `run_wrfout_cf.sh` script is designed to be run with the `batch_wrfout_cf.sh`
 script supplying the above arguments, as defined over a mapping of different
@@ -104,12 +104,62 @@ the `batch_wrfout_cf.sh`, this and other settings in the job array construction
 should be defined accordingly by the user. Logs for each of the SLURM array
 tasks will be written in `${OUT_ROOT}` defined in `batch_wrfout_cf.sh`.
 
+## Generating Regional Landmasks for verification
+In order to calculate relevant verification statistics, one should pre-generate
+a landmask for the region over which the verification is to take place. This
+region will be defined as a sub-domain of the StageIV grid, which can be generated
+in the following steps.
+
+Naming of the lat-lon text files should be of the form
+```
+Mask_Name.txt
+```
+where the `Mask_Name` will match the mask's printed name in plotting routines,
+with underscores corresponding to blank spaces. Underscores are parsed in the
+plotting scripts when defining the printed name. The formatting of the file should
+have the `Mask_Name` as the first line of the file. Each line after the
+first corresponds to a latitude-longitude pair defining the polygon region
+to be verified, with paired values separated by a single blank space.
+
+A variety of commonly used lat-lon regions are included in the
+```
+MET-tools/polygons/lat-lon
+```
+directory in this repository, which can be used to generate the NetCDF landmasks
+for the verification region in the StageIV grid. New lat-lon files can be added
+to this directory without changing the behavior of existing workflow routines.
+
+In order to define a collection of landmasks to perform verification over,
+one will define a landmask list which will be sourced by the `run_vxmask.sh`
+and `run_gridstat.sh` scripts in the following. A landmask list is a text file
+with lines consisting of each `Mask_Name` to be verified. Example landmask lists
+can be found in the
+```
+MET-tools/polygons/mask-lists
+```
+directory.
+
+Generating the NetCDF landmasks that will be ingested by Grid-Stat is performed
+with the `run_vxmask.sh` script. This script is run offline and standalone, where
+the output NetCDF masks can be re-used over multiple analyses that study the same
+verification regions. The arguments of the `run_vxmask.sh` script are as follows:
+
+ * `${USR_HME}`       &ndash; the directory path for the MET-tools clone.
+ * `${SOFT_ROOT}`     &ndash; the directory path for the MET singularity image.
+ * `${MET_SNG}`       &ndash; the full path of the MET singularity image.
+ * `${MSK_ROOT}`      &ndash; 
+ * `${MSKS}`          &ndash; 
+ * `${MSK_IN}`        &ndash; 
+ * `${MSK_OUT}`       &ndash; 
+ * `${OBS_F_IN}`      &ndash; 
+
 ## Running gridstat on cf-compliant WRF outputs
-Once cf-compliant outputs have been written by running the steps above, one
-can ingest this data into MET using the `run_gridstat.sh` script in this
-directory. This script is designed similarly to the `run_wrfout_cf.sh` script
-discussed above and requires the same arguments with the addition several others
-discussed in the following. MET's Grid-Stat tool settings are controlled with a 
+Once cf-compliant outputs and verification landmasks have been written by
+running the steps above, one can ingest this data into MET using the
+`run_gridstat.sh` script in this directory. This script is designed similarly
+to the `run_wrfout_cf.sh` script discussed above and requires the same
+arguments with the addition several others. MET's Grid-Stat tool settings
+are controlled with a 
 [GridStatConfig](https://met.readthedocs.io/en/latest/Users_Guide/config_options.html)
 file. This workflow generates a GridStatConfig file in the working
 directory for Grid-Stat by copying and updating the fields in the
@@ -204,7 +254,7 @@ the `${OUT_ROOT}` directory set in the script.
 There are two differences in running this workflow on preprocessed
 background data from global models such as GFS and the deterministic
 ECMWF. Firstly, for files of the form `*_24QPF_YYYYMMDDHH_FZZZ.nc`
-one does not need to run the cf compliant conversion as above for the
+one does not need to run the cf-compliant conversion as above for the
 NRT data. Secondly, the accumulation has already been computed
 in the above file. In this respect, `${CMP_ACC}` should be set equal
 to `FALSE` in the `batch_gridstat.sh` settings above. However, in all

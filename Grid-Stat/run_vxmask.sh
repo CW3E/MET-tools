@@ -8,7 +8,7 @@
 #################################################################################
 # Description
 #################################################################################
-# The purpose of this script is to compute grid land masks using MET for
+# The purpose of this script is to compute grid landmasks using MET for
 # performing verification over prescribed regions, using lat-lon text files
 # defining the region and the StageIV grid for verification. This script is
 # based on original source code provided by Rachel Weihs, Caroline Papadopoulos
@@ -57,7 +57,7 @@ MSKS=${MSK_ROOT}/mask-lists/NRT_MaskList.txt
 # Path to lat-lon text files for mask generation
 MSK_IN=${MSK_ROOT}/lat-lon
 
-# Output directory for land masks
+# Output directory for landmasks
 MSK_OUT=${MSK_ROOT}/NRT_Masks
 
 # Define path to StageIV data product for reference verfication grid 

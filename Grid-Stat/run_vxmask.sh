@@ -1,3 +1,10 @@
+#!/bin/bash
+#SBATCH -p shared
+#SBATCH --nodes=1
+#SBATCH --mem=120G
+#SBATCH -t 01:00:00
+#SBATCH -J run_vxmask
+#SBATCH --export=ALL
 #################################################################################
 # Description
 #################################################################################
@@ -26,11 +33,42 @@
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
 #
+##################################################################################
+# SET GLOBAL PARAMETERS
+##################################################################################
+# uncoment to make verbose for debugging
+#set -x
+
+# Using GMT time zone for time computations
+TZ="GMT"
+
+# Root directory for MET-tools git clone
+USR_HME=/cw3e/mead/projects/cwp106/scratch/MET-tools
+
+# Root directory for verification data
+DATA_ROOT=/cw3e/mead/projects/cnt102/METMODE_PreProcessing/data/StageIV
+
+# Root directory for MET software
+SOFT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/SOFT_ROOT/MET_CODE
+MET_SNG=${SOFT_ROOT}/met-10.0.1.simg
+
+# Root directory for landmasks, must contain lat-lon .txt files or regridded .nc
+MSK_ROOT=${SOFT_ROOT}/polygons/NRT
+
+# Path to file with list of landmasks for verification regions
+MSKS=${SOFT_ROOT}/polygons/NRT_MaskList.txt
+            
+# Output directory for land masks if generated on the fly
+MSK_OUT=${SOFT_ROOT}/polygons/NRT
+
+# define path to StageIV data product for reference verfication grid 
+# an arbitrary file with the correct grid is sufficient
+OBS_F_IN=${DATA_ROOT}/StageIV_QPE_2019021500.nc
+
 #################################################################################
-# READ WORKFLOW PARAMETERS
+# CHECK WORKFLOW PARAMETERS
 #################################################################################
-# make checks for workflow parameters
-# these parameters are shared with run_wrfout_cf.sh
+# make checks for workflow parameters, should be defined in the above section
 
 # define the working scripts directory
 if [ ! ${USR_HME} ]; then
@@ -47,39 +85,32 @@ else
   fi
 fi
 
-
-# Landmasks for verification region file name with extension
+# List of landmasks for verification region, file name with extension
 if [ ! -r ${MSKS} ]; then
   echo "ERROR: landmask list file \${MSKS} does not exist or is not readable."
   exit 1
 fi
 
 if [ ! ${MSK_ROOT} ]; then
-  echo "ERROR: landmask root directory \${MSK_ROOT} is not defined."
+  echo "ERROR: landmask lat-lon file root directory \${MSK_ROOT} is not defined."
+  exit 1
+elif [ ! -r ${MSK_ROOT} ]; then
+  msg="ERROR: landmask lat-lon file root directory does not exist or "
+  msg+="is not readable."
+  echo ${msg}
   exit 1
 fi
 
-if [ ! ${MSK_OUT} ]; then
-  echo "ERROR: landmask output directory \${MSK_OUT} is not defined."
-  exit 1
-fi
-
-# loop lines of the mask file, set temporary exit status before searching for masks
+# loop lines of the mask file, set temporary exit status before looping masks
 estat=0
 while read msk; do
   fpath=${MSK_ROOT}/${msk}
-  # check for watershed lat-lon and mask files
+  # check for watershed lat-lon files
   if [ -r "${fpath}.txt" ]; then
     echo "Found ${fpath}.txt lat-lon file."
-  fi
-  if [ -r "${fpath}_mask_regridded_with_StageIV.nc" ]; then
-    echo "Found ${fpath}_mask_regridded_with_StageIV.nc landmask." 
-  fi
-
-  # if neither lat-lon nor mask files exist
-  if [[ ! -r "${fpath}.txt" && ! -r "${fpath}_mask_regridded_with_StageIV.nc" ]]; then
-    msg="ERROR: verification region landmask, ${fpath}, lat-lon .txt files and"
-    msg+="regridded StageIV .nc files do not exist or or are not readable."
+  else
+    msg="ERROR: verification region landmask ${fpath}, lat-lon .txt file "
+    msg+="does not exist or is not readable."
     echo ${msg}
 
     # create exit status flag to kill program, after checking all files in list
@@ -88,9 +119,50 @@ while read msk; do
 done <${MSKS}
 
 if [ ${estat} -eq 1 ]; then
-  msg="ERROR: Exiting due to missing land-masks, please see the above error "
+  msg="ERROR: Exiting due to missing landmasks, please see the above error "
   msg+="messages and verify the location for these files."
   exit 1
 fi
 
+if [ ! ${MSK_OUT} ]; then
+  echo "ERROR: landmask output directory \${MSK_OUT} is not defined."
+  exit 1
+else
+  cmd="mkdir -p ${MSK_OUT}"
+  echo ${cmd}; eval ${cmd}
+fi
 
+#################################################################################
+# Process data
+#################################################################################
+# Set up singularity container with specific directory privileges
+cmd="singularity instance start -B ${MSK_ROOT}:/MSK_ROOT:ro,"
+cmd+="${DATA_ROOT}:/DATA_ROOT:ro,${MSK_OUT}:/MSK_OUT:rw ${MET_SNG} met1"
+echo ${cmd}; eval ${cmd}
+
+while read msk; do
+  # masks are recreated depending on the existence of files from previous analyses
+  fpath=${MSK_OUT}/${msk}_mask_regridded_with_StageIV.nc
+  if [ ! -r "${fpath}" ]; then
+    # regridded mask does not exist in mask out, create from scratch
+    cmd="singularity exec instance://met1 gen_vx_mask -v 10 \
+    /DATA_ROOT/${OBS_F_IN} \
+    -type poly \
+    /MSK_ROOT/${msk}.txt \
+    /MSK_OUT/${msk}_mask_regridded_with_StageIV.nc"
+    echo ${cmd}; eval ${cmd}
+  else
+    # mask exists and is readable, skip this step
+    msg="Land mask ${fpath} already exists in ${MSK_OUT}, skipping this region."
+    echo ${msg}
+  fi
+done<${MSKS}
+
+msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "
+msg+="outputs at MSK_OUT ${MSK_OUT}"
+echo ${msg}
+
+#################################################################################
+# end
+
+exit 0

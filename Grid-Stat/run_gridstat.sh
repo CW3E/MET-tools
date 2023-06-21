@@ -115,8 +115,13 @@ if [ ! -d ${IN_CYC_DIR} ]; then
 fi
 
 # create output directory if does not exist
-cmd="mkdir -p ${OUT_CYC_DIR}"
-echo ${cmd}; eval ${cmd}
+if [ ! ${OUT_CYC_DIR} ]; then
+  echo "ERROR: cycle gridstat output root directory ${OUT_CYC_DIR} is not defined."
+  exit 1
+else
+  cmd="mkdir -p ${OUT_CYC_DIR}"
+  echo ${cmd}; eval ${cmd}
+fi
 
 # check for output data root created successfully
 if [ ! -d ${OUT_CYC_DIR} ]; then
@@ -150,28 +155,38 @@ if [ ! "${CAT_THR}" ]; then
   exit 1
 fi
 
-# Landmasks for verification region file name with extension
+# List of landmasks for verification region, file name with extension
 if [ ! -r ${MSKS} ]; then
   echo "ERROR: landmask list file \${MSKS} does not exist or is not readable."
   exit 1
 fi
 
+# Root directory for landmasks
 if [ ! ${MSK_ROOT} ]; then
   echo "ERROR: landmask root directory \${MSK_ROOT} is not defined."
   exit 1
 fi
 
-if [ ! ${MSK_OUT} ]; then
-  echo "ERROR: landmask output directory \${MSK_OUT} is not defined."
-  exit 1
-fi
-
 # loop lines of the mask file, set temporary exit status before searching for masks
+msk_count=`wc -l < ${MSKS}`
+line_count=1
 estat=0
+
+# remove pre-exising PLY_MSK.txt files from previous gridstat runs
+rm -f ${OUT_CYC_DIR}/PLY_MSK.txt
+
 while read msk; do
   fpath=${MSK_ROOT}/${msk}_mask_regridded_with_StageIV.nc
   if [ -r "${fpath}" ]; then
     echo "Found ${fpath}_mask_regridded_with_StageIV.nc landmask." 
+    # append land mask to PLY_MSK.txt list for replacement
+    if [ ${line_count} -lt ${msk_count} ]; then
+      ply_msk="\"/work_root/${msk}_mask_regridded_with_StageIV.nc\","
+      echo ${ply_msk} >> ${OUT_CYC_DIR}/PLY_MSK.txt
+    else
+      ply_msk="\"/work_root/${msk}_mask_regridded_with_StageIV.nc\""
+      echo ${ply_msk} >> ${OUT_CYC_DIR}/PLY_MSK.txt
+    fi
   else
     msg="ERROR: verification region landmask, ${fpath}"
     msg+=" does not exist or is not readable."
@@ -180,11 +195,13 @@ while read msk; do
     # create exit status flag to kill program, after checking all files in list
     estat=1
   fi
+  (( line_count += 1 ))
 done <${MSKS}
 
 if [ ${estat} -eq 1 ]; then
-  msg="ERROR: Exiting due to missing land-masks, please see the above error "
-  msg+="messages and verify the location for these files."
+  msg="ERROR: Exiting due to missing landmasks, please see the above error "
+  msg+="messages and verify the location for these files. These files can be "
+  msg+="generated from lat-lon text files using the run_vxmask.sh utility script."
   exit 1
 fi
 
@@ -205,7 +222,7 @@ if [ ! ${NBRHD_WDTH} ]; then
   exit 1
 fi
 
-# number of bootstrap resamplings, set 0 for off
+# number of bootstrap resamplings, set equal to 0 to turn off
 if [ ! ${BTSTRP} ]; then
   echo "ERROR: bootstrap resampling number \${BTSRP} is not defined."
   echo "Set \${BTSTRP} to a positive integer or to 0 to turn off."
@@ -214,16 +231,16 @@ fi
 
 # rank correlation computation flag, TRUE or FALSE
 if [[ ${RNK_CRR} != "TRUE" && ${RNK_CRR} != "FALSE" ]]; then
-  msg="ERROR: \${RNK_CRR} must be set to 'TRUE' or 'FALSE' if computing "
-  msg+=" rank statistics."
+  msg="ERROR: \${RNK_CRR} must be set to 'TRUE' or 'FALSE' to decide "
+  msg+="if computing rank statistics."
   echo ${msg}
   exit 1
 fi
 
 # compute accumulation from cf file, TRUE or FALSE
 if [[ ${CMP_ACC} != "TRUE" && ${CMP_ACC} != "FALSE" ]]; then
-  msg="ERROR: \${CMP_ACC} must be set to 'TRUE' or 'FALSE' if computing "
-  msg+="accumulation from source input file."
+  msg="ERROR: \${CMP_ACC} must be set to 'TRUE' or 'FALSE' to decide if "
+  msg+="computing accumulation from source input file."
   exit 1
 fi
 
@@ -274,6 +291,9 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
   rm -f ${work_root}/${prfx}GridStatConfig
   rm -f ${work_root}/PLY_MSK.txt
 
+  # copy the verification region configuration to work directory from cycle root
+  cp ${OUT_CYC_DIR}/PLY_MSK.txt ${work_root}/
+
   # loop lead hours for forecast valid time for each initialization time
   for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INT} )); do
     # define valid times for accumulation    
@@ -297,8 +317,8 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
     # Set up singularity container with specific directory privileges
     cmd="singularity instance start -B ${work_root}:/work_root:rw,"
     cmd+="${DATA_ROOT}:/DATA_ROOT:ro,${MSK_ROOT}:/MSK_ROOT:ro,"
-    cmd+="${MSK_OUT}:/MSK_OUT:rw,${in_dir}:/in_dir:ro,"
-    cmd+="${script_dir}:/script_dir:ro ${MET_SNG} met1"
+    cmd+="${in_dir}:/in_dir:ro,${script_dir}:/script_dir:ro "
+    cmd+="${MET_SNG} met1"
     echo ${cmd}; eval ${cmd}
 
     if [[ ${CMP_ACC} = "TRUE" ]]; then
@@ -338,47 +358,8 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
     
     if [ -r ${work_root}/${prfx}${for_f_in} ]; then
       if [ -r ${DATA_ROOT}/${obs_f_in} ]; then
-        # create land mask list replacement string for config file
-        msk_count=`wc -l < ${MSKS}`
-        line_count=1
-
-        while read msk; do
-          # masks are recreated depending on the existence of files from previous analyses
-          msk_nme=${msk}_mask_regridded_with_StageIV.nc
-          if [ ! -r ${work_root}/${msk_nme} ]; then
-            # regridded mask does not exist in working directory, check in mask root
-            fpath=${MSK_ROOT}/${msk_nme}
-
-            if [ ! -r "${fpath}" ]; then
-              # regridded mask does not exist in mask root, create from scratch
-              cmd="singularity exec instance://met1 gen_vx_mask -v 10 \
-              /DATA_ROOT/${obs_f_in} \
-              -type poly \
-              /MSK_ROOT/${msk}.txt \
-              /MSK_OUT/${msk}_mask_regridded_with_StageIV.nc"
-              echo ${cmd}; eval ${cmd}
-
-              # redefine fpath for common copy statement
-              fpath=${MSK_OUT}/${msk_nme}
-            fi
-
-            # copy the regridded land mask from source to working directory
-            cmd="cp -L ${fpath} ${work_root}/"
-            echo ${cmd}; eval ${cmd}
-
-            # append land mask to PLY_MSK.txt list for replacement
-            if [ ${line_count} -lt ${msk_count} ]; then
-              ply_msk="\"/work_root/${msk}_mask_regridded_with_StageIV.nc\","
-              echo ${ply_msk} >> ${work_root}/PLY_MSK.txt
-            else
-              ply_msk="\"/work_root/${msk}_mask_regridded_with_StageIV.nc\""
-              echo ${ply_msk} >> ${work_root}/PLY_MSK.txt
-            fi
-            (( line_count += 1 ))
-          fi
-        done<${MSKS}
-
-        # update GridStatConfigTemplate archiving file in working directory unchanged on inner loop
+        # update GridStatConfigTemplate archiving file in working directory
+        # this remains unchanged on inner loop
         if [ ! -r ${work_root}/${prfx}GridStatConfig ]; then
           cat ${script_dir}/GridStatConfigTemplate \
             | sed "s/INT_MTHD/method = ${INT_MTHD}/" \
@@ -432,6 +413,9 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
   cmd="rm -f ${work_root}/PLY_MSK.txt"
   echo ${cmd}; eval ${cmd}
 done
+
+# clean up PLY_MSK.txt at cycle root
+rm -f ${OUT_CYC_DIR}/PLY_MSK.txt
 
 msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "
 msg+="outputs at OUT_CYC_DIR ${OUT_CYC_DIR}"

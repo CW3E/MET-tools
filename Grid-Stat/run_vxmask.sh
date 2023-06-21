@@ -2,7 +2,7 @@
 #SBATCH -p shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 01:00:00
+#SBATCH -t 06:00:00
 #SBATCH -J run_vxmask
 #SBATCH --export=ALL
 #################################################################################
@@ -42,24 +42,25 @@
 # Root directory for MET-tools git clone
 USR_HME=/cw3e/mead/projects/cwp106/scratch/MET-tools
 
-# Root directory for verification data
-DATA_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA/VD/verification/StageIV
-#DATA_ROOT=/cw3e/mead/projects/cnt102/METMODE_PreProcessing/data/StageIV
-
-# Root directory for MET software
+# Root directory for MET singularity image
 SOFT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/SOFT_ROOT/MET_CODE
+
+# MET singularity image path
 MET_SNG=${SOFT_ROOT}/met-10.0.1.simg
 
-# Root directory for landmasks, must contain lat-lon .txt files or regridded .nc
-MSK_ROOT=${SOFT_ROOT}/polygons/workflow_test
+# Root directory for landmasks, lat-lon files, and reference StageIV grid
+MSK_ROOT=${USR_HME}/polygons
 
 # Path to file with list of landmasks for verification regions
-MSKS=${SOFT_ROOT}/polygons/Test_MaskList.txt
+MSKS=${MSK_ROOT}/mask-lists/NRT_MaskList.txt
             
-# Output directory for land masks
-MSK_OUT=${SOFT_ROOT}/polygons/workflow_test_out
+# Path to lat-lon text files for mask generation
+MSK_IN=${MSK_ROOT}/lat-lon
 
-# define path to StageIV data product for reference verfication grid 
+# Output directory for land masks
+MSK_OUT=${MSK_ROOT}/NRT_Masks
+
+# Define path to StageIV data product for reference verfication grid 
 # an arbitrary file with the correct grid is sufficient
 OBS_F_IN=StageIV_QPE_2019021500.nc
 
@@ -70,46 +71,46 @@ OBS_F_IN=StageIV_QPE_2019021500.nc
 
 # define the working scripts directory
 if [ ! ${USR_HME} ]; then
-  echo "ERROR: MET-tools clone directory \${USR_HME} is not defined."
+  printf "ERROR: MET-tools clone directory \${USR_HME} is not defined.\n"
   exit 1
 elif [ ! -d ${USR_HME} ]; then
-  echo "ERROR: MET-tools clone directory ${USR_HME} does not exist."
+  printf $"ERROR: MET-tools clone directory\n ${USR_HME}\n does not exist.\n"
   exit 1
 else
   script_dir=${USR_HME}/Grid-Stat
   if [ ! -d ${script_dir} ]; then
-    echo "ERROR: Grid-Stat script directory ${script_dir} does not exist."
+    printf "ERROR: Grid-Stat script directory\n ${script_dir}\n does not exist.\n"
     exit 1
   fi
 fi
 
 # List of landmasks for verification region, file name with extension
 if [ ! -r ${MSKS} ]; then
-  echo "ERROR: landmask list file \${MSKS} does not exist or is not readable."
+  printf "ERROR: landmask list file \${MSKS} does not exist or is not readable.\n"
   exit 1
 fi
 
-if [ ! ${MSK_ROOT} ]; then
-  echo "ERROR: landmask lat-lon file root directory \${MSK_ROOT} is not defined."
+if [ ! ${MSK_IN} ]; then
+  printf "ERROR: landmask lat-lon file root directory \${MSK_IN} is not defined.\n"
   exit 1
-elif [ ! -r ${MSK_ROOT} ]; then
-  msg="ERROR: landmask lat-lon file root directory does not exist or "
-  msg+="is not readable."
-  echo ${msg}
+elif [ ! -r ${MSK_IN} ]; then
+  msg="ERROR: landmask lat-lon file root directory\n ${MSK_IN}\n does not "
+  msg+="exist or is not readable.\n"
+  printf ${msg}
   exit 1
 fi
 
-# loop lines of the mask file, set temporary exit status before looping masks
+# loop lines of the mask file, set temporary exit status before looping
 estat=0
 while read msk; do
-  fpath=${MSK_ROOT}/${msk}
+  in_path=${MSK_IN}/${msk}.txt
   # check for watershed lat-lon files
-  if [ -r "${fpath}.txt" ]; then
-    echo "Found ${fpath}.txt lat-lon file."
+  if [ -r "${in_path}" ]; then
+    printf "Found\n ${in_path}\n lat-lon file.\n"
   else
-    msg="ERROR: verification region landmask ${fpath}, lat-lon .txt file "
-    msg+="does not exist or is not readable."
-    echo ${msg}
+    msg="ERROR: verification region landmask\n ${in_path}\n lat-lon file "
+    msg+="does not exist or is not readable.\n"
+    printf ${msg}
 
     # create exit status flag to kill program, after checking all files in list
     estat=1
@@ -118,16 +119,17 @@ done <${MSKS}
 
 if [ ${estat} -eq 1 ]; then
   msg="ERROR: Exiting due to missing landmasks, please see the above error "
-  msg+="messages and verify the location for these files."
+  msg+="messages and verify the location for these files.\n"
+  printf ${msg}
   exit 1
 fi
 
 if [ ! ${MSK_OUT} ]; then
-  echo "ERROR: landmask output directory \${MSK_OUT} is not defined."
+  printf "ERROR: landmask output directory \${MSK_OUT} is not defined.\n"
   exit 1
 else
   cmd="mkdir -p ${MSK_OUT}"
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
 fi
 
 #################################################################################
@@ -135,30 +137,31 @@ fi
 #################################################################################
 # Set up singularity container with specific directory privileges
 cmd="singularity instance start -B ${MSK_ROOT}:/MSK_ROOT:ro,"
-cmd+="${DATA_ROOT}:/DATA_ROOT:ro,${MSK_OUT}:/MSK_OUT:rw ${MET_SNG} met1"
-echo ${cmd}; eval ${cmd}
+cmd+="${MSK_IN}:/MSK_IN:ro,${MSK_OUT}:/MSK_OUT:rw ${MET_SNG} met1"
+printf "${cmd}\n"; eval ${cmd}
 
 while read msk; do
   # masks are recreated depending on the existence of files from previous analyses
-  fpath=${MSK_OUT}/${msk}_mask_regridded_with_StageIV.nc
-  if [ ! -r "${fpath}" ]; then
+  out_path=${MSK_OUT}/${msk}_mask_regridded_with_StageIV.nc
+  if [ ! -r "${out_path}" ]; then
     # regridded mask does not exist in mask out, create from scratch
     cmd="singularity exec instance://met1 gen_vx_mask -v 10 \
-    /DATA_ROOT/${OBS_F_IN} \
+    /MSK_ROOT/${OBS_F_IN} \
     -type poly \
-    /MSK_ROOT/${msk}.txt \
+    /MSK_IN/${msk}.txt \
     /MSK_OUT/${msk}_mask_regridded_with_StageIV.nc"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
   else
     # mask exists and is readable, skip this step
-    msg="Land mask ${fpath} already exists in ${MSK_OUT}, skipping this region."
-    echo ${msg}
+    msg="Land mask\n ${out_path}\n already exists in\n ${MSK_OUT}\n "
+    msg+="skipping this region.\n"
+    printf ${msg}
   fi
 done<${MSKS}
 
 msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "
-msg+="outputs at MSK_OUT ${MSK_OUT}"
-echo ${msg}
+msg+="outputs at MSK_OUT:\n ${MSK_OUT}"
+printf ${msg}
 
 #################################################################################
 # end

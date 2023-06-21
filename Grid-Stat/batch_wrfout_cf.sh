@@ -12,7 +12,7 @@
 # This script utilizes SLURM job arrays to batch process collections of WRF model
 # outputs as a preprocessing step to ingestion into the MET Grid-Stat tool. This
 # script is designed to set the parameters for the companion run_wrfout_cf.sh
-# script as a job array map, allowing easy batch processing over multiple
+# script as a job array map, allowing batch processing over multiple
 # configurations simultaneously.
 ##################################################################################
 # License Statement
@@ -90,7 +90,7 @@ export IN_ROOT=/cw3e/mead/datasets/cw3e/NRT/2022-2023
 # root directory for cycle time (YYYYMMDDHH) directories of cf-compliant script outputs
 export OUT_ROOT=/cw3e/mead/projects/cwp106/scratch/${CSE}
 
-# set to regrid to lat / long for MET compatibility when handling grid errors
+# set to regrid to lat-lon for MET compatibility when handling grid errors
 # must be equal to TRUE or FALSE
 export RGRD=TRUE
 
@@ -115,33 +115,33 @@ for (( i = 0; i < ${num_grds}; i++ )); do
 
     cfg_indx="cfg_${i}${j}"
     cmd="${cfg_indx}=()"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 
     cmd="${cfg_indx}+=(\"CTR_FLW=${CTR_FLW}\")"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 
     cmd="${cfg_indx}+=(\"GRD=${GRD}\")"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 
     # This path defines the location of each cycle directory relative to IN_ROOT
     cmd="${cfg_indx}+=(\"IN_CYC_DIR=${IN_ROOT}/${CTR_FLW}\")"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 
     # subdirectory of cycle-named directory containing data to be analyzed,
     # includes leading '/', left as blank string if not needed
     cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/wrfout\")"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
     
     # This path defines the location of each cycle directory relative to OUT_ROOT
     cmd="${cfg_indx}+=(\"OUT_CYC_DIR=${OUT_ROOT}/${CTR_FLW}\")"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 
     # subdirectory of cycle-named directory where output is to be saved
     cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/${GRD}\")"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 
     cmd="cfgs+=( \"${cfg_indx}\" )"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
   done
 done
 
@@ -150,22 +150,22 @@ done
 jbid=${SLURM_ARRAY_JOB_ID}
 indx=${SLURM_ARRAY_TASK_ID}
 
-echo "Processing data for job index ${indx}."
-echo "Loading configuration parameters ${cfgs[$indx]}:"
+printf "Processing data for job index ${indx}.\n"
+printf "Loading configuration parameters ${cfgs[$indx]}:\n"
 
 # extract the confiugration key name corresponding to the slurm index
 cfg=${cfgs[$indx]}
 job="${cfg}[@]"
 
 cmd="cd ${USR_HME}/Grid-Stat"
-echo ${cmd}; eval ${cmd}
+printf "${cmd}\n"; eval ${cmd}
 
 log_dir=${OUT_ROOT}/batch_logs
 cmd="mkdir -p ${log_dir}"
-echo ${cmd}; eval ${cmd}
+printf "${cmd}\n"; eval ${cmd}
 
 cmd="./run_wrfout_cf.sh ${!job} > ${log_dir}/wrfout_cf_${jbid}_${indx}.log 2>&1"
-echo ${cmd}; eval ${cmd}
+printf "${cmd}\n"; eval ${cmd}
 
 ##################################################################################
 # end

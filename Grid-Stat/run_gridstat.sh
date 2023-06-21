@@ -44,12 +44,12 @@ if [ ! ${USR_HME} ]; then
   echo "ERROR: MET-tools clone directory \${USR_HME} is not defined."
   exit 1
 elif [ ! -d ${USR_HME} ]; then
-  echo "ERROR: MET-tools clone directory ${USR_HME} does not exist."
+  echo "ERROR: MET-tools clone directory\n ${USR_HME}\n does not exist."
   exit 1
 else
   script_dir=${USR_HME}/Grid-Stat
   if [ ! -d ${script_dir} ]; then
-    echo "ERROR: Grid-Stat script directory ${script_dir} does not exist."
+    echo "ERROR: Grid-Stat script directory\n ${script_dir}\n does not exist."
     exit 1
   fi
 fi
@@ -110,13 +110,14 @@ fi
 
 # check for input data root
 if [ ! -d ${IN_CYC_DIR} ]; then
-  echo "ERROR: input data root directory, ${IN_CYC_DIR}, does not exist."
+  echo "ERROR: input data root directory\n ${IN_CYC_DIR}\n does not exist."
   exit 1
 fi
 
 # create output directory if does not exist
 if [ ! ${OUT_CYC_DIR} ]; then
-  echo "ERROR: cycle gridstat output root directory ${OUT_CYC_DIR} is not defined."
+  msg="ERROR: cycle gridstat output root directory\n ${OUT_CYC_DIR}\n "
+  msg+="is not defined."
   exit 1
 else
   cmd="mkdir -p ${OUT_CYC_DIR}"
@@ -125,7 +126,7 @@ fi
 
 # check for output data root created successfully
 if [ ! -d ${OUT_CYC_DIR} ]; then
-  echo "ERROR: output data root directory, ${OUT_CYC_DIR}, does not exist."
+  echo "ERROR: output data root directory\n ${OUT_CYC_DIR}\n does not exist."
   exit 1
 fi
 
@@ -188,7 +189,7 @@ while read msk; do
       echo ${ply_msk} >> ${OUT_CYC_DIR}/PLY_MSK.txt
     fi
   else
-    msg="ERROR: verification region landmask, ${fpath}"
+    msg="ERROR: verification region landmask\n ${fpath}\n"
     msg+=" does not exist or is not readable."
     echo ${msg}
 
@@ -218,7 +219,7 @@ fi
 
 # neighborhood width for neighborhood methods
 if [ ! ${NBRHD_WDTH} ]; then
-  echo "ERROR: neighborhood statistics width ${NBRHD_WDTH} is not defined."
+  echo "ERROR: neighborhood statistics width \${NBRHD_WDTH} is not defined."
   exit 1
 fi
 
@@ -256,12 +257,12 @@ fi
 
 # check for software and data deps.
 if [ ! -d ${DATA_ROOT} ]; then
-  echo "ERROR: StageIV data directory, ${DATA_ROOT}, does not exist."
+  echo "ERROR: StageIV data directory\n ${DATA_ROOT}\n does not exist."
   exit 1
 fi
 
 if [ ! -x ${MET_SNG} ]; then
-  echo "MET singularity image, ${MET_SNG}, does not exist or is not executable."
+  echo "MET singularity image\n ${MET_SNG}\n does not exist or is not executable."
   exit 1
 fi
 
@@ -340,7 +341,8 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
         -pcprx \"wrfcf_${GRD}_${anl_strt}_to_${anl_end}.nc\" "
         echo ${cmd}; eval ${cmd}
       else
-        msg="pcp_combine input file ${in_dir}/wrfcf_${GRD}_${anl_strt}_to_${anl_end}.nc is not "
+        msg="pcp_combine input file\n "
+        msg+="${in_dir}/wrfcf_${GRD}_${anl_strt}_to_${anl_end}.nc\n is not "
         msg+="readable or does not exist, skipping pcp_combine for "
         msg+="forecast initialization ${dirstr}, forecast hour ${lead_hr}." 
         echo ${msg}
@@ -384,14 +386,14 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
         echo ${cmd}; eval ${cmd}
         
       else
-        cmd="Observation verification file ${DATA_ROOT}/${obs_f_in} is not "
+        cmd="Observation verification file\n ${DATA_ROOT}/${obs_f_in}\n is not "
         cmd+=" readable or does not exist, skipping grid_stat for forecast "
         cmd+="initialization ${dirstr}, forecast hour ${lead_hr}." 
         echo ${cmd}
       fi
 
     else
-      cmd="gridstat input file ${work_root}/${prfx}${for_f_in} is not readable " 
+      cmd="gridstat input file\n ${work_root}/${prfx}${for_f_in}\n is not readable " 
       cmd+=" or does not exist, skipping grid_stat for forecast initialization "
       cmd+="${dirstr}, forecast hour ${lead_hr}." 
       echo ${cmd}
@@ -418,7 +420,7 @@ done
 rm -f ${OUT_CYC_DIR}/PLY_MSK.txt
 
 msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "
-msg+="outputs at OUT_CYC_DIR ${OUT_CYC_DIR}"
+msg+="outputs at OUT_CYC_DIR:\n ${OUT_CYC_DIR}"
 echo ${msg}
 
 #################################################################################

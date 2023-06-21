@@ -1,0 +1,10 @@
+# Ignore everything in this directory
+*
+# Except this file
+!.gitignore
+!lat-lon
+!lat-lon/*
+!lat-lon/**/*
+!mask-lists
+!mask-lists/*
+!mask-lists/**/*

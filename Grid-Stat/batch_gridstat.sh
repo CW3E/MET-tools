@@ -9,7 +9,11 @@
 ##################################################################################
 # Description
 ##################################################################################
-#
+# This script utilizes SLURM job arrays to batch process collections of cf
+# compliant, preprocessed WRF outputs and / or preprocessed global model data
+# using the MET Grid-Stat tool. This script is designed to set the parameters for
+# the companion run_gridstat.sh script as a job array map, allowing batch
+# processing over multiple configurations and valid dates with a single call.
 ##################################################################################
 # License Statement
 ##################################################################################
@@ -47,17 +51,17 @@ export DATA_ROOT=/cw3e/mead/projects/cnt102/METMODE_PreProcessing/data/StageIV
 export SOFT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/SOFT_ROOT/MET_CODE
 export MET_SNG=${SOFT_ROOT}/met-10.0.1.simg
 
-# Root directory for landmasks, must contain lat-lon .txt files or regridded .nc
-export MSK_ROOT=${SOFT_ROOT}/polygons/NRT
+# Root directory for landmasks and lat-lon text files
+export MSK_ROOT=${USR_HME}/polygons
+
+# Root directory of regridded .nc landmasks on StageIV domain
+export MSK_IN=${MSK_ROOT}/NRT_Masks
 
 # Path to file with list of landmasks for verification regions
-export MSKS=${SOFT_ROOT}/polygons/NRT_MaskList.txt
+export MSKS=${MSK_ROOT}/mask-lists/NRT_MaskList.txt
             
-# Output directory for land masks if generated on the fly
-export MSK_OUT=${SOFT_ROOT}/polygons/NRT
-
 # Specify thresholds levels for verification
-export CAT_THR="[ >0.0, >=0.1, >=10.0, >=25.0, >=50.0 ]"
+export CAT_THR="[ >0.0, >=1.0, >=10.0, >=25.0, >=50.0 ]"
 
 # array of control flow names to be processed
 CTR_FLWS=( 
@@ -99,8 +103,7 @@ export CYC_INT=24
 
 # define min / max forecast hours for forecast outputs to be processed
 export ANL_MIN=24
-export ANL_MAX=24
-#export ANL_MAX=240
+export ANL_MAX=240
 
 # define the interval at which to process forecast outputs (HH)
 export ANL_INT=24
@@ -150,37 +153,37 @@ for (( i = 0; i < ${num_grds}; i++ )); do
 
     cfg_indx="cfg_${i}${j}"
     cmd="${cfg_indx}=()"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 
     cmd="${cfg_indx}+=(\"CTR_FLW=${CTR_FLW}\")"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 
     cmd="${cfg_indx}+=(\"GRD=${GRD}\")"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 
     cmd="${cfg_indx}+=(\"INT_MTHD=${INT_MTHD}\")"
-    echo ${cmd} ; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 
     cmd="${cfg_indx}+=(\"INT_WDTH=${INT_WDTH}\")"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 
     cmd="${cfg_indx}+=(\"IN_CYC_DIR=${IN_ROOT}/${CTR_FLW}\")"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 
     cmd="${cfg_indx}+=(\"OUT_CYC_DIR=${OUT_ROOT}/${CTR_FLW}\")"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 
     # subdirectory of cycle-named directory containing data to be analyzed,
     # includes leading '/', left as blank string if not needed
     cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/${GRD}\")"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
     
     # subdirectory of cycle-named directory where output is to be saved
     cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/${GRD}\")"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 
     cmd="cfgs+=( \"${cfg_indx}\" )"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 
   done
 done
@@ -190,22 +193,22 @@ done
 jbid=${SLURM_ARRAY_JOB_ID}
 indx=${SLURM_ARRAY_TASK_ID}
 
-echo "Processing data for job index ${indx}."
-echo "Loading configuration parameters ${cfgs[$indx]}:"
+printf "Processing data for job index ${indx}."
+printf "Loading configuration parameters ${cfgs[$indx]}:"
 
 # extract the confiugration key name corresponding to the slurm index
 cfg=${cfgs[$indx]}
 job="${cfg}[@]"
 
 cmd="cd ${USR_HME}/Grid-Stat"
-echo ${cmd}; eval ${cmd}
+printf ${cmd}; eval ${cmd}
 
 log_dir=${OUT_ROOT}/batch_logs
 cmd="mkdir -p ${log_dir}"
-echo ${cmd}; eval ${cmd}
+printf ${cmd}; eval ${cmd}
 
 cmd="./run_gridstat.sh ${!job} > ${log_dir}/gridstat_${jbid}_${indx}.log 2>&1"
-echo ${cmd}; eval ${cmd}
+printf ${cmd}; eval ${cmd}
 
 ##################################################################################
 # end

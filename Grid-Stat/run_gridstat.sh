@@ -30,9 +30,9 @@
 # READ WORKFLOW PARAMETERS
 #################################################################################
 # export all configurations supplied as an array of string definitions
-echo "Loading configuration parameters:"
+printf "Loading configuration parameters:\n"
 for cmd in "$@"; do
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
 done
 
 #################################################################################
@@ -41,35 +41,36 @@ done
 
 # define the working scripts directory
 if [ ! ${USR_HME} ]; then
-  echo "ERROR: MET-tools clone directory \${USR_HME} is not defined."
+  printf "ERROR: MET-tools clone directory \${USR_HME} is not defined.\n"
   exit 1
 elif [ ! -d ${USR_HME} ]; then
-  echo "ERROR: MET-tools clone directory\n ${USR_HME}\n does not exist."
+  printf "ERROR: MET-tools clone directory\n ${USR_HME}\n does not exist.\n"
   exit 1
 else
   script_dir=${USR_HME}/Grid-Stat
   if [ ! -d ${script_dir} ]; then
-    echo "ERROR: Grid-Stat script directory\n ${script_dir}\n does not exist."
+    printf "ERROR: Grid-Stat script directory\n ${script_dir}\n does not exist.\n"
     exit 1
   fi
 fi
 
 # control flow to be processed
 if [ ! ${CTR_FLW} ]; then
-  echo "ERROR: control flow name \${CTR_FLW} is not defined."
+  printf "ERROR: control flow name \${CTR_FLW} is not defined.\n"
   exit 1
 fi
 
 # verification domain for the forecast data
 if [ -z ${GRD+x} ]; then
   msg="ERROR: grid name \${GRD} is not defined, set to an empty string"
-  msg+="if not needed."
+  msg+="if not needed.\n"
+  printf ${msg}
   exit 1
 fi
 
 # Convert STRT_DT from 'YYYYMMDDHH' format to strt_dt Unix date format
 if [ ${#STRT_DT} -ne 10 ]; then
-  echo "ERROR: \${STRT_DT} is not in YYYYMMDDHH format."
+  printf "ERROR: \${STRT_DT} is not in YYYYMMDDHH format.\n"
   exit 1
 else
   strt_dt="${STRT_DT:0:8} ${STRT_DT:8:2}"
@@ -78,7 +79,7 @@ fi
 
 # Convert END_DT from 'YYYYMMDDHH' format to end_dt Unix date format 
 if [ ${#END_DT} -ne 10 ]; then
-  echo "ERROR: \${END_DT} is not in YYYYMMDDHH format."
+  printf "ERROR: \${END_DT} is not in YYYYMMDDHH format.\n"
   exit 1
 else
   end_dt="${END_DT:0:8} ${END_DT:8:2}"
@@ -87,30 +88,30 @@ fi
 
 # define min / max forecast hours for forecast outputs to be processed
 if [ ! ${ANL_MIN} ]; then
-  echo "ERROR: min forecast hour \${ANL_MIN} is not defined."
+  printf "ERROR: min forecast hour \${ANL_MIN} is not defined.\n"
   exit 1
 fi
 
 if [ ! ${ANL_MAX} ]; then
-  echo "ERROR: max forecast hour \${ANL_MAX} is not defined."
+  printf "ERROR: max forecast hour \${ANL_MAX} is not defined.\n"
   exit 1
 fi
 
 # define the interval at which to process forecast outputs (HH)
 if [ ! ${ANL_INT} ]; then
-  echo "ERROR: hours interval between analyses \${HH} is not defined."
+  printf "ERROR: hours interval between analyses \${HH} is not defined.\n"
   exit 1
 fi
 
 # define the accumulation interval for verification valid times
 if [ ! ${ACC_INT} ]; then
-  echo "ERROR: hours accumulation interval for verification not defined."
+  printf "ERROR: hours accumulation interval for verification not defined.\n"
   exit 1
 fi
 
 # check for input data root
 if [ ! -d ${IN_CYC_DIR} ]; then
-  echo "ERROR: input data root directory\n ${IN_CYC_DIR}\n does not exist."
+  printf "ERROR: input data root directory\n ${IN_CYC_DIR}\n does not exist.\n"
   exit 1
 fi
 
@@ -121,24 +122,24 @@ if [ ! ${OUT_CYC_DIR} ]; then
   exit 1
 else
   cmd="mkdir -p ${OUT_CYC_DIR}"
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
 fi
 
 # check for output data root created successfully
 if [ ! -d ${OUT_CYC_DIR} ]; then
-  echo "ERROR: output data root directory\n ${OUT_CYC_DIR}\n does not exist."
+  printf "ERROR: output data root directory\n ${OUT_CYC_DIR}\n does not exist.\n"
   exit 1
 fi
 
 if [ -z ${IN_DT_SUBDIR+x} ]; then
-  echo "ERROR: cycle subdirectory for input data \${IN_DT_SUBDIR} is unset,"
-  echo " set to empty string if not used."
+  printf "ERROR: cycle subdirectory for input data \${IN_DT_SUBDIR} is unset,"
+  printf " set to empty string if not used.\n"
   exit 1
 fi
 
 if [ -z ${OUT_DT_SUBDIR+x} ]; then
-  echo "ERROR: cycle subdirectory for input data \${OUT_DT_SUBDIR} is unset,"
-  echo " set to empty string if not used."
+  printf "ERROR: cycle subdirectory for input data \${OUT_DT_SUBDIR} is unset,"
+  printf " set to empty string if not used.\n"
   exit 1
 fi
 
@@ -147,24 +148,24 @@ fi
 
 # define the verification field
 if [ ! ${VRF_FLD} ]; then
-  echo "ERROR: verification field \${VRF_FLD} is not defined."
+  printf "ERROR: verification field \${VRF_FLD} is not defined.\n"
   exit 1
 fi
 
 if [ ! "${CAT_THR}" ]; then
-  echo "ERROR: thresholds \${CAT_THR} is not defined."
+  printf "ERROR: thresholds \${CAT_THR} is not defined.\n"
   exit 1
 fi
 
 # List of landmasks for verification region, file name with extension
 if [ ! -r ${MSKS} ]; then
-  echo "ERROR: landmask list file \${MSKS} does not exist or is not readable."
+  printf "ERROR: landmask list file \${MSKS} does not exist or is not readable.\n"
   exit 1
 fi
 
 # Root directory for landmasks
 if [ ! ${MSK_ROOT} ]; then
-  echo "ERROR: landmask root directory \${MSK_ROOT} is not defined."
+  printf "ERROR: landmask root directory \${MSK_ROOT} is not defined.\n"
   exit 1
 fi
 
@@ -179,19 +180,19 @@ rm -f ${OUT_CYC_DIR}/PLY_MSK.txt
 while read msk; do
   fpath=${MSK_ROOT}/${msk}_mask_regridded_with_StageIV.nc
   if [ -r "${fpath}" ]; then
-    echo "Found ${fpath}_mask_regridded_with_StageIV.nc landmask." 
+    printf "Found ${fpath}_mask_regridded_with_StageIV.nc landmask.\n"
     # append land mask to PLY_MSK.txt list for replacement
     if [ ${line_count} -lt ${msk_count} ]; then
-      ply_msk="\"/work_root/${msk}_mask_regridded_with_StageIV.nc\","
-      echo ${ply_msk} >> ${OUT_CYC_DIR}/PLY_MSK.txt
+      ply_msk="\"/work_root/${msk}_mask_regridded_with_StageIV.nc\",\n"
+      printf ${ply_msk} >> ${OUT_CYC_DIR}/PLY_MSK.txt
     else
       ply_msk="\"/work_root/${msk}_mask_regridded_with_StageIV.nc\""
-      echo ${ply_msk} >> ${OUT_CYC_DIR}/PLY_MSK.txt
+      printf ${ply_msk} >> ${OUT_CYC_DIR}/PLY_MSK.txt
     fi
   else
     msg="ERROR: verification region landmask\n ${fpath}\n"
-    msg+=" does not exist or is not readable."
-    echo ${msg}
+    msg+=" does not exist or is not readable.\n"
+    printf ${msg}
 
     # create exit status flag to kill program, after checking all files in list
     estat=1
@@ -208,33 +209,33 @@ fi
 
 # define the interpolation method and related parameters
 if [ ! ${INT_MTHD} ]; then
-  echo "ERROR: regridding interpolation method \${INT_MTHD} is not defined."
+  printf "ERROR: regridding interpolation method \${INT_MTHD} is not defined.\n"
   exit 1
 fi
 
 if [ ! ${INT_WDTH} ]; then 
-  echo "ERROR: interpolation neighborhood width \${INT_WDTH} is not defined."
+  printf "ERROR: interpolation neighborhood width \${INT_WDTH} is not defined.\n"
   exit 1
 fi
 
 # neighborhood width for neighborhood methods
 if [ ! ${NBRHD_WDTH} ]; then
-  echo "ERROR: neighborhood statistics width \${NBRHD_WDTH} is not defined."
+  printf "ERROR: neighborhood statistics width \${NBRHD_WDTH} is not defined.\n"
   exit 1
 fi
 
 # number of bootstrap resamplings, set equal to 0 to turn off
 if [ ! ${BTSTRP} ]; then
-  echo "ERROR: bootstrap resampling number \${BTSRP} is not defined."
-  echo "Set \${BTSTRP} to a positive integer or to 0 to turn off."
+  printf "ERROR: bootstrap resampling number \${BTSRP} is not defined.\n"
+  printf "Set \${BTSTRP} to a positive integer or to 0 to turn off.\n"
   exit 1
 fi
 
 # rank correlation computation flag, TRUE or FALSE
 if [[ ${RNK_CRR} != "TRUE" && ${RNK_CRR} != "FALSE" ]]; then
   msg="ERROR: \${RNK_CRR} must be set to 'TRUE' or 'FALSE' to decide "
-  msg+="if computing rank statistics."
-  echo ${msg}
+  msg+="if computing rank statistics.\n"
+  printf ${msg}
   exit 1
 fi
 
@@ -246,7 +247,8 @@ if [[ ${CMP_ACC} != "TRUE" && ${CMP_ACC} != "FALSE" ]]; then
 fi
 
 if [ -z ${PRFX+x} ]; then
-  echo "ERROR: gridstat output \${PRFX} is unset, set to empty string if not used."
+  msg="ERROR: gridstat output \${PRFX} is unset, set to empty string if not used.\n"
+  printf ${msg}
   exit 1
 elif [ ${#PRFX} -gt 0 ]; then
   # for a non-empty prefix, append an underscore for compound names
@@ -257,12 +259,13 @@ fi
 
 # check for software and data deps.
 if [ ! -d ${DATA_ROOT} ]; then
-  echo "ERROR: StageIV data directory\n ${DATA_ROOT}\n does not exist."
+  printf "ERROR: StageIV data directory\n ${DATA_ROOT}\n does not exist.\n"
   exit 1
 fi
 
 if [ ! -x ${MET_SNG} ]; then
-  echo "MET singularity image\n ${MET_SNG}\n does not exist or is not executable."
+  msg="MET singularity image\n ${MET_SNG}\n does not exist or is not executable.\n"
+  printf ${msg}
   exit 1
 fi
 
@@ -271,7 +274,7 @@ fi
 #################################################################################
 # change to scripts directory
 cmd="cd ${script_dir}"
-echo ${cmd}; eval ${cmd}
+printf "${cmd}\n"; eval ${cmd}
 
 # define the number of dates to loop
 fcst_hrs=$(( (`date +%s -d "${end_dt}"` - `date +%s -d "${strt_dt}"`) / 3600 ))
@@ -320,7 +323,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
     cmd+="${DATA_ROOT}:/DATA_ROOT:ro,${MSK_ROOT}:/MSK_ROOT:ro,"
     cmd+="${in_dir}:/in_dir:ro,${script_dir}:/script_dir:ro "
     cmd+="${MET_SNG} met1"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 
     if [[ ${CMP_ACC} = "TRUE" ]]; then
       # check for input file based on output from run_wrfout_cf.sh
@@ -339,22 +342,22 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
         -field 'name=\"precip_bkt\"; level=\"(*,*,*)\";' -name \"${VRF_FLD}_${ACC_INT}hr\" \
         -pcpdir /in_dir \
         -pcprx \"wrfcf_${GRD}_${anl_strt}_to_${anl_end}.nc\" "
-        echo ${cmd}; eval ${cmd}
+        printf "${cmd}\n"; eval ${cmd}
       else
         msg="pcp_combine input file\n "
         msg+="${in_dir}/wrfcf_${GRD}_${anl_strt}_to_${anl_end}.nc\n is not "
         msg+="readable or does not exist, skipping pcp_combine for "
-        msg+="forecast initialization ${dirstr}, forecast hour ${lead_hr}." 
-        echo ${msg}
+        msg+="forecast initialization ${dirstr}, forecast hour ${lead_hr}.\n"
+        printf ${msg}
       fi
     else
       # copy the preprocessed data to the working directory from the data root
       in_path="${in_dir}/${for_f_in}"
       if [ -r ${in_path} ]; then
         cmd="cp -L ${in_path} ${work_root}/${prfx}${for_f_in}"
-        echo ${cmd}; eval ${cmd}
+        printf "${cmd}\n"; eval ${cmd}
       else
-        echo "Source file ${in_path} not found."
+        printf "Source file\n ${in_path}\n not found.\n"
       fi
     fi
     
@@ -383,37 +386,37 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
         /DATA_ROOT/${obs_f_in} \
         /work_root/${prfx}GridStatConfig \
         -outdir /work_root"
-        echo ${cmd}; eval ${cmd}
+        printf "${cmd}\n"; eval ${cmd}
         
       else
-        cmd="Observation verification file\n ${DATA_ROOT}/${obs_f_in}\n is not "
-        cmd+=" readable or does not exist, skipping grid_stat for forecast "
-        cmd+="initialization ${dirstr}, forecast hour ${lead_hr}." 
-        echo ${cmd}
+        msg="Observation verification file\n ${DATA_ROOT}/${obs_f_in}\n is not "
+        msg+=" readable or does not exist, skipping grid_stat for forecast "
+        msg+="initialization ${dirstr}, forecast hour ${lead_hr}.\n"
+        printf ${msg}
       fi
 
     else
-      cmd="gridstat input file\n ${work_root}/${prfx}${for_f_in}\n is not readable " 
-      cmd+=" or does not exist, skipping grid_stat for forecast initialization "
-      cmd+="${dirstr}, forecast hour ${lead_hr}." 
-      echo ${cmd}
+      msg="gridstat input file\n ${work_root}/${prfx}${for_f_in}\n is not readable " 
+      msg+=" or does not exist, skipping grid_stat for forecast initialization "
+      msg+="${dirstr}, forecast hour ${lead_hr}.\n"
+      printf ${msg}
     fi
 
     # End MET Process and singularity stop
     cmd="singularity instance stop met1"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
 
     # clean up working directory from accumulation time
     cmd="rm -f ${work_root}/${prfx}${for_f_in}"
-    echo ${cmd}; eval ${cmd}
+    printf "${cmd}\n"; eval ${cmd}
   done
 
   # clean up working directory from forecast start time
   cmd="rm -f ${work_root}/*regridded_with_StageIV.nc"
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
 
   cmd="rm -f ${work_root}/PLY_MSK.txt"
-  echo ${cmd}; eval ${cmd}
+  printf "${cmd}\n"; eval ${cmd}
 done
 
 # clean up PLY_MSK.txt at cycle root
@@ -421,7 +424,7 @@ rm -f ${OUT_CYC_DIR}/PLY_MSK.txt
 
 msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "
 msg+="outputs at OUT_CYC_DIR:\n ${OUT_CYC_DIR}"
-echo ${msg}
+printf ${msg}
 
 #################################################################################
 # end

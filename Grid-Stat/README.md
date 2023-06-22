@@ -1,4 +1,5 @@
 # Workflow for generating precipitation diagnostics in Grid-Stat
+
 This template analysis is designed around the 2022-2023 DeepDive analysis, for
 batch processing West-WRF NRT data over a range of valid dates and forecast lead
 times as an example use-case. The goal of this tutorial README is to guide how one

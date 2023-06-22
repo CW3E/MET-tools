@@ -96,7 +96,7 @@ if [ ! ${MSK_IN} ]; then
 elif [ ! -r ${MSK_IN} ]; then
   msg="ERROR: landmask lat-lon file root directory\n ${MSK_IN}\n does not "
   msg+="exist or is not readable.\n"
-  printf ${msg}
+  printf "${msg}"
   exit 1
 fi
 
@@ -110,7 +110,7 @@ while read msk; do
   else
     msg="ERROR: verification region landmask\n ${in_path}\n lat-lon file "
     msg+="does not exist or is not readable.\n"
-    printf ${msg}
+    printf "${msg}"
 
     # create exit status flag to kill program, after checking all files in list
     estat=1
@@ -120,7 +120,7 @@ done <${MSKS}
 if [ ${estat} -eq 1 ]; then
   msg="ERROR: Exiting due to missing landmasks, please see the above error "
   msg+="messages and verify the location for these files.\n"
-  printf ${msg}
+  printf "${msg}"
   exit 1
 fi
 
@@ -155,13 +155,13 @@ while read msk; do
     # mask exists and is readable, skip this step
     msg="Land mask\n ${out_path}\n already exists in\n ${MSK_OUT}\n "
     msg+="skipping this region.\n"
-    printf ${msg}
+    printf "${msg}"
   fi
 done<${MSKS}
 
 msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "
-msg+="outputs at MSK_OUT:\n ${MSK_OUT}"
-printf ${msg}
+msg+="outputs at MSK_OUT:\n ${MSK_OUT}\n"
+printf "${msg}"
 
 #################################################################################
 # end

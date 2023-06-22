@@ -64,7 +64,7 @@ fi
 if [ -z ${GRD+x} ]; then
   msg="ERROR: grid name \${GRD} is not defined, set to an empty string"
   msg+="if not needed.\n"
-  printf ${msg}
+  printf "${msg}"
   exit 1
 fi
 
@@ -179,7 +179,7 @@ while read msk; do
   else
     msg="ERROR: verification region landmask\n ${fpath}\n"
     msg+=" does not exist or is not readable.\n"
-    printf ${msg}
+    printf "${msg}"
 
     # create exit status flag to kill program, after checking all files in list
     estat=1
@@ -221,7 +221,7 @@ fi
 if [[ ${RNK_CRR} != "TRUE" && ${RNK_CRR} != "FALSE" ]]; then
   msg="ERROR: \${RNK_CRR} must be set to 'TRUE' or 'FALSE' to decide "
   msg+="if computing rank statistics.\n"
-  printf ${msg}
+  printf "${msg}"
   exit 1
 fi
 
@@ -234,7 +234,7 @@ fi
 
 if [ -z ${PRFX+x} ]; then
   msg="ERROR: gridstat output \${PRFX} is unset, set to empty string if not used.\n"
-  printf ${msg}
+  printf "${msg}"
   exit 1
 elif [ ${#PRFX} -gt 0 ]; then
   # for a non-empty prefix, append an underscore for compound names
@@ -251,7 +251,7 @@ fi
 
 if [ ! -x ${MET_SNG} ]; then
   msg="MET singularity image\n ${MET_SNG}\n does not exist or is not executable.\n"
-  printf ${msg}
+  printf "${msg}"
   exit 1
 fi
 
@@ -345,7 +345,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
         msg+="${in_dir}/wrfcf_${GRD}_${anl_strt}_to_${anl_end}.nc\n is not "
         msg+="readable or does not exist, skipping pcp_combine for "
         msg+="forecast initialization ${dirstr}, forecast hour ${lead_hr}.\n"
-        printf ${msg}
+        printf "${msg}"
       fi
     else
       # copy the preprocessed data to the working directory from the data root
@@ -389,14 +389,14 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
         msg="Observation verification file\n ${DATA_ROOT}/${obs_f_in}\n is not "
         msg+=" readable or does not exist, skipping grid_stat for forecast "
         msg+="initialization ${dirstr}, forecast hour ${lead_hr}.\n"
-        printf ${msg}
+        printf "${msg}"
       fi
 
     else
       msg="gridstat input file\n ${work_root}/${prfx}${for_f_in}\n is not readable " 
       msg+=" or does not exist, skipping grid_stat for forecast initialization "
       msg+="${dirstr}, forecast hour ${lead_hr}.\n"
-      printf ${msg}
+      printf "${msg}"
     fi
 
     # End MET Process and singularity stop
@@ -417,8 +417,8 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
 done
 
 msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "
-msg+="outputs at OUT_CYC_DIR:\n ${OUT_CYC_DIR}"
-printf ${msg}
+msg+="outputs at OUT_CYC_DIR:\n ${OUT_CYC_DIR}\n"
+printf "${msg}"
 
 #################################################################################
 # end

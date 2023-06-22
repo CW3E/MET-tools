@@ -96,14 +96,14 @@ export CSE=DeepDive
 
 # define first and last date time for forecast initialization (YYYYMMDDHH)
 export STRT_DT=2022121500
-export END_DT=2023011800
+export END_DT=2022121500
 
 # define the interval between forecast initializations (HH)
 export CYC_INT=24
 
 # define min / max forecast hours for forecast outputs to be processed
 export ANL_MIN=24
-export ANL_MAX=240
+export ANL_MAX=24
 
 # define the interval at which to process forecast outputs (HH)
 export ANL_INT=24

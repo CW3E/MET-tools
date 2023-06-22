@@ -57,12 +57,11 @@ CTR_FLWS = [
             'ECMWF',
            ]
 
-# Define the max number of underscore components of control flow names to include in
-# fig legend. This includes components of the strings above from last to first. Set to
-# number of underscore separated compenents in the string to obtain the full
-# name as the legend label. Note: a non-empty prefix value below will always be
-# included in the legend label
-LAB_LEN = 2
+# Define a list of indices for underscore-separated components of control flow
+# names to include in fig legend. Note: a non-empty prefix value below will
+# always be included in the legend label, and control flows with fewer components
+# than indices above will only include those label components that exist
+LAB_IDX = [0, 1]
 
 # define if legend label includes grid
 GRD_LAB = True
@@ -102,7 +101,7 @@ TYPE = 'cnt'
 STATS = ['RMSE', 'PR_CORR']
 
 # landmask for verification region
-LND_MSK = 'CALatLonPoints'
+LND_MSK = 'CA_All'
 
 # plot title
 TITLE='24hr accumulated precip at ' + VALID_DT[:4] + '-' + VALID_DT[4:6] + '-' +\
@@ -228,13 +227,20 @@ for ctr_flw in CTR_FLWS:
 
             split_string = ctr_flw.split('_')
             split_len = len(split_string)
-            line_lab = pfx 
-            lab_len = min(LAB_LEN, split_len)
+            idx_len = len(LAB_IDX)
+            line_lab = pfx
+            lab_len = min(idx_len, split_len)
             if lab_len > 1:
                 for i_ll in range(lab_len, 1, -1):
-                    line_lab += split_string[-i_ll] + '_'
+                    i_li = LAB_IDX[-i_ll]
+                    line_lab += split_string[i_li] + '_'
 
-            line_lab += split_string[-1] 
+                i_li = LAB_IDX[-1]
+                line_lab += split_string[i_li]
+
+            else:
+                line_lab += split_string[0]
+
             if GRD_LAB:
                 line_lab += '_' + grd
 
@@ -309,7 +315,7 @@ for ctr_flw in CTR_FLWS:
             line_list.append(l)
 
 # set colors and markers
-line_colors = sns.color_palette("husl", line_count)
+line_colors = sns.color_palette('husl', line_count)
 for i_lc in range(line_count):
     for i_ns in range(2):
         exec('axl = ax%s_l[i_lc]'%i_ns)

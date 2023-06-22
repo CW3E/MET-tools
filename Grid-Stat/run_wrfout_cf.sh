@@ -179,7 +179,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
   if [ ! -d ${in_dir} ]; then
     msg="WARNING: data input path\n ${in_dir}\n does not exist,"
     msg+="skipping analysis for ${dirstr}.\n"
-    printf ${msg}
+    printf "${msg}"
   else
     printf "Processing forecasts in\n ${in_dir}\n directory.\n"
   
@@ -225,15 +225,15 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
         msg="Either\n ${file_1}\n or\n ${file_2}\n is not readable or "
         msg+="does not exist, skipping forecast initialization ${loopstr}, "
         msg+="forecast hour ${lead_hr}."
-        printf ${msg}
+        printf "${msg}"
       fi
     done
   fi
 done
 
 msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`,"
-msg+="verify outputs at out_root:\n ${OUT_CYC_DIR}"
-printf ${msg}
+msg+="verify outputs at out_root:\n ${OUT_CYC_DIR}\n"
+printf "${msg}"
 
 #################################################################################
 # end

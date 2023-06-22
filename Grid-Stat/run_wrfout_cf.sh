@@ -34,7 +34,7 @@
 # export all configurations supplied as an array of string definitions
 printf "Loading configuration parameters:\n"
 for cmd in "$@"; do
-  printf "${cmd}\n"; eval ${cmd}
+  printf " ${cmd}\n"; eval ${cmd}
 done
 
 #################################################################################

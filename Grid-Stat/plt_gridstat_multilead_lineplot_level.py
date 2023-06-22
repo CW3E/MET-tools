@@ -92,11 +92,14 @@ REF='0.25'
 # threshold level to plot
 LEV = '>=25.4'
 
-# starting date and zero hour of forecast cycles
+# Minimum starting date and zero hour of forecast cycles
 STRT_DT = '2022121400'
 
-# final date and zero hour of data of forecast cycles
+# Maximim starting date and zero hour of data of forecast cycles
 END_DT = '2023011800'
+
+# Max forecast lead to plot in hours
+MAX_LD = 72
 
 # valid date for the verification
 VALID_DT = '2023010100'
@@ -185,8 +188,14 @@ for ctr_flw in CTR_FLWS:
 
             fcst_leads += leads
 
-# find all unique values for forecast leads, sorted for plotting
+# find all unique values for forecast leads, sorted for plotting, and less than
+# max lead time
 fcst_leads = sorted(list(set(fcst_leads)), key=lambda x:(len(x), x))
+for i_fl in fcst_leads:
+    ld = fcst_leads[i_fl][:-4]
+    if int(ld) > MAX_LD:
+        del fcst_leads[i_fl]
+
 num_leads = len(fcst_leads)
             
 ##################################################################################

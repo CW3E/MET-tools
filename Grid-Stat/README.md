@@ -115,9 +115,9 @@ Naming of the lat-lon text files should be of the form
 Mask_Name.txt
 ```
 where the `Mask_Name` will match the mask's printed name in plotting routines,
-with underscores corresponding to blank spaces. Underscores are parsed in the
-plotting scripts when defining the printed name. The formatting of the file should
-have the `Mask_Name` as the first line of the file. Each line after the
+with underscores corresponding to blank spaces - these underscores are parsed in
+the plotting scripts when defining the printed name. The formatting of the file
+should have the `Mask_Name` as the first line of the file. Each line after the
 first corresponds to a latitude-longitude pair defining the polygon region
 to be verified, with paired values separated by a single blank space.
 
@@ -132,14 +132,14 @@ to this directory without changing the behavior of existing workflow routines.
 In order to define a collection of landmasks to perform verification over,
 one will define a landmask list which will be sourced by the `run_vxmask.sh`
 and `run_gridstat.sh` scripts in the following. A landmask list is a text file
-with lines consisting of each `Mask_Name` to be verified. Example landmask lists
-can be found in the
+with lines consisting of each `Mask_Name` region over which to perform
+verfication. Example landmask lists can be found in the
 ```
 MET-tools/polygons/mask-lists
 ```
 directory.
 
-Generating the NetCDF landmasks that will be ingested by Grid-Stat is performed
+The NetCDF landmasks that will be ingested by Grid-Stat are generated
 with the `run_vxmask.sh` script. This script is run offline and standalone, where
 the output NetCDF masks can be re-used over multiple analyses that study the same
 verification regions. The arguments of the `run_vxmask.sh` script are as follows:
@@ -147,11 +147,18 @@ verification regions. The arguments of the `run_vxmask.sh` script are as follows
  * `${USR_HME}`       &ndash; the directory path for the MET-tools clone.
  * `${SOFT_ROOT}`     &ndash; the directory path for the MET singularity image.
  * `${MET_SNG}`       &ndash; the full path of the MET singularity image.
- * `${MSK_ROOT}`      &ndash; 
- * `${MSKS}`          &ndash; 
- * `${MSK_IN}`        &ndash; 
- * `${MSK_OUT}`       &ndash; 
- * `${OBS_F_IN}`      &ndash; 
+ * `${MSK_ROOT}`      &ndash; the directory path for the root directorie containing lat-lon, landmask list and landmask NetCDF files.
+ * `${MSKS}`          &ndash; the full path of the landmask list file to be sourced.
+ * `${MSK_IN}`        &ndash; the directory path of the lat-lon files to be used for generating landmasks.
+ * `${MSK_OUT}`       &ndash; the directory path for the output NetCDF landmasks.
+ * `${OBS_F_IN}`      &ndash; the full path of a processed StageIV product for the reference grid.
+
+In this repository, a generic StageIV product is included in the following path:
+```
+MET-tools/polygonsStageIV_QPE_2019021500.nc
+```
+which can be used for the `${OBS_F_IN}` above as the reference grid for
+generating landmasks.
 
 ## Running gridstat on cf-compliant WRF outputs
 Once cf-compliant outputs and verification landmasks have been written by

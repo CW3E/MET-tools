@@ -54,12 +54,12 @@ export MET_SNG=${SOFT_ROOT}/met-10.0.1.simg
 # Root directory for landmasks and lat-lon text files
 export MSK_ROOT=${USR_HME}/polygons
 
-# Root directory of regridded .nc landmasks on StageIV domain
-export MSK_IN=${MSK_ROOT}/NRT_Masks
-
 # Path to file with list of landmasks for verification regions
 export MSKS=${MSK_ROOT}/mask-lists/NRT_MaskList.txt
             
+# Root directory of regridded .nc landmasks on StageIV domain
+export MSK_IN=${MSK_ROOT}/NRT_Masks
+
 # Specify thresholds levels for verification
 export CAT_THR="[ >0.0, >=1.0, >=10.0, >=25.0, >=50.0 ]"
 

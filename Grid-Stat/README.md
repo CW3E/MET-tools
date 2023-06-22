@@ -188,8 +188,8 @@ requires:
  * `${CAT_THR}`    &ndash; a list of threshold values for verfication statistics
     in mm units, e.g., `"[ >0.0, >=10.0, >=25.4, >=50.8, >=101.6 ]"`
     (including quotations).
- * `${MSK}`         &ndash; the name of the landmask polygon (including file extension)
-   to be used to define the verfication region.
+ * `${MSKS}`       &ndash; the full path to the landmask list to be used to define the verfication region(s) for Grid-Stat.
+ * `${MSK_IN}`     &ndash; the directory path to the NetCDF landmasks sourced in the landmask list `${MSKS}`.
  * `${INT_MTHD}`   &ndash; the [interpolation method](https://met.readthedocs.io/en/latest/Users_Guide/config_options.html?highlight=nterp_mthd#interp)
    to be passed to the Grid-Stat configuration file, defining how the native model
    grid is mapped to the StageIV grid.
@@ -223,7 +223,7 @@ requires:
  * `${MET_SNG}`    &ndash; full path to the executable MET singularity image to
    be used.
 
-### Running gridstat on cf-compliant WRF outputs
+### Running gridstat batch analysis on cf-compliant WRF outputs
 
 The `run_gridstat.sh` script is designed to be run with the `batch_gridstat.sh`
 script supplying the above arguments as defined over a mapping of different
@@ -266,7 +266,7 @@ map constructor and the SLURM job array should be set like the `batch_wrf_cf.sh`
 as discussed above. Logs for `batch_gridstat.sh` will be written in
 the `${OUT_ROOT}` directory set in the script.
 
-### Running gridstat on pre-processed background data (GFS / ECMWF)
+### Running gridstat batch analysis on pre-processed background data (GFS / ECMWF)
 There are two differences in running this workflow on preprocessed
 background data from global models such as GFS and the deterministic
 ECMWF. Firstly, for files of the form `*_24QPF_YYYYMMDDHH_FZZZ.nc`

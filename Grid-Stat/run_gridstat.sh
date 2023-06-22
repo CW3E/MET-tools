@@ -164,31 +164,18 @@ if [ ! -r ${MSKS} ]; then
 fi
 
 # Root directory for landmasks
-if [ ! ${MSK_ROOT} ]; then
-  printf "ERROR: landmask root directory \${MSK_ROOT} is not defined.\n"
+if [ ! ${MSK_IN} ]; then
+  printf "ERROR: landmask directory \${MSK_IN} is not defined.\n"
   exit 1
 fi
 
-# loop lines of the mask file, set temporary exit status before searching for masks
-msk_count=`wc -l < ${MSKS}`
-line_count=1
+# loop lines of the mask list, set temporary exit status before searching for masks
 estat=0
 
-# remove pre-exising PLY_MSK.txt files from previous gridstat runs
-rm -f ${OUT_CYC_DIR}/PLY_MSK.txt
-
 while read msk; do
-  fpath=${MSK_ROOT}/${msk}_mask_regridded_with_StageIV.nc
+  fpath=${MSK_IN}/${msk}_mask_regridded_with_StageIV.nc
   if [ -r "${fpath}" ]; then
-    printf "Found ${fpath}_mask_regridded_with_StageIV.nc landmask.\n"
-    # append land mask to PLY_MSK.txt list for replacement
-    if [ ${line_count} -lt ${msk_count} ]; then
-      ply_msk="\"/work_root/${msk}_mask_regridded_with_StageIV.nc\",\n"
-      printf ${ply_msk} >> ${OUT_CYC_DIR}/PLY_MSK.txt
-    else
-      ply_msk="\"/work_root/${msk}_mask_regridded_with_StageIV.nc\""
-      printf ${ply_msk} >> ${OUT_CYC_DIR}/PLY_MSK.txt
-    fi
+    printf "Found\n ${fpath}_mask_regridded_with_StageIV.nc\n landmask.\n"
   else
     msg="ERROR: verification region landmask\n ${fpath}\n"
     msg+=" does not exist or is not readable.\n"
@@ -197,7 +184,6 @@ while read msk; do
     # create exit status flag to kill program, after checking all files in list
     estat=1
   fi
-  (( line_count += 1 ))
 done <${MSKS}
 
 if [ ${estat} -eq 1 ]; then
@@ -295,8 +281,19 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
   rm -f ${work_root}/${prfx}GridStatConfig
   rm -f ${work_root}/PLY_MSK.txt
 
-  # copy the verification region configuration to work directory from cycle root
-  cp ${OUT_CYC_DIR}/PLY_MSK.txt ${work_root}/
+  # loop lines of the mask list, generate PLY_MSK.txt for GridStatConfig insert
+  msk_count=`wc -l < ${MSKS}`
+  line_count=1
+  while read msk; do
+    if [ ${line_count} -lt ${msk_count} ]; then
+      ply_msk="\"/MSK_IN/${msk}_mask_regridded_with_StageIV.nc\",\n"
+      printf ${ply_msk} >> ${work_root}/PLY_MSK.txt
+    else
+      ply_msk="\"/MSK_IN/${msk}_mask_regridded_with_StageIV.nc\""
+      printf ${ply_msk} >> ${work_root}/PLY_MSK.txt
+    fi
+    (( line_count += 1 ))
+  done <${MSKS}
 
   # loop lead hours for forecast valid time for each initialization time
   for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INT} )); do
@@ -320,7 +317,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
 
     # Set up singularity container with specific directory privileges
     cmd="singularity instance start -B ${work_root}:/work_root:rw,"
-    cmd+="${DATA_ROOT}:/DATA_ROOT:ro,${MSK_ROOT}:/MSK_ROOT:ro,"
+    cmd+="${DATA_ROOT}:/DATA_ROOT:ro,${MSK_IN}:/MSK_IN:ro,"
     cmd+="${in_dir}:/in_dir:ro,${script_dir}:/script_dir:ro "
     cmd+="${MET_SNG} met1"
     printf "${cmd}\n"; eval ${cmd}
@@ -418,9 +415,6 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
   cmd="rm -f ${work_root}/PLY_MSK.txt"
   printf "${cmd}\n"; eval ${cmd}
 done
-
-# clean up PLY_MSK.txt at cycle root
-rm -f ${OUT_CYC_DIR}/PLY_MSK.txt
 
 msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "
 msg+="outputs at OUT_CYC_DIR:\n ${OUT_CYC_DIR}"

@@ -24,6 +24,7 @@ Two files are needed because the, e.g., 24-hour accumulation of precipitation is
 calculated by subtracting the simulation accumulation variables for rain at
 t=valid_time and t=valid_time-24_hours.
 
+### Running cf-compliant batch processing
 The `wrfout_to_cf.ncl` script is called in a loop in the execution of the
 `run_wrfout_cf.sh` script included in this directory. The `run_wrfout_cf.sh` script
 will run through a range of valid date times for zero hours and a range of forecast
@@ -110,16 +111,20 @@ a landmask for the region over which the verification is to take place. This
 region will be defined as a sub-domain of the StageIV grid, which can be generated
 in the following steps.
 
+
+### Generating user-defined lat-lon regions from Google Earth
+
 Naming of the lat-lon text files should be of the form
 ```
 Mask_Name.txt
 ```
 where the `Mask_Name` will match the mask's printed name in plotting routines,
 with underscores corresponding to blank spaces - these underscores are parsed in
-the plotting scripts when defining the printed name. The formatting of the file
-should have the `Mask_Name` as the first line of the file. Each line after the
-first corresponds to a latitude-longitude pair defining the polygon region
-to be verified, with paired values separated by a single blank space.
+the plotting scripts when defining the printed name with spaces. The
+formatting of the file should have the `Mask_Name` as the first line of
+the file. Each line after the first corresponds to a latitude-longitude pair
+defining the polygon region to be verified, with paired values separated by
+a single blank space.
 
 A variety of commonly used lat-lon regions are included in the
 ```
@@ -128,6 +133,8 @@ MET-tools/polygons/lat-lon
 directory in this repository, which can be used to generate the NetCDF landmasks
 for the verification region in the StageIV grid. New lat-lon files can be added
 to this directory without changing the behavior of existing workflow routines.
+
+### Computing NetCDF landmasks from lat-lon text files
 
 In order to define a collection of landmasks to perform verification over,
 one will define a landmask list which will be sourced by the `run_vxmask.sh`
@@ -160,7 +167,7 @@ MET-tools/polygonsStageIV_QPE_2019021500.nc
 which can be used for the `${OBS_F_IN}` above as the reference grid for
 generating landmasks.
 
-## Running gridstat on cf-compliant WRF outputs
+## Running gridstat
 Once cf-compliant outputs and verification landmasks have been written by
 running the steps above, one can ingest this data into MET using the
 `run_gridstat.sh` script in this directory. This script is designed similarly
@@ -216,6 +223,8 @@ requires:
  * `${MET_SNG}`    &ndash; full path to the executable MET singularity image to
    be used.
 
+### Running gridstat on cf-compliant WRF outputs
+
 The `run_gridstat.sh` script is designed to be run with the `batch_gridstat.sh`
 script supplying the above arguments as defined over a mapping of different
 combinations of control flows and grids to process. Note: the performance
@@ -257,7 +266,7 @@ map constructor and the SLURM job array should be set like the `batch_wrf_cf.sh`
 as discussed above. Logs for `batch_gridstat.sh` will be written in
 the `${OUT_ROOT}` directory set in the script.
 
-## Running gridstat on pre-processed background data (GFS / ECMWF)
+### Running gridstat on pre-processed background data (GFS / ECMWF)
 There are two differences in running this workflow on preprocessed
 background data from global models such as GFS and the deterministic
 ECMWF. Firstly, for files of the form `*_24QPF_YYYYMMDDHH_FZZZ.nc`

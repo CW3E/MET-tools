@@ -2,7 +2,7 @@
 # Description
 ##################################################################################
 # This script is designed to generate heat plots in Matplotlib from MET grid_stat
-# output files, preprocessed with the companion script proc_24hr_QPF.py. This
+# output files, preprocessed with the companion script proc_gridstat.py. This
 # plotting scheme is designed to plot forecast lead in the vertical axis and the
 # valid time for verification from the forecast initialization in the horizontal
 # axis. The global parameters for the script below control the initial times for
@@ -53,12 +53,11 @@ from proc_gridstat import OUT_ROOT
 # define control flow to analyze 
 CTR_FLW = 'NRT_gfs'
 
-# Define the max number of underscore components of control flow names to include in
-# fig title. This includes components of the strings above from last to first. Set to
-# number of underscore separated compenents in the string to obtain the full
-# name in the fig title. Note: a non-empty prefix value below will always be
-# included in the fig title
-LAB_LEN = 2
+# Define a list of indices for underscore-separated components of control flow
+# names to include in fig legend. Note: a non-empty prefix value below will
+# always be included in the legend label, and control flows with fewer components
+# than indices above will only include those label components that exist
+LAB_IDX = [0, 1]
 
 # define if fig title includes grid
 GRD_LAB = True
@@ -83,6 +82,9 @@ END_DT = '2023011800'
 
 # number of hours between zero hours for forecast data (string HH)
 CYC_INT = '24'
+
+# Max forecast lead to plot in hours
+MAX_LD = 72
 
 # first valid time for verification (string YYYYMMDDHH)
 ANL_STRT = '2022122400'
@@ -112,23 +114,28 @@ MIN_SCALE = 0.0
 MAX_SCALE = 1.0
 
 # landmask for verification region -- need to be set in gridstat options
-LND_MSK = 'CALatLonPoints'
+LND_MSK = 'CA_All'
 
 # define plot title
 TITLE = STAT + ' - '
 split_string = CTR_FLW.split('_')
 split_len = len(split_string)
-lab_len = min(LAB_LEN, split_len)
+idx_len = len(LAB_IDX)
+line_lab = pfx
+lab_len = min(idx_len, split_len)
 if lab_len > 1:
     for i_ll in range(lab_len, 1, -1):
-        TITLE += split_string[-i_ll] + '_'
-TITLE += split_string[-1] 
+        i_li = LAB_IDX[-i_ll]
+        TITLE += split_string[i_li] + '_'
+
+    i_li = LAB_IDX[-1]
+    TITEL += split_string[i_li]
+
+else:
+    TITLE += split_string[0]
 
 if GRD_LAB:
-    TITLE += ' ' + GRD
-
-if PRFX:
-    TITLE += ' ' + PRFX
+    TITLE += '_' + GRD
 
 TITLE += ' ' + LND_MSK
 
@@ -220,12 +227,18 @@ stat_data = stat_data.loc[(stat_data['VX_MASK'] == LND_MSK)]
 
 # NOTE: sorting below is designed to handle the issue of string sorting with
 # symbols and non-left-padded decimals
-
 # sorts first on length of integer expansion for hours, secondly on char
-data_leads = sorted(list(set(stat_data['FCST_LEAD'].values)),
+# and less than max lead time
+fcst_leads = sorted(list(set(stat_data['FCST_LEAD'].values)),
                     key=lambda x:(len(x), x), reverse=True)
-data_dates = []
-num_leads = len(data_leads)
+
+for i_fl in fcst_leads:
+    ld = fcst_leads[i_fl][:-4]
+    if int(ld) > MAX_LD:
+        del fcst_leads[i_fl]
+
+fcst_dates = []
+num_leads = len(fcst_leads)
 num_dates = len(anl_dates)
 
 # create array storage for probs
@@ -238,12 +251,12 @@ for i_nd in range(num_dates):
             # on the first loop pack the tick labels
             if ( i_nd % 2 ) == 0 or num_dates < 10:
               # if 10 or more leads, only use every other as a label
-              data_dates.append(anl_dates[i_nd].strftime('%Y%m%d'))
+              fcst_dates.append(anl_dates[i_nd].strftime('%Y%m%d'))
             else:
-                data_dates.append('')
+                fcst_dates.append('')
 
         try:
-            val = stat_data.loc[(stat_data['FCST_LEAD'] == data_leads[i_nl]) &
+            val = stat_data.loc[(stat_data['FCST_LEAD'] == fcst_leads[i_nl]) &
                                 (stat_data['FCST_VALID_END'] == anl_dates[i_nd].strftime('%Y%m%d_%H%M%S'))]
             
             if not val.empty:
@@ -271,11 +284,11 @@ sns.heatmap(tmp[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale,
 
 # generate tic labels based on hour values
 for i in range(num_leads):
-    data_leads[i] = data_leads[i][:-4]
+    fcst_leads[i] = fcst_leads[i][:-4]
 
 ax0.set_yticklabels(ax0.get_yticklabels(), rotation=270, va='top')
-ax1.set_xticklabels(data_dates, rotation=45, ha='right')
-ax1.set_yticklabels(data_leads)
+ax1.set_xticklabels(fcst_dates, rotation=45, ha='right')
+ax1.set_yticklabels(fcst_leads)
 
 # tick parameters
 ax0.tick_params(

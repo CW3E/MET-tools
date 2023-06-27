@@ -230,8 +230,8 @@ def proc_gridstat(cnfg):
                         print(STR_INDT * 2 + col_name, file=log_f)
                         fname_df[col_name] = [] 
     
-                    fname_df =  pd.DataFrame.from_dict(fname_df,
-                                                       orient='columns')
+                    fname_df = pd.DataFrame.from_dict(fname_df,
+                                                      orient='columns')
     
                     # parse file by line, concatenating columns
                     for line in f:

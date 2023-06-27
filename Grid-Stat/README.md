@@ -300,11 +300,12 @@ forecast zero hour, e.g.,
 contains the `grid_stat_*.txt` files for all `d01` forecasts up to the
 `${ANL_MAX}` time that are initialized at `2022121400`.
 
-These Grid-Stat text files are human-readable as column-organized data and, in
+These Grid-Stat text files are human-readable as column-organized data. In
 order to parse the text into a statistical and graphical language, this
 workflow has implemented the `proc_gridstat.py` script to efficiently batch
 process all control flows, statisics types, domains and valid dates for forecast
-zero hours and verification times at once using
+zero hours in parallel, while looping over forecast hours for each zero. Parallelism
+is acheived using
 [Python multiprocessing](https://docs.python.org/3/library/multiprocessing.html).
 This script requires the following arguments:
 
@@ -320,8 +321,14 @@ This script requires the following arguments:
  * `IN_ROOT`  &ndash; the directory path for all control flow-named directories containing
    Grid-Stat outputs to be processed.
  * `OUT_ROOT` &ndash; the directory path for all `proc_gridstat.py` outputs to be
-   written, sub-organized by control flow names. Logs for `proc_gridstat.py` are
-   written in the same location.
+   written, sub-organized by control flow names and ISO start date directories. 
+
+Note that this script generates a mapping for a parallel analysis over control flow,
+grid, prefix and valid start date, where IO directories may depend on these parameters.
+In order to handle this dependency, one should edit the arguments that are mapped
+to the `proc_gridstat` function defined in the script, where configurations are
+defined in terms of Python lists of arguments, constructed in the nested loops before
+the parameter map.
 
 With the parameters appropriately set as above, one can call `proc_gristat.py` as
 ```
@@ -329,14 +336,12 @@ python -u proc_gridstat.py
 ```
 to parse all files available within these directories. Note: the `-u` flag is
 is optional and is only to set this to write logs in real-time instead of at the
-time of script completion.
-
-The `proc_gridstat.py` script is designed to
+time of script completion. The `proc_gridstat.py` script is designed to
 be agnostic of what statistics are available at each directory, using 
 [glob](https://docs.python.org/3/library/glob.html) and
 Bash wildcards to search for any files available matching the specified patterns.
-Dates will be processed sequentially between `START_DT` and `END_DT`, where for
-each file of the type
+Valid start dates are processed in parallel for start dates between `START_DT` and `END_DT`
+at step sizes `CYC_INT` between these dates.  For each file of the type
 ```
 grid_stat_${PRFX}_HHMMSSL_YYYYMMDD_HHMMSSV_${STAT}.txt
 ```
@@ -344,28 +349,25 @@ the `${STAT}` variable will be read as the key name for a
 [Python dictionary](https://docs.python.org/3/tutorial/datastructures.html#dictionaries)
 entry, with a matching value equal to a [Pandas](https://pandas.pydata.org/)
 dataframe which inherits all column names and values from the corresponding
-ASCII file. As dates are processed sequentially in valid initialization
-time, new files with type `${STAT}` will be parsed and concatenated
-vertically to an existing `${STAT}` dataframe associated to the dictionary
-key `${STAT}` if it already exists, or this will be newly created if it does
-not exist already. When there exists multiple valid forecast verifciation dates
-for a single initialization time, valid dates for verification will be sorted
-sequentially so that rows of the dataframe are organized by valid forecast
-zero-hour / valid verfication date precedence. This script also filters
-missing values, replacing them with entries of
+ASCII file. 
+
+One output data file and one log file is generated per valid start date, of the form
+```
+grid_stats_d0?_YYYYMMDDHH.bin
+proc_gridstat_NRT_*_d0?_YYYYMMDDHH.log
+```
+respectively. Logs for `proc_gridstat.py` are written in `OUT_ROOT + '/batch_logs'`
+while data outputs are written to corresponding ISO start date directories by default.
+Statistics for distinct forecast leads are processed sequentially and increasing in
+forecast length for each valid start date. New files with type `${STAT}` are parsed
+and concatenated vertically to an existing `${STAT}` dataframe associated to the
+dictionary key `${STAT}` if it already exists, or this will be newly created if it does
+not exist already.  This script also filters missing values, replacing them with entries of
 [Numpy NaN](https://numpy.org/doc/stable/reference/constants.html#numpy.NAN)
 for later analysis and suppression of entries during plotting.
 
-Having run `proc_gridstat.py` as above for this case study, one has files
-of the form:
-```
-grid_stats_d0?_2022121400_to_2023011800.bin
-proc_gridstat_NRT_*_d0?_log.txt
-```
-written to each `out_cyc_dir` parent directory to ISO style forecast zero
-hour directories. The log files contain the log of the script for
-processing the associated control flow, grid and date range, while the
-`*.bin` files are binary files containing [Python pickled](https://docs.python.org/3/library/pickle.html)
+The `*.bin` files are binary files containing
+[Python pickled](https://docs.python.org/3/library/pickle.html)
 binary data, where the above dictionaries of dataframes are serialized,
 preserving the full object structure discussed above. To open such a file,
 one needs to unpickle the contents of this file, e.g., in a Python script or
@@ -373,9 +375,8 @@ interactive session one may write
 ```{python}
 import pickle
 import pandas as pd
-f = open('grid_stats_d01_2022121400_to_2023011800.bin', 'rb')
-gridstat_data = pickle.load(f)
-f.close()
+with open('grid_stats_d01_2022121400.bin', 'rb') as f:
+    gridstat_data = pickle.load(f)
 ```
 where the variable `gridstat_data` now references our dictionary of dataframes.
 To view the dataframe key names which call the parsed data, one may write
@@ -392,7 +393,7 @@ and work with the `nbrcnt` variable to analyze and plot the data.
 ## Plotting from pickled data frames
 Several examples of plottting from processed gridstat data binary files
 ```{bash}
-grid_stats_${GRD}_YYYYMMDDHH_to_YYYYMMDDHH.bin
+grid_stats_${GRD}_YYYYMMDDHH.bin
 ```
 are provided, where the plotting routines therein are integrated to this
 workflow. Specifically, all scripts import the path variable

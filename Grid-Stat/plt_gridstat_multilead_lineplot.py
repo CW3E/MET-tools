@@ -96,7 +96,7 @@ CYC_INT = '24'
 VALID_DT = '2023010100'
 
 # Max forecast lead to plot in hours
-MAX_LD = 72
+MAX_LD = '240'
 
 # MET stat file type - should be non-leveled data
 TYPE = 'cnt'
@@ -112,7 +112,10 @@ TITLE='24hr accumulated precip at ' + VALID_DT[:4] + '-' + VALID_DT[4:6] + '-' +
         VALID_DT[6:8] + '_' + VALID_DT[8:]
 
 # plot sub-title title
-SUBTITLE='Verification region - ' + LND_MSK
+SUBTITLE='Verification region -'
+lnd_msk_split = LND_MSK.split('_')
+for split in lnd_msk_split:
+    SUBTITLE += ' ' + split
 
 # fig saved automatically to OUT_PATH
 OUT_DIR = OUT_ROOT + '/figures' + FIG_CSE
@@ -164,13 +167,13 @@ for ctr_flw in CTR_FLWS:
 
     for prfx in PRFXS:
         if len(prfx) > 0:
-            pfx = prfx + '_'
+            pfx = '_' + prfx
         else:
             pfx = ''
         
         for grid in GRDS:
             if len(grid) > 0:
-                grd = grid + '_'
+                grd = '_' + grid
             else:
                 grd = ''
 
@@ -178,7 +181,7 @@ for ctr_flw in CTR_FLWS:
             split_string = ctr_flw.split('_')
             split_len = len(split_string)
             idx_len = len(LAB_IDX)
-            line_lab = pfx
+            line_lab = prfx
             lab_len = min(idx_len, split_len)
             if lab_len > 1:
                 for i_ll in range(lab_len, 1, -1):
@@ -190,23 +193,27 @@ for ctr_flw in CTR_FLWS:
     
             else:
                 line_lab += split_string[0]
+
+            if pfx:
+                line_lab += pfx
     
             if GRD_LAB:
                     line_lab += grd
 
-            key = pfx + grd + ctr_flw 
+            key = ctr_flw + pfx + grd
             for fcst_zh in fcst_zhs:
                 # define the input name
                 zh_strng = fcst_zh.strftime('%Y%m%d%H')
-                in_path = data_root + '/grid_stats_' + pfx + grd + '_'+\
-                          zh_strng + '.bin'
+                in_path = data_root + '/' + zh_strng + '/grid_stats' + pfx + grd +\
+                          '_' + zh_strng + '.bin'
                 
                 try:
                     with open(in_path, 'rb') as f:
                         data = pickle.load(f)
+                        data = data[TYPE]
 
                 except:
-                    print('WARNING: input data ' + in_path +\
+                    print('WARNING: input data ' + in_path + ' statistics ' + TYPE +\
                             ' does not exist, skipping this configuration.')
                     continue
 
@@ -221,38 +228,45 @@ for ctr_flw in CTR_FLWS:
                 vals += STATS
                 for i_ns in range(2):
                     stat = STATS[i_ns]
-                    if stat + '_BCL' in data[TYPE]:
+                    if stat + '_BCL' in data:
                         vals.append(stat + '_BCL')
                         vals.append(stat + '_BCU')
     
-                    if stat + '_NCL' in data[TYPE]:
+                    if stat + '_NCL' in data:
                         vals.append(stat + '_NCL')
                         vals.append(stat + '_NCU')
                 
-                # cut down df to specified valid date / region
-                stat_data = data[TYPE][vals]
+                # cut down df to specified valid date / region / relevant stats
+                stat_data = data[vals]
                 stat_data = stat_data.loc[(stat_data['VX_MASK'] == LND_MSK)]
                 stat_data = stat_data.loc[(stat_data['FCST_VALID_END'] ==
                                            valid_dt.strftime('%Y%m%d_%H%M%S'))]
+
+                # check if there is data for this configuration and these fields
                 if not stat_data.empty:
                     leads = sorted(list(set(stat_data['FCST_LEAD'].values)),
                                    key=lambda x:(len(x), x))
     
                     if key in plt_data.keys():
-                        plt_data[key] = pd.concat([plt_data[key]['data'], stat_data], axis=0)
+                        # if there is existing data, concatenate dataframes
+                        plt_data[key] = pd.concat([plt_data[key], stat_data],
+                                                   axis=0)
                     else:
-                        key_data = {'data': stat_data, 'label': line_lab}
-                        plt_data[key] = key_data
+                        # if this is a first instance, create fields
+                        plt_data[key] = stat_data
 
                     # obtain leads of data 
                     fcst_leads += leads
 
 # find all unique values for forecast leads, sorted for plotting, less than max lead
 fcst_leads = sorted(list(set(fcst_leads)), key=lambda x:(len(x), x))
-for i_fl in fcst_leads:
+i_fl = 0
+while i_fl < len(fcst_leads):
     ld = fcst_leads[i_fl][:-4]
-    if int(ld) > MAX_LD:
+    if int(ld) > int(MAX_LD):
         del fcst_leads[i_fl]
+    else:
+        i_fl += 1
 
 num_leads = len(fcst_leads)
 
@@ -267,49 +281,44 @@ ax0 = fig.add_axes([.110, .395, .85, .33])
 ax1 = fig.add_axes([.110, .065, .85, .33])
 
 line_list = []
+line_labs = []
 ax0_l = []
 ax1_l = []
 
 stat0 = STATS[0]
 stat1 = STATS[1]
 
+# loop configurations, load trimmed data from plt_data dictionary
 for ctr_flw in CTR_FLWS:
-    # define derived data paths 
-    data_root = OUT_ROOT + '/' + ctr_flw
-
     for prfx in PRFXS:
         if len(prfx) > 0:
-            pfx = prfx + '_'
+            pfx = '_' + prfx
         else:
             pfx = ''
 
         for grid in GRDS:
             if len(grid) > 0:
-                grd = grid + '_'
+                grd = '_' + grid
             else:
                 grd = ''
             
-            key = pfx + grd + ctr_flw 
+            key = ctr_flw + pfx + grd 
             try:
                 data = plt_data[key]
     
             except:
                 continue
             
-            # infer existence of confidence intervals with precedence for bootstrap
+            # infer existence of confidence interval data with precedence for bootstrap
             cnf_lvs = []
             for i_ns in range(2):
                 stat = STATS[i_ns]
-                if stat + '_BCL' in data[TYPE] and\
-                    not (data[TYPE][stat + '_BCL'].isnull().values.any()):
-                        vals.append(stat + '_BCL')
-                        vals.append(stat + '_BCU')
+                if stat + '_BCL' in data and\
+                    not (data[stat + '_BCL'].isnull().values.any()):
                         cnf_lvs.append('_BC')
     
-                elif stat + '_NCL' in data[TYPE] and\
-                    not (data[TYPE][stat + '_NCL'].isnull().values.any()):
-                        vals.append(stat + '_NCL')
-                        vals.append(stat + '_NCU')
+                elif stat + '_NCL' in data and\
+                    not (data[stat + '_NCL'].isnull().values.any()):
                         cnf_lvs.append('_NC')
     
                 else:
@@ -321,7 +330,7 @@ for ctr_flw in CTR_FLWS:
                     tmp[:] = np.nan
             
                     for i_nl in range(num_leads):
-                        val = stat_data.loc[(stat_data['FCST_LEAD'] == fcst_leads[i_nl])]
+                        val = data.loc[(data['FCST_LEAD'] == fcst_leads[i_nl])]
                         if not val.empty:
                             tmp[i_nl, 0] = val[STATS[i_ns]]
                             tmp[i_nl, 1] = val[STATS[i_ns] + cnf_lvs[i_ns] + 'L']
@@ -337,7 +346,7 @@ for ctr_flw in CTR_FLWS:
                     tmp[:] = np.nan
                 
                     for i_nl in range(num_leads):
-                        val = stat_data.loc[(stat_data['FCST_LEAD'] == fcst_leads[i_nl])]
+                        val = data.loc[(data['FCST_LEAD'] == fcst_leads[i_nl])]
                         if not val.empty:
                             tmp[i_nl] = val[STATS[i_ns]]
                     
@@ -346,8 +355,10 @@ for ctr_flw in CTR_FLWS:
     
             # add the line type to the legend
             line_list.append(l)
+            line_labs.append(key)
 
 # set colors and markers
+line_count = len(line_list)
 line_colors = sns.color_palette('husl', line_count)
 for i_lc in range(line_count):
     for i_ns in range(2):

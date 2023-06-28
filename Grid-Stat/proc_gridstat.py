@@ -162,17 +162,25 @@ for anl_dt in analyses:
 #  function for multiprocessing parameter map
 def proc_gridstat(cnfg):
     # unpack argument list
-    anl_strng, ctr_flw, prfx, grd, in_cyc_dir, in_dt_subdir, out_cyc_dir = cnfg
+    anl_strng, ctr_flw, prfx, grid, in_cyc_dir, in_dt_subdir, out_cyc_dir = cnfg
 
     # include underscore if prefix is of nonzero length
     if len(prfx) > 0:
-        prfx =+ '_'
+        pfx = '_' + prfx
+    else:
+        pfx = ''
+
+    # include underscore if grid is of nonzero length
+    if len(grid) > 0:
+        grd = '_' + grid
+    else:
+        grd = ''
 
     log_dir = OUT_ROOT + '/batch_logs'
     os.system('mkdir -p ' + log_dir)
 
-    with open(log_dir + '/proc_gridstat_' + prfx + ctr_flw + '_' + grd +\
-              '_' + anl_strng + '.log', 'w') as log_f:
+    with open(log_dir + '/proc_gridstat' + pfx + grd + '_' + ctr_flw + '_' +\
+              anl_strng + '.log', 'w') as log_f:
 
         # define derived data paths 
         in_data_root = IN_ROOT + in_cyc_dir 
@@ -197,12 +205,12 @@ def proc_gridstat(cnfg):
     
         # define the gridstat files to open based on the analysis date
         in_paths = in_data_root + '/' + anl_strng + in_dt_subdir  +\
-                   '/grid_stat_' + prfx + '*.txt'
+                   '/grid_stat' + pfx + '*.txt'
     
         # define the output binary file for pickled dataframe per date
-        out_path = out_data_root + '/' + anl_strng + '/grid_stats_' + prfx +\
+        out_path = out_data_root + '/' + anl_strng + '/grid_stats' + pfx +\
                    grd + '_' + anl_strng + '.bin'
-        # loop sorted grid_stat_prfx* files, sorting compares first on the
+        # loop sorted grid_stat_pfx* files, sorting compares first on the
         # length of lead time for non left-padded values
         in_paths = sorted(glob.glob(in_paths),
                           key=lambda x:(len(x.split('_')[-4]), x))
@@ -274,7 +282,7 @@ def proc_gridstat(cnfg):
         with open(out_path, 'wb') as f:
             pickle.dump(data_dict, f)
 
-        print('Completed: ' + anl_strng + ' ' + prfx + ctr_flw + ' ' + grd) 
+        print('Completed: ' + anl_strng + '_' + prfx + grid + ctr_flw) 
 
 ##################################################################################
 # Runs multiprocessing on parameter grid

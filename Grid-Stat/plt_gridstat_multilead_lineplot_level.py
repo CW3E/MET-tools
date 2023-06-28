@@ -83,7 +83,7 @@ GRDS = [
         'd01',
         'd02',
         'd03',
-        '0.25',
+        '',
        ]
 
 # verification domain for the calibration data

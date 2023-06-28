@@ -125,8 +125,7 @@ for anl_dt in analyses:
     for CTR_FLW in CTR_FLWS:
         for GRD in GRDS:
             for PRFX in PRFXS:
-                print(STR_INDT + anl_strng + ' ' + PRFX + ' ' + CTR_FLW +\
-                      ' ' + GRD)
+                print(STR_INDT + anl_strng + ' ' + PRFX + ' ' + CTR_FLW +' ' + GRD)
                 # storage for configuration settings as arguments of proc_gridstat
                 # the function definition and role of these arguments are in the
                 # next section directly below

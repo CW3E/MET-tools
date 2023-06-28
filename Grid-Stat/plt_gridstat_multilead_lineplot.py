@@ -54,6 +54,8 @@ from proc_gridstat import OUT_ROOT
 CTR_FLWS = [
             'NRT_gfs',
             'NRT_ecmwf',
+            'GFS',
+            'ECMWF',
            ]
 
 # Define a list of indices for underscore-separated components of control flow
@@ -81,6 +83,7 @@ GRDS = [
         'd01',
         'd02',
         'd03',
+        '',
        ]
 
 # Minimum starting date and zero hour of forecast cycles

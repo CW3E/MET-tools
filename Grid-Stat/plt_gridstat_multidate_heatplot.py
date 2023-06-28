@@ -46,6 +46,7 @@ import pickle
 import os
 import sys
 from proc_gridstat import OUT_ROOT
+import ipdb
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
@@ -84,13 +85,13 @@ END_DT = '2023011800'
 CYC_INT = '24'
 
 # Max forecast lead to plot in hours
-MAX_LD = 72
+MAX_LD = '240'
 
 # first valid time for verification (string YYYYMMDDHH)
 ANL_STRT = '2022122400'
 
 # final valid time (string YYYYMMDDHH)
-ANL_END = '2023012800'
+ANL_END = '2023011900'
 
 # cycle interval verification valid times (string HH)
 ANL_INT = '24'
@@ -121,7 +122,7 @@ TITLE = STAT + ' - '
 split_string = CTR_FLW.split('_')
 split_len = len(split_string)
 idx_len = len(LAB_IDX)
-line_lab = pfx
+line_lab = ''
 lab_len = min(idx_len, split_len)
 if lab_len > 1:
     for i_ll in range(lab_len, 1, -1):
@@ -129,57 +130,85 @@ if lab_len > 1:
         TITLE += split_string[i_li] + '_'
 
     i_li = LAB_IDX[-1]
-    TITEL += split_string[i_li]
+    TITLE += split_string[i_li]
 
 else:
     TITLE += split_string[0]
 
-if GRD_LAB:
-    TITLE += '_' + GRD
+if len(PRFX) > 0:
+    pfx = '_' + PRFX
 
-TITLE += ' ' + LND_MSK
+else:
+    pfx = ''
+
+line_lab += PRFX
+
+if len(GRD) > 0:
+    grd = '_' + GRD
+
+else:
+    grd = ''
+
+if GRD_LAB:
+    TITLE += grd
+
+lnd_msk_split = LND_MSK.split('_')
+TITLE += ', Region -'
+for split in lnd_msk_split:
+    TITLE += ' ' + split
 
 # fig saved automatically to OUT_PATH
+if len(FIG_LAB) > 0:
+    fig_lab = '_' + FIG_LAB
+else:
+    fig_lab = ''
+
 OUT_DIR = OUT_ROOT + '/figures' + FIG_CSE
-OUT_PATH = OUT_DIR + '/' + STRT_DT + '_' + END_DT + '_' + LND_MSK + '_' +\
-           STAT + '_' + CTR_FLW + '_' + GRD
-
-if PRFX:
-    OUT_PATH += '_' + PRFX
-
-OUT_PATH += FIG_LAB + '_heatplot.png'
+OUT_PATH = OUT_DIR + '/' + STRT_DT + '_' + END_DT + '_FCST_' + MAX_LD + '_' +\
+           LND_MSK + '_' + STAT + '_' + CTR_FLW + pfx + grd + fig_lab +\
+           '_heatplot.png'
 
 ##################################################################################
-# Begin plotting
+# Make data checks and determine all lead times over all files
 ##################################################################################
 # convert to date times
 if len(STRT_DT) != 10:
     print('ERROR: STRT_DT, ' + STRT_DT + ', is not in YYYYMMDDHH format.')
     sys.exit(1)
+else:
+    sd_iso = STRT_DT[:4] + '-' + STRT_DT[4:6] + '-' + STRT_DT[6:8] +\
+            '_' + STRT_DT[8:]
+    strt_dt = dt.fromisoformat(sd_iso)
 
 if len(END_DT) != 10:
     print('ERROR: END_DT, ' + END_DT + ', is not in YYYYMMDDHH format.')
     sys.exit(1)
+else:
+    ed_iso = END_DT[:4] + '-' + END_DT[4:6] + '-' + END_DT[6:8] +\
+            '_' + END_DT[8:]
+    end_dt = dt.fromisoformat(ed_iso)
 
 if len(CYC_INT) != 2:
     print('ERROR: CYC_INT, ' + CYC_INT + ', is not in HH format.')
     sys.exit(1)
-    
+else:
+    cyc_int = CYC_INT + 'H'
+
 if len(ANL_STRT) != 10:
     print('ERROR: ANL_STRT, ' + ANL_STRT + ', is not in YYYYMMDDHH format.')
     sys.exit(1)
 else:
-    s_iso = ANL_STRT[:4] + '-' + ANL_STRT[4:6] + '-' + ANL_STRT[6:8] +\
+    as_iso = ANL_STRT[:4] + '-' + ANL_STRT[4:6] + '-' + ANL_STRT[6:8] +\
             '_' + ANL_STRT[8:]
-    anl_strt = dt.fromisoformat(s_iso)
+    anl_strt = dt.fromisoformat(as_iso)
 
 if len(ANL_END) != 10:
     print('ERROR: ANL_END, ' + ANL_END + ', is not in YYYYMMDDHH format.')
     sys.exit(1)
 else:
-    e_iso = ANL_END[:4] + '-' + ANL_END[4:6] + '-' + ANL_END[6:8] +\
+    ae_iso = ANL_END[:4] + '-' + ANL_END[4:6] + '-' + ANL_END[6:8] +\
             '_' + ANL_END[8:]
-    anl_end = dt.fromisoformat(e_iso)
+    anl_end = dt.fromisoformat(ae_iso)
 
 if len(ANL_INT) != 2:
     print('ERROR: ANL_INT, ' + ANL_INT + ', is not in HH format.')
@@ -187,10 +216,71 @@ if len(ANL_INT) != 2:
 else:
     anl_int = ANL_INT + 'H'
     
+# generate the date range and forecast leads for the analysis, parse binary files
+# for relevant fields
+fcst_zhs = pd.date_range(start=strt_dt, end=end_dt, freq=cyc_int).to_pydatetime()
+
+fcst_leads = []
 # generate the date range for the analyses
 anl_dates = pd.date_range(start=anl_strt, end=anl_end,
                           freq=anl_int).to_pydatetime()
 
+data_root = OUT_ROOT + '/' + CTR_FLW
+plt_data = pd.DataFrame()
+for fcst_zh in fcst_zhs:
+    # define the input name
+    zh_strng = fcst_zh.strftime('%Y%m%d%H')
+    in_path = data_root + '/' + zh_strng + '/grid_stats' + pfx + grd +\
+              '_' + zh_strng + '.bin'
+    
+    try:
+        with open(in_path, 'rb') as f:
+            data = pickle.load(f)
+            data = data[TYPE]
+
+    except:
+        print('WARNING: input data ' + in_path + ' statistics ' + TYPE +\
+                ' does not exist, skipping this configuration.')
+        continue
+
+    # load the values to be plotted along with landmask and lead
+    vals = [
+            'VX_MASK',
+            'FCST_LEAD',
+            'FCST_VALID_END',
+           ]
+
+    # include the statistics and their confidence intervals
+    vals += [STAT]
+    
+    # cut down df to specified valid date / region / relevant stats
+    stat_data = data[vals]
+    stat_data = stat_data.loc[(stat_data['VX_MASK'] == LND_MSK)]
+
+    # check if there is data for this configuration and these fields
+    if not stat_data.empty:
+        plt_data = pd.concat([plt_data, stat_data], axis=0)
+
+        # obtain leads of data 
+        leads = sorted(list(set(stat_data['FCST_LEAD'].values)),
+                       key=lambda x:(len(x), x))
+        fcst_leads += leads
+
+# find all unique values for forecast leads, sorted for plotting, less than max lead
+fcst_leads = sorted(list(set(fcst_leads)), key=lambda x:(len(x), x))
+i_fl = 0
+while i_fl < len(fcst_leads):
+    ld = fcst_leads[i_fl][:-4]
+    if int(ld) > int(MAX_LD):
+        del fcst_leads[i_fl]
+    else:
+        i_fl += 1
+
+num_leads = len(fcst_leads)
+
+##################################################################################
+# Begin plotting
+##################################################################################
 # Create a figure
 fig = plt.figure(figsize=(12,9.6))
 
@@ -198,52 +288,16 @@ fig = plt.figure(figsize=(12,9.6))
 ax0 = fig.add_axes([.92, .18, .03, .77])
 ax1 = fig.add_axes([.07, .18, .84, .77])
 
-# define derived data paths 
-if len(PRFX) > 0:
-    PRFX += '_'
-
-# define the output name
-in_path = OUT_ROOT + '/' + CTR_FLW + '/grid_stats_' + PRFX + GRD + '_' +\
-          STRT_DT + '_to_' + END_DT + '.bin'
-
-try:
-    with open(in_path, 'rb') as f:
-        data = pickle.load(f)
-except:
-    print('ERROR: input data ' + in_path + ' does not exist.')
-    sys.exit(1)
-
-# load the values to be plotted along with landmask, lead and threshold
-vals = [
-        'VX_MASK',
-        'FCST_LEAD',
-        'FCST_VALID_END',
-       ]
-vals += [STAT]
-
-# cut down df to specified region and level of data 
-stat_data = data[TYPE][vals]
-stat_data = stat_data.loc[(stat_data['VX_MASK'] == LND_MSK)]
-
-# NOTE: sorting below is designed to handle the issue of string sorting with
-# symbols and non-left-padded decimals
-# sorts first on length of integer expansion for hours, secondly on char
-# and less than max lead time
-fcst_leads = sorted(list(set(stat_data['FCST_LEAD'].values)),
-                    key=lambda x:(len(x), x), reverse=True)
-
-for i_fl in fcst_leads:
-    ld = fcst_leads[i_fl][:-4]
-    if int(ld) > MAX_LD:
-        del fcst_leads[i_fl]
-
-fcst_dates = []
 num_leads = len(fcst_leads)
 num_dates = len(anl_dates)
 
 # create array storage for probs
 tmp = np.empty([num_leads, num_dates])
 tmp[:] = np.nan
+fcst_dates = []
+
+# reverse order for plotting
+fcst_leads = fcst_leads[::-1]
 
 for i_nd in range(num_dates):
     for i_nl in range(num_leads):
@@ -256,8 +310,8 @@ for i_nd in range(num_dates):
                 fcst_dates.append('')
 
         try:
-            val = stat_data.loc[(stat_data['FCST_LEAD'] == fcst_leads[i_nl]) &
-                                (stat_data['FCST_VALID_END'] == anl_dates[i_nd].strftime('%Y%m%d_%H%M%S'))]
+            val = plt_data.loc[(plt_data['FCST_LEAD'] == fcst_leads[i_nl]) &
+                                (plt_data['FCST_VALID_END'] == anl_dates[i_nd].strftime('%Y%m%d_%H%M%S'))]
             
             if not val.empty:
                 tmp[i_nl, i_nd] = val[STAT]

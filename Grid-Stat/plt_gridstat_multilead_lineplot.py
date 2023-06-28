@@ -121,9 +121,14 @@ for split in lnd_msk_split:
     SUBTITLE += ' ' + split
 
 # fig saved automatically to OUT_PATH
+if len(FIG_LAB) > 0:
+    fig_lab = '_' + FIG_LAB
+else:
+    fig_lab = ''
+
 OUT_DIR = OUT_ROOT + '/figures' + FIG_CSE
 OUT_PATH = OUT_DIR + '/' + VALID_DT + '_' + LND_MSK + '_' + STATS[0] + '_' +\
-           STATS[1] + '_' + FIG_LAB + '_lineplot.png'
+           STATS[1] + fig_lab + '_lineplot.png'
 
 ##################################################################################
 # Make data checks and determine all lead times over all files
@@ -132,17 +137,17 @@ if len(STRT_DT) != 10:
     print('ERROR: STRT_DT, ' + STRT_DT + ', is not in YYYYMMDDHH format.')
     sys.exit(1)
 else:
-    s_iso = STRT_DT[:4] + '-' + STRT_DT[4:6] + '-' + STRT_DT[6:8] +\
+    sd_iso = STRT_DT[:4] + '-' + STRT_DT[4:6] + '-' + STRT_DT[6:8] +\
             '_' + STRT_DT[8:]
-    strt_dt = dt.fromisoformat(s_iso)
+    strt_dt = dt.fromisoformat(sd_iso)
 
 if len(END_DT) != 10:
     print('ERROR: END_DT, ' + END_DT + ', is not in YYYYMMDDHH format.')
     sys.exit(1)
 else:
-    e_iso = END_DT[:4] + '-' + END_DT[4:6] + '-' + END_DT[6:8] +\
+    ed_iso = END_DT[:4] + '-' + END_DT[4:6] + '-' + END_DT[6:8] +\
             '_' + END_DT[8:]
-    end_dt = dt.fromisoformat(e_iso)
+    end_dt = dt.fromisoformat(ed_iso)
 
 if len(VALID_DT) != 10:
     print('ERROR: VALID_DT, ' + VALID_DT + ', is not in YYYYMMDDHH format.')
@@ -184,7 +189,7 @@ for ctr_flw in CTR_FLWS:
             split_string = ctr_flw.split('_')
             split_len = len(split_string)
             idx_len = len(LAB_IDX)
-            line_lab = prfx
+            line_lab = ''
             lab_len = min(idx_len, split_len)
             if lab_len > 1:
                 for i_ll in range(lab_len, 1, -1):

@@ -89,71 +89,73 @@ OUT_ROOT = '/cw3e/mead/projects/cwp106/scratch/' + CSE
 # standard string indentation
 STR_INDT = '    '
 
-# convert to date times
-if len(STRT_DT) != 10:
-    print('ERROR: STRT_DT, ' + STRT_DT + ', is not in YYYYMMDDHH format.')
-    sys.exit(1)
-else:
-    s_iso = STRT_DT[:4] + '-' + STRT_DT[4:6] + '-' + STRT_DT[6:8] +\
-            '_' + STRT_DT[8:]
-    strt_dt = dt.fromisoformat(s_iso)
-
-if len(END_DT) != 10:
-    print('ERROR: END_DT, ' + END_DT +\
-            ', is not in YYYYMMDDHH format.')
-    sys.exit(1)
-else:
-    e_iso = END_DT[:4] + '-' + END_DT[4:6] + '-' + END_DT[6:8] +\
-            '_' + END_DT[8:]
-    end_dt = dt.fromisoformat(e_iso)
-
-if len(CYC_INT) != 2:
-    print('ERROR: CYC_INT, ' + CYC_INT + ', is not in HH format.')
-    sys.exit(1)
-else:
-    cyc_int = CYC_INT + 'H'
-
-# container for map
-CNFGS = []
-
-# generate the date range for the analyses
-analyses = pd.date_range(start=strt_dt, end=end_dt, freq=cyc_int).to_pydatetime()
-
-print('Processing configurations:')
-for anl_dt in analyses:
-    anl_strng = anl_dt.strftime('%Y%m%d%H')
-    for CTR_FLW in CTR_FLWS:
-        for GRD in GRDS:
-            for PRFX in PRFXS:
-                print(STR_INDT + anl_strng + ' ' + PRFX + ' ' + CTR_FLW +' ' + GRD)
-                # storage for configuration settings as arguments of proc_gridstat
-                # the function definition and role of these arguments are in the
-                # next section directly below
-                CNFG = []
-
-                # forecast zero hour date time
-                CNFG.append(anl_strng)
+# Execute the following lines when run as a script
+if __name__ == '__main__':
+    # convert to date times
+    if len(STRT_DT) != 10:
+        print('ERROR: STRT_DT, ' + STRT_DT + ', is not in YYYYMMDDHH format.')
+        sys.exit(1)
+    else:
+        s_iso = STRT_DT[:4] + '-' + STRT_DT[4:6] + '-' + STRT_DT[6:8] +\
+                '_' + STRT_DT[8:]
+        strt_dt = dt.fromisoformat(s_iso)
     
-                # control flow / directory name
-                CNFG.append(CTR_FLW)
+    if len(END_DT) != 10:
+        print('ERROR: END_DT, ' + END_DT +\
+                ', is not in YYYYMMDDHH format.')
+        sys.exit(1)
+    else:
+        e_iso = END_DT[:4] + '-' + END_DT[4:6] + '-' + END_DT[6:8] +\
+                '_' + END_DT[8:]
+        end_dt = dt.fromisoformat(e_iso)
     
-                # prefix for gridstat outputs
-                CNFG.append(PRFX)
+    if len(CYC_INT) != 2:
+        print('ERROR: CYC_INT, ' + CYC_INT + ', is not in HH format.')
+        sys.exit(1)
+    else:
+        cyc_int = CYC_INT + 'H'
     
-                # grid to be processed
-                CNFG.append(GRD)
+    # container for map
+    CNFGS = []
     
-                # path to cycle directories from IN_ROOT
-                CNFG.append('/' + CTR_FLW)
-                
-                # path to gridstat outputs from cycle directory
-                CNFG.append('/' + GRD)
+    # generate the date range for the analyses
+    analyses = pd.date_range(start=strt_dt, end=end_dt, freq=cyc_int).to_pydatetime()
     
-                # path to pandas output directories from OUT_ROOT
-                CNFG.append('/' + CTR_FLW)
+    print('Processing configurations:')
+    for anl_dt in analyses:
+        anl_strng = anl_dt.strftime('%Y%m%d%H')
+        for CTR_FLW in CTR_FLWS:
+            for GRD in GRDS:
+                for PRFX in PRFXS:
+                    print(STR_INDT + anl_strng + ' ' + PRFX + ' ' + CTR_FLW +' ' + GRD)
+                    # storage for configuration settings as arguments of proc_gridstat
+                    # the function definition and role of these arguments are in the
+                    # next section directly below
+                    CNFG = []
     
-                # append configuration to be mapped
-                CNFGS.append(CNFG)
+                    # forecast zero hour date time
+                    CNFG.append(anl_strng)
+        
+                    # control flow / directory name
+                    CNFG.append(CTR_FLW)
+        
+                    # prefix for gridstat outputs
+                    CNFG.append(PRFX)
+        
+                    # grid to be processed
+                    CNFG.append(GRD)
+        
+                    # path to cycle directories from IN_ROOT
+                    CNFG.append('/' + CTR_FLW)
+                    
+                    # path to gridstat outputs from cycle directory
+                    CNFG.append('/' + GRD)
+        
+                    # path to pandas output directories from OUT_ROOT
+                    CNFG.append('/' + CTR_FLW)
+        
+                    # append configuration to be mapped
+                    CNFGS.append(CNFG)
 
 ##################################################################################
 # Process data routine

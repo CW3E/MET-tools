@@ -42,6 +42,7 @@ from matplotlib.cm import get_cmap
 from matplotlib.colorbar import Colorbar as cb
 import seaborn as sns
 import numpy as np
+import pandas as pd
 import pickle
 import os
 import sys
@@ -86,23 +87,23 @@ GRDS = [
         '',
        ]
 
-# verification domain for the calibration data
-REF='0.25'
-
 # threshold level to plot
-LEV = '>=25.4'
+LEV = '>=25.0'
 
 # Minimum starting date and zero hour of forecast cycles
-STRT_DT = '2022121400'
+STRT_DT = '2022122100'
 
 # Maximim starting date and zero hour of data of forecast cycles
-END_DT = '2023011800'
+END_DT = '2023010100'
 
-# Max forecast lead to plot in hours
-MAX_LD = 72
+# number of hours between zero hours for forecast data (string HH)
+CYC_INT = '24'
 
 # valid date for the verification
 VALID_DT = '2023010100'
+
+# Max forecast lead to plot in hours
+MAX_LD = '240'
 
 # MET stat file type - should be leveled data
 TYPE = 'nbrcnt'
@@ -118,7 +119,14 @@ TITLE='24hr accumulated precip at ' + VALID_DT[:4] + '-' + VALID_DT[4:6] + '-' +
         VALID_DT[6:8] + '_' + VALID_DT[8:]
 
 # plot sub-title title
-SUBTITLE='Verification region - ' + LND_MSK + ' Threshold ' + LEV + ' mm'
+SUBTITLE='Verification region - ' + LND_MSK 
+
+# plot sub-title title
+SUBTITLE='Verification region -'
+lnd_msk_split = LND_MSK.split('_')
+for split in lnd_msk_split:
+    SUBTITLE += ' ' + split
+SUBTITLE += ', Threshold ' + LEV + ' mm'
 
 # fig saved automatically to OUT_PATH
 OUT_DIR = OUT_ROOT + '/figures' + FIG_CSE
@@ -126,15 +134,23 @@ OUT_PATH = OUT_DIR + '/' + VALID_DT + '_' + LND_MSK + '_' + STATS[0] + '_' +\
            STATS[1] + '_lev_' + LEV + '_' + FIG_LAB + '_lineplot.png'
     
 ##################################################################################
-# Begin plotting
+# Make data checks and determine all lead times over all files
 ##################################################################################
 if len(STRT_DT) != 10:
     print('ERROR: STRT_DT, ' + STRT_DT + ', is not in YYYYMMDDHH format.')
     sys.exit(1)
+else:
+    s_iso = STRT_DT[:4] + '-' + STRT_DT[4:6] + '-' + STRT_DT[6:8] +\
+            '_' + STRT_DT[8:]
+    strt_dt = dt.fromisoformat(s_iso)
 
 if len(END_DT) != 10:
     print('ERROR: END_DT, ' + END_DT + ', is not in YYYYMMDDHH format.')
     sys.exit(1)
+else:
+    e_iso = END_DT[:4] + '-' + END_DT[4:6] + '-' + END_DT[6:8] +\
+            '_' + END_DT[8:]
+    end_dt = dt.fromisoformat(e_iso)
 
 if len(VALID_DT) != 10:
     print('ERROR: VALID_DT, ' + VALID_DT + ', is not in YYYYMMDDHH format.')
@@ -144,60 +160,129 @@ else:
             '_' + VALID_DT[8:]
     valid_dt = dt.fromisoformat(v_iso)
 
+if len(CYC_INT) != 2:
+    print('ERROR: CYC_INT, ' + CYC_INT + ', is not in HH format.')
+    sys.exit(1)
+else:
+    cyc_int = CYC_INT + 'H'
+
+# generate the date range and forecast leads for the analysis, parse binary files
+# for relevant fields
+plt_data = {}
+fcst_zhs = pd.date_range(start=strt_dt, end=end_dt, freq=cyc_int).to_pydatetime()
+
 fcst_leads = []
 for ctr_flw in CTR_FLWS:
+    # define derived data paths 
+    data_root = OUT_ROOT + '/' + ctr_flw
+
     for prfx in PRFXS:
         if len(prfx) > 0:
-            pfx = prfx + '_'
+            pfx = '_' + prfx
         else:
             pfx = ''
         
-        # define derived data paths 
-        data_root = OUT_ROOT + '/' + ctr_flw
-        stat0 = STATS[0]
-        stat1 = STATS[1]
-        
-        for grd in GRDS:
-            in_path = data_root + '/grid_stats_' + pfx + grd + '_' + STRT_DT +\
-                      '_to_' + END_DT + '.bin'
-            
-            try:
-                with open(in_path, 'rb') as f:
-                    data = pickle.load(f)
+        for grid in GRDS:
+            if len(grid) > 0:
+                grd = '_' + grid
+            else:
+                grd = ''
 
-            except:
-                print('WARNING: input data ' + in_path +\
-                        ' does not exist, skipping this configuration.')
-                continue
+            # create label based on configuration
+            split_string = ctr_flw.split('_')
+            split_len = len(split_string)
+            idx_len = len(LAB_IDX)
+            line_lab = prfx
+            lab_len = min(idx_len, split_len)
+            if lab_len > 1:
+                for i_ll in range(lab_len, 1, -1):
+                    i_li = LAB_IDX[-i_ll]
+                    line_lab += split_string[i_li] + '_'
+    
+                i_li = LAB_IDX[-1]
+                line_lab += split_string[i_li]
+    
+            else:
+                line_lab += split_string[0]
 
-            # load the values to be plotted along with landmask and lead
-            vals = [
-                    'VX_MASK',
-                    'FCST_LEAD',
-                    'FCST_VALID_END',
-                   ]
-            vals += STATS
-            
-            # cut down df to specified valid date / region and obtain leads of data 
-            stat_data = data[TYPE][vals]
-            stat_data = stat_data.loc[(stat_data['VX_MASK'] == LND_MSK)]
-            stat_data = stat_data.loc[(stat_data['FCST_VALID_END'] ==
-                                       valid_dt.strftime('%Y%m%d_%H%M%S'))]
-            leads = sorted(list(set(stat_data['FCST_LEAD'].values)),
-                           key=lambda x:(len(x), x))
+            if pfx:
+                line_lab += pfx
+    
+            if GRD_LAB:
+                    line_lab += grd
 
-            fcst_leads += leads
+            key = ctr_flw + pfx + grd
+            for fcst_zh in fcst_zhs:
+                # define the input name
+                zh_strng = fcst_zh.strftime('%Y%m%d%H')
+                in_path = data_root + '/' + zh_strng + '/grid_stats' + pfx + grd +\
+                          '_' + zh_strng + '.bin'
+                
+                try:
+                    with open(in_path, 'rb') as f:
+                        data = pickle.load(f)
+                        data = data[TYPE]
 
-# find all unique values for forecast leads, sorted for plotting, and less than
-# max lead time
+                except:
+                    print('WARNING: input data ' + in_path + ' statistics ' + TYPE +\
+                            ' does not exist, skipping this configuration.')
+                    continue
+
+                # load the values to be plotted along with landmask and lead
+                vals = [
+                        'VX_MASK',
+                        'FCST_LEAD',
+                        'FCST_VALID_END',
+                        'FCST_THRESH',
+                       ]
+
+                # include the statistics and their confidence intervals
+                vals += STATS
+                for i_ns in range(2):
+                    stat = STATS[i_ns]
+                    if stat + '_BCL' in data:
+                        vals.append(stat + '_BCL')
+                        vals.append(stat + '_BCU')
+    
+                    if stat + '_NCL' in data:
+                        vals.append(stat + '_NCL')
+                        vals.append(stat + '_NCU')
+                
+                # cut down df to specified valid date / region / level / relevant stats
+                stat_data = data[vals]
+                stat_data = stat_data.loc[(stat_data['VX_MASK'] == LND_MSK)]
+                stat_data = stat_data.loc[(stat_data['FCST_THRESH'] == LEV)]
+                stat_data = stat_data.loc[(stat_data['FCST_VALID_END'] ==
+                                           valid_dt.strftime('%Y%m%d_%H%M%S'))]
+
+                # check if there is data for this configuration and these fields
+                if not stat_data.empty:
+                    leads = sorted(list(set(stat_data['FCST_LEAD'].values)),
+                                   key=lambda x:(len(x), x))
+    
+                    if key in plt_data.keys():
+                        # if there is existing data, concatenate dataframes
+                        plt_data[key] = pd.concat([plt_data[key], stat_data],
+                                                   axis=0)
+                    else:
+                        # if this is a first instance, create fields
+                        plt_data[key] = stat_data
+
+                    # obtain leads of data 
+                    fcst_leads += leads
+
+# find all unique values for forecast leads, sorted for plotting, less than max lead
 fcst_leads = sorted(list(set(fcst_leads)), key=lambda x:(len(x), x))
-for i_fl in fcst_leads:
+i_fl = 0
+while i_fl < len(fcst_leads):
     ld = fcst_leads[i_fl][:-4]
-    if int(ld) > MAX_LD:
+    if int(ld) > int(MAX_LD):
         del fcst_leads[i_fl]
+    else:
+        i_fl += 1
 
 num_leads = len(fcst_leads)
-            
+
 ##################################################################################
 # Begin plotting
 ##################################################################################
@@ -213,99 +298,52 @@ line_labs = []
 ax0_l = []
 ax1_l = []
 
-# increment line count whenever a configuration is plotted
-line_count = 0
+stat0 = STATS[0]
+stat1 = STATS[1]
 
+# loop configurations, load trimmed data from plt_data dictionary
 for ctr_flw in CTR_FLWS:
     for prfx in PRFXS:
         if len(prfx) > 0:
-            pfx = prfx + '_'
+            pfx = '_' + prfx
         else:
             pfx = ''
-        
-        # define derived data paths 
-        data_root = OUT_ROOT + '/' + ctr_flw
-        stat0 = STATS[0]
-        stat1 = STATS[1]
-        
-        for grd in GRDS:
-            # define the input name
-            in_path = data_root + '/grid_stats_' + pfx + grd + '_' + STRT_DT +\
-                      '_to_' + END_DT + '.bin'
-            
-            try:
-                with open(in_path, 'rb') as f:
-                    data = pickle.load(f)
 
+        for grid in GRDS:
+            if len(grid) > 0:
+                grd = '_' + grid
+            else:
+                grd = ''
+            
+            key = ctr_flw + pfx + grd 
+            try:
+                data = plt_data[key]
+    
             except:
                 continue
-
-            split_string = ctr_flw.split('_')
-            split_len = len(split_string)
-            idx_len = len(LAB_IDX)
-            line_lab = pfx
-            lab_len = min(idx_len, split_len)
-            if lab_len > 1:
-                for i_ll in range(lab_len, 1, -1):
-                    i_li = LAB_IDX[-i_ll]
-                    line_lab += split_string[i_li] + '_'
-
-                i_li = LAB_IDX[-1]
-                line_lab += split_string[i_li]
-
-            else:
-                line_lab += split_string[0]
-
-            if GRD_LAB:
-                line_lab += '_' + grd
-
-            line_labs.append(line_lab)
-            line_count += 1
             
-            # load the values to be plotted along with landmask, lead and threshold
-            vals = [
-                    'VX_MASK',
-                    'FCST_LEAD',
-                    'FCST_VALID_END',
-                    'FCST_THRESH',
-                   ]
-            vals += STATS
-    
-            # infer existence of confidence intervals with precedence for bootstrap
+            # infer existence of confidence interval data with precedence for bootstrap
             cnf_lvs = []
             for i_ns in range(2):
                 stat = STATS[i_ns]
-                if stat + '_BCL' in data[TYPE] and\
-                    not (data[TYPE][stat + '_BCL'].isnull().values.any()):
-                        vals.append(stat + '_BCL')
-                        vals.append(stat + '_BCU')
+                if stat + '_BCL' in data and\
+                    not (data[stat + '_BCL'].isnull().values.any()):
                         cnf_lvs.append('_BC')
     
-                elif stat + '_NCL' in data[TYPE] and\
-                    not (data[TYPE][stat + '_NCL'].isnull().values.any()):
-                        vals.append(stat + '_NCL')
-                        vals.append(stat + '_NCU')
+                elif stat + '_NCL' in data and\
+                    not (data[stat + '_NCL'].isnull().values.any()):
                         cnf_lvs.append('_NC')
     
                 else:
                     cnf_lvs.append(False)
     
-            # cut down df to specified valid date / region and obtain leads of data 
-            stat_data = data[TYPE][vals]
-            stat_data = stat_data.loc[(stat_data['VX_MASK'] == LND_MSK)]
-            stat_data = stat_data.loc[(stat_data['FCST_THRESH'] == LEV)]
-            stat_data = stat_data.loc[(stat_data['FCST_VALID_END'] ==
-                                       valid_dt.strftime('%Y%m%d_%H%M%S'))]
-            
-            # create array storage for stats and plot
-            for i_ns in range(2):
                 exec('ax = ax%s'%i_ns)
                 if cnf_lvs[i_ns]:
                     tmp = np.empty([num_leads, 3])
                     tmp[:] = np.nan
             
                     for i_nl in range(num_leads):
-                        val = stat_data.loc[(stat_data['FCST_LEAD'] == fcst_leads[i_nl])]
+                        val = data.loc[(data['FCST_LEAD'] == fcst_leads[i_nl])]
                         if not val.empty:
                             tmp[i_nl, 0] = val[STATS[i_ns]]
                             tmp[i_nl, 1] = val[STATS[i_ns] + cnf_lvs[i_ns] + 'L']
@@ -315,23 +353,25 @@ for ctr_flw in CTR_FLWS:
                     l1, = ax.plot(range(num_leads), tmp[:, 0], linewidth=2)
                     exec('ax%s_l.append([l1,l0])'%i_ns)
                     l = l1
-
+    
                 else:
                     tmp = np.empty([num_leads])
                     tmp[:] = np.nan
                 
                     for i_nl in range(num_leads):
-                        val = stat_data.loc[(stat_data['FCST_LEAD'] == fcst_leads[i_nl])]
+                        val = data.loc[(data['FCST_LEAD'] == fcst_leads[i_nl])]
                         if not val.empty:
                             tmp[i_nl] = val[STATS[i_ns]]
                     
                     l, = ax.plot(range(num_leads), tmp[:], linewidth=2)
                     exec('ax%s_l.append([l])'%i_ns)
-
+    
             # add the line type to the legend
             line_list.append(l)
+            line_labs.append(key)
 
 # set colors and markers
+line_count = len(line_list)
 line_colors = sns.color_palette('husl', line_count)
 for i_lc in range(line_count):
     for i_ns in range(2):

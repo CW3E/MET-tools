@@ -87,10 +87,10 @@ GRDS = [
        ]
 
 # Minimum starting date and zero hour of forecast cycles
-STRT_DT = '2022121400'
+STRT_DT = '2022122100'
 
 # Maximium starting date and zero hour of data of forecast cycles
-END_DT = '2023011800'
+END_DT = '2023010100'
 
 # number of hours between zero hours for forecast data (string HH)
 CYC_INT = '24'

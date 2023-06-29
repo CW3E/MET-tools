@@ -46,7 +46,6 @@ import pickle
 import os
 import sys
 from proc_gridstat import OUT_ROOT
-import ipdb
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
@@ -253,7 +252,7 @@ for fcst_zh in fcst_zhs:
     # include the statistics and their confidence intervals
     vals += [STAT]
     
-    # cut down df to specified valid date / region / relevant stats
+    # cut down df to specified region / relevant stats
     stat_data = data[vals]
     stat_data = stat_data.loc[(stat_data['VX_MASK'] == LND_MSK)]
 
@@ -276,8 +275,6 @@ while i_fl < len(fcst_leads):
     else:
         i_fl += 1
 
-num_leads = len(fcst_leads)
-
 ##################################################################################
 # Begin plotting
 ##################################################################################
@@ -291,7 +288,7 @@ ax1 = fig.add_axes([.07, .18, .84, .77])
 num_leads = len(fcst_leads)
 num_dates = len(anl_dates)
 
-# create array storage for probs
+# create array storage for stats
 tmp = np.empty([num_leads, num_dates])
 tmp[:] = np.nan
 fcst_dates = []

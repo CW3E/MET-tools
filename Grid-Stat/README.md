@@ -168,7 +168,7 @@ MET-tools/polygonsStageIV_QPE_2019021500.nc
 which can be used for the `${OBS_F_IN}` above as the reference grid for
 generating landmasks.
 
-## Running gridstat
+## Running Grid-Stat
 Once cf-compliant outputs and verification landmasks have been written by
 running the steps above, one can ingest this data into MET using the
 `run_gridstat.sh` script in this directory. This script is designed similarly

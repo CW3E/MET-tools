@@ -17,14 +17,14 @@ The tools for batch processing NWP data and MET outputs are designed to be
 largely system agnostic, though examples will utilize SLURM scheduling commands
 which can be modified to other environments. The installtion of software
 dependencies outlined below can be performed on a shared system with the
-[Singularity](https://docs.sylabs.io/guides/2.6/user-guide/) software container
+[Singularity](https://docs.sylabs.io/guides/latest/user-guide/) software container
 system already installed.
 
 ### Installing MET
 MET can be installed as a singularity container from the Dockerhub image
-[without needing sudo privileges](https://docs.sylabs.io/guides/2.6/user-guide/introduction.html#security-and-privilege-escalation)
+[without needing sudo privileges](https://docs.sylabs.io/guides/latest/user-guide/introduction.html#security-and-privilege-escalation)
 on large-scale, shared computing resources.  This is performed as with the
-[instructions](https://docs.sylabs.io/guides/2.6/user-guide/build_a_container.html#downloading-a-existing-container-from-docker-hub)
+[instructions](https://docs.sylabs.io/guides/latest/user-guide/build_a_container.html#downloading-a-existing-container-from-docker-hub)
 for building a singularity container from a DockerHub image, using a tagged image
 from [MET Dockerhub](https://hub.docker.com/r/dtcenter/met). 
 This workflow has been tested with MET version 10.0.1, installing the tagged version

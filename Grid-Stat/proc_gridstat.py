@@ -49,25 +49,23 @@ from multiprocessing import Pool
 ##################################################################################
 # define control flow to analyze 
 CTR_FLWS = [
-            'NRT_gfs',
-            'NRT_ecmwf',
+            'NAM_lag06_b0.00_v03_h0300',
+            'RAP_lag06_b0.00_v06_h0300'
            ]
 
 # define the case-wise sub-directory
-CSE = 'DeepDive'
+CSE = 'VD'
 
 # verification domain for the forecast data                                                                           
 GRDS = [
-        'd01',
-        'd02',
-        'd03',
+        '',
        ]
 
 # starting date and zero hour of forecast cycles (string YYYYMMDDHH)
-STRT_DT = '2022121400'
+STRT_DT = '2019021100'
 
 # final date and zero hour of data of forecast cycles (string YYYYMMDDHH)
-END_DT = '2023011800'
+END_DT = '2019021400'
 
 # number of hours between zero hours for forecast data (string HH)
 CYC_INT = '24'
@@ -149,7 +147,7 @@ if __name__ == '__main__':
                     CNFG.append('/' + CTR_FLW)
                     
                     # path to gridstat outputs from cycle directory
-                    CNFG.append('/' + GRD)
+                    CNFG.append('')
         
                     # path to pandas output directories from OUT_ROOT
                     CNFG.append('/' + CTR_FLW)
@@ -158,7 +156,7 @@ if __name__ == '__main__':
                     CNFGS.append(CNFG)
 
 ##################################################################################
-# Process data routine
+# Data processing routines
 ##################################################################################
 #  function for multiprocessing parameter map
 def proc_gridstat(cnfg):
@@ -207,10 +205,19 @@ def proc_gridstat(cnfg):
         # define the gridstat files to open based on the analysis date
         in_paths = in_data_root + '/' + anl_strng + in_dt_subdir  +\
                    '/grid_stat' + pfx + '*.txt'
+
+        print('Loading grid_stat ASCII outputs from in_paths:', file=log_f)
+        print(STR_INDT + in_paths, file=log_f)
     
         # define the output binary file for pickled dataframe per date
-        out_path = out_data_root + '/' + anl_strng + '/grid_stats' + pfx +\
-                   grd + '_' + anl_strng + '.bin'
+        out_dir = out_data_root + '/' + anl_strng
+        out_path = out_dir + '/grid_stats' + pfx + grd + '_' + anl_strng + '.bin'
+        os.system('mkdir -p ' + out_dir)
+
+        print('Writing Pandas dataframe pickled binary files to out_path:',
+                file=log_f)
+        print(STR_INDT + out_path, file=log_f)
+
         # loop sorted grid_stat_pfx* files, sorting compares first on the
         # length of lead time for non left-padded values
         in_paths = sorted(glob.glob(in_paths),

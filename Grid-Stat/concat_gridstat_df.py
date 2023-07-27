@@ -80,9 +80,10 @@ STATS = [
 
 # verification fields to be extracted across stats / analyses
 FLDS = [
-        'FCST_LEAD',
         'VX_MASK',
         'FCST_VALID_END',
+        'FCST_LEAD',
+        'FCST_THRESH',
        ]
 
 # root directory for gridstat outputs
@@ -124,15 +125,8 @@ for prfx in PRFXS:
                      
 log_name += '.log'
 
-# create empty data frame with columns according to parameters
-out_df = {'CASES': [], 'CTR_FLW': [], 'GRID': [], 'PRFX': []}
-for FLD in FLDS:
-    out_df[FLD] = []
-
-for STAT in STATS:
-    out_df[STAT] = []
-
-out_df = pd.DataFrame.from_dict(out_df, orient='columns')
+# creating empty dictionary for storage of merged dataframes
+data_dict = {}
 
 with open(log_name, 'w') as log_f:
     for cse in CSES:
@@ -177,42 +171,70 @@ with open(log_name, 'w') as log_f:
                             file=log_f)
 
                     # dataframe corresponding to case / control flow / grid / prefix
-                    tmp_df = {'CASE': [cse], 'CTR_FLW': [ctr_flw],
-                              'GRID': [grid],  'PRFX': [prfx]}
+                    param_df = {'CASE': [cse], 'CTR_FLW': [ctr_flw],
+                                'GRID': [grid],  'PRFX': [prfx]}
 
-                    tmp_df = pd.DataFrame.from_dict(tmp_df, orient='columns')
+                    param_df = pd.DataFrame.from_dict(param_df, orient='columns')
 
                     for in_path in in_paths:
-                        with open(in_path, 'rb') as f:
-                            tmp_data = pickle.load(f)
+                        try:
+                            with open(in_path, 'rb') as f:
+                                date_data = pickle.load(f)
+    
+                            for stat_type in TYPES:
+                                # storage for merged dataframes of same stat type
+                                merge_df = pd.DataFrame()
 
-                        for s_type in TYPES:
-                            ipdb.set_trace()
-                            try:
-                                s_data = tmp_data[s_type]
-                                f_df = s_data[FLDS]
+                                try:
+                                    # extract parsed fields of stat_type
+                                    stat_df = date_data[stat_type]
+                                    
+                                    # extract basic fields for output data
+                                    field_df = stat_df[FLDS]
 
-                                for stat in STATS:
-                                    try:
-                                        exec('f_df = f_df.assign(%s=s_data[\'%s\'])'%(stat,stat))
+                                    for stat in STATS:
+                                        try:
+                                            # assign additional columns for specific statistics
+                                            exec('field_df = field_df.assign(%s=stat_df[\'%s\'])'%(stat,stat))
+    
+                                        except:
+                                            print('WARNING: ' + stat +
+                                                    ' not found in value pair of:',
+                                                    file=log_f)
+                                            print(STR_INDT + 'File: '  + in_path,
+                                                    file=log_f)
+                                            print(STR_INDT + 'Key: ' + stat_type,
+                                                    file=log_f)
+    
+                                    # merge worfklow parameters into columns
+                                    tmp_df = param_df.merge(field_df, how='cross') 
+    
+                                    if stat_type in data_dict.keys():
+                                        data_dict[stat_type] = pd.concat([data_dict[stat_type], tmp_df], axis=0)
+    
+                                    else:
+                                        data_dict[stat_type] = tmp_df
+    
+                                except:
+                                    print('WARNING: ' + stat_type + ' key not found in:',
+                                            file=log_f)
+                                    print(STR_INDT + in_path, file=log_f)
+                                            
+                        except:
+                            print('WARNING: file:\n' + in_path, file=log_f)
+                            print('is not readable, skipping this file.')
+   
+    for dict_key in data_dict.keys():
+        # clean up concatenated dataframes
+        tmp_df = data_dict[dict_key]
 
-                                    except:
-                                        print('WARNING: ' + stat +
-                                                ' not found in value pair of:',
-                                                file=log_f)
-                                        print(STR_INDT + 'File: '  + in_path,
-                                                file=log_f)
-                                        print(STR_INDT + 'Key: ' + s_type,
-                                                file=log_f)
+        sort_order = ['CASE', 'CTR_FLW', 'GRID', 'PRFX'] + FLDS
+        tmp_df = tmp_df.sort_values(by=sort_order)
 
-                                f_df
+        tmp_df = tmp_df.dropna(axis=1, how='all')
+        
+        for df_key in tmp_df.keys():
+            if (tmp_df[df_key].values == '').all():
+                tmp_df = tmp_df.drop(labels = [df_key], axis = 1)
 
-                            except:
-                                print('WARNING: ' + s_type + ' key not found in:',
-                                        file=log_f)
-                                print(STR_INDT + in_path, file=log_f)
-                                        
-
-                    stat_df = pd.concat([tmp_df, stat_df], axis=1)
-
-
+        data_dict[dict_key] = tmp_df

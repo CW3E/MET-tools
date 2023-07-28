@@ -2,9 +2,10 @@
 # Description
 ##################################################################################
 # This script reads in arbitrary grid_stats_*.bin output files from
-# proc_gridstat.py and concatenates Pandas dataframes of a specified statistics
-# type writing workflow parameters as categorical variables for statistical
-# encoding. The dataframes are saved into a Pickled binary file.
+# proc_gridstat.py and concatenates Pandas dataframes of pecified statistics
+# types writing workflow parameters as labels for later statistical encoding.
+# The dataframes are saved into a dictionary with key names associated
+# to the Grid-Stat statistics type, written to a Pickled binary file.
 #
 ##################################################################################
 # License Statement
@@ -31,6 +32,7 @@ import sys
 import os
 import numpy as np
 import pandas as pd
+from pandas.api.types import CategoricalDtype
 import pickle
 import copy
 import glob
@@ -86,6 +88,15 @@ FLDS = [
         'FCST_THRESH',
        ]
 
+# levels to be set as ordered categories within the data
+LEVS = [
+        '>0.0',
+        '>=10.0',
+        '>=25.4',
+        '>=50.8',
+        '>=101.6',
+       ]
+
 # root directory for gridstat outputs
 IN_ROOT = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/tuning_regression_analysis'
 
@@ -101,34 +112,38 @@ STR_INDT = '    '
 log_dir = OUT_ROOT + '/batch_logs'
 os.system('mkdir -p ' + log_dir)
 
-log_name = log_dir + '/cat_df'
+# generate output file names from the analyzed case studies and control flows
+out_name = 'concat_df'
 for cse in CSES:
-    log_name += '_' + cse
+    out_name += '_' + cse
 for ctr_flw in CTR_FLWS:
-    log_name += '_' + ctr_flw
+    out_name += '_' + ctr_flw
 
+# include non-empty grid parameters
 for grid in GRDS:
     # include underscore if grid is of nonzero length
     if len(grid) > 0:
         grd = '_' + grid
     else:
         grd = ''
-    log_name += grd
+    out_name += grd
 
+# include non-empty prefixes used in Grid-Stat configurations
 for prfx in PRFXS:
     # include underscore if prefix is of nonzero length
     if len(prfx) > 0:
         pfx = '_' + prfx
     else:
         pfx = ''
-    log_name += prfx
+    out_name += prfx
                      
-log_name += '.log'
+log_f = log_dir + '/' + out_name + '.log'
+out_path = OUT_ROOT + '/' + out_name + '.bin'
 
 # creating empty dictionary for storage of merged dataframes
 data_dict = {}
 
-with open(log_name, 'w') as log_f:
+with open(log_f, 'w') as log_f:
     for cse in CSES:
         for ctr_flw in CTR_FLWS:
             for grid in GRDS:
@@ -167,8 +182,8 @@ with open(log_name, 'w') as log_f:
                     in_paths = sorted(glob.glob(in_paths))
                                
                     print('Processing date binaries at paths:', file=log_f)
-                    print((STR_INDT + in_path + '\n' for in_path in in_paths),
-                            file=log_f)
+                    for in_path in in_paths:
+                        print(STR_INDT + in_path, file=log_f)
 
                     # dataframe corresponding to case / control flow / grid / prefix
                     param_df = {'CASE': [cse], 'CTR_FLW': [ctr_flw],
@@ -198,13 +213,9 @@ with open(log_name, 'w') as log_f:
                                             exec('field_df = field_df.assign(%s=stat_df[\'%s\'])'%(stat,stat))
     
                                         except:
-                                            print('WARNING: ' + stat +
-                                                    ' not found in value pair of:',
-                                                    file=log_f)
-                                            print(STR_INDT + 'File: '  + in_path,
-                                                    file=log_f)
-                                            print(STR_INDT + 'Key: ' + stat_type,
-                                                    file=log_f)
+                                            print('WARNING: ' + stat + ' not found in value pair of:', file=log_f)
+                                            print(STR_INDT + 'File: '  + in_path, file=log_f)
+                                            print(STR_INDT + 'Key: ' + stat_type, file=log_f)
     
                                     # merge worfklow parameters into columns
                                     tmp_df = param_df.merge(field_df, how='cross') 
@@ -228,13 +239,37 @@ with open(log_name, 'w') as log_f:
         # clean up concatenated dataframes
         tmp_df = data_dict[dict_key]
 
+        # turn forecast thresholds into ordered categories
+        tmp_df['FCST_THRESH'] = pd.Categorical(tmp_df['FCST_THRESH'].values,
+                categories=LEVS, ordered=True)
+
+        # sort data on the following order
         sort_order = ['CASE', 'CTR_FLW', 'GRID', 'PRFX'] + FLDS
         tmp_df = tmp_df.sort_values(by=sort_order)
 
+        # clean NAs including non-matching categories
         tmp_df = tmp_df.dropna(axis=1, how='all')
         
+        # drop columns of empty strings
         for df_key in tmp_df.keys():
             if (tmp_df[df_key].values == '').all():
                 tmp_df = tmp_df.drop(labels = [df_key], axis = 1)
 
+        for stat in STATS:
+            # convert statistics to float values
+            try:
+                tmp_df[stat] = tmp_df[stat].astype('float')
+
+            except:
+                pass
+
+        # re-index based on row values
+        tmp_df = tmp_df.set_axis(range(1, len(tmp_df.index) +1 ), axis='index')
+
+        # store back in the dictionry under dict_key
         data_dict[dict_key] = tmp_df
+
+    print('Writing out data to ' + out_path, file=log_f)
+    with open(out_path, 'wb') as f:
+        pickle.dump(data_dict, f)
+

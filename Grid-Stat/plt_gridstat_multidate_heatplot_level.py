@@ -77,10 +77,10 @@ FIG_CSE = ''
 GRD='d01'
 
 # starting date and zero hour of forecast cycles (string YYYYMMDDHH)
-STRT_DT = '2022121400'
+FCST_STRT = '2022121400'
 
 # final date and zero hour of data of forecast cycles (string YYYYMMDDHH)
-END_DT = '2023011800'
+FCST_END = '2023011800'
 
 # number of hours between zero hours for forecast data (string HH)
 CYC_INT = '24'
@@ -169,7 +169,7 @@ else:
     fig_lab = ''
 
 OUT_DIR = OUT_ROOT + '/figures' + FIG_CSE
-OUT_PATH = OUT_DIR + '/' + STRT_DT + '_' + END_DT + '_FCST_' + MAX_LD + '_' +\
+OUT_PATH = OUT_DIR + '/' + ANL_STRT + '_' + ANL_END + '_FCST_' + MAX_LD + '_' +\
            LND_MSK + '_' + STAT + '_' + LEV + '_' + CTR_FLW + pfx + grd +\
            fig_lab +'_heatplot.png'
 
@@ -177,21 +177,21 @@ OUT_PATH = OUT_DIR + '/' + STRT_DT + '_' + END_DT + '_FCST_' + MAX_LD + '_' +\
 # Make data checks and determine all lead times over all files
 ##################################################################################
 # convert to date times
-if len(STRT_DT) != 10:
-    print('ERROR: STRT_DT, ' + STRT_DT + ', is not in YYYYMMDDHH format.')
+if len(FCST_STRT) != 10:
+    print('ERROR: FCST_STRT, ' + FCST_STRT + ', is not in YYYYMMDDHH format.')
     sys.exit(1)
 else:
-    sd_iso = STRT_DT[:4] + '-' + STRT_DT[4:6] + '-' + STRT_DT[6:8] +\
-            '_' + STRT_DT[8:]
-    strt_dt = dt.fromisoformat(sd_iso)
+    sd_iso = FCST_STRT[:4] + '-' + FCST_STRT[4:6] + '-' + FCST_STRT[6:8] +\
+            '_' + FCST_STRT[8:]
+    fcst_strt = dt.fromisoformat(sd_iso)
 
-if len(END_DT) != 10:
-    print('ERROR: END_DT, ' + END_DT + ', is not in YYYYMMDDHH format.')
+if len(FCST_END) != 10:
+    print('ERROR: FCST_END, ' + FCST_END + ', is not in YYYYMMDDHH format.')
     sys.exit(1)
 else:
-    ed_iso = END_DT[:4] + '-' + END_DT[4:6] + '-' + END_DT[6:8] +\
-            '_' + END_DT[8:]
-    end_dt = dt.fromisoformat(ed_iso)
+    ed_iso = FCST_END[:4] + '-' + FCST_END[4:6] + '-' + FCST_END[6:8] +\
+            '_' + FCST_END[8:]
+    fcst_end = dt.fromisoformat(ed_iso)
 
 if len(CYC_INT) != 2:
     print('ERROR: CYC_INT, ' + CYC_INT + ', is not in HH format.')
@@ -223,7 +223,7 @@ else:
     
 # generate the date range and forecast leads for the analysis, parse binary files
 # for relevant fields
-fcst_zhs = pd.date_range(start=strt_dt, end=end_dt, freq=cyc_int).to_pydatetime()
+fcst_zhs = pd.date_range(start=fcst_strt, end=fcst_end, freq=cyc_int).to_pydatetime()
 
 fcst_leads = []
 # generate the date range for the analyses

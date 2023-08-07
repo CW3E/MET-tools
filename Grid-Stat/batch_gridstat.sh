@@ -2,10 +2,10 @@
 #SBATCH -p shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 05:00:00
+#SBATCH -t 02:30:00
 #SBATCH -J batch_gridstat
 #SBATCH --export=ALL
-#SBATCH --array=0-5
+#SBATCH --array=0-1
 ##################################################################################
 # Description
 ##################################################################################
@@ -42,10 +42,13 @@
 export TZ="GMT"
 
 # Root directory for MET-tools git clone
-export USR_HME=/cw3e/mead/projects/cwp106/scratch/MET-tools
+export USR_HME=/cw3e/mead/projects/cwp106/scratch/cgrudzien/MET-tools
+
+# define the case-wise sub-directory
+export CSE=CL
 
 # Root directory for verification data
-export DATA_ROOT=/cw3e/mead/projects/cnt102/METMODE_PreProcessing/data/StageIV
+export DATA_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA/${CSE}/verification/StageIV
 
 # Root directory for MET software
 export SOFT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/SOFT_ROOT/MET_CODE
@@ -55,18 +58,18 @@ export MET_SNG=${SOFT_ROOT}/met-10.0.1.simg
 export MSK_ROOT=${USR_HME}/polygons
 
 # Path to file with list of landmasks for verification regions
-export MSKS=${MSK_ROOT}/mask-lists/NRT_MaskList.txt
+export MSKS=${MSK_ROOT}/mask-lists/West_Coast_MaskList.txt
             
 # Root directory of regridded .nc landmasks on StageIV domain
-export MSK_IN=${MSK_ROOT}/NRT_Masks
+export MSK_IN=${MSK_ROOT}/West_Coast_Masks
 
 # Specify thresholds levels for verification
 export CAT_THR="[ >0.0, >=1.0, >=10.0, >=25.0, >=50.0 ]"
 
 # array of control flow names to be processed
 CTR_FLWS=( 
-          "NRT_gfs"
-          "NRT_ecmwf"
+          "GFS"
+          "ECMWF"
          )
 
 # NOTE: the grids in the GRDS array and the interpolation methods /
@@ -74,36 +77,27 @@ CTR_FLWS=(
 # in 1-1 correspondence to define the interpolation method / width
 # specific to each grid
 GRDS=( 
-      "d01"
-      "d02"
-      "d03"
+      ""
      )
 
 # define the interpolation method and related parameters
 INT_MTHDS=( 
            "DW_MEAN"
-           "DW_MEAN"
-           "DW_MEAN"
           )
 INT_WDTHS=( 
            "3"
-           "9"
-           "27"
           )
 
-# define the case-wise sub-directory
-export CSE=DeepDive
-
 # define first and last date time for forecast initialization (YYYYMMDDHH)
-export STRT_DT=2022121500
-export END_DT=2023011800
+export STRT_DT=2020020200
+export END_DT=2020020600
 
 # define the interval between forecast initializations (HH)
 export CYC_INT=24
 
 # define min / max forecast hours for forecast outputs to be processed
 export ANL_MIN=24
-export ANL_MAX=240
+export ANL_MAX=120
 
 # define the interval at which to process forecast outputs (HH)
 export ANL_INT=24
@@ -118,22 +112,22 @@ export VRF_FLD=QPF
 export NBRHD_WDTH=9
 
 # number of bootstrap resamplings, set 0 for off
-export BTSTRP=0
+export BTSTRP=1000
 
 # rank correlation computation flag, TRUE or FALSE
 export RNK_CRR=FALSE
 
 # compute accumulation from cf file, TRUE or FALSE
-export CMP_ACC=TRUE
+export CMP_ACC=FALSE
 
 # optionally define a gridstat output prefix, use a blank string for no prefix
 export PRFX=""
 
 # root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
-export IN_ROOT=/cw3e/mead/projects/cwp106/scratch/${CSE}
+export IN_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/DATA/${CSE}/verification/
 
 # root directory for cycle time (YYYYMMDDHH) directories of gridstat outputs
-export OUT_ROOT=/cw3e/mead/projects/cwp106/scratch/${CSE}
+export OUT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/tuning_figs/gridstat/${CSE}
 
 ##################################################################################
 # Contruct job array and environment for submission
@@ -175,11 +169,11 @@ for (( i = 0; i < ${num_grds}; i++ )); do
 
     # subdirectory of cycle-named directory containing data to be analyzed,
     # includes leading '/', left as blank string if not needed
-    cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/${GRD}\")"
+    cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/\"\"\")"
     printf "${cmd}\n"; eval ${cmd}
     
     # subdirectory of cycle-named directory where output is to be saved
-    cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/${GRD}\")"
+    cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/\"\"\")"
     printf "${cmd}\n"; eval ${cmd}
 
     cmd="cfgs+=( \"${cfg_indx}\" )"

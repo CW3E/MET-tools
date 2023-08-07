@@ -49,12 +49,24 @@ from multiprocessing import Pool
 ##################################################################################
 # define control flow to analyze 
 CTR_FLWS = [
+            'NAM_lag06_b0.00_v01_h0300', 
+            'NAM_lag06_b0.00_v02_h0300',
             'NAM_lag06_b0.00_v03_h0300',
-            'RAP_lag06_b0.00_v06_h0300'
+            'NAM_lag06_b0.00_v04_h0300',
+            'NAM_lag06_b0.00_v05_h0300',
+            'NAM_lag06_b0.00_v06_h0300',
+            'RAP_lag06_b0.00_v01_h0300',
+            'RAP_lag06_b0.00_v02_h0300',
+            'RAP_lag06_b0.00_v03_h0300',
+            'RAP_lag06_b0.00_v04_h0300',
+            'RAP_lag06_b0.00_v05_h0300',
+            'RAP_lag06_b0.00_v06_h0300',
+            'ECMWF',
+            'GFS',
            ]
 
 # define the case-wise sub-directory
-CSE = 'VD'
+CSE = 'CL'
 
 # verification domain for the forecast data                                                                           
 GRDS = [
@@ -62,10 +74,10 @@ GRDS = [
        ]
 
 # starting date and zero hour of forecast cycles (string YYYYMMDDHH)
-STRT_DT = '2019021100'
+STRT_DT = '2020020200'
 
 # final date and zero hour of data of forecast cycles (string YYYYMMDDHH)
-END_DT = '2019021400'
+END_DT = '2020020600'
 
 # number of hours between zero hours for forecast data (string HH)
 CYC_INT = '24'
@@ -76,10 +88,10 @@ PRFXS = [
         ]
 
 # root directory for gridstat outputs
-IN_ROOT = '/cw3e/mead/projects/cwp106/scratch/' + CSE
+IN_ROOT = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/tuning_figs/gridstat/' + CSE
 
 # root directory for processed pandas outputs
-OUT_ROOT = '/cw3e/mead/projects/cwp106/scratch/' + CSE
+OUT_ROOT = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/tuning_figs/gridstat/' + CSE
 
 ##################################################################################
 # Construct hyper-paramter array for batch processing gridstat data

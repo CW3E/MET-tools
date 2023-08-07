@@ -46,26 +46,37 @@ import pickle
 import os
 import sys
 from proc_gridstat import OUT_ROOT
+import ipdb
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flows to analyze 
 CTR_FLWS = [
-            'NRT_gfs',
-            'NRT_ecmwf',
-            'GFS',
+            #'NAM_lag06_b0.00_v01_h0300', 
+            #'NAM_lag06_b0.00_v02_h0300',
+            'NAM_lag06_b0.00_v03_h0300',
+            #'NAM_lag06_b0.00_v04_h0300',
+            #'NAM_lag06_b0.00_v05_h0300',
+            #'NAM_lag06_b0.00_v06_h0300',
+            #'RAP_lag06_b0.00_v01_h0300',
+            #'RAP_lag06_b0.00_v02_h0300',
+            #'RAP_lag06_b0.00_v03_h0300',
+            #'RAP_lag06_b0.00_v04_h0300',
+            #'RAP_lag06_b0.00_v05_h0300',
+            'RAP_lag06_b0.00_v06_h0300',
             'ECMWF',
+            'GFS',
            ]
 
 # Define a list of indices for underscore-separated components of control flow
 # names to include in fig legend. Note: a non-empty prefix value below will
 # always be included in the legend label, and control flows with fewer components
 # than indices above will only include those label components that exist
-LAB_IDX = [0, 1]
+LAB_IDX = [0, 3]
 
 # define if legend label includes grid
-GRD_LAB = True
+GRD_LAB = False
 
 # define optional list of stats files prefixes, include empty string to ignore
 PRFXS = [
@@ -76,30 +87,27 @@ PRFXS = [
 FIG_LAB = ''
 
 # fig case directory, includes leading '/', leave as empty string if not needed
-FIG_CSE = ''
+FIG_CSE = '/Skillful'
 
 # verification domains for the forecast data
 GRDS = [
-        'd01',
-        'd02',
-        'd03',
         '',
        ]
 
 # Minimum starting date and zero hour of forecast cycles
-STRT_DT = '2022122100'
+FCST_STRT = '2020020200'
 
 # Maximium starting date and zero hour of data of forecast cycles
-END_DT = '2023010100'
+FCST_END = '2020020600'
 
 # number of hours between zero hours for forecast data (string HH)
 CYC_INT = '24'
 
 # valid date for the verification
-VALID_DT = '2023010100'
+ANL_DT = '2020020700'
 
 # Max forecast lead to plot in hours
-MAX_LD = '240'
+MAX_LD = '120'
 
 # MET stat file type - should be non-leveled data
 TYPE = 'cnt'
@@ -108,11 +116,11 @@ TYPE = 'cnt'
 STATS = ['RMSE', 'PR_CORR']
 
 # landmask for verification region
-LND_MSK = 'CA_All'
+LND_MSK = 'WA_OR'
 
 # plot title
-TITLE='24hr accumulated precip at ' + VALID_DT[:4] + '-' + VALID_DT[4:6] + '-' +\
-        VALID_DT[6:8] + '_' + VALID_DT[8:]
+TITLE='24hr accumulated precip at ' + ANL_DT[:4] + '-' + ANL_DT[4:6] + '-' +\
+        ANL_DT[6:8] + '_' + ANL_DT[8:]
 
 # plot sub-title title
 SUBTITLE='Verification region -'
@@ -127,35 +135,34 @@ else:
     fig_lab = ''
 
 OUT_DIR = OUT_ROOT + '/figures' + FIG_CSE
-OUT_PATH = OUT_DIR + '/' + VALID_DT + '_' + LND_MSK + '_' + STATS[0] + '_' +\
+OUT_PATH = OUT_DIR + '/' + ANL_DT + '_' + LND_MSK + '_' + STATS[0] + '_' +\
            STATS[1] + fig_lab + '_lineplot.png'
 
 ##################################################################################
 # Make data checks and determine all lead times over all files
 ##################################################################################
-if len(STRT_DT) != 10:
-    print('ERROR: STRT_DT, ' + STRT_DT + ', is not in YYYYMMDDHH format.')
+if len(FCST_STRT) != 10:
+    print('ERROR: FCST_STRT, ' + FCST_STRT + ', is not in YYYYMMDDHH format.')
     sys.exit(1)
 else:
-    sd_iso = STRT_DT[:4] + '-' + STRT_DT[4:6] + '-' + STRT_DT[6:8] +\
-            '_' + STRT_DT[8:]
-    strt_dt = dt.fromisoformat(sd_iso)
+    sd_iso = FCST_STRT[:4] + '-' + FCST_STRT[4:6] + '-' + FCST_STRT[6:8] +\
+            '_' + FCST_STRT[8:]
+    fcst_strt = dt.fromisoformat(sd_iso)
 
-if len(END_DT) != 10:
-    print('ERROR: END_DT, ' + END_DT + ', is not in YYYYMMDDHH format.')
+if len(FCST_END) != 10:
+    print('ERROR: FCST_END, ' + FCST_END + ', is not in YYYYMMDDHH format.')
     sys.exit(1)
 else:
-    ed_iso = END_DT[:4] + '-' + END_DT[4:6] + '-' + END_DT[6:8] +\
-            '_' + END_DT[8:]
-    end_dt = dt.fromisoformat(ed_iso)
+    ed_iso = FCST_END[:4] + '-' + FCST_END[4:6] + '-' + FCST_END[6:8] +\
+            '_' + FCST_END[8:]
+    fcst_end = dt.fromisoformat(ed_iso)
 
-if len(VALID_DT) != 10:
-    print('ERROR: VALID_DT, ' + VALID_DT + ', is not in YYYYMMDDHH format.')
+if len(ANL_DT) != 10:
+    print('ERROR: ANL_DT, ' + ANL_DT + ', is not in YYYYMMDDHH format.')
     sys.exit(1)
 else:
-    v_iso = VALID_DT[:4] + '-' + VALID_DT[4:6] + '-' + VALID_DT[6:8] +\
-            '_' + VALID_DT[8:]
-    valid_dt = dt.fromisoformat(v_iso)
+    anl_dt = dt.fromisoformat(ANL_DT[:4] + '-' + ANL_DT[4:6] + '-' + ANL_DT[6:8] +
+            '_' + ANL_DT[8:])
 
 if len(CYC_INT) != 2:
     print('ERROR: CYC_INT, ' + CYC_INT + ', is not in HH format.')
@@ -166,7 +173,7 @@ else:
 # generate the date range and forecast leads for the analysis, parse binary files
 # for relevant fields
 plt_data = {}
-fcst_zhs = pd.date_range(start=strt_dt, end=end_dt, freq=cyc_int).to_pydatetime()
+fcst_zhs = pd.date_range(start=fcst_strt, end=fcst_end, freq=cyc_int).to_pydatetime()
 
 fcst_leads = []
 for ctr_flw in CTR_FLWS:
@@ -184,29 +191,6 @@ for ctr_flw in CTR_FLWS:
                 grd = '_' + grid
             else:
                 grd = ''
-
-            # create label based on configuration
-            split_string = ctr_flw.split('_')
-            split_len = len(split_string)
-            idx_len = len(LAB_IDX)
-            line_lab = ''
-            lab_len = min(idx_len, split_len)
-            if lab_len > 1:
-                for i_ll in range(lab_len, 1, -1):
-                    i_li = LAB_IDX[-i_ll]
-                    line_lab += split_string[i_li] + '_'
-    
-                i_li = LAB_IDX[-1]
-                line_lab += split_string[i_li]
-    
-            else:
-                line_lab += split_string[0]
-
-            if pfx:
-                line_lab += pfx
-    
-            if GRD_LAB:
-                    line_lab += grd
 
             key = ctr_flw + pfx + grd
             for fcst_zh in fcst_zhs:
@@ -248,7 +232,7 @@ for ctr_flw in CTR_FLWS:
                 stat_data = data[vals]
                 stat_data = stat_data.loc[(stat_data['VX_MASK'] == LND_MSK)]
                 stat_data = stat_data.loc[(stat_data['FCST_VALID_END'] ==
-                                           valid_dt.strftime('%Y%m%d_%H%M%S'))]
+                                           anl_dt.strftime('%Y%m%d_%H%M%S'))]
 
                 # check if there is data for this configuration and these fields
                 if not stat_data.empty:
@@ -317,6 +301,29 @@ for ctr_flw in CTR_FLWS:
             except:
                 continue
             
+            # create label based on configuration
+            split_string = ctr_flw.split('_')
+            split_len = len(split_string)
+            idx_len = len(LAB_IDX)
+            line_lab = ''
+            lab_len = min(idx_len, split_len)
+            if lab_len > 1:
+                for i_ll in range(lab_len, 1, -1):
+                    i_li = LAB_IDX[-i_ll]
+                    line_lab += split_string[i_li] + '_'
+    
+                i_li = LAB_IDX[-1]
+                line_lab += split_string[i_li]
+    
+            else:
+                line_lab += split_string[0]
+
+            if pfx:
+                line_lab += pfx
+    
+            if GRD_LAB:
+                    line_lab += grd
+
             # infer existence of confidence interval data with precedence for bootstrap
             cnf_lvs = []
             for i_ns in range(2):
@@ -363,7 +370,7 @@ for ctr_flw in CTR_FLWS:
     
             # add the line type to the legend
             line_list.append(l)
-            line_labs.append(key)
+            line_labs.append(line_lab)
 
 # set colors and markers
 line_count = len(line_list)

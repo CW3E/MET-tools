@@ -49,24 +49,11 @@ from multiprocessing import Pool
 ##################################################################################
 # define control flow to analyze 
 CTR_FLWS = [
-            'NAM_lag06_b0.00_v01_h0300', 
-            'NAM_lag06_b0.00_v02_h0300',
-            'NAM_lag06_b0.00_v03_h0300',
-            'NAM_lag06_b0.00_v04_h0300',
-            'NAM_lag06_b0.00_v05_h0300',
-            'NAM_lag06_b0.00_v06_h0300',
-            'RAP_lag06_b0.00_v01_h0300',
-            'RAP_lag06_b0.00_v02_h0300',
-            'RAP_lag06_b0.00_v03_h0300',
-            'RAP_lag06_b0.00_v04_h0300',
-            'RAP_lag06_b0.00_v05_h0300',
-            'RAP_lag06_b0.00_v06_h0300',
-            'ECMWF',
-            'GFS',
+            'NAM_lag06_b0.00_v03_h0150',
            ]
 
 # define the case-wise sub-directory
-CSE = 'CL'
+CSE = 'PNW22'
 
 # verification domain for the forecast data                                                                           
 GRDS = [
@@ -74,10 +61,10 @@ GRDS = [
        ]
 
 # starting date and zero hour of forecast cycles (string YYYYMMDDHH)
-STRT_DT = '2020020200'
+STRT_DT = '2022022400'
 
 # final date and zero hour of data of forecast cycles (string YYYYMMDDHH)
-END_DT = '2020020600'
+END_DT = '2022022800'
 
 # number of hours between zero hours for forecast data (string HH)
 CYC_INT = '24'

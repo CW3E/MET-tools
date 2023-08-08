@@ -2,10 +2,10 @@
 #SBATCH -p shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 02:30:00
+#SBATCH -t 00:30:00
 #SBATCH -J batch_wrfout_cf
 #SBATCH --export=ALL
-#SBATCH --array=0-5
+#SBATCH --array=0
 ##################################################################################
 # Description
 ##################################################################################
@@ -41,42 +41,32 @@
 # Using GMT time zone for time computations
 export TZ="GMT"
 
-# initiate bash and source bashrc to initialize environement
-conda init bash
-source /home/cgrudzien/.bashrc
-
-# set local environment for ncl and related dependencies
-conda activate netcdf
-
 # root directory for MET-tools git clone
-export USR_HME=/cw3e/mead/projects/cwp106/scratch/MET-tools
+export USR_HME=/cw3e/mead/projects/cwp106/scratch/cgrudzien/MET-tools
 
 # array of control flow names to be processed
 CTR_FLWS=( 
-          "NRT_gfs"
-          "NRT_ecmwf"
+          "NAM_lag06_b0.00_v03_h0150"
          )
 
 # model grid / domain to be processed
 GRDS=( 
-      "d01"
       "d02"
-      "d03"
      )
 
 # define the case-wise sub-directory for path names, leave as empty string if not needed
-export CSE=DeepDive
+export CSE=VD
 
 # define first and last date time for forecast initialization (YYYYMMDDHH)
-export STRT_DT=2022121400
-export END_DT=2023011800
+export STRT_DT=2019021100
+export END_DT=2019021100
 
 # define the interval between forecast initializations (HH)
 export CYC_INT=24
 
 # define min / max forecast hours for forecast outputs to be processed
-export ANL_MIN=24
-export ANL_MAX=240
+export ANL_MIN=96
+export ANL_MAX=96
 
 # define the interval at which to process forecast outputs (HH)
 export ANL_INT=24
@@ -85,14 +75,14 @@ export ANL_INT=24
 export ACC_INT=24
 
 # root directory for cycle time (YYYYMMDDHH) directories of WRF output files
-export IN_ROOT=/cw3e/mead/datasets/cw3e/NRT/2022-2023
+export IN_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/tuning_figs/wrfcf_out/${CSE}
 
 # root directory for cycle time (YYYYMMDDHH) directories of cf-compliant script outputs
-export OUT_ROOT=/cw3e/mead/projects/cwp106/scratch/${CSE}
+export OUT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/tuning_figs/wrfcf_out/${CSE}
 
 # set to regrid to lat-lon for MET compatibility when handling grid errors
 # must be equal to TRUE or FALSE
-export RGRD=TRUE
+export RGRD=FALSE
 
 ##################################################################################
 # Contruct job array and environment for submission
@@ -129,7 +119,7 @@ for (( i = 0; i < ${num_grds}; i++ )); do
 
     # subdirectory of cycle-named directory containing data to be analyzed,
     # includes leading '/', left as blank string if not needed
-    cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/wrfout\")"
+    cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=\"\"\")"
     printf "${cmd}\n"; eval ${cmd}
     
     # This path defines the location of each cycle directory relative to OUT_ROOT
@@ -137,7 +127,7 @@ for (( i = 0; i < ${num_grds}; i++ )); do
     printf "${cmd}\n"; eval ${cmd}
 
     # subdirectory of cycle-named directory where output is to be saved
-    cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/${GRD}\")"
+    cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=\"\"\")"
     printf "${cmd}\n"; eval ${cmd}
 
     cmd="cfgs+=( \"${cfg_indx}\" )"

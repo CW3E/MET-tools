@@ -47,24 +47,23 @@ import pickle
 import os
 import sys
 from proc_gridstat import OUT_ROOT
-import ipdb
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flows to analyze 
 CTR_FLWS = [
-            #'NAM_lag06_b0.00_v01_h0300', 
+            #'NAM_lag06_b0.00_v01_h0300',
             #'NAM_lag06_b0.00_v02_h0300',
-            'NAM_lag06_b0.00_v03_h0300',
+            #'NAM_lag06_b0.00_v03_h0300',
             #'NAM_lag06_b0.00_v04_h0300',
             #'NAM_lag06_b0.00_v05_h0300',
             #'NAM_lag06_b0.00_v06_h0300',
-            #'RAP_lag06_b0.00_v01_h0300',
-            #'RAP_lag06_b0.00_v02_h0300',
-            #'RAP_lag06_b0.00_v03_h0300',
-            #'RAP_lag06_b0.00_v04_h0300',
-            #'RAP_lag06_b0.00_v05_h0300',
+            'RAP_lag06_b0.00_v01_h0300',
+            'RAP_lag06_b0.00_v02_h0300',
+            'RAP_lag06_b0.00_v03_h0300',
+            'RAP_lag06_b0.00_v04_h0300',
+            'RAP_lag06_b0.00_v05_h0300',
             'RAP_lag06_b0.00_v06_h0300',
             'ECMWF',
             'GFS',
@@ -88,7 +87,7 @@ PRFXS = [
 FIG_LAB = ''
 
 # fig case directory, includes leading '/', leave as empty string if not needed
-FIG_CSE = '/Skillful'
+FIG_CSE = '/RAP'
 
 # verification domain for the forecast data
 GRDS = [
@@ -99,16 +98,16 @@ GRDS = [
 LEV = '>=25.0'
 
 # Minimum starting date and zero hour of forecast cycles
-FCST_STRT = '2020020200'
+FCST_STRT = '2022022400'
 
 # Maximim starting date and zero hour of data of forecast cycles
-FCST_END = '2020020600'
+FCST_END = '2022022800'
 
 # number of hours between zero hours for forecast data (string HH)
 CYC_INT = '24'
 
 # valid date for the verification
-ANL_DT = '2020020700'
+ANL_DT = '2022030100'
 
 # Max forecast lead to plot in hours
 MAX_LD = '120'
@@ -120,7 +119,7 @@ TYPE = 'nbrcnt'
 STATS = ['FSS', 'AFSS']
 
 # landmask for verification region
-LND_MSK = 'WA OR'
+LND_MSK = 'WA_OR'
 
 # plot title
 TITLE='24hr accumulated precip at ' + ANL_DT[:4] + '-' + ANL_DT[4:6] + '-' +\
@@ -182,7 +181,6 @@ plt_data = {}
 fcst_zhs = pd.date_range(start=fcst_strt, end=fcst_end, freq=cyc_int).to_pydatetime()
 
 fcst_leads = []
-ipdb.set_trace()
 for ctr_flw in CTR_FLWS:
     # define derived data paths 
     data_root = OUT_ROOT + '/' + ctr_flw
@@ -202,7 +200,6 @@ for ctr_flw in CTR_FLWS:
             key = ctr_flw + pfx + grd
             for fcst_zh in fcst_zhs:
                 # define the input name
-                ipdb.set_trace()
                 zh_strng = fcst_zh.strftime('%Y%m%d%H')
                 in_path = data_root + '/' + zh_strng + '/grid_stats' + pfx + grd +\
                           '_' + zh_strng + '.bin'
@@ -249,7 +246,6 @@ for ctr_flw in CTR_FLWS:
                     leads = sorted(list(set(stat_data['FCST_LEAD'].values)),
                                    key=lambda x:(len(x), x))
     
-                    ipdb.set_trace()
                     if key in plt_data.keys():
                         # if there is existing data, concatenate dataframes
                         plt_data[key] = pd.concat([plt_data[key], stat_data],
@@ -306,7 +302,6 @@ for ctr_flw in CTR_FLWS:
                 grd = ''
             
             # create label based on configuration
-            ipdb.set_trace()
             split_string = ctr_flw.split('_')
             split_len = len(split_string)
             idx_len = len(LAB_IDX)
@@ -337,7 +332,6 @@ for ctr_flw in CTR_FLWS:
                 continue
             
             # infer existence of confidence interval data with precedence for bootstrap
-            ipdb.set_trace()
             cnf_lvs = []
             for i_ns in range(2):
                 stat = STATS[i_ns]

@@ -46,25 +46,24 @@ import pickle
 import os
 import sys
 from proc_gridstat import OUT_ROOT
-import ipdb
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flows to analyze 
 CTR_FLWS = [
-            #'NAM_lag06_b0.00_v01_h0300', 
-            #'NAM_lag06_b0.00_v02_h0300',
+            'NAM_lag06_b0.00_v01_h0300',
+            'NAM_lag06_b0.00_v02_h0300',
             'NAM_lag06_b0.00_v03_h0300',
-            #'NAM_lag06_b0.00_v04_h0300',
-            #'NAM_lag06_b0.00_v05_h0300',
-            #'NAM_lag06_b0.00_v06_h0300',
+            'NAM_lag06_b0.00_v04_h0300',
+            'NAM_lag06_b0.00_v05_h0300',
+            'NAM_lag06_b0.00_v06_h0300',
             #'RAP_lag06_b0.00_v01_h0300',
             #'RAP_lag06_b0.00_v02_h0300',
             #'RAP_lag06_b0.00_v03_h0300',
             #'RAP_lag06_b0.00_v04_h0300',
             #'RAP_lag06_b0.00_v05_h0300',
-            'RAP_lag06_b0.00_v06_h0300',
+            #'RAP_lag06_b0.00_v06_h0300',
             'ECMWF',
             'GFS',
            ]
@@ -87,7 +86,7 @@ PRFXS = [
 FIG_LAB = ''
 
 # fig case directory, includes leading '/', leave as empty string if not needed
-FIG_CSE = '/Skillful'
+FIG_CSE = '/NAM'
 
 # verification domains for the forecast data
 GRDS = [
@@ -95,16 +94,16 @@ GRDS = [
        ]
 
 # Minimum starting date and zero hour of forecast cycles
-FCST_STRT = '2020020200'
+FCST_STRT = '2022022400'
 
 # Maximium starting date and zero hour of data of forecast cycles
-FCST_END = '2020020600'
+FCST_END = '2022022800'
 
 # number of hours between zero hours for forecast data (string HH)
 CYC_INT = '24'
 
 # valid date for the verification
-ANL_DT = '2020020700'
+ANL_DT = '2022030100'
 
 # Max forecast lead to plot in hours
 MAX_LD = '120'

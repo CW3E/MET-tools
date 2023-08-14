@@ -49,17 +49,34 @@ import post_processing_config as config
 # SET GLOBAL PARAMETERS 
 ##################################################################################
 # define control flow to analyze 
-CTR_FLWS = [
-            'NRT_gfs',
-            'NRT_ecmwf',
-           ]
+#CTR_FLWS = [
+#            'NRT_gfs',
+#            'NRT_ecmwf',
+#           ]
+
+# define the case-wise sub-directory
+#CSE = 'jlconti'
 
 # verification domain for the forecast data                                                                           
-GRDS = [
-        'd01',
-        'd02',
-        'd03',
-       ]
+#GRDS = [
+#        'd01',
+#        'd02',
+#        'd03',
+#       ]
+
+# starting date and zero hour of forecast cycles (string YYYYMMDDHH)
+#STRT_DT = '2022121400'
+
+# final date and zero hour of data of forecast cycles (string YYYYMMDDHH)
+#END_DT = '2023011800'
+
+# number of hours between zero hours for forecast data (string HH)
+#CYC_INT = '24'
+
+# optionally define output prefix, set as empty string if not needed
+#PRFXS = [
+#         '',
+#        ]
 
 # root directory for gridstat outputs
 IN_ROOT = '/cw3e/mead/projects/cwp106/scratch/' + config.CSE
@@ -108,8 +125,8 @@ if __name__ == '__main__':
     print('Processing configurations:')
     for anl_dt in analyses:
         anl_strng = anl_dt.strftime('%Y%m%d%H')
-        for CTR_FLW in CTR_FLWS:
-            for GRD in GRDS:
+        for CTR_FLW in config.CTR_FLWS:
+            for GRD in config.GRDS:
                 for PRFX in config.PRFXS:
                     print(STR_INDT + anl_strng + ' ' + PRFX + ' ' + CTR_FLW +' ' + GRD)
                     # storage for configuration settings as arguments of proc_gridstat

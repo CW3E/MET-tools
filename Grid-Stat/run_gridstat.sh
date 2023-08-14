@@ -32,7 +32,7 @@
 # export all configurations supplied as an array of string definitions
 printf "Loading configuration parameters:\n"
 for cmd in "$@"; do
-  printf " ${cmd}\n"; eval ${cmd}
+  printf " ${cmd}\n"; eval "${cmd}"
 done
 
 #################################################################################
@@ -122,7 +122,7 @@ if [ ! ${OUT_CYC_DIR} ]; then
   exit 1
 else
   cmd="mkdir -p ${OUT_CYC_DIR}"
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 # check for output data root created successfully
@@ -184,7 +184,7 @@ while read msk; do
     # create exit status flag to kill program, after checking all files in list
     estat=1
   fi
-done <${MSKS}
+done < "${MSKS}"
 
 if [ ${estat} -eq 1 ]; then
   msg="ERROR: Exiting due to missing landmasks, please see the above error "
@@ -260,7 +260,7 @@ fi
 #################################################################################
 # change to scripts directory
 cmd="cd ${script_dir}"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 # define the number of dates to loop
 fcst_hrs=$(( (`date +%s -d "${end_dt}"` - `date +%s -d "${strt_dt}"`) / 3600 ))
@@ -320,7 +320,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
     cmd+="${DATA_ROOT}:/DATA_ROOT:ro,${MSK_IN}:/MSK_IN:ro,"
     cmd+="${in_dir}:/in_dir:ro,${script_dir}:/script_dir:ro "
     cmd+="${MET_SNG} met1"
-    printf "${cmd}\n"; eval ${cmd}
+    printf "${cmd}\n"; eval "${cmd}"
 
     if [[ ${CMP_ACC} = "TRUE" ]]; then
       # check for input file based on output from run_wrfout_cf.sh
@@ -339,7 +339,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
         -field 'name=\"precip_bkt\"; level=\"(*,*,*)\";' -name \"${VRF_FLD}_${ACC_INT}hr\" \
         -pcpdir /in_dir \
         -pcprx \"wrfcf_${GRD}_${anl_strt}_to_${anl_end}.nc\" "
-        printf "${cmd}\n"; eval ${cmd}
+        printf "${cmd}\n"; eval "${cmd}"
       else
         msg="pcp_combine input file\n "
         msg+="${in_dir}/wrfcf_${GRD}_${anl_strt}_to_${anl_end}.nc\n is not "
@@ -352,7 +352,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
       in_path="${in_dir}/${for_f_in}"
       if [ -r ${in_path} ]; then
         cmd="cp -L ${in_path} ${work_root}/${prfx}${for_f_in}"
-        printf "${cmd}\n"; eval ${cmd}
+        printf "${cmd}\n"; eval "${cmd}"
       else
         printf "Source file\n ${in_path}\n not found.\n"
       fi
@@ -383,7 +383,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
         /DATA_ROOT/${obs_f_in} \
         /work_root/${prfx}GridStatConfig \
         -outdir /work_root"
-        printf "${cmd}\n"; eval ${cmd}
+        printf "${cmd}\n"; eval "${cmd}"
         
       else
         msg="Observation verification file\n ${DATA_ROOT}/${obs_f_in}\n is not "
@@ -401,19 +401,19 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
 
     # End MET Process and singularity stop
     cmd="singularity instance stop met1"
-    printf "${cmd}\n"; eval ${cmd}
+    printf "${cmd}\n"; eval "${cmd}"
 
     # clean up working directory from accumulation time
     cmd="rm -f ${work_root}/${prfx}${for_f_in}"
-    printf "${cmd}\n"; eval ${cmd}
+    printf "${cmd}\n"; eval "${cmd}"
   done
 
   # clean up working directory from forecast start time
   cmd="rm -f ${work_root}/*regridded_with_StageIV.nc"
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 
   cmd="rm -f ${work_root}/PLY_MSK.txt"
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 done
 
 msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "

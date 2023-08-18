@@ -20,8 +20,14 @@ CTR_FLWS = [
             'ECMWF',
            ]
 
+# Define a list of indices for underscore-separated components of control flow
+# names to include in fig legend. Note: a non-empty prefix value below will
+# always be included in the legend label, and control flows with fewer components
+# than indices above will only include those label components that exist
+LAB_IDX = [0, 1]
+
 # verification domain for the forecast data for heatmaps
-GRD = 'd02'
+GRD = 'd01'
 
 # verification domains for the forecast data for lineplots
 GRDS = [
@@ -101,11 +107,5 @@ MAX_SCALE = 1.0
 
 ##################################################################################
 # GLOBAL PARAMETERS THAT PROBABLY WON'T NEED TO CHANGE
-##################################################################################
-
-# Define a list of indices for underscore-separated components of control flow
-# names to include in fig legend. Note: a non-empty prefix value below will
-# always be included in the legend label, and control flows with fewer components
-# than indices above will only include those label components that exist
-LAB_IDX = [0, 1] 
+################################################################################## 
 

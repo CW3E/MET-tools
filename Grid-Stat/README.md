@@ -10,6 +10,29 @@ MET, and then to post-process the MET Grid-Stat ASCII text file outputs into
 [Pandas](https://pandas.pydata.org/) data frames for plotting and analysis in
 the [ipython conda environment](https://github.com/CW3E/MET-tools#conda-environments).
 
+## Processing configuration files
+For this workflow, environmental variables have been defined in two 
+configuration files: `pre_processing_config.sh` for the shell scripts and 
+`post_processing_config.py` for the Python scripts. In these files, any shared variables
+among scripts will be defined in the respective configuration file. Most global 
+parameters are defined in the configuration file, with some exceptions for 
+script-dependent variables (such as `IN_ROOT` or `OUT_ROOT`). These files 
+are divided into three sections for user efficiency:
+
+* Global parameters to be set                   &ndash; location for environmental variables that will need to be changed by the user before use.
+* Global parameters that may need to change     &ndash; location for environmental variables that may need to be changed by the user before use depending on the desired output.
+* Global parameters that won't change           &ndash; location for environmental variables that probably won't need to be changed by the user before use.
+
+For the shell scripts, the required variables are referenced at the top of each script 
+through the command `source pre_processing_config.sh`.
+For the Python scripts, the required variables are referenced in the import section of 
+each script by the command `import post_processing_config as config`.
+
+For more information on how these configuration files were made and implemented into this 
+workflow, refer to the [Research Code Portability Tutorial repository](https://github.com/CW3E/Research-Code-Portability-Tutorial/tree/main).
+
+Environmental variables needed for this workflow are described in the subsequent sections.
+
 ## Converting wrfout history files to cf-compliant files
 Included in this workflow is the NCL script `wrfout_to_cf.ncl`. This is a modified
 version of the original `wrfout_to_cf.ncl` specifically for West-WRF output that
@@ -23,7 +46,7 @@ The modified `wrfout_to_cf.ncl` script ingests two `wrfout_d0?` files at differe
 valid times in order to compute the accumulation period over a desired interval.
 Two files are needed because the, e.g., 24-hour accumulation of precipitation is
 calculated by subtracting the simulation accumulation variables for rain at
-t=valid_time and t=valid_time-24_hours.
+t=valid_time and t=valid_time-24_hours. 
 
 ### Running cf-compliant batch processing
 The `wrfout_to_cf.ncl` script is called in a loop in the execution of the
@@ -52,9 +75,9 @@ requires the following configuration parameters to be defined:
    MET compatible lat-lon grid.
 
 The `run_wrfout_cf.sh` script is designed to be run with the `batch_wrfout_cf.sh`
-script supplying the above arguments, as defined over a mapping of different
-combinations of control flows and grids to process. For example, the settings
-in the template for the `batch_wrfout_cf.sh`,
+script supplying the above arguments by sourcing `pre_processing_config.sh`, as 
+defined over a mapping of different combinations of control flows and grids to 
+process. For example, the settings in the template for the `pre_processing_config.sh`,
 ```{bash}
 # array of control flow names to be processed
 CTR_FLWS=(
@@ -150,7 +173,7 @@ directory.
 The NetCDF landmasks that will be ingested by Grid-Stat are generated
 with the `run_vxmask.sh` script. This script is run offline and standalone, where
 the output NetCDF masks can be re-used over multiple analyses that study the same
-verification regions. The arguments of the `run_vxmask.sh` script are as follows:
+verification regions. The required arguments of the `run_vxmask.sh` script are as follows:
 
  * `${USR_HME}`       &ndash; the directory path for the MET-tools clone.
  * `${SOFT_ROOT}`     &ndash; the directory path for the MET singularity image.
@@ -227,11 +250,11 @@ requires:
 ### Running gridstat batch analysis on cf-compliant WRF outputs
 
 The `run_gridstat.sh` script is designed to be run with the `batch_gridstat.sh`
-script supplying the above arguments as defined over a mapping of different
-combinations of control flows and grids to process. Note: the performance
-of the interpolation method, and the required number of gridpoints, used
-to regrid WRF outputs to the StageIV grid strongly depends on the
-native WRF grid. It is required that each grid to be batch processed
+script sourcing `pre_processing_config.sh` and supplying the above arguments 
+as defined over a mapping of different combinations of control flows and grids 
+to process. Note: the performance of the interpolation method, and the required 
+number of gridpoints, used to regrid WRF outputs to the StageIV grid strongly 
+depends on the native WRF grid. It is required that each grid to be batch processed
 (`d01`/`d02`/`d03`) has a corresponding setting for the `${INT_MTHD}` and the
 `${INT_WDTH}`. For example, in the `batch_gridstat.sh` template,
 ```{bash}
@@ -330,15 +353,23 @@ to the `proc_gridstat` function defined in the script, where configurations are
 defined in terms of Python lists of arguments, constructed in the nested loops before
 the parameter map.
 
-With the parameters appropriately set as above, one can call `proc_gristat.py` as
+With the parameters appropriately set as above, one can call `proc_gridstat.py` 
+using the Singularity conatiner as
+```
+singularity exec --bind /cw3e:/cw3e,/scratch:/scratch /cw3e/mead/projects/cwp106/scratch/MET_tools_conda_ipython.sif python /path/to/proc_gridstat.py
+```
+to parse all files available within these directories. 
+
+If one was not using the containers, they can call `proc_gridstat.py` as
 ```
 python -u proc_gridstat.py
 ```
-to parse all files available within these directories. Note: the `-u` flag is
-is optional and is only to set this to write logs in real-time instead of at the
-time of script completion. The `proc_gridstat.py` script is designed to
-be agnostic of what statistics are available at each directory, using 
-[glob](https://docs.python.org/3/library/glob.html) and
+
+Note: the -u flag is is optional and is only to set this to write logs in real-time 
+instead of at the time of script completion.
+
+The `proc_gridstat.py` script is designed to be agnostic of what statistics are 
+available at each directory, using [glob](https://docs.python.org/3/library/glob.html) and
 Bash wildcards to search for any files available matching the specified patterns.
 Valid start dates are processed in parallel for start dates between `START_DT` and `END_DT`
 at step sizes `CYC_INT` between these dates.  For each file of the type
@@ -407,8 +438,17 @@ while looping over various combinations of control flows, grids and
 valid dates / lead times for verification. Discussing all options in these
 routines is beyond the current scope of the documentation and it is recommended
 instead to follow the steps up to this point, and to learn the plotting features
-from running the `plot_*.py` scripts and changing the options. For
-specific, publication-quality figures, it is expected that a user will
-modify these scripts themselves to set the needed stylistic options, etc. These
-are templates only, and performing a specific study may involve rewriting
-these templates to one's own needs.
+from running the `plot_*.py` scripts and changing the options within the 
+`post_plotting_config.py` script. For specific, publication-quality figures, 
+it is expected that a user will modify these scripts themselves to set the needed 
+stylistic options, etc. These are templates only, and performing a specific study 
+may involve rewriting these templates to one's own needs.
+
+To run any respective plotting script using the Singularity container, one 
+can use the following command
+```
+singularity exec --bind /cw3e:/cw3e,/scratch:/scratch /cw3e/mead/projects/cwp106/scratch/MET_tools_conda_ipython.sif python /path/to/scripts/python_plotting_script.py
+```
+
+> Currently, the plotting scripts are not designed for live plotting due to restrictions involving the iPython Singularity container. 
+> A solution to this issue depends on factors involving the move to Expanse, but work will be done down the line to fix this.

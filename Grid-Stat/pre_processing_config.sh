@@ -55,9 +55,9 @@ INT_WDTHS=(
           )
 
 # Singularity Container Variables for NetCDF Environment
-export NCKS_CMD="singularity exec --bind /cw3e:/cw3e,/scratch:/scratch /cw3e/mead/projects/cwp106/scratch/jlconti/MET_tools_conda_netcdf.sif ncks"
-export NCL_CMD="singularity exec --bind /cw3e:/cw3e,/scratch:/scratch /cw3e/mead/projects/cwp106/scratch/jlconti/MET_tools_conda_netcdf.sif ncl"
-export CDO_CMD="singularity exec --bind /cw3e:/cw3e,/scratch:/scratch /cw3e/mead/projects/cwp106/scratch/jlconti/MET_tools_conda_netcdf.sif cdo"
+export NCKS_CMD="singularity exec --bind /cw3e:/cw3e,/scratch:/scratch /cw3e/mead/projects/cwp106/scratch/MET_tools_conda_netcdf.sif ncks"
+export NCL_CMD="singularity exec --bind /cw3e:/cw3e,/scratch:/scratch /cw3e/mead/projects/cwp106/scratch/MET_tools_conda_netcdf.sif ncl"
+export CDO_CMD="singularity exec --bind /cw3e:/cw3e,/scratch:/scratch /cw3e/mead/projects/cwp106/scratch/MET_tools_conda_netcdf.sif cdo"
 
 ##################################################################################
 # GLOBAL PARAMETERS THAT MAY NEED TO CHANGE

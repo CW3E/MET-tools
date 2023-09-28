@@ -49,22 +49,25 @@ from multiprocessing import Pool
 ##################################################################################
 # define control flow to analyze 
 CTR_FLWS = [
-            'NAM_lag06_b0.00_v03_h0150',
+            'NRT_gfs',
+            'NRT_ecmwf',
            ]
 
 # define the case-wise sub-directory
-CSE = 'PNW22'
+CSE = 'DeepDive'
 
 # verification domain for the forecast data                                                                           
 GRDS = [
-        '',
+        'd01',
+        'd02',
+        'd03',
        ]
 
 # starting date and zero hour of forecast cycles (string YYYYMMDDHH)
-STRT_DT = '2022022400'
+STRT_DT = '2022121400'
 
 # final date and zero hour of data of forecast cycles (string YYYYMMDDHH)
-END_DT = '2022022800'
+END_DT = '2023011800'
 
 # number of hours between zero hours for forecast data (string HH)
 CYC_INT = '24'
@@ -75,10 +78,10 @@ PRFXS = [
         ]
 
 # root directory for gridstat outputs
-IN_ROOT = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/tuning_figs/gridstat/' + CSE
+IN_ROOT = '/cw3e/mead/projects/cwp106/scratch/' + CSE
 
 # root directory for processed pandas outputs
-OUT_ROOT = '/cw3e/mead/projects/cwp106/scratch/cgrudzien/tuning_figs/gridstat/' + CSE
+OUT_ROOT = '/cw3e/mead/projects/cwp106/scratch/' + CSE
 
 ##################################################################################
 # Construct hyper-paramter array for batch processing gridstat data

@@ -2,10 +2,10 @@
 #SBATCH -p shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 00:30:00
+#SBATCH -t 02:30:00
 #SBATCH -J batch_wrfout_cf
 #SBATCH --export=ALL
-#SBATCH --array=0
+#SBATCH --array=0-5
 ##################################################################################
 # Description
 ##################################################################################
@@ -82,7 +82,6 @@ for (( i = 0; i < ${num_grds}; i++ )); do
 
     # subdirectory of cycle-named directory containing data to be analyzed,
     # includes leading '/', left as blank string if not needed
-
     cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/wrfout\")"
     printf "${cmd}\n"; eval "${cmd}"
     

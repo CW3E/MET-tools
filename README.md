@@ -35,11 +35,11 @@ singularity build met-10.0.1.simg docker://dtcenter/met:10.0.1
 where the executable singularity image is the output file `met-10.0.1.simg`.
 
 ### Singularity Containers
-To get started with this repository, you will need to download the required Singularity containers.
+To get started with this repository, the required Singularity containers need to be downloaded.
 These Singularity containers replace the need for the user to initialize the 
 conda environment manually, making the workflow more portable and user-friendly. Two Singularity 
-containers are provided, one for the NetCDF environment and one for the 
-iPython environment. These containers can be obtained by running the following lines of code.
+containers are provided, one for the NetCDF pre-processing environment and one for the 
+iPython post-processing environment. These containers can be obtained by running the following lines of code.
 
 Bash scripts use the Conda environment `netcdf` to process
 NetCDF files. This Singularity container can be obtained by running the following:
@@ -73,15 +73,16 @@ organized similarly for other MET modules as they are developed.
 
 ## Known Issues
 With the current workflow having contained environments, there is an 
-issue involving the live plotting ability of the Python scripts. 
+ongoing issue involving the live plotting ability of the Python scripts. 
 With the Singularity containers, generated plots can be viewed through 
 the GUI desktop option on Comet. Live plotting is available, however, for 
 the previous uncontained environments. If this is preferred, the 
 environment can be established by the commands provided in the following section.
 
 ### Conda Environments
-Sofware environments that are not containerized are managed 
-by creating appropriate [Conda environments](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html).
+While the containerized conda environments needed for this workflow are provided, users 
+can establish the environments manually if preferred. Sofware environments that are not 
+containerized are managed by creating appropriate [Conda environments](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html).
 The NetCDF environment can be created as follows:
 ```
 conda create --name netcdf

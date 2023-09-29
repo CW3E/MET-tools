@@ -33,7 +33,7 @@
 ##################################################################################
 import matplotlib
 # use this setting on COMET / Skyriver for x forwarding
-matplotlib.use('TkAgg')
+matplotlib.use('AGG')
 from datetime import datetime as dt
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize as nrm
@@ -45,68 +45,12 @@ import pandas as pd
 import pickle
 import os
 import sys
+import post_processing_config as config
 from proc_gridstat import OUT_ROOT
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
 ##################################################################################
-# define control flows to analyze 
-CTR_FLWS = [
-            'NAM_lag06_b0.00_v01_h0300',
-            'NAM_lag06_b0.00_v02_h0300',
-            'NAM_lag06_b0.00_v03_h0300',
-            'NAM_lag06_b0.00_v04_h0300',
-            'NAM_lag06_b0.00_v05_h0300',
-            'NAM_lag06_b0.00_v06_h0300',
-            #'RAP_lag06_b0.00_v01_h0300',
-            #'RAP_lag06_b0.00_v02_h0300',
-            #'RAP_lag06_b0.00_v03_h0300',
-            #'RAP_lag06_b0.00_v04_h0300',
-            #'RAP_lag06_b0.00_v05_h0300',
-            #'RAP_lag06_b0.00_v06_h0300',
-            'ECMWF',
-            'GFS',
-           ]
-
-# Define a list of indices for underscore-separated components of control flow
-# names to include in fig legend. Note: a non-empty prefix value below will
-# always be included in the legend label, and control flows with fewer components
-# than indices above will only include those label components that exist
-LAB_IDX = [0, 3]
-
-# define if legend label includes grid
-GRD_LAB = False
-
-# define optional list of stats files prefixes, include empty string to ignore
-PRFXS = [
-        '',
-        ]
-
-# fig label for output file organization, included in figure file name
-FIG_LAB = ''
-
-# fig case directory, includes leading '/', leave as empty string if not needed
-FIG_CSE = '/NAM'
-
-# verification domains for the forecast data
-GRDS = [
-        '',
-       ]
-
-# Minimum starting date and zero hour of forecast cycles
-FCST_STRT = '2022022400'
-
-# Maximium starting date and zero hour of data of forecast cycles
-FCST_END = '2022022800'
-
-# number of hours between zero hours for forecast data (string HH)
-CYC_INT = '24'
-
-# valid date for the verification
-ANL_DT = '2022030100'
-
-# Max forecast lead to plot in hours
-MAX_LD = '120'
 
 # MET stat file type - should be non-leveled data
 TYPE = 'cnt'
@@ -114,82 +58,103 @@ TYPE = 'cnt'
 # MET stat column names to be made to heat plots / labels
 STATS = ['RMSE', 'PR_CORR']
 
-# landmask for verification region
-LND_MSK = 'WA_OR'
-
 # plot title
-TITLE='24hr accumulated precip at ' + ANL_DT[:4] + '-' + ANL_DT[4:6] + '-' +\
-        ANL_DT[6:8] + '_' + ANL_DT[8:]
+TITLE='24hr accumulated precip at ' + config.VALID_DT[:4] + '-' + config.VALID_DT[4:6] + '-' +\
+        config.VALID_DT[6:8] + '_' + config.VALID_DT[8:]
 
 # plot sub-title title
 SUBTITLE='Verification region -'
-lnd_msk_split = LND_MSK.split('_')
+lnd_msk_split = config.LND_MSK.split('_')
 for split in lnd_msk_split:
     SUBTITLE += ' ' + split
 
 # fig saved automatically to OUT_PATH
-if len(FIG_LAB) > 0:
-    fig_lab = '_' + FIG_LAB
+if len(config.FIG_LAB) > 0:
+    fig_lab = '_' + config.FIG_LAB
 else:
     fig_lab = ''
 
-OUT_DIR = OUT_ROOT + '/figures' + FIG_CSE
-OUT_PATH = OUT_DIR + '/' + ANL_DT + '_' + LND_MSK + '_' + STATS[0] + '_' +\
+OUT_DIR = OUT_ROOT + '/figures' + config.FIG_CSE
+OUT_PATH = OUT_DIR + '/' + config.VALID_DT + '_' + config.LND_MSK + '_' + STATS[0] + '_' +\
            STATS[1] + fig_lab + '_lineplot.png'
 
 ##################################################################################
 # Make data checks and determine all lead times over all files
 ##################################################################################
-if len(FCST_STRT) != 10:
-    print('ERROR: FCST_STRT, ' + FCST_STRT + ', is not in YYYYMMDDHH format.')
+if len(config.STRT_DT) != 10:
+    print('ERROR: STRT_DT, ' + config.STRT_DT + ', is not in YYYYMMDDHH format.')
     sys.exit(1)
 else:
-    sd_iso = FCST_STRT[:4] + '-' + FCST_STRT[4:6] + '-' + FCST_STRT[6:8] +\
-            '_' + FCST_STRT[8:]
-    fcst_strt = dt.fromisoformat(sd_iso)
+    sd_iso = config.STRT_DT[:4] + '-' + config.STRT_DT[4:6] + '-' + config.STRT_DT[6:8] +\
+            '_' + config.STRT_DT[8:]
+    strt_dt = dt.fromisoformat(sd_iso)
 
-if len(FCST_END) != 10:
-    print('ERROR: FCST_END, ' + FCST_END + ', is not in YYYYMMDDHH format.')
+if len(config.END_DT) != 10:
+    print('ERROR: END_DT, ' + config.END_DT + ', is not in YYYYMMDDHH format.')
     sys.exit(1)
 else:
-    ed_iso = FCST_END[:4] + '-' + FCST_END[4:6] + '-' + FCST_END[6:8] +\
-            '_' + FCST_END[8:]
-    fcst_end = dt.fromisoformat(ed_iso)
+    ed_iso = config.END_DT[:4] + '-' + config.END_DT[4:6] + '-' + config.END_DT[6:8] +\
+            '_' + config.END_DT[8:]
+    end_dt = dt.fromisoformat(ed_iso)
 
-if len(ANL_DT) != 10:
-    print('ERROR: ANL_DT, ' + ANL_DT + ', is not in YYYYMMDDHH format.')
+if len(config.VALID_DT) != 10:
+    print('ERROR: VALID_DT, ' + config.VALID_DT + ', is not in YYYYMMDDHH format.')
     sys.exit(1)
 else:
-    anl_dt = dt.fromisoformat(ANL_DT[:4] + '-' + ANL_DT[4:6] + '-' + ANL_DT[6:8] +
-            '_' + ANL_DT[8:])
+    v_iso = config.VALID_DT[:4] + '-' + config.VALID_DT[4:6] + '-' + config.VALID_DT[6:8] +\
+            '_' + config.VALID_DT[8:]
+    valid_dt = dt.fromisoformat(v_iso)
 
-if len(CYC_INT) != 2:
-    print('ERROR: CYC_INT, ' + CYC_INT + ', is not in HH format.')
+if len(config.CYC_INT) != 2:
+    print('ERROR: CYC_INT, ' + config.CYC_INT + ', is not in HH format.')
     sys.exit(1)
 else:
-    cyc_int = CYC_INT + 'H'
+    cyc_int = config.CYC_INT + 'H'
 
 # generate the date range and forecast leads for the analysis, parse binary files
 # for relevant fields
 plt_data = {}
-fcst_zhs = pd.date_range(start=fcst_strt, end=fcst_end, freq=cyc_int).to_pydatetime()
+fcst_zhs = pd.date_range(start=strt_dt, end=end_dt, freq=cyc_int).to_pydatetime()
 
 fcst_leads = []
-for ctr_flw in CTR_FLWS:
+for ctr_flw in config.CTR_FLWS:
     # define derived data paths 
     data_root = OUT_ROOT + '/' + ctr_flw
 
-    for prfx in PRFXS:
+    for prfx in config.PRFXS:
         if len(prfx) > 0:
             pfx = '_' + prfx
         else:
             pfx = ''
         
-        for grid in GRDS:
+        for grid in config.GRDS:
             if len(grid) > 0:
                 grd = '_' + grid
             else:
                 grd = ''
+
+            # create label based on configuration
+            split_string = ctr_flw.split('_')
+            split_len = len(split_string)
+            idx_len = len(config.LAB_IDX)
+            line_lab = ''
+            lab_len = min(idx_len, split_len)
+            if lab_len > 1:
+                for i_ll in range(lab_len, 1, -1):
+                    i_li = config.LAB_IDX[-i_ll]
+                    line_lab += split_string[i_li] + '_'
+    
+                i_li = config.LAB_IDX[-1]
+                line_lab += split_string[i_li]
+    
+            else:
+                line_lab += split_string[0]
+
+            if pfx:
+                line_lab += pfx
+    
+            if config.GRD_LAB:
+                    line_lab += grd
 
             key = ctr_flw + pfx + grd
             for fcst_zh in fcst_zhs:
@@ -229,9 +194,9 @@ for ctr_flw in CTR_FLWS:
                 
                 # cut down df to specified valid date / region / relevant stats
                 stat_data = data[vals]
-                stat_data = stat_data.loc[(stat_data['VX_MASK'] == LND_MSK)]
+                stat_data = stat_data.loc[(stat_data['VX_MASK'] == config.LND_MSK)]
                 stat_data = stat_data.loc[(stat_data['FCST_VALID_END'] ==
-                                           anl_dt.strftime('%Y%m%d_%H%M%S'))]
+                                           valid_dt.strftime('%Y%m%d_%H%M%S'))]
 
                 # check if there is data for this configuration and these fields
                 if not stat_data.empty:
@@ -254,7 +219,7 @@ fcst_leads = sorted(list(set(fcst_leads)), key=lambda x:(len(x), x))
 i_fl = 0
 while i_fl < len(fcst_leads):
     ld = fcst_leads[i_fl][:-4]
-    if int(ld) > int(MAX_LD):
+    if int(ld) > int(config.MAX_LD):
         del fcst_leads[i_fl]
     else:
         i_fl += 1
@@ -280,14 +245,14 @@ stat0 = STATS[0]
 stat1 = STATS[1]
 
 # loop configurations, load trimmed data from plt_data dictionary
-for ctr_flw in CTR_FLWS:
-    for prfx in PRFXS:
+for ctr_flw in config.CTR_FLWS:
+    for prfx in config.PRFXS:
         if len(prfx) > 0:
             pfx = '_' + prfx
         else:
             pfx = ''
 
-        for grid in GRDS:
+        for grid in config.GRDS:
             if len(grid) > 0:
                 grd = '_' + grid
             else:
@@ -448,7 +413,7 @@ fig.legend(line_list, line_labs, fontsize=18, ncol=ncols, loc='center',
 # save figure and display
 os.system('mkdir -p ' + OUT_DIR)
 plt.savefig(OUT_PATH)
-plt.show()
+#plt.show()
 
 ##################################################################################
 # end

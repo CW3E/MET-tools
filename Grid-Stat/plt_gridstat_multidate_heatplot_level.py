@@ -33,7 +33,7 @@
 ##################################################################################
 import matplotlib
 # use this setting on COMET / Skyriver for x forwarding
-matplotlib.use('TkAgg')
+matplotlib.use('AGG')
 from datetime import datetime as dt
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize as nrm
@@ -46,59 +46,12 @@ import numpy as np
 import pickle
 import os
 import sys
+import post_processing_config as config
 from proc_gridstat import OUT_ROOT
-import ipdb
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
 ##################################################################################
-# define control flow to analyze 
-CTR_FLW = 'NRT_gfs'
-
-# Define a list of indices for underscore-separated components of control flow
-# names to include in fig legend. Note: a non-empty prefix value below will
-# always be included in the legend label, and control flows with fewer components
-# than indices above will only include those label components that exist
-LAB_IDX = [0, 1]
-
-# define if fig title includes grid
-GRD_LAB = True
-
-# define optional gridstat prefix 
-PRFX = ''
-
-# fig label for output file organization, included in figure file name
-FIG_LAB = ''
-
-# fig case directory, includes leading '/', leave as empty string if not needed
-FIG_CSE = ''
-
-# verification domain for the forecast data
-GRD='d01'
-
-# starting date and zero hour of forecast cycles (string YYYYMMDDHH)
-FCST_STRT = '2022121400'
-
-# final date and zero hour of data of forecast cycles (string YYYYMMDDHH)
-FCST_END = '2023011800'
-
-# number of hours between zero hours for forecast data (string HH)
-CYC_INT = '24'
-
-# Max forecast lead to plot in hours
-MAX_LD = '240'
-
-# first valid time for verification (string YYYYMMDDHH)
-ANL_STRT = '2022122400'
-
-# final valid time (string YYYYMMDDHH)
-ANL_END = '2023011900'
-
-# cycle interval verification valid times (string HH)
-ANL_INT = '24'
-
-# threshold level to plot
-LEV = '>=25.0'
 
 # MET stat file type -- should be leveled data
 TYPE = 'nbrcnt'
@@ -110,127 +63,116 @@ STAT = 'FSS'
 COLOR_MAP = sns.cubehelix_palette(20, start=.75, rot=1.50, as_cmap=True,
                                           reverse=True, dark=0.25)
 
-# use dynamic color bar scale depending on data percentiles, True / False
-# Use this as True by default unless specifying a specific color bar scale and
-# scheme in the below
-DYN_SCL = True
-
-# these values will only be used if the DYN_SCL above is set to False
-MIN_SCALE = 0.0
-MAX_SCALE = 1.0
-
-# landmask for verification region -- needs to be set in gridstat options
-LND_MSK = 'CA_All'
-
 # define plot title
-TITLE = STAT + ' Precip Thresh ' + LEV + ' mm - '
-split_string = CTR_FLW.split('_')
+TITLE = STAT + ' Precip Thresh ' + config.LEV + ' mm - '
+split_string = config.CTR_FLW.split('_')
 split_len = len(split_string)
-idx_len = len(LAB_IDX)
+idx_len = len(config.LAB_IDX)
 line_lab = ''
 lab_len = min(idx_len, split_len)
 if lab_len > 1:
     for i_ll in range(lab_len, 1, -1):
-        i_li = LAB_IDX[-i_ll]
+        i_li = config.LAB_IDX[-i_ll]
         TITLE += split_string[i_li] + '_'
 
-    i_li = LAB_IDX[-1]
+    i_li = config.LAB_IDX[-1]
     TITLE += split_string[i_li]
 
 else:
     TITLE += split_string[0]
 
-if len(PRFX) > 0:
-    pfx = '_' + PRFX
+if len(config.PRFX) > 0:
+    pfx = '_' + config.PRFX
 
 else:
     pfx = ''
 
-line_lab += PRFX
+line_lab += config.PRFX
 
-if len(GRD) > 0:
-    grd = '_' + GRD
+if len(config.GRD) > 0:
+    grd = '_' + config.GRD
 
 else:
     grd = ''
 
-if GRD_LAB:
+if config.GRD_LAB:
     TITLE += grd
 
-lnd_msk_split = LND_MSK.split('_')
+lnd_msk_split = config.LND_MSK.split('_')
 TITLE += ', Region -'
 for split in lnd_msk_split:
     TITLE += ' ' + split
 
 # fig saved automatically to OUT_PATH
-if len(FIG_LAB) > 0:
-    fig_lab = '_' + FIG_LAB
+if len(config.FIG_LAB) > 0:
+    fig_lab = '_' + config.FIG_LAB
 else:
     fig_lab = ''
 
-OUT_DIR = OUT_ROOT + '/figures' + FIG_CSE
-OUT_PATH = OUT_DIR + '/' + ANL_STRT + '_' + ANL_END + '_FCST_' + MAX_LD + '_' +\
-           LND_MSK + '_' + STAT + '_' + LEV + '_' + CTR_FLW + pfx + grd +\
+OUT_DIR = OUT_ROOT + '/figures' + config.FIG_CSE
+OUT_PATH = OUT_DIR + '/' + config.ANL_STRT + '_' + config.ANL_END + '_FCST_' + config.MAX_LD + '_' +\
+           config.LND_MSK + '_' + STAT + '_' + config.LEV + '_' + config.CTR_FLW + pfx + grd +\
            fig_lab +'_heatplot.png'
 
 ##################################################################################
 # Make data checks and determine all lead times over all files
 ##################################################################################
 # convert to date times
-if len(FCST_STRT) != 10:
-    print('ERROR: FCST_STRT, ' + FCST_STRT + ', is not in YYYYMMDDHH format.')
-    sys.exit(1)
-else:
-    sd_iso = FCST_STRT[:4] + '-' + FCST_STRT[4:6] + '-' + FCST_STRT[6:8] +\
-            '_' + FCST_STRT[8:]
-    fcst_strt = dt.fromisoformat(sd_iso)
 
-if len(FCST_END) != 10:
-    print('ERROR: FCST_END, ' + FCST_END + ', is not in YYYYMMDDHH format.')
+if len(config.STRT_DT) != 10:
+    print('ERROR: STRT_DT, ' + config.STRT_DT + ', is not in YYYYMMDDHH format.')
     sys.exit(1)
 else:
-    ed_iso = FCST_END[:4] + '-' + FCST_END[4:6] + '-' + FCST_END[6:8] +\
-            '_' + FCST_END[8:]
-    fcst_end = dt.fromisoformat(ed_iso)
+    sd_iso = config.STRT_DT[:4] + '-' + config.STRT_DT[4:6] + '-' + config.STRT_DT[6:8] +\
+            '_' + config.STRT_DT[8:]
+    strt_dt = dt.fromisoformat(sd_iso)
 
-if len(CYC_INT) != 2:
-    print('ERROR: CYC_INT, ' + CYC_INT + ', is not in HH format.')
+if len(config.END_DT) != 10:
+    print('ERROR: END_DT, ' + config.END_DT + ', is not in YYYYMMDDHH format.')
     sys.exit(1)
 else:
-    cyc_int = CYC_INT + 'H'
+    ed_iso = config.END_DT[:4] + '-' + config.END_DT[4:6] + '-' + config.END_DT[6:8] +\
+            '_' + config.END_DT[8:]
+    end_dt = dt.fromisoformat(ed_iso)
 
-if len(ANL_STRT) != 10:
-    print('ERROR: ANL_STRT, ' + ANL_STRT + ', is not in YYYYMMDDHH format.')
+if len(config.CYC_INT) != 2:
+    print('ERROR: CYC_INT, ' + config.CYC_INT + ', is not in HH format.')
     sys.exit(1)
 else:
-    as_iso = ANL_STRT[:4] + '-' + ANL_STRT[4:6] + '-' + ANL_STRT[6:8] +\
-            '_' + ANL_STRT[8:]
+    cyc_int = config.CYC_INT + 'H'
+
+if len(config.ANL_STRT) != 10:
+    print('ERROR: ANL_STRT, ' + config.ANL_STRT + ', is not in YYYYMMDDHH format.')
+    sys.exit(1)
+else:
+    as_iso = config.ANL_STRT[:4] + '-' + config.ANL_STRT[4:6] + '-' + config.ANL_STRT[6:8] +\
+            '_' + config.ANL_STRT[8:]
     anl_strt = dt.fromisoformat(as_iso)
 
-if len(ANL_END) != 10:
-    print('ERROR: ANL_END, ' + ANL_END + ', is not in YYYYMMDDHH format.')
+if len(config.ANL_END) != 10:
+    print('ERROR: ANL_END, ' + config.ANL_END + ', is not in YYYYMMDDHH format.')
     sys.exit(1)
 else:
-    ae_iso = ANL_END[:4] + '-' + ANL_END[4:6] + '-' + ANL_END[6:8] +\
-            '_' + ANL_END[8:]
+    ae_iso = config.ANL_END[:4] + '-' + config.ANL_END[4:6] + '-' + config.ANL_END[6:8] +\
+            '_' + config.ANL_END[8:]
     anl_end = dt.fromisoformat(ae_iso)
 
-if len(ANL_INT) != 2:
-    print('ERROR: ANL_INT, ' + ANL_INT + ', is not in HH format.')
+if len(config.ANL_INT) != 2:
+    print('ERROR: ANL_INT, ' + config.ANL_INT + ', is not in HH format.')
     sys.exit(1)
 else:
-    anl_int = ANL_INT + 'H'
+    anl_int = config.ANL_INT + 'H'
     
 # generate the date range and forecast leads for the analysis, parse binary files
 # for relevant fields
-fcst_zhs = pd.date_range(start=fcst_strt, end=fcst_end, freq=cyc_int).to_pydatetime()
+fcst_zhs = pd.date_range(start=strt_dt, end=end_dt, freq=cyc_int).to_pydatetime()
 
 fcst_leads = []
 # generate the date range for the analyses
 anl_dates = pd.date_range(start=anl_strt, end=anl_end,
                           freq=anl_int).to_pydatetime()
 
-data_root = OUT_ROOT + '/' + CTR_FLW
+data_root = OUT_ROOT + '/' + config.CTR_FLW
 plt_data = pd.DataFrame()
 for fcst_zh in fcst_zhs:
     # define the input name
@@ -261,8 +203,8 @@ for fcst_zh in fcst_zhs:
     
     # cut down df to specified region / level / relevant stats
     stat_data = data[vals]
-    stat_data = stat_data.loc[(stat_data['FCST_THRESH'] == LEV)]
-    stat_data = stat_data.loc[(stat_data['VX_MASK'] == LND_MSK)]
+    stat_data = stat_data.loc[(stat_data['FCST_THRESH'] == config.LEV)]
+    stat_data = stat_data.loc[(stat_data['VX_MASK'] == config.LND_MSK)]
 
     # check if there is data for this configuration and these fields
     if not stat_data.empty:
@@ -278,7 +220,7 @@ fcst_leads = sorted(list(set(fcst_leads)), key=lambda x:(len(x), x))
 i_fl = 0
 while i_fl < len(fcst_leads):
     ld = fcst_leads[i_fl][:-4]
-    if int(ld) > int(MAX_LD):
+    if int(ld) > int(config.MAX_LD):
         del fcst_leads[i_fl]
     else:
         i_fl += 1
@@ -324,7 +266,7 @@ for i_nd in range(num_dates):
         except:
             continue
 
-if DYN_SCL:
+if config.DYN_SCL:
     # find the max / min value over the inner 100 - alpha range of the data
     scale = tmp[~np.isnan(tmp)]
     alpha = 1
@@ -332,8 +274,8 @@ if DYN_SCL:
 
 else:
     # min scale and max scale are set in the above
-    min_scale = MIN_SCALE
-    max_scale = MAX_SCALE
+    min_scale = config.MIN_SCALE
+    max_scale = config.MAX_SCALE
 
 sns.heatmap(tmp[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale,
             vmax=max_scale, cmap=COLOR_MAP)
@@ -371,7 +313,7 @@ plt.figtext(.5, .98, TITLE, horizontalalignment='center',
 
 # save figure and display
 plt.savefig(OUT_PATH)
-plt.show()
+#plt.show()
 
 ##################################################################################
 # end

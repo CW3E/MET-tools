@@ -37,17 +37,6 @@ for cmd in "$@"; do
   printf " ${cmd}\n"; eval "${cmd}"
 done
 
-# initialize conda environment for netcdf
-cmd="conda init bash"
-printf "${cmd}\n"; eval ${cmd}
-
-cmd="source /home/cgrudzien/.bashrc"
-printf "${cmd}\n"; eval ${cmd}
-
-cmd="conda activate netcdf"
-printf "${cmd}\n"; eval ${cmd}
-
-
 #################################################################################
 # make checks for workflow parameters
 
@@ -130,7 +119,7 @@ if [ ! ${OUT_CYC_DIR} ]; then
   printf "ERROR: output data root directory \${OUT_CYC_DIR} is not defined.\n"
 else
   cmd="mkdir -p ${OUT_CYC_DIR}"
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 # check for output data root created successfully
@@ -171,7 +160,7 @@ fi
 #################################################################################
 # change to Grid-Stat scripts directory
 cmd="cd ${script_dir}"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 # define the number of dates to loop
 fcst_hrs=$(( (`date +%s -d "${end_dt}"` - `date +%s -d "${strt_dt}"`) / 3600 ))
@@ -184,7 +173,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
   # set output path
   work_root=${OUT_CYC_DIR}/${dirstr}${OUT_DT_SUBDIR}
   cmd="mkdir -p ${work_root}"
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
       
   # set input paths
   if [ ! -d ${in_dir} ]; then
@@ -209,28 +198,28 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
       # set output file name
       output_file="wrfcf_${GRD}_${anl_strt}_to_${anl_end}.nc"
       out_name="${work_root}/${output_file}"
-      
+    
       if [[ -r ${file_1} && -r ${file_2} ]]; then
-        cmd="ncl 'file_in=\"${file_2}\"' "
+        cmd="${NCL_CMD} 'file_in=\"${file_2}\"' "
         cmd+="'file_prev=\"${file_1}\"' " 
         cmd+="'file_out=\"${out_name}\"' wrfout_to_cf.ncl "
-        printf "${cmd}\n"; eval ${cmd}
+        printf "${cmd}\n"; eval "${cmd}"
 
         if [ ${RGRD} = TRUE ]; then
           # regrids to lat-lon from native grid with CDO
-          cmd="cdo -f nc4 sellonlatbox,${lon1},${lon2},${lat1},${lat2} "
+          cmd="${CDO_CMD} -f nc4 sellonlatbox,${lon1},${lon2},${lat1},${lat2} "
           cmd+="-remapbil,global_${gres} "
           cmd+="-selname,precip,precip_bkt,IVT,IVTU,IVTV,IWV "
           cmd+="${out_name} ${out_name}_tmp"
-          printf "${cmd}\n"; eval ${cmd}
+          printf "${cmd}\n"; eval "${cmd}"
 
           # Adds forecast_reference_time back in from first output
-          cmd="ncks -A -v forecast_reference_time ${out_name} ${out_name}_tmp"
-          printf "${cmd}\n"; eval ${cmd}
+          cmd="${NCKS_CMD} -A -v forecast_reference_time ${out_name} ${out_name}_tmp"
+          printf "${cmd}\n"; eval "${cmd}"
 
           # removes temporary data with regridded cf compliant outputs
           cmd="mv ${out_name}_tmp ${out_name}"
-          printf "${cmd}\n"; eval ${cmd}
+          printf "${cmd}\n"; eval "${cmd}"
         fi
       else
         msg="Either\n ${file_1}\n or\n ${file_2}\n is not readable or "

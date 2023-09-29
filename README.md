@@ -10,7 +10,7 @@ continuous development with direct and indirect contributions from multiple
 authors. This repository has benefitted from source code and other
 contributions by Colin Grudzien, Rachel Weihs, Caroline Papadopoulos,
 Dan Stienhoff, Laurel Dehaan, Matthew Simpson, Brian Kawzenuck, Nora Mascioli,
-Minghua Zheng, Ivette Hernandez Ba&ntilde;os, Patrick Mulrooney and others.
+Minghua Zheng, Ivette Hernandez Ba&ntilde;os, Patrick Mulrooney, Jozette Conti, and others.
 
 ## Installing software
 The tools for batch processing NWP data and MET outputs are designed to be
@@ -34,30 +34,34 @@ singularity build met-10.0.1.simg docker://dtcenter/met:10.0.1
 ```
 where the executable singularity image is the output file `met-10.0.1.simg`.
 
-### Conda Environments
-To get started with this repository you will need to use conda to install 
-software dependencies. Sofware environments that are not containerized are
-managed by creating appropriate [Conda environments](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html).
+### Singularity Containers
+To get started with this repository, the required Singularity containers need to be downloaded.
+These Singularity containers replace the need for the user to initialize the 
+conda environment manually, making the workflow more portable and user-friendly. Two Singularity 
+containers are provided, one for the NetCDF pre-processing environment and one for the 
+iPython post-processing environment. These containers can be obtained by running the following lines of code.
+
 Bash scripts use the Conda environment `netcdf` to process
-NetCDF files. This environment can be created as follows:
+NetCDF files. This Singularity container can be obtained by running the following:
+
 ```
-conda create --name netcdf
-conda activate netcdf
-conda install -c conda-forge ncl
-conda install -c conda-forge cdo
-conda install -c conda-forge nco
+singularity pull https://g-811a55.0f1d28.a567.data.globus.org/MET_tools/MET_tools_conda_netcdf.sif
 ```
 
 Dataframes for MET outputs and plotting routines based on these dataframes
-are implemented with the Conda environment `ipython`.  This environment can
-be created as follows:
+are implemented with the Conda environment `ipython`. This Singularity container 
+can be obtained by running the following:
 ```
-conda create --name ipython
-conda activate ipython
-conda install ipython
-conda install matplotlib
-conda install seaborn
+singularity pull https://g-811a55.0f1d28.a567.data.globus.org/MET_tools/MET_tools_conda_ipython.sif
 ```
+
+For reference on the package dependencies in which these containers were built from, 
+this repository includes the respective requirements.txt files. Two files were made 
+and used, one for the NetCDF environment, `netcdf_requirements.txt`, and one for the 
+iPython environment, `ipython_requirements.txt`.  
+
+For more information on how these containers were built and implemented into the scripts, 
+refer to the [Research Code Portability Tutorial repository](https://github.com/CW3E/Research-Code-Portability-Tutorial).
 
 ## Repository Organization
 Currently this repository has focused on developing batch processing routines for
@@ -66,3 +70,33 @@ module from the MET framework. Related scripts are included in the `Grid-Stat`
 subdirectory. Instructions on how to use these batch processing scripts
 are included in the README therein. New batch processing tools will be
 organized similarly for other MET modules as they are developed.
+
+## Known Issues
+With the current workflow having contained environments, there is an 
+ongoing issue involving the live plotting ability of the Python scripts. 
+With the Singularity containers, generated plots can be viewed through 
+the GUI desktop option on Comet. Live plotting is available, however, for 
+the previous uncontained environments. If this is preferred, the 
+environment can be established by the commands provided in the following section.
+
+### Conda Environments
+While the containerized conda environments needed for this workflow are provided, users 
+can establish the environments manually if preferred. Sofware environments that are not 
+containerized are managed by creating appropriate [Conda environments](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html).
+The NetCDF environment can be created as follows:
+```
+conda create --name netcdf
+conda activate netcdf
+conda install -c conda-forge ncl
+conda install -c conda-forge cdo
+conda install -c conda-forge nco
+```
+
+The iPython environment can be created as follows:
+```
+conda create --name ipython
+conda activate ipython
+conda install ipython
+conda install matplotlib
+conda install seaborn
+```

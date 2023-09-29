@@ -39,30 +39,11 @@
 # uncoment to make verbose for debugging
 #set -x
 
-# Root directory for MET-tools git clone
-USR_HME=/cw3e/mead/projects/cwp106/scratch/cgrudzien/MET-tools
-
-# Root directory for MET singularity image
-SOFT_ROOT=/cw3e/mead/projects/cwp106/scratch/cgrudzien/SOFT_ROOT/MET_CODE
-
-# MET singularity image path
-MET_SNG=${SOFT_ROOT}/met-10.0.1.simg
-
-# Root directory for landmasks, lat-lon files, and reference StageIV grid
-MSK_ROOT=${USR_HME}/polygons
-
-# Path to file with list of landmasks for verification regions
-MSKS=${MSK_ROOT}/mask-lists/West_Coast_MaskList.txt
-            
+# Source the configuration file to define majority of required variables
+source pre_processing_config.sh
+          
 # Path to lat-lon text files for mask generation
 MSK_IN=${MSK_ROOT}/lat-lon
-
-# Output directory for landmasks
-MSK_OUT=${MSK_ROOT}/West_Coast_Masks
-
-# Define path to StageIV data product for reference verfication grid 
-# an arbitrary file with the correct grid is sufficient
-OBS_F_IN=StageIV_QPE_2019021500.nc
 
 #################################################################################
 # CHECK WORKFLOW PARAMETERS
@@ -129,7 +110,7 @@ if [ ! ${MSK_OUT} ]; then
   exit 1
 else
   cmd="mkdir -p ${MSK_OUT}"
-  printf "${cmd}\n"; eval ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 #################################################################################
@@ -138,7 +119,7 @@ fi
 # Set up singularity container with specific directory privileges
 cmd="singularity instance start -B ${MSK_ROOT}:/MSK_ROOT:ro,"
 cmd+="${MSK_IN}:/MSK_IN:ro,${MSK_OUT}:/MSK_OUT:rw ${MET_SNG} met1"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 while read msk; do
   # masks are recreated depending on the existence of files from previous analyses
@@ -150,7 +131,7 @@ while read msk; do
     -type poly \
     /MSK_IN/${msk}.txt \
     /MSK_OUT/${msk}_mask_regridded_with_StageIV.nc"
-    printf "${cmd}\n"; eval ${cmd}
+    printf "${cmd}\n"; eval "${cmd}"
   else
     # mask exists and is readable, skip this step
     msg="Land mask\n ${out_path}\n already exists in\n ${MSK_OUT}\n "
@@ -161,7 +142,7 @@ done<${MSKS}
 
 # End MET Process and singularity stop
 cmd="singularity instance stop met1"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "
 msg+="outputs at MSK_OUT:\n ${MSK_OUT}\n"

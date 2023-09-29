@@ -43,6 +43,7 @@ from datetime import datetime as dt
 from datetime import timedelta
 import multiprocessing 
 from multiprocessing import Pool
+import post_processing_config as config
 
 ##################################################################################
 # SET GLOBAL PARAMETERS 
@@ -53,35 +54,18 @@ CTR_FLWS = [
             'NRT_ecmwf',
            ]
 
-# define the case-wise sub-directory
-CSE = 'DeepDive'
-
 # verification domain for the forecast data                                                                           
 GRDS = [
         'd01',
         'd02',
         'd03',
-       ]
-
-# starting date and zero hour of forecast cycles (string YYYYMMDDHH)
-STRT_DT = '2022121400'
-
-# final date and zero hour of data of forecast cycles (string YYYYMMDDHH)
-END_DT = '2023011800'
-
-# number of hours between zero hours for forecast data (string HH)
-CYC_INT = '24'
-
-# optionally define output prefix, set as empty string if not needed
-PRFXS = [
-         '',
-        ]
+       ]                                                           
 
 # root directory for gridstat outputs
-IN_ROOT = '/cw3e/mead/projects/cwp106/scratch/' + CSE
+IN_ROOT = '/cw3e/mead/projects/cwp106/scratch/' + config.CSE
 
 # root directory for processed pandas outputs
-OUT_ROOT = '/cw3e/mead/projects/cwp106/scratch/' + CSE
+OUT_ROOT = '/cw3e/mead/projects/cwp106/scratch/' + config.CSE
 
 ##################################################################################
 # Construct hyper-paramter array for batch processing gridstat data
@@ -92,28 +76,28 @@ STR_INDT = '    '
 # Execute the following lines when run as a script
 if __name__ == '__main__':
     # convert to date times
-    if len(STRT_DT) != 10:
-        print('ERROR: STRT_DT, ' + STRT_DT + ', is not in YYYYMMDDHH format.')
+    if len(config.STRT_DT) != 10:
+        print('ERROR: STRT_DT, ' + config.STRT_DT + ', is not in YYYYMMDDHH format.')
         sys.exit(1)
     else:
-        s_iso = STRT_DT[:4] + '-' + STRT_DT[4:6] + '-' + STRT_DT[6:8] +\
-                '_' + STRT_DT[8:]
+        s_iso = config.STRT_DT[:4] + '-' + config.STRT_DT[4:6] + '-' + config.STRT_DT[6:8] +\
+                '_' + config.STRT_DT[8:]
         strt_dt = dt.fromisoformat(s_iso)
     
-    if len(END_DT) != 10:
-        print('ERROR: END_DT, ' + END_DT +\
+    if len(config.END_DT) != 10:
+        print('ERROR: END_DT, ' + config.END_DT +\
                 ', is not in YYYYMMDDHH format.')
         sys.exit(1)
     else:
-        e_iso = END_DT[:4] + '-' + END_DT[4:6] + '-' + END_DT[6:8] +\
-                '_' + END_DT[8:]
+        e_iso = config.END_DT[:4] + '-' + config.END_DT[4:6] + '-' + config.END_DT[6:8] +\
+                '_' + config.END_DT[8:]
         end_dt = dt.fromisoformat(e_iso)
     
-    if len(CYC_INT) != 2:
-        print('ERROR: CYC_INT, ' + CYC_INT + ', is not in HH format.')
+    if len(config.CYC_INT) != 2:
+        print('ERROR: CYC_INT, ' + config.CYC_INT + ', is not in HH format.')
         sys.exit(1)
     else:
-        cyc_int = CYC_INT + 'H'
+        cyc_int = config.CYC_INT + 'H'
     
     # container for map
     CNFGS = []
@@ -126,7 +110,7 @@ if __name__ == '__main__':
         anl_strng = anl_dt.strftime('%Y%m%d%H')
         for CTR_FLW in CTR_FLWS:
             for GRD in GRDS:
-                for PRFX in PRFXS:
+                for PRFX in config.PRFXS:
                     print(STR_INDT + anl_strng + ' ' + PRFX + ' ' + CTR_FLW +' ' + GRD)
                     # storage for configuration settings as arguments of proc_gridstat
                     # the function definition and role of these arguments are in the

@@ -2,10 +2,10 @@
 #SBATCH -p shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 00:30:00
+#SBATCH -t 05:00:00
 #SBATCH -J batch_gridstat
 #SBATCH --export=ALL
-#SBATCH --array=0
+#SBATCH --array=0-5
 ##################################################################################
 # Description
 ##################################################################################
@@ -96,7 +96,7 @@ for (( i = 0; i < ${num_grds}; i++ )); do
     # subdirectory of cycle-named directory where output is to be saved
     cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/${GRD}\")"
     printf "${cmd}\n"; eval "${cmd}"
-
+    
     cmd="cfgs+=( \"${cfg_indx}\" )"
     printf "${cmd}\n"; eval "${cmd}"
 

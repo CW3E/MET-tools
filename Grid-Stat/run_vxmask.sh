@@ -142,7 +142,7 @@ done<${MSKS}
 
 # End MET Process and singularity stop
 cmd="singularity instance stop met1"
-printf "${cmd}\n"; eval ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "
 msg+="outputs at MSK_OUT:\n ${MSK_OUT}\n"

@@ -10,7 +10,7 @@ MET, and then to post-process the MET Grid-Stat ASCII text file outputs into
 [Pandas](https://pandas.pydata.org/) data frames for plotting and analysis in
 the [ipython conda environment](https://github.com/CW3E/MET-tools#conda-environments).
 
-## Processing configuration files
+## Workflow configuration files
 For this workflow, environmental variables have been defined in two 
 configuration files: `pre_processing_config.sh` for the shell scripts and 
 `post_processing_config.py` for the Python scripts. In these files, any shared variables
@@ -19,7 +19,7 @@ parameters are defined in the configuration file, with some exceptions for
 script-dependent variables (such as `IN_ROOT` or `OUT_ROOT`). These files 
 are divided into three sections for user efficiency:
 
-* Global parameters to be set                   &ndash; location for environmental variables that will need to be changed by the user before use.
+* Global parameters to be set                   &ndash; location for environmental variables that are user-dependent.
 * Global parameters that may need to change     &ndash; location for environmental variables that may need to be changed by the user before use depending on the desired output.
 * Global parameters that won't change           &ndash; location for environmental variables that probably won't need to be changed by the user before use.
 

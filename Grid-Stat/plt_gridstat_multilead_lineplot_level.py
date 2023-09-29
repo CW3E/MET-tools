@@ -119,7 +119,7 @@ else:
 # generate the date range and forecast leads for the analysis, parse binary files
 # for relevant fields
 plt_data = {}
-fcst_zhs = pd.date_range(start=fcst_strt, end=fcst_end, freq=cyc_int).to_pydatetime()
+fcst_zhs = pd.date_range(start=strt_dt, end=end_dt, freq=cyc_int).to_pydatetime()
 
 fcst_leads = []
 for ctr_flw in config.CTR_FLWS:
@@ -203,7 +203,7 @@ for ctr_flw in config.CTR_FLWS:
                 stat_data = stat_data.loc[(stat_data['VX_MASK'] == config.LND_MSK)]
                 stat_data = stat_data.loc[(stat_data['FCST_THRESH'] == config.LEV)]
                 stat_data = stat_data.loc[(stat_data['FCST_VALID_END'] ==
-                                           anl_dt.strftime('%Y%m%d_%H%M%S'))]
+                                           valid_dt.strftime('%Y%m%d_%H%M%S'))]
 
                 # check if there is data for this configuration and these fields
                 if not stat_data.empty:

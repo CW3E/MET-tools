@@ -37,17 +37,6 @@ for cmd in "$@"; do
   printf " ${cmd}\n"; eval "${cmd}"
 done
 
-# initialize conda environment for netcdf
-cmd="conda init bash"
-printf "${cmd}\n"; eval ${cmd}
-
-cmd="source /home/cgrudzien/.bashrc"
-printf "${cmd}\n"; eval ${cmd}
-
-cmd="conda activate netcdf"
-printf "${cmd}\n"; eval ${cmd}
-
-
 #################################################################################
 # make checks for workflow parameters
 

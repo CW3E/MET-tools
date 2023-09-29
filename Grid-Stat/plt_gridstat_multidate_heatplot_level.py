@@ -165,7 +165,7 @@ else:
     
 # generate the date range and forecast leads for the analysis, parse binary files
 # for relevant fields
-fcst_zhs = pd.date_range(start=fcst_strt, end=fcst_end, freq=cyc_int).to_pydatetime()
+fcst_zhs = pd.date_range(start=strt_dt, end=end_dt, freq=cyc_int).to_pydatetime()
 
 fcst_leads = []
 # generate the date range for the analyses

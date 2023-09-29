@@ -15,7 +15,7 @@
 # License Statement
 ##################################################################################
 #
-# Copyright 2023 Colin Grudzien, cgrudzien@ucsd.edu
+# Copyright 2023 CW3E, Contact Colin Grudzien cgrudzien@ucsd.edu
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ GRDS = [
         'd01',
         'd02',
         'd03',
-       ]
+       ]                                                           
 
 # root directory for gridstat outputs
 IN_ROOT = '/cw3e/mead/projects/cwp106/scratch/' + config.CSE
@@ -133,7 +133,7 @@ if __name__ == '__main__':
                     CNFG.append('/' + CTR_FLW)
                     
                     # path to gridstat outputs from cycle directory
-                    CNFG.append('/' + GRD)
+                    CNFG.append('')
         
                     # path to pandas output directories from OUT_ROOT
                     CNFG.append('/' + CTR_FLW)
@@ -142,7 +142,7 @@ if __name__ == '__main__':
                     CNFGS.append(CNFG)
 
 ##################################################################################
-# Process data routine
+# Data processing routines
 ##################################################################################
 #  function for multiprocessing parameter map
 def proc_gridstat(cnfg):
@@ -191,10 +191,19 @@ def proc_gridstat(cnfg):
         # define the gridstat files to open based on the analysis date
         in_paths = in_data_root + '/' + anl_strng + in_dt_subdir  +\
                    '/grid_stat' + pfx + '*.txt'
+
+        print('Loading grid_stat ASCII outputs from in_paths:', file=log_f)
+        print(STR_INDT + in_paths, file=log_f)
     
         # define the output binary file for pickled dataframe per date
-        out_path = out_data_root + '/' + anl_strng + '/grid_stats' + pfx +\
-                   grd + '_' + anl_strng + '.bin'
+        out_dir = out_data_root + '/' + anl_strng
+        out_path = out_dir + '/grid_stats' + pfx + grd + '_' + anl_strng + '.bin'
+        os.system('mkdir -p ' + out_dir)
+
+        print('Writing Pandas dataframe pickled binary files to out_path:',
+                file=log_f)
+        print(STR_INDT + out_path, file=log_f)
+
         # loop sorted grid_stat_pfx* files, sorting compares first on the
         # length of lead time for non left-padded values
         in_paths = sorted(glob.glob(in_paths),

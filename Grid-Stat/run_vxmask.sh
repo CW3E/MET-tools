@@ -2,7 +2,7 @@
 #SBATCH -p shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 06:00:00
+#SBATCH -t 01:00:00
 #SBATCH -J run_vxmask
 #SBATCH --export=ALL
 #################################################################################
@@ -19,7 +19,7 @@
 #################################################################################
 # License Statement
 #################################################################################
-# Copyright 2023 Colin Grudzien, cgrudzien@ucsd.edu
+# Copyright 2023 CW3E, Contact Colin Grudzien cgrudzien@ucsd.edu
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -139,6 +139,10 @@ while read msk; do
     printf "${msg}"
   fi
 done<${MSKS}
+
+# End MET Process and singularity stop
+cmd="singularity instance stop met1"
+printf "${cmd}\n"; eval ${cmd}
 
 msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "
 msg+="outputs at MSK_OUT:\n ${MSK_OUT}\n"

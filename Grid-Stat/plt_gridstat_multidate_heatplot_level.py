@@ -14,7 +14,7 @@
 # License Statement
 ##################################################################################
 #
-# Copyright 2023 Colin Grudzien, cgrudzien@ucsd.edu
+# Copyright 2023 CW3E, Contact Colin Grudzien cgrudzien@ucsd.edu
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -118,6 +118,7 @@ OUT_PATH = OUT_DIR + '/' + config.ANL_STRT + '_' + config.ANL_END + '_FCST_' + c
 # Make data checks and determine all lead times over all files
 ##################################################################################
 # convert to date times
+
 if len(config.STRT_DT) != 10:
     print('ERROR: STRT_DT, ' + config.STRT_DT + ', is not in YYYYMMDDHH format.')
     sys.exit(1)
@@ -164,7 +165,7 @@ else:
     
 # generate the date range and forecast leads for the analysis, parse binary files
 # for relevant fields
-fcst_zhs = pd.date_range(start=strt_dt, end=end_dt, freq=cyc_int).to_pydatetime()
+fcst_zhs = pd.date_range(start=fcst_strt, end=fcst_end, freq=cyc_int).to_pydatetime()
 
 fcst_leads = []
 # generate the date range for the analyses

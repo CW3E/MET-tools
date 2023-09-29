@@ -14,7 +14,7 @@
 #################################################################################
 # License Statement
 #################################################################################
-# Copyright 2023 Colin Grudzien, cgrudzien@ucsd.edu
+# Copyright 2023 CW3E, Contact Colin Grudzien cgrudzien@ucsd.edu
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -36,6 +36,17 @@ printf "Loading configuration parameters:\n"
 for cmd in "$@"; do
   printf " ${cmd}\n"; eval "${cmd}"
 done
+
+# initialize conda environment for netcdf
+cmd="conda init bash"
+printf "${cmd}\n"; eval ${cmd}
+
+cmd="source /home/cgrudzien/.bashrc"
+printf "${cmd}\n"; eval ${cmd}
+
+cmd="conda activate netcdf"
+printf "${cmd}\n"; eval ${cmd}
+
 
 #################################################################################
 # make checks for workflow parameters

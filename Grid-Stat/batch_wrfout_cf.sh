@@ -2,10 +2,10 @@
 #SBATCH -p shared
 #SBATCH --nodes=1
 #SBATCH --mem=120G
-#SBATCH -t 02:30:00
+#SBATCH -t 00:30:00
 #SBATCH -J batch_wrfout_cf
 #SBATCH --export=ALL
-#SBATCH --array=0-5
+#SBATCH --array=0
 ##################################################################################
 # Description
 ##################################################################################
@@ -18,7 +18,7 @@
 # License Statement
 ##################################################################################
 #
-# Copyright 2023 Colin Grudzien, cgrudzien@ucsd.edu
+# Copyright 2023 CW3E, Contact Colin Grudzien cgrudzien@ucsd.edu
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -82,6 +82,7 @@ for (( i = 0; i < ${num_grds}; i++ )); do
 
     # subdirectory of cycle-named directory containing data to be analyzed,
     # includes leading '/', left as blank string if not needed
+
     cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/wrfout\")"
     printf "${cmd}\n"; eval "${cmd}"
     

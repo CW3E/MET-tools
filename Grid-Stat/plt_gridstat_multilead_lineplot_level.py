@@ -15,7 +15,7 @@
 # License Statement
 ##################################################################################
 #
-# Copyright 2023 Colin Grudzien, cgrudzien@ucsd.edu
+# Copyright 2023 CW3E, Contact Colin Grudzien cgrudzien@ucsd.edu
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -119,7 +119,7 @@ else:
 # generate the date range and forecast leads for the analysis, parse binary files
 # for relevant fields
 plt_data = {}
-fcst_zhs = pd.date_range(start=strt_dt, end=end_dt, freq=cyc_int).to_pydatetime()
+fcst_zhs = pd.date_range(start=fcst_strt, end=fcst_end, freq=cyc_int).to_pydatetime()
 
 fcst_leads = []
 for ctr_flw in config.CTR_FLWS:
@@ -138,7 +138,7 @@ for ctr_flw in config.CTR_FLWS:
             else:
                 grd = ''
 
-            # create label based on configuration
+           # create label based on configuration
             split_string = ctr_flw.split('_')
             split_len = len(split_string)
             idx_len = len(config.LAB_IDX)
@@ -203,7 +203,7 @@ for ctr_flw in config.CTR_FLWS:
                 stat_data = stat_data.loc[(stat_data['VX_MASK'] == config.LND_MSK)]
                 stat_data = stat_data.loc[(stat_data['FCST_THRESH'] == config.LEV)]
                 stat_data = stat_data.loc[(stat_data['FCST_VALID_END'] ==
-                                           valid_dt.strftime('%Y%m%d_%H%M%S'))]
+                                           anl_dt.strftime('%Y%m%d_%H%M%S'))]
 
                 # check if there is data for this configuration and these fields
                 if not stat_data.empty:
@@ -265,6 +265,29 @@ for ctr_flw in config.CTR_FLWS:
             else:
                 grd = ''
             
+            # create label based on configuration
+            split_string = ctr_flw.split('_')
+            split_len = len(split_string)
+            idx_len = len(LAB_IDX)
+            line_lab = prfx
+            lab_len = min(idx_len, split_len)
+            if lab_len > 1:
+                for i_ll in range(lab_len, 1, -1):
+                    i_li = LAB_IDX[-i_ll]
+                    line_lab += split_string[i_li] + '_'
+    
+                i_li = LAB_IDX[-1]
+                line_lab += split_string[i_li]
+    
+            else:
+                line_lab += split_string[0]
+
+            if pfx:
+                line_lab += pfx
+    
+            if GRD_LAB:
+                    line_lab += grd
+
             key = ctr_flw + pfx + grd 
             try:
                 data = plt_data[key]
@@ -318,7 +341,7 @@ for ctr_flw in config.CTR_FLWS:
     
             # add the line type to the legend
             line_list.append(l)
-            line_labs.append(key)
+            line_labs.append(line_lab)
 
 # set colors and markers
 line_count = len(line_list)

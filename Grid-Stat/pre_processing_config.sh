@@ -13,17 +13,17 @@
 ##################################################################################
 
 # Root directory for MET-tools git clone
-export USR_HME=/home/jlconti/MET-tools
+export USR_HME=/expanse/lustre/projects/ddp181/cgrudzien/JEDI-MPAS-Common-Case/MET-tools
 
 # Refine the case-wise sub-directory for path names, leave as empty string if not needed
-export CSE=jlconti
+export CSE=DeepDive
 
 # Root directory for MET singularity image
-export SOFT_ROOT=/home/jlconti
+export SOFT_ROOT=/expanse/lustre/projects/ddp181/cgrudzien/SOFT_ROOT
 
 # Define first and last date time for forecast initialization (YYYYMMDDHH)
-export STRT_DT=2022123100
-export END_DT=2023011800
+export STRT_DT=2022122300
+export STOP_DT=2022122300
 
 # Array of control flow names to be processed
 CTR_FLWS=( 
@@ -35,7 +35,6 @@ CTR_FLWS=(
 GRDS=( 
       "d01"
       "d02"
-      "d03"
      )
 
 # Specify thresholds levels for verification
@@ -51,13 +50,12 @@ INT_MTHDS=(
 INT_WDTHS=( 
            "3"
            "9"
-           "27"
           )
 
 # Singularity Container Variables for NetCDF Environment
-export NCKS_CMD="singularity exec --bind /cw3e:/cw3e,/scratch:/scratch /cw3e/mead/projects/cwp106/scratch/MET_tools_conda_netcdf.sif ncks"
-export NCL_CMD="singularity exec --bind /cw3e:/cw3e,/scratch:/scratch /cw3e/mead/projects/cwp106/scratch/MET_tools_conda_netcdf.sif ncl"
-export CDO_CMD="singularity exec --bind /cw3e:/cw3e,/scratch:/scratch /cw3e/mead/projects/cwp106/scratch/MET_tools_conda_netcdf.sif cdo"
+export NCKS_CMD="singularity exec --bind /cw3e:/cw3e,/scratch:/scratch ${SOFT_ROOT}/MET_tools_conda_netcdf.sif ncks"
+export NCL_CMD="singularity exec --bind /cw3e:/cw3e,/scratch:/scratch  ${SOFT_ROOT}/MET_tools_conda_netcdf.sif ncl"
+export CDO_CMD="singularity exec --bind /cw3e:/cw3e,/scratch:/scratch  ${SOFT_ROOT}/MET_tools_conda_netcdf.sif cdo"
 
 ##################################################################################
 # GLOBAL PARAMETERS THAT MAY NEED TO CHANGE
@@ -105,7 +103,7 @@ export PRFX=""
 export TZ="GMT"
 
 # MET singularity image path
-export MET_SNG=${SOFT_ROOT}/met-10.0.1.simg
+export MET_SNG=${SOFT_ROOT}/met-10.0.1.sif
 
 # Root directory for landmasks, lat-lon files, and reference StageIV grid
 export MSK_ROOT=${USR_HME}/polygons
@@ -122,4 +120,3 @@ export OBS_F_IN=StageIV_QPE_2019021500.nc
 
 # Define the verification field
 export VRF_FLD=QPF
-

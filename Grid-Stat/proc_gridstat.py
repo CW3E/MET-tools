@@ -71,7 +71,7 @@ OUT_ROOT = '/cw3e/mead/projects/cwp106/scratch/' + config.CSE
 # Construct hyper-paramter array for batch processing gridstat data
 ##################################################################################
 # standard string indentation
-STR_INDT = '    '
+INDT = '    '
 
 # Execute the following lines when run as a script
 if __name__ == '__main__':
@@ -84,13 +84,13 @@ if __name__ == '__main__':
                 '_' + config.STRT_DT[8:]
         strt_dt = dt.fromisoformat(s_iso)
     
-    if len(config.END_DT) != 10:
-        print('ERROR: END_DT, ' + config.END_DT +\
+    if len(config.STOP_DT) != 10:
+        print('ERROR: STOP_DT, ' + config.STOP_DT +\
                 ', is not in YYYYMMDDHH format.')
         sys.exit(1)
     else:
-        e_iso = config.END_DT[:4] + '-' + config.END_DT[4:6] + '-' + config.END_DT[6:8] +\
-                '_' + config.END_DT[8:]
+        e_iso = config.STOP_DT[:4] + '-' + config.STOP_DT[4:6] + '-' + config.STOP_DT[6:8] +\
+                '_' + config.STOP_DT[8:]
         end_dt = dt.fromisoformat(e_iso)
     
     if len(config.CYC_INT) != 2:
@@ -111,7 +111,7 @@ if __name__ == '__main__':
         for CTR_FLW in CTR_FLWS:
             for GRD in GRDS:
                 for PRFX in config.PRFXS:
-                    print(STR_INDT + anl_strng + ' ' + PRFX + ' ' + CTR_FLW +' ' + GRD)
+                    print(INDT + anl_strng + ' ' + PRFX + ' ' + CTR_FLW +' ' + GRD)
                     # storage for configuration settings as arguments of proc_gridstat
                     # the function definition and role of these arguments are in the
                     # next section directly below
@@ -193,7 +193,7 @@ def proc_gridstat(cnfg):
                    '/grid_stat' + pfx + '*.txt'
 
         print('Loading grid_stat ASCII outputs from in_paths:', file=log_f)
-        print(STR_INDT + in_paths, file=log_f)
+        print(INDT + in_paths, file=log_f)
     
         # define the output binary file for pickled dataframe per date
         out_dir = out_data_root + '/' + anl_strng
@@ -202,7 +202,7 @@ def proc_gridstat(cnfg):
 
         print('Writing Pandas dataframe pickled binary files to out_path:',
                 file=log_f)
-        print(STR_INDT + out_path, file=log_f)
+        print(INDT + out_path, file=log_f)
 
         # loop sorted grid_stat_pfx* files, sorting compares first on the
         # length of lead time for non left-padded values
@@ -227,9 +227,9 @@ def proc_gridstat(cnfg):
                     tmp_dict = {}
                     df_indx = 1
     
-                    print(STR_INDT + 'Loading columns:', file=log_f)
+                    print(INDT + 'Loading columns:', file=log_f)
                     for col_name in cols:
-                        print(STR_INDT * 2 + col_name, file=log_f)
+                        print(INDT * 2 + col_name, file=log_f)
                         fname_df[col_name] = [] 
     
                     fname_df = pd.DataFrame.from_dict(fname_df,

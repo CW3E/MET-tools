@@ -1,7 +1,9 @@
 #!/bin/bash
-#SBATCH -p shared
+#SBATCH --account=ddp181
 #SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
 #SBATCH --mem=120G
+#SBATCH -p shared
 #SBATCH -t 02:30:00
 #SBATCH -J batch_wrfout_cf
 #SBATCH --export=ALL
@@ -42,10 +44,10 @@
 source pre_processing_config.sh
 
 # root directory for cycle time (YYYYMMDDHH) directories of WRF output files
-export IN_ROOT=/cw3e/mead/datasets/cw3e/NRT/2022-2023
+export IN_ROOT=${SIM_ROOT}/${CSE}
 
-# root directory for cycle time (YYYYMMDDHH) directories of cf-compliant script outputs
-export OUT_ROOT=/cw3e/mead/projects/cwp106/scratch/${CSE}
+# root directory for cycle time (YYYYMMDDHH) directories of cf-compliant outputs
+export OUT_ROOT=${VRF_ROOT}/${CSE}
 
 ##################################################################################
 # Contruct job array and environment for submission
@@ -56,45 +58,49 @@ export OUT_ROOT=/cw3e/mead/projects/cwp106/scratch/${CSE}
 # in the loops.
 cfgs=()
 
-num_grds=${#GRDS[@]}
 num_flws=${#CTR_FLWS[@]}
+num_mems=${#MEM_LIST[@]}
+num_grds=${#GRDS[@]}
 
 # NOTE: SLURM JOB ARRAY SHOULD HAVE INDICES CORRESPONDING TO EACH OF THE
 # CONFIGURATIONS DEFINED BELOW
-for (( i = 0; i < ${num_grds}; i++ )); do
-  for (( j = 0; j < ${num_flws}; j++ )); do
-    CTR_FLW=${CTR_FLWS[$j]}
-    GRD=${GRDS[$i]}
+for (( i_g = 0; i_g < ${num_grds}; i_g++ )); do
+  for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
+    for (( i_m = 0; i_m < ${num_mems}; i_m++ )); do
+      CTR_FLW=${CTR_FLWS[$i_f]}
+      GRD=${GRDS[$i_g]}
+      MEM=${MEM_LIST[$i_m]}
 
-    cfg_indx="cfg_${i}${j}"
-    cmd="${cfg_indx}=()"
-    printf "${cmd}\n"; eval "${cmd}"
+      cfg_indx="cfg_${i_g}${i_f}${i_m}"
+      cmd="${cfg_indx}=()"
+      printf "${cmd}\n"; eval "${cmd}"
 
-    cmd="${cfg_indx}+=(\"CTR_FLW=${CTR_FLW}\")"
-    printf "${cmd}\n"; eval "${cmd}"
+      cmd="${cfg_indx}+=(\"CTR_FLW=${CTR_FLW}\")"
+      printf "${cmd}\n"; eval "${cmd}"
 
-    cmd="${cfg_indx}+=(\"GRD=${GRD}\")"
-    printf "${cmd}\n"; eval "${cmd}"
+      cmd="${cfg_indx}+=(\"GRD=${GRD}\")"
+      printf "${cmd}\n"; eval "${cmd}"
 
-    # This path defines the location of each cycle directory relative to IN_ROOT
-    cmd="${cfg_indx}+=(\"IN_CYC_DIR=${IN_ROOT}/${CTR_FLW}\")"
-    printf "${cmd}\n"; eval "${cmd}"
+      # This path defines the location of each cycle directory relative to IN_ROOT
+      cmd="${cfg_indx}+=(\"IN_CYC_DIR=${IN_ROOT}/${CTR_FLW}\")"
+      printf "${cmd}\n"; eval "${cmd}"
 
-    # subdirectory of cycle-named directory containing data to be analyzed,
-    # includes leading '/', left as blank string if not needed
-    cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/wrfout\")"
-    printf "${cmd}\n"; eval "${cmd}"
-    
-    # This path defines the location of each cycle directory relative to OUT_ROOT
-    cmd="${cfg_indx}+=(\"OUT_CYC_DIR=${OUT_ROOT}/${CTR_FLW}\")"
-    printf "${cmd}\n"; eval "${cmd}"
+      # subdirectory of cycle-named directory containing data to be analyzed,
+      # includes leading '/', left as blank string if not needed
+      cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/wrf/ens_${MEM}\")"
+      printf "${cmd}\n"; eval "${cmd}"
+      
+      # This path defines the location of each cycle directory relative to OUT_ROOT
+      cmd="${cfg_indx}+=(\"OUT_CYC_DIR=${OUT_ROOT}/${CTR_FLW}\")"
+      printf "${cmd}\n"; eval "${cmd}"
 
-    # subdirectory of cycle-named directory where output is to be saved
-    cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/${GRD}\")"
-    printf "${cmd}\n"; eval "${cmd}"
+      # subdirectory of cycle-named directory where output is to be saved
+      cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/ens_${MEM}/${GRD}\")"
+      printf "${cmd}\n"; eval "${cmd}"
 
-    cmd="cfgs+=( \"${cfg_indx}\" )"
-    printf "${cmd}\n"; eval "${cmd}"
+      cmd="cfgs+=( \"${cfg_indx}\" )"
+      printf "${cmd}\n"; eval "${cmd}"
+    done
   done
 done
 

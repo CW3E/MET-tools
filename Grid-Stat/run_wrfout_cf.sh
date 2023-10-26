@@ -76,12 +76,12 @@ else
   strt_dt=`date -d "${strt_dt}"`
 fi
 
-# Convert END_DT from 'YYYYMMDDHH' format to end_dt Unix date format 
-if [ ${#END_DT} -ne 10 ]; then
-  printf "ERROR: \${END_DT} is not in YYYYMMDDHH format.\n"
+# Convert STOP_DT from 'YYYYMMDDHH' format to end_dt Unix date format 
+if [ ${#STOP_DT} -ne 10 ]; then
+  printf "ERROR: \${STOP_DT} is not in YYYYMMDDHH format.\n"
   exit 1
 else
-  end_dt="${END_DT:0:8} ${END_DT:8:2}"
+  end_dt="${STOP_DT:0:8} ${STOP_DT:8:2}"
   end_dt=`date -d "${end_dt}"`
 fi
 
@@ -155,6 +155,13 @@ else
   exit 1
 fi
 
+if [ ! -x ${NETCDF_TOOLS} ]; then
+  msg="NetCDF tools singularity image\n ${NETCDF_TOOLS}\n does not exist"
+  msg+=" or is not executable.\n"
+  printf "${msg}"
+  exit 1
+fi
+
 #################################################################################
 # Process data
 #################################################################################
@@ -183,38 +190,47 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
   else
     printf "Processing forecasts in\n ${in_dir}\n directory.\n"
   
+    # Set up singularity container with specific directory privileges
+    cmd="singularity instance start -B ${work_root}:/work_root:rw,"
+    cmd+="${in_dir}:/in_dir:ro,${script_dir}:/script_dir:ro "
+    cmd+="${NETCDF_TOOLS} NETCDF_TOOLS"
+    printf "${cmd}\n"; eval "${cmd}"
+
     # loop lead hours for forecast valid time for each initialization time
     for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INT} )); do
       # define valid times for accumulation    
-      (( anl_end_hr = lead_hr + cyc_hr ))
-      (( anl_strt_hr = anl_end_hr - ACC_INT ))
+      anl_end_hr=$(( ${lead_hr} + ${cyc_hr} ))
+      anl_strt_hr=$(( ${anl_end_hr} - ${ACC_INT} ))
       anl_end=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_end_hr} hours"`
       anl_strt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_strt_hr} hours"`
 
       # set input file names
-      file_1="${in_dir}/wrfout_${GRD}_${anl_strt}"
-      file_2="${in_dir}/wrfout_${GRD}_${anl_end}"
+      file_1="wrfout_${GRD}_${anl_strt}"
+      file_2="wrfout_${GRD}_${anl_end}"
       
       # set output file name
-      output_file="wrfcf_${GRD}_${anl_strt}_to_${anl_end}.nc"
-      out_name="${work_root}/${output_file}"
+      out_name="/work_dir/wrfcf_${GRD}_${anl_strt}_to_${anl_end}.nc"
     
-      if [[ -r ${file_1} && -r ${file_2} ]]; then
-        cmd="${NCL_CMD} 'file_in=\"${file_2}\"' "
-        cmd+="'file_prev=\"${file_1}\"' " 
-        cmd+="'file_out=\"${out_name}\"' wrfout_to_cf.ncl "
+      if [[ -r ${in_dir}/${file_1} && -r ${in_dir}/${file_2} ]]; then
+        cmd="singularity exec instance://NETCDF_TOOLS \
+        ncl 'file_in=\"/in_dir/${file_2}\"' \
+        'file_prev=\"/in_dir/${file_1}\"' \
+        'file_out=\"${out_name}\"' /script_dir/wrfout_to_cf.ncl "
         printf "${cmd}\n"; eval "${cmd}"
 
         if [ ${RGRD} = TRUE ]; then
           # regrids to lat-lon from native grid with CDO
-          cmd="${CDO_CMD} -f nc4 sellonlatbox,${lon1},${lon2},${lat1},${lat2} "
-          cmd+="-remapbil,global_${gres} "
-          cmd+="-selname,precip,precip_bkt,IVT,IVTU,IVTV,IWV "
-          cmd+="${out_name} ${out_name}_tmp"
+          cmd="singularity exec instance://NETCDF_TOOLS \
+          cdo -f nc4 sellonlatbox,${lon1},${lon2},${lat1},${lat2} \
+          -remapbil,global_${gres} \
+          -selname,precip,precip_bkt,IVT,IVTU,IVTV,IWV \
+          ${out_name} ${out_name}_tmp"
           printf "${cmd}\n"; eval "${cmd}"
 
           # Adds forecast_reference_time back in from first output
-          cmd="${NCKS_CMD} -A -v forecast_reference_time ${out_name} ${out_name}_tmp"
+          cmd="singularity exec instance://NETCDF_TOOLS \
+          ncks -A -v forecast_reference_time \
+          ${out_name} ${out_name}_tmp"
           printf "${cmd}\n"; eval "${cmd}"
 
           # removes temporary data with regridded cf compliant outputs
@@ -228,6 +244,10 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
         printf "${msg}"
       fi
     done
+    # End MET Process and singularity stop
+    cmd="singularity instance stop NETCDF_TOOLS"
+    printf "${cmd}\n"; eval "${cmd}"
+
   fi
 done
 

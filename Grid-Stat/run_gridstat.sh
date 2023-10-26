@@ -249,8 +249,8 @@ if [ ! -d ${DATA_ROOT} ]; then
   exit 1
 fi
 
-if [ ! -x ${MET_SNG} ]; then
-  msg="MET singularity image\n ${MET_SNG}\n does not exist or is not executable.\n"
+if [ ! -x ${MET} ]; then
+  msg="MET singularity image\n ${MET}\n does not exist or is not executable.\n"
   printf "${msg}"
   exit 1
 fi
@@ -319,7 +319,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
     cmd="singularity instance start -B ${work_root}:/work_root:rw,"
     cmd+="${DATA_ROOT}:/DATA_ROOT:ro,${MSK_IN}:/MSK_IN:ro,"
     cmd+="${in_dir}:/in_dir:ro,${script_dir}:/script_dir:ro "
-    cmd+="${MET_SNG} met1"
+    cmd+="${MET} met1"
     printf "${cmd}\n"; eval "${cmd}"
 
     if [[ ${CMP_ACC} = "TRUE" ]]; then

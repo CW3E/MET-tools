@@ -41,8 +41,8 @@
 # Source the configuration file to define majority of required variables
 source pre_processing_config.sh
            
-# Root directory of regridded .nc landmasks on StageIV domain
-export MSK_IN=${MSK_ROOT}/NRT_Masks
+# Compute accumulation from cf file, TRUE or FALSE
+export CMP_ACC=FALSE
 
 # root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
 export IN_ROOT=/cw3e/mead/projects/cwp106/scratch/${CSE}

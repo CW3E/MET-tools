@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --account=ddp181
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
+#SBATCH --ntasks-per-node=16
 #SBATCH --mem=120G
 #SBATCH -p shared
 #SBATCH -t 02:30:00
 #SBATCH -J batch_wrfout_cf
 #SBATCH --export=ALL
-#SBATCH --array=0-5
+#SBATCH --array=0-11
 ##################################################################################
 # Description
 ##################################################################################

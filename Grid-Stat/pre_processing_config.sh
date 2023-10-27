@@ -52,6 +52,9 @@ export MEM_LIST=(
                  "00"
                  "01"
                  "02"
+                 "03"
+                 "04"
+                 "05"
                 )
 
 # Model grid / domain to be processed

@@ -47,9 +47,9 @@ elif [ ! -d ${USR_HME} ]; then
   printf "ERROR: MET-tools clone directory\n ${USR_HME}\n does not exist.\n"
   exit 1
 else
-  script_dir=${USR_HME}/Grid-Stat
-  if [ ! -d ${script_dir} ]; then
-    printf "ERROR: Grid-Stat script directory\n ${script_dir}\n does not exist.\n"
+  scrpt_dir=${USR_HME}/Grid-Stat
+  if [ ! -d ${scrpt_dir} ]; then
+    printf "ERROR: Grid-Stat script directory\n ${scrpt_dir}\n does not exist.\n"
     exit 1
   fi
 fi
@@ -258,8 +258,8 @@ if [ ! -x ${MET} ]; then
   exit 1
 fi
 
-if [ ! -r ${script_dir}/GridStatConfigTemplate ]; then
-  msg="GridStatConfig template \n ${script_dir}/GridStatConfigTemplate\n"
+if [ ! -r ${scrpt_dir}/GridStatConfigTemplate ]; then
+  msg="GridStatConfig template \n ${scrpt_dir}/GridStatConfigTemplate\n"
   msg+=" does not exist or is not executable.\n"
   printf "${msg}"
   exit 1
@@ -301,6 +301,13 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
     line_count=$(( ${line_count} + 1 ))
   done <${MSK_LST}
 
+  # Define directory privileges for singularity exec
+  met="singularity exec -B ${wrk_dir}:/wrk_dir:rw,"
+  met+="${STC_ROOT}:/STC_ROOT:ro,${MSK_GRDS}:/MSK_GRDS:ro,"
+  met+="${in_dir}:/in_dir:ro,${scrpt_dir}:/scrpt_dir:ro "
+  met+="${MET}"
+  printf "${cmd}\n"; eval "${cmd}"
+
   # loop lead hours for forecast valid time for each initialization time
   for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INT} )); do
     # define valid times for accumulation    
@@ -309,24 +316,17 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
     anl_strt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_strt_hr} hours"`
     anl_stop=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_stop_hr} hours"`
 
-    valid_Y=${anl_stop:0:4}
-    valid_m=${anl_stop:5:2}
-    valid_D=${anl_stop:8:2}
-    valid_H=${anl_stop:11:2}
+    vld_Y=${anl_stop:0:4}
+    vld_m=${anl_stop:5:2}
+    vld_d=${anl_stop:8:2}
+    vld_H=${anl_stop:11:2}
     
     # forecast file name based on forecast initialization and lead
     pdd_hr=`printf %03d $(( 10#${lead_hr} ))`
-    for_f_in=${CTR_FLW}_${ACC_INT}${VRF_FLD}_${dirstr}_F${pdd_hr}.nc
+    for_in=${CTR_FLW}_${ACC_INT}${VRF_FLD}_${dirstr}_F${pdd_hr}.nc
 
-    # obs file defined in terms of valid time
-    obs_f_in=StageIV_QPE_${valid_Y}${valid_m}${valid_D}${valid_H}.nc
-
-    # Set up singularity container with specific directory privileges
-    cmd="singularity instance start -B ${wrk_dir}:/wrk_dir:rw,"
-    cmd+="${STC_ROOT}:/STC_ROOT:ro,${MSK_GRDS}:/MSK_GRDS:ro,"
-    cmd+="${in_dir}:/in_dir:ro,${script_dir}:/script_dir:ro "
-    cmd+="${MET} MET"
-    printf "${cmd}\n"; eval "${cmd}"
+    # obs file defined in terms of vld time
+    obs_in=StageIV_QPE_${vld_Y}${vld_m}${vld_d}${vld_H}.nc
 
     if [[ ${CMP_ACC} = "TRUE" ]]; then
       # check for input file based on output from run_wrfout_cf.sh
@@ -334,14 +334,14 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
         # Set accumulation initialization string
         init_Y=${dirstr:0:4}
         init_m=${dirstr:4:2}
-        init_D=${dirstr:6:2}
+        init_d=${dirstr:6:2}
         init_H=${dirstr:8:2}
 
         # Combine precip to accumulation period 
-        cmd="singularity exec instance://MET pcp_combine \
-        -sum ${init_Y}${init_m}${init_D}_${init_H}0000 ${ACC_INT} \
-        ${valid_Y}${valid_m}${valid_D}_${valid_H}0000 ${ACC_INT} \
-        /wrk_dir/${prfx}${for_f_in} \
+        cmd="${met} pcp_combine \
+        -sum ${init_Y}${init_m}${init_d}_${init_H}0000 ${ACC_INT} \
+        ${vld_Y}${vld_m}${vld_d}_${vld_H}0000 ${ACC_INT} \
+        /wrk_dir/${prfx}${for_in} \
         -field 'name=\"precip_bkt\"; level=\"(*,*,*)\";' -name \"${VRF_FLD}_${ACC_INT}hr\" \
         -pcpdir /in_dir \
         -pcprx \"wrfcf_${GRD}_${anl_strt}_to_${anl_stop}.nc\" "
@@ -355,21 +355,21 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
       fi
     else
       # copy the preprocessed data to the working directory from the data root
-      in_path="${in_dir}/${for_f_in}"
+      in_path="${in_dir}/${for_in}"
       if [ -r ${in_path} ]; then
-        cmd="cp -L ${in_path} ${wrk_dir}/${prfx}${for_f_in}"
+        cmd="cp -L ${in_path} ${wrk_dir}/${prfx}${for_in}"
         printf "${cmd}\n"; eval "${cmd}"
       else
         printf "Source file\n ${in_path}\n not found.\n"
       fi
     fi
     
-    if [ -r ${wrk_dir}/${prfx}${for_f_in} ]; then
-      if [ -r ${STC_ROOT}/${obs_f_in} ]; then
+    if [ -r ${wrk_dir}/${prfx}${for_in} ]; then
+      if [ -r ${STC_ROOT}/${obs_in} ]; then
         # update GridStatConfigTemplate archiving file in working directory
         # this remains unchanged on inner loop
         if [ ! -r ${wrk_dir}/${prfx}GridStatConfig ]; then
-          cat ${script_dir}/GridStatConfigTemplate \
+          cat ${scrpt_dir}/GridStatConfigTemplate \
             | sed "s/INT_MTHD/method = ${INT_MTHD}/" \
             | sed "s/INT_WDTH/width = ${INT_WDTH}/" \
             | sed "s/RNK_CRR/rank_corr_flag      = ${RNK_CRR}/" \
@@ -384,33 +384,29 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
         fi
 
         # Run gridstat
-        cmd="singularity exec instance://MET grid_stat -v 10 \
-        /wrk_dir/${prfx}${for_f_in} \
-        /STC_ROOT/${obs_f_in} \
+        cmd="${met} grid_stat -v 10 \
+        /wrk_dir/${prfx}${for_in} \
+        /STC_ROOT/${obs_in} \
         /wrk_dir/${prfx}GridStatConfig \
         -outdir /wrk_dir"
         printf "${cmd}\n"; eval "${cmd}"
         
       else
-        msg="Observation verification file\n ${STC_ROOT}/${obs_f_in}\n is not "
+        msg="Observation verification file\n ${STC_ROOT}/${obs_in}\n is not "
         msg+=" readable or does not exist, skipping grid_stat for forecast "
         msg+="initialization ${dirstr}, forecast hour ${lead_hr}.\n"
         printf "${msg}"
       fi
 
     else
-      msg="gridstat input file\n ${wrk_dir}/${prfx}${for_f_in}\n is not readable " 
+      msg="gridstat input file\n ${wrk_dir}/${prfx}${for_in}\n is not readable " 
       msg+=" or does not exist, skipping grid_stat for forecast initialization "
       msg+="${dirstr}, forecast hour ${lead_hr}.\n"
       printf "${msg}"
     fi
 
-    # End MET Process and singularity stop
-    cmd="singularity instance stop MET"
-    printf "${cmd}\n"; eval "${cmd}"
-
     # clean up working directory from accumulation time
-    cmd="rm -f ${wrk_dir}/${prfx}${for_f_in}"
+    cmd="rm -f ${wrk_dir}/${prfx}${for_in}"
     printf "${cmd}\n"; eval "${cmd}"
   done
 

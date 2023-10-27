@@ -48,9 +48,9 @@ elif [ ! -d ${USR_HME} ]; then
   printf "ERROR: MET-tools clone directory\n ${USR_HME}\n does not exist.\n"
   exit 1
 else
-  script_dir=${USR_HME}/Grid-Stat
-  if [ ! -d ${script_dir} ]; then
-    printf "ERROR: Grid-Stat script directory\n ${script_dir}\n does not exist.\n"
+  scrpt_dir=${USR_HME}/Grid-Stat
+  if [ ! -d ${scrpt_dir} ]; then
+    printf "ERROR: Grid-Stat script directory\n ${scrpt_dir}\n does not exist.\n"
     exit 1
   fi
 fi
@@ -162,8 +162,8 @@ if [ ! -x ${NETCDF_TOOLS} ]; then
   exit 1
 fi
 
-if [ ! -x ${script_dir}/wrfout_to_cf.ncl ]; then
-  msg="Auxiliary script\n ${script_dir}/wrfout_to_cf.ncl\n does not exist"
+if [ ! -x ${scrpt_dir}/wrfout_to_cf.ncl ]; then
+  msg="Auxiliary script\n ${scrpt_dir}/wrfout_to_cf.ncl\n does not exist"
   msg+=" or is not executable.\n"
   printf "${msg}"
   exit 1
@@ -193,11 +193,10 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
   else
     printf "Processing forecasts in\n ${in_dir}\n directory.\n"
   
-    # Set up singularity container with specific directory privileges
-    cmd="singularity instance start -B ${wrk_dir}:/wrk_dir:rw,"
-    cmd+="${in_dir}:/in_dir:ro,${script_dir}:/script_dir:ro "
-    cmd+="${NETCDF_TOOLS} NETCDF_TOOLS"
-    printf "${cmd}\n"; eval "${cmd}"
+    # Define directory privileges for singularity exec
+    netcdf_tools="singularity exec -B ${wrk_dir}:/wrk_dir:rw,"
+    netcdf_tools+="${in_dir}:/in_dir:ro,${scrpt_dir}:/scrpt_dir:ro "
+    netcdf_tools+="${NETCDF_TOOLS} "
 
     # loop lead hours for forecast valid time for each initialization time
     for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INT} )); do
@@ -208,46 +207,43 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
       anl_stop=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_stop_hr} hours"`
 
       # set input file names
-      file_1="wrfout_${GRD}_${anl_strt}"
-      file_2="wrfout_${GRD}_${anl_stop}"
+      f_pr="wrfout_${GRD}_${anl_strt}"
+      f_in="wrfout_${GRD}_${anl_stop}"
       
       # set output file name
-      out_name="wrfcf_${GRD}_${anl_strt}_to_${anl_stop}.nc"
+      f_out="wrfcf_${GRD}_${anl_strt}_to_${anl_stop}.nc"
 
-      if [[ -r ${in_dir}/${file_1} && -r ${in_dir}/${file_2} ]]; then
-        cmd="singularity exec instance://NETCDF_TOOLS \
-        ncl 'file_in=\"/in_dir/${file_2}\"' 'file_prev=\"/in_dir/${file_1}\"' \
-        'file_out=\"/wrk_dir/${out_name}\"' /script_dir/wrfout_to_cf.ncl"
+      if [[ -r ${in_dir}/${f_pr} && -r ${in_dir}/${f_in} ]]; then
+        cmd="${netcdf_tools} \
+        ncl 'file_in=\"/in_dir/${f_in}\"' 'file_prev=\"/in_dir/${f_pr}\"' \
+        'file_out=\"/wrk_dir/${f_out}\"' /scrpt_dir/wrfout_to_cf.ncl"
         printf "${cmd}\n"; eval "${cmd}"
 
         if [ ${RGRD} = TRUE ]; then
           # regrids to lat-lon from native grid with CDO
-          cmd="singularity exec instance://NETCDF_TOOLS \
+          cmd="${netcdf_tools} \
           cdo -f nc4 sellonlatbox,${lon1},${lon2},${lat1},${lat2} \
           -remapbil,global_${gres} -selname,precip,precip_bkt,IVT,IVTU,IVTV,IWV \
-          /wrk_dir/${out_name} /wrk_dir/${out_name}_tmp"
+          /wrk_dir/${f_out} /wrk_dir/${f_out}_tmp"
           printf "${cmd}\n"; eval "${cmd}"
 
           # Adds forecast_reference_time back in from first output
-          cmd="singularity exec instance://NETCDF_TOOLS \
+          cmd="${netcdf_tools} \
           ncks -A -v forecast_reference_time \
-          /wrk_dir/${out_name} /wrk_dir/${out_name}_tmp"
+          /wrk_dir/${f_out} /wrk_dir/${f_out}_tmp"
           printf "${cmd}\n"; eval "${cmd}"
 
           # removes temporary data with regridded cf compliant outputs
-          cmd="mv ${wrk_dir}/${out_name}_tmp ${wrk_dir}/${out_name}"
+          cmd="mv ${wrk_dir}/${f_out}_tmp ${wrk_dir}/${f_out}"
           printf "${cmd}\n"; eval "${cmd}"
         fi
       else
-        msg="Either\n ${file_1}\n or\n ${file_2}\n is not readable or "
+        msg="Either\n ${f_pr}\n or\n ${f_in}\n is not readable or "
         msg+="does not exist, skipping forecast initialization ${dirstr}, "
         msg+="forecast hour ${lead_hr}.\n"
         printf "${msg}"
       fi
     done
-    # Exit singularity shell and singularity stop
-    cmd="singularity instance stop NETCDF_TOOLS"
-    printf "${cmd}\n"; eval "${cmd}"
 
   fi
 done

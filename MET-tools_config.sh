@@ -30,8 +30,11 @@ export SOFT_ROOT=/expanse/lustre/projects/ddp181/cgrudzien/SOFT_ROOT
 # NetCDF tools singularity image path
 export NETCDF_TOOLS=${SOFT_ROOT}/MET_tools_conda_netcdf.sif
 
-# MET singularity image path / MET version
-export MET=${SOFT_ROOT}/met-10.0.1.sif
+# MET version
+export MET_VER="11.0.1"
+
+# MET singularity image path 
+export MET=${SOFT_ROOT}/met-${MET_VER}.sif
 
 # Module loads
 module load singularitypro/3.9

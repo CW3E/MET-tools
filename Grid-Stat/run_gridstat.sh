@@ -252,6 +252,12 @@ elif [ ! -d ${STC_ROOT} ]; then
   exit 1
 fi
 
+if [ ! ${MET_VER} ]; then
+  msg="MET version \${MET_VER} is not defined.\n"
+  printf "${msg}"
+  exit 1
+fi
+
 if [ ! -x ${MET} ]; then
   msg="MET singularity image\n ${MET}\n does not exist or is not executable.\n"
   printf "${msg}"
@@ -342,7 +348,8 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
         -sum ${init_Y}${init_m}${init_d}_${init_H}0000 ${ACC_INT} \
         ${vld_Y}${vld_m}${vld_d}_${vld_H}0000 ${ACC_INT} \
         /wrk_dir/${prfx}${for_in} \
-        -field 'name=\"precip_bkt\"; level=\"(*,*,*)\";' -name \"${VRF_FLD}_${ACC_INT}hr\" \
+        -field 'name=\"precip_bkt\"; level=\"(${vld_Y}${vld_m}${vld_d}_${vld_H}0000,*,*)\";'\
+       	-name \"${VRF_FLD}_${ACC_INT}hr\" \
         -pcpdir /in_dir \
         -pcprx \"wrfcf_${GRD}_${anl_strt}_to_${anl_stop}.nc\" "
         printf "${cmd}\n"; eval "${cmd}"
@@ -380,6 +387,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
             | sed "s/BTSTRP/n_rep    = ${BTSTRP}/" \
             | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
             | sed "s/PRFX/output_prefix    = \"${PRFX}\"/" \
+            | sed "s/MET_VER/version           = \"V${MET_VER}\"/" \
             > ${wrk_dir}/${prfx}GridStatConfig
         fi
 

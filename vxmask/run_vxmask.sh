@@ -1,9 +1,12 @@
 #!/bin/bash
-#SBATCH -p shared
+#SBATCH --account=ddp181
 #SBATCH --nodes=1
-#SBATCH --mem=120G
+#SBATCH --ntasks-per-node=1
+#SBATCH --mem=12G
+#SBATCH -p shared
 #SBATCH -t 01:00:00
 #SBATCH -J run_vxmask
+#SBATCH -o vxmask-%j.out
 #SBATCH --export=ALL
 #################################################################################
 # Description
@@ -40,11 +43,9 @@
 #set -x
 
 # Source the configuration file to define majority of required variables
-source pre_processing_config.sh
+source ../MET-tools_config.sh
+source ./mask_config.sh
           
-# Path to lat-lon text files for mask generation
-MSK_IN=${MSK_ROOT}/lat-lon
-
 #################################################################################
 # CHECK WORKFLOW PARAMETERS
 #################################################################################
@@ -66,16 +67,16 @@ else
 fi
 
 # List of landmasks for verification region, file name with extension
-if [ ! -r ${MSKS} ]; then
-  printf "ERROR: landmask list file \${MSKS} does not exist or is not readable.\n"
+if [ ! -r ${MSK_LST} ]; then
+  printf "ERROR: landmask list file \${MSK_LST} does not exist or is not readable.\n"
   exit 1
 fi
 
-if [ ! ${MSK_IN} ]; then
-  printf "ERROR: landmask lat-lon file root directory \${MSK_IN} is not defined.\n"
+if [ ! ${MSK_LTLN} ]; then
+  printf "ERROR: landmask lat-lon file root directory \${MSK_LTLN} is not defined.\n"
   exit 1
-elif [ ! -r ${MSK_IN} ]; then
-  msg="ERROR: landmask lat-lon file root directory\n ${MSK_IN}\n does not "
+elif [ ! -r ${MSK_LTLN} ]; then
+  msg="ERROR: landmask lat-lon file root directory\n ${MSK_LTLN}\n does not "
   msg+="exist or is not readable.\n"
   printf "${msg}"
   exit 1
@@ -84,7 +85,7 @@ fi
 # loop lines of the mask file, set temporary exit status before looping
 estat=0
 while read msk; do
-  in_path=${MSK_IN}/${msk}.txt
+  in_path=${MSK_LTLN}/${msk}.txt
   # check for watershed lat-lon files
   if [ -r "${in_path}" ]; then
     printf "Found\n ${in_path}\n lat-lon file.\n"
@@ -96,7 +97,7 @@ while read msk; do
     # create exit status flag to kill program, after checking all files in list
     estat=1
   fi
-done <${MSKS}
+done <${MSK_LST}
 
 if [ ${estat} -eq 1 ]; then
   msg="ERROR: Exiting due to missing landmasks, please see the above error "
@@ -105,11 +106,11 @@ if [ ${estat} -eq 1 ]; then
   exit 1
 fi
 
-if [ ! ${MSK_OUT} ]; then
-  printf "ERROR: landmask output directory \${MSK_OUT} is not defined.\n"
+if [ ! ${MSK_GRDS} ]; then
+  printf "ERROR: landmask output directory \${MSK_GRDS} is not defined.\n"
   exit 1
 else
-  cmd="mkdir -p ${MSK_OUT}"
+  cmd="mkdir -p ${MSK_GRDS}"
   printf "${cmd}\n"; eval "${cmd}"
 fi
 
@@ -118,34 +119,33 @@ fi
 #################################################################################
 # Set up singularity container with specific directory privileges
 cmd="singularity instance start -B ${MSK_ROOT}:/MSK_ROOT:ro,"
-cmd+="${MSK_IN}:/MSK_IN:ro,${MSK_OUT}:/MSK_OUT:rw ${MET_SNG} met1"
+cmd+="${MSK_LTLN}:/MSK_LTLN:ro,${MSK_GRDS}:/MSK_GRDS:rw ${MET} MET"
 printf "${cmd}\n"; eval "${cmd}"
 
 while read msk; do
   # masks are recreated depending on the existence of files from previous analyses
-  out_path=${MSK_OUT}/${msk}_mask_regridded_with_StageIV.nc
+  out_path=${MSK_GRDS}/${msk}_mask_regridded_with_StageIV.nc
   if [ ! -r "${out_path}" ]; then
     # regridded mask does not exist in mask out, create from scratch
-    cmd="singularity exec instance://met1 gen_vx_mask -v 10 \
+    cmd="singularity exec instance://MET gen_vx_mask -v 10 \
     /MSK_ROOT/${OBS_F_IN} \
-    -type poly \
-    /MSK_IN/${msk}.txt \
-    /MSK_OUT/${msk}_mask_regridded_with_StageIV.nc"
+    -type poly /MSK_LTLN/${msk}.txt \
+    /MSK_GRDS/${msk}_mask_regridded_with_StageIV.nc"
     printf "${cmd}\n"; eval "${cmd}"
   else
     # mask exists and is readable, skip this step
-    msg="Land mask\n ${out_path}\n already exists in\n ${MSK_OUT}\n "
+    msg="Land mask\n ${out_path}\n already exists in\n ${MSK_GRDS}\n "
     msg+="skipping this region.\n"
     printf "${msg}"
   fi
-done<${MSKS}
+done<${MSK_LST}
 
 # End MET Process and singularity stop
-cmd="singularity instance stop met1"
+cmd="singularity instance stop MET"
 printf "${cmd}\n"; eval "${cmd}"
 
 msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "
-msg+="outputs at MSK_OUT:\n ${MSK_OUT}\n"
+msg+="outputs at MSK_GRDS:\n ${MSK_GRDS}\n"
 printf "${msg}"
 
 #################################################################################

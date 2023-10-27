@@ -4,7 +4,7 @@
 #SBATCH --ntasks-per-node=16
 #SBATCH --mem=120G
 #SBATCH -p shared
-#SBATCH -t 02:30:00
+#SBATCH -t 01:00:00
 #SBATCH -J batch_wrfout_cf
 #SBATCH --export=ALL
 #SBATCH --array=0-11
@@ -41,7 +41,8 @@
 #set -x
 
 # Source the configuration file to define majority of required variables
-source pre_processing_config.sh
+source ../MET-tools_config.sh
+source ./Grid-Stat_config.sh
 
 # root directory for cycle time (YYYYMMDDHH) directories of WRF output files
 export IN_ROOT=${SIM_ROOT}/${CSE}
@@ -54,8 +55,10 @@ export OUT_ROOT=${VRF_ROOT}/${CSE}
 ##################################################################################
 # Create array of arrays to store the hyper-parameter grid settings, configs
 # run based on SLURM job array index.  NOTE: directory paths dependent on control
-# flow and grid settings are defined dynamically in the below and shold be set
-# in the loops.
+# flow, ensemble member and grid settings are defined dynamically in the below and
+# should be set in the loops.
+##################################################################################
+# storage for configurations in pseudo-multiarray
 cfgs=()
 
 num_flws=${#CTR_FLWS[@]}

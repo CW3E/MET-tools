@@ -181,8 +181,8 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
   in_dir=${IN_CYC_DIR}/${dirstr}${IN_DT_SUBDIR}
 
   # set output path
-  work_dir=${OUT_CYC_DIR}/${dirstr}${OUT_DT_SUBDIR}
-  cmd="mkdir -p ${work_dir}"
+  wrk_dir=${OUT_CYC_DIR}/${dirstr}${OUT_DT_SUBDIR}
+  cmd="mkdir -p ${wrk_dir}"
   printf "${cmd}\n"; eval "${cmd}"
       
   # set input paths
@@ -194,7 +194,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
     printf "Processing forecasts in\n ${in_dir}\n directory.\n"
   
     # Set up singularity container with specific directory privileges
-    cmd="singularity instance start -B ${work_dir}:/work_dir:rw,"
+    cmd="singularity instance start -B ${wrk_dir}:/wrk_dir:rw,"
     cmd+="${in_dir}:/in_dir:ro,${script_dir}:/script_dir:ro "
     cmd+="${NETCDF_TOOLS} NETCDF_TOOLS"
     printf "${cmd}\n"; eval "${cmd}"
@@ -217,7 +217,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
       if [[ -r ${in_dir}/${file_1} && -r ${in_dir}/${file_2} ]]; then
         cmd="singularity exec instance://NETCDF_TOOLS \
         ncl 'file_in=\"/in_dir/${file_2}\"' 'file_prev=\"/in_dir/${file_1}\"' \
-        'file_out=\"/work_dir/${out_name}\"' /script_dir/wrfout_to_cf.ncl"
+        'file_out=\"/wrk_dir/${out_name}\"' /script_dir/wrfout_to_cf.ncl"
         printf "${cmd}\n"; eval "${cmd}"
 
         if [ ${RGRD} = TRUE ]; then
@@ -225,17 +225,17 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
           cmd="singularity exec instance://NETCDF_TOOLS \
           cdo -f nc4 sellonlatbox,${lon1},${lon2},${lat1},${lat2} \
           -remapbil,global_${gres} -selname,precip,precip_bkt,IVT,IVTU,IVTV,IWV \
-          /work_dir/${out_name} /work_dir/${out_name}_tmp"
+          /wrk_dir/${out_name} /wrk_dir/${out_name}_tmp"
           printf "${cmd}\n"; eval "${cmd}"
 
           # Adds forecast_reference_time back in from first output
           cmd="singularity exec instance://NETCDF_TOOLS \
           ncks -A -v forecast_reference_time \
-          /work_dir/${out_name} /work_dir/${out_name}_tmp"
+          /wrk_dir/${out_name} /wrk_dir/${out_name}_tmp"
           printf "${cmd}\n"; eval "${cmd}"
 
           # removes temporary data with regridded cf compliant outputs
-          cmd="mv ${work_dir}/${out_name}_tmp ${work_dir}/${out_name}"
+          cmd="mv ${wrk_dir}/${out_name}_tmp ${wrk_dir}/${out_name}"
           printf "${cmd}\n"; eval "${cmd}"
         fi
       else

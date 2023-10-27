@@ -27,12 +27,12 @@ on large-scale, shared computing resources.  This is performed as with the
 [instructions](https://docs.sylabs.io/guides/latest/user-guide/build_a_container.html#downloading-a-existing-container-from-docker-hub)
 for building a singularity container from a DockerHub image, using a tagged image
 from [MET Dockerhub](https://hub.docker.com/r/dtcenter/met). 
-This workflow has been tested with MET version 10.0.1, installing the tagged version
-10.0.1 from DockerHub can be performed as
+This workflow has been tested with MET version 11.0.1, installing the tagged version
+11.0.1 from DockerHub can be performed as
 ```
-singularity build met-10.0.1.simg docker://dtcenter/met:10.0.1
+singularity build met-11.0.1.sif docker://dtcenter/met:11.0.1
 ```
-where the executable singularity image is the output file `met-10.0.1.simg`.
+where the executable singularity image is the output file `met-11.0.1.sif`.
 
 ### Singularity Containers
 To get started with this repository, the required Singularity containers need to be downloaded.

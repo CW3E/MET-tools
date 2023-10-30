@@ -45,9 +45,6 @@ source ../MET-tools_config.sh
 source ./Grid-Stat_config.sh
 source ../vxmask/mask_config.sh
 
-# Compute precipitation accumulation from cf file, TRUE or FALSE
-export CMP_ACC=TRUE
-
 # root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
 export IN_ROOT=${VRF_ROOT}/${CSE}
 

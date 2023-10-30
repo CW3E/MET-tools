@@ -312,7 +312,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
   met+="${STC_ROOT}:/STC_ROOT:ro,${MSK_GRDS}:/MSK_GRDS:ro,"
   met+="${in_dir}:/in_dir:ro,${scrpt_dir}:/scrpt_dir:ro "
   met+="${MET}"
-  printf "${cmd}\n";
+  printf "${cmd}\n"; eval "${cmd}"
 
   # loop lead hours for forecast valid time for each initialization time
   for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INT} )); do

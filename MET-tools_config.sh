@@ -36,5 +36,9 @@ export MET_VER="11.0.1"
 # MET singularity image path 
 export MET=${SOFT_ROOT}/met-${MET_VER}.sif
 
+# Defines case-insensitive switch commands
+export TRUE=[Tt][Rr][Uu][Ee]
+export FALSE=[Ff][Aa][Ll][Ss][Ee]
+
 # Module loads
 module load singularitypro/3.9

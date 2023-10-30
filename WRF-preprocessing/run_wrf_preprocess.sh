@@ -2,10 +2,11 @@
 #################################################################################
 # Description
 #################################################################################
-# This script defines the batch processing routine for a given control flow /
-# grid configuration and date range as defined in the companion batch_wrfout_cf.sh
-# script. This driver script loops the calls to the WRF preprocessing script
-# wrfout_to_cf.ncl to ready WRF outputs for MET. This script is based on original
+# This script runs a batch processing routine for a given control flow /
+# grid configuration and date range as defined in the companion batch and config
+# scripts. This driver script loops the calls to the WRF preprocessing script
+# wrfout_to_cf.ncl to ready WRF outputs for MET, and will optionally compute
+# accumulated precip in addition. This script is based on original
 # source code provided by Rachel Weihs, Caroline Papadopoulos and Daniel
 # Steinhoff.  This is re-written to homogenize project structure and to include
 # error handling, process logs and additional flexibility with batch processing 
@@ -48,9 +49,9 @@ elif [ ! -d ${USR_HME} ]; then
   printf "ERROR: MET-tools clone directory\n ${USR_HME}\n does not exist.\n"
   exit 1
 else
-  scrpt_dir=${USR_HME}/Grid-Stat
+  scrpt_dir=${USR_HME}/WRF-preprocessing
   if [ ! -d ${scrpt_dir} ]; then
-    printf "ERROR: Grid-Stat script directory\n ${scrpt_dir}\n does not exist.\n"
+    printf "ERROR: WRF-preprocessing directory\n ${scrpt_dir}\n does not exist.\n"
     exit 1
   fi
 fi
@@ -76,13 +77,13 @@ else
   strt_dt=`date -d "${strt_dt}"`
 fi
 
-# Convert STOP_DT from 'YYYYMMDDHH' format to end_dt Unix date format 
+# Convert STOP_DT from 'YYYYMMDDHH' format to stop_dt Unix date format 
 if [ ${#STOP_DT} -ne 10 ]; then
   printf "ERROR: \${STOP_DT} is not in YYYYMMDDHH format.\n"
   exit 1
 else
-  end_dt="${STOP_DT:0:8} ${STOP_DT:8:2}"
-  end_dt=`date -d "${end_dt}"`
+  stop_dt="${STOP_DT:0:8} ${STOP_DT:8:2}"
+  stop_dt=`date -d "${stop_dt}"`
 fi
 
 # define min / max forecast hours for forecast outputs to be processed
@@ -140,7 +141,7 @@ if [ -z ${OUT_DT_SUBDIR+x} ]; then
   exit 1
 fi
 
-if [ ${RGRD} = TRUE ]; then
+if [[ ${RGRD} = ${TRUE} ]]; then
   # standard coordinates that can be used to regrid West-WRF
   printf "WRF outputs will be regridded for MET compatibility.\n"
   gres=(0.08 0.027 0.009)
@@ -148,10 +149,17 @@ if [ ${RGRD} = TRUE ]; then
   lat2=(65 51 40.5)
   lon1=(162 223.5 235)
   lon2=(272 253.5 240.5)
-elif [ ${RGRD} = FALSE ]; then
+elif [[ ${RGRD} = ${FALSE} ]]; then
   printf "WRF outputs will be used with MET in their native grid.\n"
 else
-  printf "ERROR: \${RGRD} must equal 'TRUE' or 'FALSE' (case sensitive).\n"
+  printf "ERROR: \${RGRD} must equal 'TRUE' or 'FALSE' (case insensitive).\n"
+  exit 1
+fi
+
+# compute accumulation from cf file, TRUE or FALSE
+if [[ ${CMP_ACC} != ${TRUE} && ${CMP_ACC} != ${FALSE} ]]; then
+  msg="ERROR: \${CMP_ACC} must be set to 'TRUE' or 'FALSE' to decide if "
+  msg+="computing accumulation from wrfcf file."
   exit 1
 fi
 
@@ -169,11 +177,17 @@ if [ ! -x ${scrpt_dir}/wrfout_to_cf.ncl ]; then
   exit 1
 fi
 
+if [ ! -x ${MET} ]; then
+  msg="MET singularity image\n ${MET}\n does not exist or is not executable.\n"
+  printf "${msg}"
+  exit 1
+fi
+
 #################################################################################
 # Process data
 #################################################################################
 # define the number of dates to loop
-fcst_hrs=$(( (`date +%s -d "${end_dt}"` - `date +%s -d "${strt_dt}"`) / 3600 ))
+fcst_hrs=$(( (`date +%s -d "${stop_dt}"` - `date +%s -d "${strt_dt}"`) / 3600 ))
 
 for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
   # directory string for forecast analysis initialization time
@@ -193,10 +207,13 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
   else
     printf "Processing forecasts in\n ${in_dir}\n directory.\n"
   
-    # Define directory privileges for singularity exec
+    # Define directory privileges for singularity exec NETCDF_TOOLS
     netcdf_tools="singularity exec -B ${wrk_dir}:/wrk_dir:rw,"
     netcdf_tools+="${in_dir}:/in_dir:ro,${scrpt_dir}:/scrpt_dir:ro "
     netcdf_tools+="${NETCDF_TOOLS} "
+
+    # Define directory privileges for singularity exec MET
+    met="singularity exec -B ${wrk_dir}:/wrk_dir:rw,${wrk_dir}:/in_dir:ro ${MET}"
 
     # loop lead hours for forecast valid time for each initialization time
     for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INT} )); do
@@ -211,7 +228,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
       f_in="wrfout_${GRD}_${anl_stop}"
       
       # set output file name
-      f_out="wrfcf_${GRD}_${anl_strt}_to_${anl_stop}.nc"
+      f_out="wrfcf_${anl_strt}_to_${anl_stop}.nc"
 
       if [[ -r ${in_dir}/${f_pr} && -r ${in_dir}/${f_in} ]]; then
         cmd="${netcdf_tools} \
@@ -237,6 +254,44 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
           cmd="mv ${wrk_dir}/${f_out}_tmp ${wrk_dir}/${f_out}"
           printf "${cmd}\n"; eval "${cmd}"
         fi
+
+        if [[ ${CMP_ACC} = ${TRUE} ]]; then
+          # check for input file based on output from run_wrfout_cf.sh
+          if [ -r ${wrk_dir}/${f_out} ]; then
+            # set accumulation valid time string
+            vld_Y=${anl_stop:0:4}
+            vld_m=${anl_stop:5:2}
+            vld_d=${anl_stop:8:2}
+            vld_H=${anl_stop:11:2}
+          
+            # Set forecast initialization string
+            init_Y=${dirstr:0:4}
+            init_m=${dirstr:4:2}
+            init_d=${dirstr:6:2}
+            init_H=${dirstr:8:2}
+
+            # define padded forecast hour for name strings
+            pdd_hr=`printf %03d $(( 10#${lead_hr} ))`
+	    wrf_acc=WRF_${ACC_INT}QPF_${init_Y}${init_m}${init_d}${init_H}_F${pdd_hr}
+
+            # Combine precip to accumulation period 
+            cmd="${met} pcp_combine \
+            -sum ${init_Y}${init_m}${init_d}_${init_H}0000 ${ACC_INT} \
+            ${vld_Y}${vld_m}${vld_d}_${vld_H}0000 ${ACC_INT} \
+            /wrk_dir/${wrf_acc} \
+            -field 'name=\"precip_bkt\"; level=\"(${vld_Y}${vld_m}${vld_d}_${vld_H}0000,*,*)\";'\
+            -name \"QPF_${ACC_INT}hr\" \
+            -pcpdir /in_dir \
+            -pcprx \"${f_out}\" "
+            printf "${cmd}\n"; eval "${cmd}"
+          else
+            msg="pcp_combine input file\n "
+            msg+="${wrk_dir}/${f_out}\n is not "
+            msg+="readable or does not exist, skipping pcp_combine for "
+            msg+="forecast initialization ${dirstr}, forecast hour ${lead_hr}.\n"
+            printf "${msg}"
+          fi
+        fi
       else
         msg="Either\n ${f_pr}\n or\n ${f_in}\n is not readable or "
         msg+="does not exist, skipping forecast initialization ${dirstr}, "
@@ -244,7 +299,6 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
         printf "${msg}"
       fi
     done
-
   fi
 done
 

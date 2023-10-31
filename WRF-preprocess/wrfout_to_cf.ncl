@@ -173,7 +173,7 @@ begin
   fileAtt                = True
   fileAtt@creation_date  =  systemfunc("date")
   fileAtt@institution = "CW3E - Scripps Institution of Oceanography"
-  fileAtt@created_by = "Colin Grudzien - cgrudzien@ucsd.edu"
+  fileAtt@created_by = ""
   fileAtt@notes = "Created with NCL script:  wrfout_to_cf.ncl v2.0"
   fileAtt@source         = file_in
   fileAtt@Conventions    = "CF 1.6, Standard Name Table v19"

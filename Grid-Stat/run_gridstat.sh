@@ -266,7 +266,7 @@ fi
 
 if [ ! -r ${scrpt_dir}/GridStatConfigTemplate ]; then
   msg="GridStatConfig template \n ${scrpt_dir}/GridStatConfigTemplate\n"
-  msg+=" does not exist or is not executable.\n"
+  msg+=" does not exist or is not readable.\n"
   printf "${msg}"
   exit 1
 fi
@@ -334,41 +334,13 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
     # obs file defined in terms of vld time
     obs_in=StageIV_QPE_${vld_Y}${vld_m}${vld_d}${vld_H}.nc
 
-    if [[ ${CMP_ACC} = "TRUE" ]]; then
-      # check for input file based on output from run_wrfout_cf.sh
-      if [ -r ${in_dir}/wrfcf_${GRD}_${anl_strt}_to_${anl_stop}.nc ]; then
-        # Set accumulation initialization string
-        init_Y=${dirstr:0:4}
-        init_m=${dirstr:4:2}
-        init_d=${dirstr:6:2}
-        init_H=${dirstr:8:2}
-
-        # Combine precip to accumulation period 
-        cmd="${met} pcp_combine \
-        -sum ${init_Y}${init_m}${init_d}_${init_H}0000 ${ACC_INT} \
-        ${vld_Y}${vld_m}${vld_d}_${vld_H}0000 ${ACC_INT} \
-        /wrk_dir/${prfx}${for_in} \
-        -field 'name=\"precip_bkt\"; level=\"(${vld_Y}${vld_m}${vld_d}_${vld_H}0000,*,*)\";'\
-       	-name \"${VRF_FLD}_${ACC_INT}hr\" \
-        -pcpdir /in_dir \
-        -pcprx \"wrfcf_${GRD}_${anl_strt}_to_${anl_stop}.nc\" "
-        printf "${cmd}\n"; eval "${cmd}"
-      else
-        msg="pcp_combine input file\n "
-        msg+="${in_dir}/wrfcf_${GRD}_${anl_strt}_to_${anl_stop}.nc\n is not "
-        msg+="readable or does not exist, skipping pcp_combine for "
-        msg+="forecast initialization ${dirstr}, forecast hour ${lead_hr}.\n"
-        printf "${msg}"
-      fi
+    # copy the preprocessed data to the working directory from the data root
+    in_path="${in_dir}/${for_in}"
+    if [ -r ${in_path} ]; then
+      cmd="ln -sfr ${in_path} ${wrk_dir}/${prfx}${for_in}"
+      printf "${cmd}\n"; eval "${cmd}"
     else
-      # copy the preprocessed data to the working directory from the data root
-      in_path="${in_dir}/${for_in}"
-      if [ -r ${in_path} ]; then
-        cmd="cp -L ${in_path} ${wrk_dir}/${prfx}${for_in}"
-        printf "${cmd}\n"; eval "${cmd}"
-      else
-        printf "Source file\n ${in_path}\n not found.\n"
-      fi
+      printf "Source file\n ${in_path}\n not found.\n"
     fi
     
     if [ -r ${wrk_dir}/${prfx}${for_in} ]; then

@@ -50,32 +50,11 @@ ens = {
 
    field = [
       {
-         name       = "APCP";
-         level      = [ "A24" ];
-         cat_thresh = [ >0.0, >=10.0 ];
+         VRF_FLD;
+         level      = [ "(*,*)" ];
+         CAT_THR;
          ensemble_flag = TRUE;
       },
-      {
-         name       = "REFC";
-         level      = [ "L0" ];
-         cat_thresh = [ >=35.0 ];
-         GRIB1_ptv  = 129;
-      },
-      {
-         name       = "UGRD";
-         level      = [ "Z10" ];
-         cat_thresh = [ >=5.0 ];
-      },
-      {
-         name       = "VGRD";
-         level      = [ "Z10" ];
-         cat_thresh = [ >=5.0 ];
-      },
-      {
-         name       = "WIND";
-         level      = [ "Z10" ];
-         cat_thresh = [ >=5.0 ];
-      }
    ];
 }
 
@@ -85,7 +64,7 @@ ens = {
 // Neighborhood ensemble probabilities
 //
 nbrhd_prob = {
-   width      = [ 5 ];
+   NBRHD_WDTH;
    shape      = CIRCLE;
    vld_thresh = 0.0;
 }
@@ -145,8 +124,8 @@ ensemble_flag = {
    stdev     = TRUE;
    minus     = FALSE;
    plus      = FALSE;
-   min       = FALSE;
-   max       = FALSE;
+   min       = TRUE;
+   max       = TRUE;
    range     = FALSE;
    vld_count = FALSE;
    frequency = TRUE;
@@ -158,6 +137,6 @@ ensemble_flag = {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-version = "V11.1.0";
+MET_VER;
 
 ////////////////////////////////////////////////////////////////////////////////

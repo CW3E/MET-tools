@@ -48,15 +48,15 @@ export ANL_MAX=120
 # Define the interval at which to process forecast outputs (HH)
 export ANL_INT=24
 
-# Defines the accumulation intervals for verification valid times
-export ACC_INTS=(
-                 "24"
-                 "48"
-                 "72"
-                )
-
 # Regrid to generic lat-lon for MET if native grid errors (TRUE or FALSE)
 export RGRD=TRUE
 
 # Compute precipitation accumulation from cf file, TRUE or FALSE
 export CMP_ACC=TRUE
+
+# Defines the min / max accumulation interval for precip
+export ACC_MIN=24
+export ACC_MAX=72
+
+# Defines the steps between min / max to compute accumulation intervals
+export ACC_INT=24

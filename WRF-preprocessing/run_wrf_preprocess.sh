@@ -101,11 +101,10 @@ fi
 if [ ! ${ANL_INT} ]; then
   printf "ERROR: hours interval between analyses \${HH} is not defined.\n"
   exit 1
-fi
-
-# define the accumulation interval for verification valid times
-if [ ! ${ACC_INT} ]; then
-  printf "ERROR: hours accumulation interval for verification not defined.\n"
+elif [ ! $(( (${ANL_MAX} - ${ANL_MIN}) % ${ANL_INT} )) = 0 ]; then
+  msg="ERROR: the interval [\${ANL_MIN}, \${ANL_MAX}]\n [${ANL_MIN}, ${ANL_MAX}]\n" 
+  msg+=" must be evenly divisible into increments of \${ANL_INT}, ${ANL_INT}.\n"
+  printf ${msg}
   exit 1
 fi
 
@@ -157,9 +156,48 @@ else
 fi
 
 # compute accumulation from cf file, TRUE or FALSE
-if [[ ${CMP_ACC} != ${TRUE} && ${CMP_ACC} != ${FALSE} ]]; then
+if [[ ${CMP_ACC} = ${TRUE} ]]; then
+  # define the accumulation intervals for precip
+		if [ ! ${ACC_MIN} ]; then
+				printf "ERROR: min precip accumulation interval compuation is not defined\n"
+				exit 1
+		elif [ ${ACC_MIN} -le 0 ]; then
+    msg="ERROR: min precip accumulation interval ${ACC_MIN} must be greater than"
+				msg+=" zero.\n"
+				printf ${msg}
+    exit 1
+		elif [ ! ${ACC_MAX} ]; then
+				printf "ERROR: max precip accumulation interval compuation is not defined\n"
+				exit 1
+		elif [ ${ACC_MAX} -lt ${ACC_MIN} ]; then
+    msg="ERROR: max precip accumulation interval ${ACC_MAX} must be greater than"
+				msg+=" min precip accumulation interval.\n"
+				printf ${msg}
+    exit 1
+  elif [ ! ${ACC_INT} ]; then
+    msg="ERROR: inteval between precip accumulation computations \${ACC_INT}"
+				msg+=" is not defined.\n"
+				printf ${msg}
+    exit 1
+		else
+				# define array of accumulation interval computation hours
+				acc_hrs=()
+				for (( acc_hr=${ACC_MIN}; acc_hr <= ${ACC_MAX}; acc_hr += ${ACC_INT} )); do
+      # check that the precip accumulations are summable from wrfcf files
+      if [ ! $(( ${acc_hr} % ${ANL_INT} )) = 0 ]; then
+        printf "ERROR: precip accumulation ${acc_hr} is not a multiple of ${ANL_INT}.\n"
+        exit 1
+						else
+								printf "Computing precipitation accumulation for interval ${acc_hr} hours.\n"
+        acc_hrs+=( ${acc_hr} )
+      fi
+				done
+		fi
+elif [[ ${CMP_ACC} = ${FALSE} ]]; then
+		printf "run_wrf_preprocess does not compute precip accumulations.\n"
+else
   msg="ERROR: \${CMP_ACC} must be set to 'TRUE' or 'FALSE' to decide if "
-  msg+="computing accumulation from wrfcf file."
+  msg+="computing precip accumulation from wrfcf files."
   exit 1
 fi
 
@@ -217,8 +255,8 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
 
     # loop lead hours for forecast valid time for each initialization time
     for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INT} )); do
-      # define valid times for accumulation    
-      anl_strt_hr=$(( ${lead_hr} + ${cyc_hr} - ${ACC_INT} ))
+      # define valid times for wrfcf precip_bkt accumulation, evenly spaced
+      anl_strt_hr=$(( ${lead_hr} + ${cyc_hr} - ${ANL_INT} ))
       anl_stop_hr=$(( ${lead_hr} + ${cyc_hr} ))
       anl_strt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_strt_hr} hours"`
       anl_stop=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_stop_hr} hours"`
@@ -236,7 +274,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
         'file_out=\"/wrk_dir/${f_out}\"' /scrpt_dir/wrfout_to_cf.ncl"
         printf "${cmd}\n"; eval "${cmd}"
 
-        if [ ${RGRD} = TRUE ]; then
+        if [[ ${RGRD} = ${TRUE} ]]; then
           # regrids to lat-lon from native grid with CDO
           cmd="${netcdf_tools} \
           cdo -f nc4 sellonlatbox,${lon1},${lon2},${lat1},${lat2} \
@@ -255,15 +293,21 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
           printf "${cmd}\n"; eval "${cmd}"
         fi
 
-        if [[ ${CMP_ACC} = ${TRUE} ]]; then
-          # check for input file based on output from run_wrfout_cf.sh
-          if [ -r ${wrk_dir}/${f_out} ]; then
+      else
+        msg="Either\n ${f_pr}\n or\n ${f_in}\n is not readable or "
+        msg+="does not exist, skipping forecast initialization ${dirstr}, "
+        msg+="forecast hour ${lead_hr}.\n"
+        printf "${msg}"
+      fi
+      if [[ ${CMP_ACC} = ${TRUE} ]]; then
+        for acc_hr in ${acc_hrs[@]}; do
+          if [ ${lead_hr} -ge ${acc_hr} ]; then
             # set accumulation valid time string
             vld_Y=${anl_stop:0:4}
             vld_m=${anl_stop:5:2}
             vld_d=${anl_stop:8:2}
             vld_H=${anl_stop:11:2}
-          
+      
             # Set forecast initialization string
             init_Y=${dirstr:0:4}
             init_m=${dirstr:4:2}
@@ -272,30 +316,25 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
 
             # define padded forecast hour for name strings
             pdd_hr=`printf %03d $(( 10#${lead_hr} ))`
-	    wrf_acc=WRF_${ACC_INT}QPF_${init_Y}${init_m}${init_d}${init_H}_F${pdd_hr}
+            wrf_acc=WRF_${acc_hr}QPF_${init_Y}${init_m}${init_d}${init_H}_F${pdd_hr}
 
             # Combine precip to accumulation period 
             cmd="${met} pcp_combine \
-            -sum ${init_Y}${init_m}${init_d}_${init_H}0000 ${ACC_INT} \
-            ${vld_Y}${vld_m}${vld_d}_${vld_H}0000 ${ACC_INT} \
+            -sum ${init_Y}${init_m}${init_d}_${init_H}0000 ${ANL_INT} \
+            ${vld_Y}${vld_m}${vld_d}_${vld_H}0000 ${acc_hr} \
             /wrk_dir/${wrf_acc} \
-            -field 'name=\"precip_bkt\"; level=\"(${vld_Y}${vld_m}${vld_d}_${vld_H}0000,*,*)\";'\
-            -name \"QPF_${ACC_INT}hr\" \
+            -field 'name=\"precip_bkt\"; level=\"(0,*,*)\";'\
+            -name \"QPF_${acc_hr}hr\" \
             -pcpdir /in_dir \
-            -pcprx \"${f_out}\" "
+            -pcprx \"wrfcf_.*\" "
             printf "${cmd}\n"; eval "${cmd}"
-          else
-            msg="pcp_combine input file\n "
-            msg+="${wrk_dir}/${f_out}\n is not "
-            msg+="readable or does not exist, skipping pcp_combine for "
-            msg+="forecast initialization ${dirstr}, forecast hour ${lead_hr}.\n"
-            printf "${msg}"
-          fi
-        fi
+										fi
+								done
       else
-        msg="Either\n ${f_pr}\n or\n ${f_in}\n is not readable or "
-        msg+="does not exist, skipping forecast initialization ${dirstr}, "
-        msg+="forecast hour ${lead_hr}.\n"
+        msg="pcp_combine input file\n "
+        msg+="${wrk_dir}/${f_out}\n is not "
+        msg+="readable or does not exist, skipping pcp_combine for "
+        msg+="forecast initialization ${dirstr}, forecast hour ${lead_hr}.\n"
         printf "${msg}"
       fi
     done

@@ -5,16 +5,15 @@
 #SBATCH --mem=120G
 #SBATCH -p shared
 #SBATCH -t 01:00:00
-#SBATCH -J batch_gridstat
+#SBATCH -J batch_genensprod
+#SBATCH -o ./logs/batch_genensprod-%A_%a.out
 #SBATCH --export=ALL
-#SBATCH --array=0-11
+#SBATCH --array=0-1
 ##################################################################################
 # Description
 ##################################################################################
 # This script utilizes SLURM job arrays to batch process collections of cf
-# compliant, preprocessed WRF outputs and / or preprocessed global model data
-# using the MET Grid-Stat tool. This script is designed to set the parameters for
-# the companion run_gridstat.sh script as a job array map, allowing batch
+# the companion run_genensprod.sh script as a job array map, allowing batch
 # processing over multiple configurations and valid dates with a single call.
 ##################################################################################
 # License Statement
@@ -42,11 +41,7 @@
 
 # Source configuration files to define majority of required variables
 source ../MET-tools_config.sh
-source ./Grid-Stat_config.sh
-source ../vxmask/mask_config.sh
-
-# Compute precipitation accumulation from cf file, TRUE or FALSE
-export CMP_ACC=TRUE
+source ./GenEnsProd_config.sh
 
 # root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
 export IN_ROOT=${VRF_ROOT}/${CSE}
@@ -65,53 +60,48 @@ export OUT_ROOT=${VRF_ROOT}/${CSE}
 # storage for configurations in pseudo-multiarray
 cfgs=()
 
-num_grds=${#GRDS[@]}
-num_mems=${#MEM_LIST[@]}
 num_flws=${#CTR_FLWS[@]}
-for (( i_g = 0; i_g < ${num_grds}; i_g++ )); do
-  for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
-    for (( i_m = 0; i_m < ${num_mems}; i_m++ )); do
-      CTR_FLW=${CTR_FLWS[$i_f]}
-      GRD=${GRDS[$i_g]}
-      INT_MTHD=${INT_MTHDS[$i_g]}
-      INT_WDTH=${INT_WDTHS[$i_g]}
-      MEM=${MEM_LIST[$i_m]}
+num_grds=${#GRDS[@]}
+for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
+  for (( i_g = 0; i_g < ${num_grds}; i_g++ )); do
+    CTR_FLW=${CTR_FLWS[$i_f]}
+    GRD=${GRDS[$i_g]}
+				NBRHD_WDTH=${NBRHD_WDTHS[$i_g]}
 
-      cfg_indx="cfg_${i_g}${i_f}${i_m}"
-      cmd="${cfg_indx}=()"
-      printf "${cmd}\n"; eval "${cmd}"
+    cfg_indx="cfg_${i_f}${i_g}"
+    cmd="${cfg_indx}=()"
+    printf "${cmd}\n"; eval "${cmd}"
 
-      cmd="${cfg_indx}+=(\"CTR_FLW=${CTR_FLW}\")"
-      printf "${cmd}\n"; eval "${cmd}"
+    cmd="${cfg_indx}+=(\"CTR_FLW=${CTR_FLW}\")"
+    printf "${cmd}\n"; eval "${cmd}"
 
-      cmd="${cfg_indx}+=(\"GRD=${GRD}\")"
-      printf "${cmd}\n"; eval "${cmd}"
+    cmd="${cfg_indx}+=(\"NBRHD_WDTH=${NBRHD_WDTH}\")"
+    printf "${cmd}\n"; eval "${cmd}"
 
-      cmd="${cfg_indx}+=(\"INT_MTHD=${INT_MTHD}\")"
-      printf "${cmd}\n"; eval "${cmd}"
+    cmd="${cfg_indx}+=(\"IN_CYC_DIR=${IN_ROOT}/${CTR_FLW}/Preprocess\")"
+    printf "${cmd}\n"; eval "${cmd}"
 
-      cmd="${cfg_indx}+=(\"INT_WDTH=${INT_WDTH}\")"
-      printf "${cmd}\n"; eval "${cmd}"
+    cmd="${cfg_indx}+=(\"OUT_CYC_DIR=${OUT_ROOT}/${CTR_FLW}/GenEnsProd\")"
+    printf "${cmd}\n"; eval "${cmd}"
 
-      cmd="${cfg_indx}+=(\"IN_CYC_DIR=${IN_ROOT}/${CTR_FLW}\")"
-      printf "${cmd}\n"; eval "${cmd}"
-
-      cmd="${cfg_indx}+=(\"OUT_CYC_DIR=${OUT_ROOT}/${CTR_FLW}\")"
-      printf "${cmd}\n"; eval "${cmd}"
-
-      # subdirectory of cycle-named directory containing data to be analyzed,
-      # includes leading '/', left as blank string if not needed
-      cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/ens_${MEM}/${GRD}\")"
-      printf "${cmd}\n"; eval "${cmd}"
-      
-      # subdirectory of cycle-named directory where output is to be saved
-      cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/ens_${MEM}/${GRD}\")"
-      printf "${cmd}\n"; eval "${cmd}"
-      
-      cmd="cfgs+=( \"${cfg_indx}\" )"
-      printf "${cmd}\n"; eval "${cmd}"
-
-    done
+    # subdirectory of cycle-named directory containing data to be analyzed,
+				# leading to ensemble indexed directory
+    # includes leading '/', left as blank string if not needed
+    cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=\"\"\")"
+    printf "${cmd}\n"; eval "${cmd}"
+    
+    # subdirectory of cycle-named directory where output is to be saved
+    # includes leading '/', left as blank string if not needed
+    cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/${GRD}\")"
+    printf "${cmd}\n"; eval "${cmd}"
+    
+    # subdirectory of ensemble indexed directory for input data
+    # includes leading '/', left as blank string if not needed
+    cmd="${cfg_indx}+=(\"IN_ENS_SUBDIR=/${GRD}\")"
+    printf "${cmd}\n"; eval "${cmd}"
+    
+    cmd="cfgs+=( \"${cfg_indx}\" )"
+    printf "${cmd}\n"; eval "${cmd}"
   done
 done
 
@@ -127,15 +117,15 @@ printf "Loading configuration parameters ${cfgs[$indx]}:"
 cfg=${cfgs[$indx]}
 job="${cfg}[@]"
 
-cmd="cd ${USR_HME}/Grid-Stat"
-printf ${cmd}; eval "${cmd}"
+cmd="cd ${USR_HME}/Gen-Ens-Prod"
+printf "${cmd}\n"; eval "${cmd}"
 
 log_dir=${OUT_ROOT}/batch_logs
 cmd="mkdir -p ${log_dir}"
-printf ${cmd}; eval "${cmd}"
+printf "${cmd}\n"; eval "${cmd}"
 
-cmd="./run_gridstat.sh ${!job} > ${log_dir}/gridstat_${jbid}_${indx}.log 2>&1"
-printf ${cmd}; eval "${cmd}"
+cmd="./run_genensprod.sh ${!job} > ${log_dir}/genensprod_${jbid}_${indx}.log 2>&1"
+printf "${cmd}\n"; eval "${cmd}"
 
 ##################################################################################
 # end

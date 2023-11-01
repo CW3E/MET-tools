@@ -11,22 +11,23 @@
 ##################################################################################
 # Define the case-wise sub-directory for path names with case-study nesting,
 # leave as empty string "" if not needed
-export CSE=DeepDive
+export CSE=DeepDive/2022122800_valid_date
 
 # Array of control flow names to be processed
 export CTR_FLWS=( 
-                 "2022122800_valid_date_wrf_ensemble"
+                 "WRF"
                 )
 
-# Array of ensemble indices to process, include an empty string if no indices
-export MEM_LIST=(
-                 "00"
-                 "01"
-                 "02"
-                 "03"
-                 "04"
-                 "05"
-                )
+# Generate ensemble indices to process
+ENS_PRFX="ens_"
+MEM_IDS=()
+for indx in {00..05..01}; do
+		MEM_IDS+=( ${ENS_PRFX}${indx} )
+done
+
+# export MEM_IDS as an array containing an empty string if no indices or use array
+# construction as above, this is passed to batch_wrf_preprocess
+export MEM_IDS
 
 # Model grid / domain to be processed
 export GRDS=( 

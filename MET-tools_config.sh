@@ -16,10 +16,10 @@ export TZ="GMT"
 export USR_HME=/expanse/lustre/projects/ddp181/cgrudzien/JEDI-MPAS-Common-Case/MET-tools
 
 # Root directory of simulation IO
-export SIM_ROOT=/expanse/lustre/scratch/cgrudzien/temp_project/JEDI-MPAS-Common-Case/SIMULATION_IO/WRF_Cycles
+export SIM_ROOT=/expanse/lustre/scratch/cgrudzien/temp_project/JEDI-MPAS-Common-Case/SIMULATION_IO
 
 # Root directory of simulation verification IO
-export VRF_ROOT=/expanse/lustre/scratch/cgrudzien/temp_project/JEDI-MPAS-Common-Case/VERIFICATION/WRF_Analysis
+export VRF_ROOT=/expanse/lustre/scratch/cgrudzien/temp_project/JEDI-MPAS-Common-Case/VERIFICATION
 
 # Root directory for verification static data
 export STC_ROOT=/expanse/lustre/scratch/cgrudzien/temp_project/JEDI-MPAS-Common-Case/DATA/DeepDive/Verification/StageIV
@@ -39,6 +39,12 @@ export MET=${SOFT_ROOT}/met-${MET_VER}.sif
 # Defines case-insensitive switch commands
 export TRUE=[Tt][Rr][Uu][Ee]
 export FALSE=[Ff][Aa][Ll][Ss][Ee]
+
+# Defines numeric regular expression
+export N_RE=^[0-9]+$
+
+# Defines YYYYMMDDHH iso regular expression
+export ISO_RE=^[0-9]{10}$
 
 # Module loads
 module load singularitypro/3.9

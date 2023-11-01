@@ -39,17 +39,19 @@ for cmd in "$@"; do
 done
 
 #################################################################################
-# make checks for workflow parameters
-
+# CHECK WORKFLOW PARAMETERS
+#################################################################################
 # define the working scripts directory
 if [ ! ${USR_HME} ]; then
   printf "ERROR: MET-tools clone directory \${USR_HME} is not defined.\n"
   exit 1
-elif [ ! -d ${USR_HME} ]; then
-  printf "ERROR: MET-tools clone directory\n ${USR_HME}\n does not exist.\n"
+elif [[ ! -d ${USR_HME} || ! -r ${USR_HME} ]]; then
+  msg="ERROR: MET-tools clone directory\n ${USR_HME}\n does not exist or is"
+		msg+=" not readable.\n"
+		printf "${msg}"
   exit 1
 else
-  scrpt_dir=${USR_HME}/WRF-preprocessing
+  scrpt_dir=${USR_HME}/WRF-preprocess
   if [ ! -d ${scrpt_dir} ]; then
     printf "ERROR: WRF-preprocessing directory\n ${scrpt_dir}\n does not exist.\n"
     exit 1
@@ -63,14 +65,16 @@ if [ ! ${CTR_FLW} ]; then
 fi
 
 # verification domain for the forecast data
-if [ ! ${GRD} ]; then
-  printf "ERROR: grid name \${GRD} is not defined.\n"
-  exit 1
+if [[ ! ${GRD} =~ ^d[0-9]{2}$ ]]; then
+		printf "ERROR: grid name must be in dXX format.\n"
+		exit 1
 fi
 
 # Convert STRT_DT from 'YYYYMMDDHH' format to strt_dt Unix date format
-if [ ${#STRT_DT} -ne 10 ]; then
-  printf "ERROR: \${STRT_DT} is not in YYYYMMDDHH format.\n"
+if [[ ! ${STRT_DT} =~ ${ISO_RE} ]]; then
+  msg="ERROR: start date \${STRT_DT}\n ${STRT_DT}\n"
+		msg+=" is not in YYYYMMDDHH format.\n"
+		printf "${msg}"
   exit 1
 else
   strt_dt="${STRT_DT:0:8} ${STRT_DT:8:2}"
@@ -78,8 +82,10 @@ else
 fi
 
 # Convert STOP_DT from 'YYYYMMDDHH' format to stop_dt Unix date format 
-if [ ${#STOP_DT} -ne 10 ]; then
-  printf "ERROR: \${STOP_DT} is not in YYYYMMDDHH format.\n"
+if [[ ! ${STOP_DT} =~ ${ISO_RE} ]]; then
+  msg="ERROR: stop date \${STOP_DT}\n ${STOP_DT}\n"
+		msg+=" is not in YYYYMMDDHH format.\n"
+		printf "${msg}"
   exit 1
 else
   stop_dt="${STOP_DT:0:8} ${STOP_DT:8:2}"
@@ -87,30 +93,41 @@ else
 fi
 
 # define min / max forecast hours for forecast outputs to be processed
-if [ ! ${ANL_MIN} ]; then
-  printf "ERROR: min forecast hour \${ANL_MIN} is not defined.\n"
+if [[ ! ${ANL_MIN} =~ ${N_RE} ]]; then
+  printf "ERROR: min forecast hour \${ANL_MIN} is not numeric.\n"
   exit 1
-fi
-
-if [ ! ${ANL_MAX} ]; then
-  printf "ERROR: max forecast hour \${ANL_MAX} is not defined.\n"
+elif [ ${ANL_MIN} -lt 0 ]; then
+		printf "ERROR: min forecast hour ${ANL_MIN} must be non-negative.\n"
+		exit 1
+elif [[ ! ${ANL_MAX} =~ ${N_RE} ]]; then
+  printf "ERROR: max forecast hour \${ANL_MAX} is not numeric.\n"
   exit 1
+elif [ ${ANL_MAX} -lt ${ANL_MIN} ]; then
+  msg="ERROR: max forecast hour ${ANL_MAX} must be greater than or equal to"
+		msg+="min forecast hour ${ANL_MIN}.\n"
+		printf "${msg}"
 fi
 
 # define the interval at which to process forecast outputs (HH)
-if [ ! ${ANL_INT} ]; then
-  printf "ERROR: hours interval between analyses \${HH} is not defined.\n"
+if [[ ! ${ANL_INT} =~ ${N_RE} ]]; then
+  printf "ERROR: hours interval between analyses \${ANL_INT} is not numeric.\n"
   exit 1
 elif [ ! $(( (${ANL_MAX} - ${ANL_MIN}) % ${ANL_INT} )) = 0 ]; then
   msg="ERROR: the interval [\${ANL_MIN}, \${ANL_MAX}]\n [${ANL_MIN}, ${ANL_MAX}]\n" 
   msg+=" must be evenly divisible into increments of \${ANL_INT}, ${ANL_INT}.\n"
-  printf ${msg}
+  printf "${msg}"
   exit 1
 fi
 
 # check for input data root
-if [ ! -d ${IN_CYC_DIR} ]; then
-  printf "ERROR: input data root directory\n ${IN_CYC_DIR}\n does not exist.\n"
+if [ ! ${IN_CYC_DIR} ]; then
+		msg="ERROR: directory of ISO date sub-directories \${IN_CYC_DIR} is"
+		msg+=" not defined.\n"
+		printf "${msg}"
+		exit 1
+elif [[ ! -d ${IN_CYC_DIR} || ! -r ${IN_CYC_DIR} ]]; then
+  msg="ERROR: input data root directory\n ${IN_CYC_DIR}\n"
+		msg+=" does not exist or is not readable.\n"
   exit 1
 fi
 
@@ -156,28 +173,33 @@ else
 fi
 
 # compute accumulation from cf file, TRUE or FALSE
-if [[ ${CMP_ACC} = ${TRUE} ]]; then
+if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
   # define the accumulation intervals for precip
-		if [ ! ${ACC_MIN} ]; then
-				printf "ERROR: min precip accumulation interval compuation is not defined\n"
+		if [[ ! ${ACC_MIN} =~ ${N_RE} ]]; then
+				printf "ERROR: min precip accumulation interval compuation is not numeric.\n"
 				exit 1
 		elif [ ${ACC_MIN} -le 0 ]; then
     msg="ERROR: min precip accumulation interval ${ACC_MIN} must be greater than"
 				msg+=" zero.\n"
-				printf ${msg}
+				printf "${msg}"
     exit 1
-		elif [ ! ${ACC_MAX} ]; then
-				printf "ERROR: max precip accumulation interval compuation is not defined\n"
+		elif [[ ! ${ACC_MAX} =~ ${N_RE} ]]; then
+				printf "ERROR: max precip accumulation interval compuation is not numeric.\n"
 				exit 1
 		elif [ ${ACC_MAX} -lt ${ACC_MIN} ]; then
     msg="ERROR: max precip accumulation interval ${ACC_MAX} must be greater than"
 				msg+=" min precip accumulation interval.\n"
-				printf ${msg}
+				printf "${msg}"
     exit 1
-  elif [ ! ${ACC_INT} ]; then
+  elif [[ ! ${ACC_INT} =~ ${N_RE} ]]; then
     msg="ERROR: inteval between precip accumulation computations \${ACC_INT}"
-				msg+=" is not defined.\n"
-				printf ${msg}
+				msg+=" is not numeric.\n"
+				printf "${msg}"
+    exit 1
+  elif [ ! $(( (${ACC_MAX} - ${ACC_MIN}) % ${ACC_INT} )) = 0 ]; then
+    msg="ERROR: the interval [\${ACC_MIN}, \${ACC_MAX}]\n [${ACC_MIN}, ${ACC_MAX}]\n" 
+    msg+=" must be evenly divisible into increments of \${ACC_INT}, ${ACC_INT}.\n"
+    printf "${msg}"
     exit 1
 		else
 				# define array of accumulation interval computation hours
@@ -193,7 +215,7 @@ if [[ ${CMP_ACC} = ${TRUE} ]]; then
       fi
 				done
 		fi
-elif [[ ${CMP_ACC} = ${FALSE} ]]; then
+elif [[ ${CMP_ACC} =~ ${FALSE} ]]; then
 		printf "run_wrf_preprocess does not compute precip accumulations.\n"
 else
   msg="ERROR: \${CMP_ACC} must be set to 'TRUE' or 'FALSE' to decide if "
@@ -316,7 +338,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
 
             # define padded forecast hour for name strings
             pdd_hr=`printf %03d $(( 10#${lead_hr} ))`
-            wrf_acc=WRF_${acc_hr}QPF_${init_Y}${init_m}${init_d}${init_H}_F${pdd_hr}
+            wrf_acc=${CTR_FLW}_${acc_hr}QPF_${init_Y}${init_m}${init_d}${init_H}_F${pdd_hr}
 
             # Combine precip to accumulation period 
             cmd="${met} pcp_combine \

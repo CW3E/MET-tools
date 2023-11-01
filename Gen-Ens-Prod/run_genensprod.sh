@@ -1,13 +1,9 @@
 #################################################################################
 # Description
 #################################################################################
-# The purpose of this script is to compute grid statistics using MET
-# after pre-procssing WRF forecast data and StageIV precip data for
-# validating the forecast peformance. This script is based on original
-# source code provided by Rachel Weihs, Caroline Papadopoulos and Daniel
-# Steinhoff. This is re-written to homogenize project structure and to include
-# error handling, process logs and additional flexibility with batch processing 
-# ranges of data from multiple models and / or workflows.
+# The purpose of this script is to compute simple ensemble products using MET
+# Gen-Ens-Prod Tool after pre-procssing WRF forecast data using WRF-preprocess
+# scripts in this repository.
 #
 #################################################################################
 # License Statement
@@ -48,10 +44,10 @@ elif [[ ! -d ${USR_HME} || ! -r ${USR_HME} ]]; then
 		printf "${msg}"
   exit 1
 else
-  scrpt_dir=${USR_HME}/Grid-Stat
+  scrpt_dir=${USR_HME}/Gen-Ens-Prod
   if [[ ! -d ${scrpt_dir} || ! -r ${scrpt_dir} ]]; then
-    msg="ERROR: Grid-Stat script directory\n ${scrpt_dir}\n does not exist or is"
-				msg+=" not readable.\n"
+    msg="ERROR: Gen-Ens-Prod script directory\n ${scrpt_dir}\n does not exist or"
+				msg+=" is not readable.\n"
 				printf "${msg}"
     exit 1
   fi
@@ -144,16 +140,18 @@ if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
   		# define array of accumulation interval computation hours
   		acc_hrs=()
   		for (( acc_hr=${ACC_MIN}; acc_hr <= ${ACC_MAX}; acc_hr += ${ACC_INT} )); do
-      # check that the precip accumulations are summable from wrfcf files
-      if [ ! $(( ${acc_hr} % ${ANL_INT} )) = 0 ]; then
-        printf "ERROR: precip accumulation ${acc_hr} is not a multiple of ${ANL_INT}.\n"
-        exit 1
-  				else
-  						printf "Computing precipitation accumulation for interval ${acc_hr} hours.\n"
-        acc_hrs+=( ${acc_hr} )
-      fi
+  				printf "Computing precipitation accumulation for interval ${acc_hr} hours.\n"
+      acc_hrs+=( ${acc_hr} )
   		done
   fi
+elif [[ ${CMP_ACC} =~ ${FALSE} ]]; then
+		# load an array with an empty string if no accumulations
+		printf "Not computing accumulation statistics.\n"
+		acc_hrs=( "" )
+else
+		msg="ERROR: ${CMP_ACC} must be set 'TRUE' or 'FALSE' (case insensitive)"
+		msg+=" to compute accumulation statistics.\n"
+		exit 1
 fi
 
 # check for input data root
@@ -199,6 +197,56 @@ if [ -z ${OUT_DT_SUBDIR+x} ]; then
   exit 1
 fi
 
+# ensemble prefix and mem_ids below construct nested paths from ${IN_DT_SUBDIR}
+# defined above to loop over and link to work directory
+if [ -z ${ENS_PRFX+x} ]; then
+  msg="ERROR: ensemble member prefix to index value"
+  msg+=" is unset, set to empty string if not used.\n"
+		printf "${msg}"
+  exit 1
+fi
+
+if [[ ! ${ENS_MIN} =~ ${N_RE} ]]; then
+		printf "ERROR: min ensemble index \${ENS_MIN} is not numeric.\n"
+		exit 1
+else
+		# ensure base 10 for looping
+  ens_min=`printf $(( 10#${ENS_MIN} ))`
+fi
+
+if [[ ! ${ENS_MAX} =~ ${N_RE} ]]; then
+		printf "ERROR: max ensemble index \${ENS_MAX} is not numeric.\n"
+		exit 1
+else
+		# ensure base 10 for looping
+  ens_max=`printf $(( 10#${ENS_MAX} ))`
+fi
+
+if [ ${ens_min} -lt 0 ]; then
+		printf "ERROR: min ensemble index ${ENS_MIN} must be non-negative.\n"
+		exit 1
+elif [ ${ens_max} -lt ${ens_min} ]; then
+		msg="ERROR: max ensemble index ${ENS_MAX} must be greater than or equal"
+		msg+=" to the minimum ensemble index."
+		exit 1
+else 
+  # define array of ensemble member ids, padded three digits
+  mem_ids=()
+  for (( mem_id=${ens_min}; mem_id <= ${ens_max}; mem_id++ )); do
+				mem_ids+=( ${ENS_PRFX}`printf %03d $(( 10#${mem_id} ))` )
+  done
+		ens_min=`printf %03d $(( 10#${ens_min} ))`
+		ens_max=`printf %03d $(( 10#${ens_max} ))`
+fi
+
+# define path from ensemble member indexed directories defined above
+if [ -z ${IN_ENS_SUBDIR+x} ]; then
+  msg="ERROR: ensemble member subdirectory for input data \${IN_ENS_SUBDIR}"
+  msg+=" is unset, set to empty string if not used.\n"
+		printf "${msg}"
+  exit 1
+fi
+
 # define the verification field
 if [ ! ${VRF_FLD} ]; then
   printf "ERROR: verification field \${VRF_FLD} is not defined.\n"
@@ -210,101 +258,29 @@ if [ ! "${CAT_THR}" ]; then
   exit 1
 fi
 
-# List of landmasks for verification region, file name with extension
-if [ ! ${MSK_LST} ]; then
-  printf "ERROR: landmask list file \${MSK_LST} is not defined.\n"
+if [ -z ${CTR_MEM+x} ]; then
+  msg="ERROR: control member name \${CTR_MEM} is unset, set to empty"
+		msg+=" string if not used.\n"
+  printf "${msg}"
   exit 1
-elif [ ! -r ${MSK_LST} ]; then
-  printf "ERROR: landmask list file ${MSK_LST} does not exist or is not readable.\n"
-  exit 1
+elif [[ ${CTR_MEM} = "" ]]; then
+		${ctr_mem}=""
+elif [[ ${CTR_MEM} =~ ${N_RE} ]]; then
+		ctr_mem="-ctrl ${ENS_PRFX}`printf %03d $(( 10#${CTR_MEM} ))`"
+else 
+		msg="ERROR: \${CTR_MEM}\n ${CTR_MEM}\n should be set to a numerical index"
+		msg+=" or to an emptry string \"\" if unused.\n"
+		printf "${msg}"
+		exit 1
 fi
 
-# Root directory for landmasks
-if [ ! ${MSK_GRDS} ]; then
-  printf "ERROR: landmask directory \${MSK_GRDS} is not defined.\n"
-  exit 1
-elif [[ ! -d ${MSK_GRDS} || ! -r ${MSK_GRDS} ]]; then
-  printf "ERROR: landmask directory ${MSK_GRDS} does not exist or is not readable.\n"
-  exit 1
-fi
-
-# loop lines of the mask list, set temporary exit status before searching for masks
-error=0
-while read msk; do
-  fpath=${MSK_GRDS}/${msk}_mask_regridded_with_StageIV.nc
-  if [ -r "${fpath}" ]; then
-    printf "Found\n ${fpath}_mask_regridded_with_StageIV.nc\n landmask.\n"
-  else
-    msg="ERROR: verification region landmask\n ${fpath}\n"
-    msg+=" does not exist or is not readable.\n"
-    printf "${msg}"
-
-    # create exit status flag to kill program, after checking all files in list
-    error=1
-  fi
-done < "${MSK_LST}"
-
-if [ ${error} -eq 1 ]; then
-  msg="ERROR: Exiting due to missing landmasks, please see the above error "
-  msg+="messages and verify the location for these files. These files can be "
-  msg+="generated from lat-lon text files using the run_vxmask.sh utility script."
-  exit 1
-fi
-
-# define the interpolation method and related parameters
-if [ ! ${INT_MTHD} ]; then
-  printf "ERROR: regridding interpolation method \${INT_MTHD} is not defined.\n"
-  exit 1
-fi
-
-if [ ! ${INT_WDTH} ]; then 
-  printf "ERROR: interpolation neighborhood width \${INT_WDTH} is not defined.\n"
-  exit 1
-fi
-
-# neighborhood width for neighborhood methods
+# neighborhood width for neighborhood ensemble (maximum) probability estimates
 if [ ! ${NBRHD_WDTH} ]; then
   printf "ERROR: neighborhood statistics width \${NBRHD_WDTH} is not defined.\n"
   exit 1
 fi
 
-# number of bootstrap resamplings, set equal to 0 to turn off
-if [[ ! ${BTSTRP} =~ ${N_RE} || ${BTSTRP} -lt 0 ]]; then
-  printf "ERROR: bootstrap resampling number \${BTSRP} is not defined.\n"
-  printf "Set \${BTSTRP} to a positive integer or to 0 to turn off.\n"
-  exit 1
-fi
-
-# rank correlation computation flag, TRUE or FALSE
-if [[ ${RNK_CRR} != "TRUE" && ${RNK_CRR} != "FALSE" ]]; then
-  msg="ERROR: \${RNK_CRR} must be set to 'TRUE' or 'FALSE' to decide "
-  msg+="if computing rank statistics.\n"
-  printf "${msg}"
-  exit 1
-fi
-
-if [ -z ${PRFX+x} ]; then
-  msg="ERROR: gridstat output \${PRFX} is unset, set to empty string if not used.\n"
-  printf "${msg}"
-  exit 1
-elif [ ${#PRFX} -gt 0 ]; then
-  # for a non-empty prefix, append an underscore for compound names
-  prfx="${PRFX}_"
-else
-  prfx=""
-fi
-
-# check for software and data deps.
-if [ ! ${STC_ROOT} ]; then
-  printf "ERROR: \${STC_ROOT} is not defined.\n"	 
-  exit 1
-elif [[ ! -d ${STC_ROOT} || ! -r ${STC_ROOT} ]]; then
-  msg="ERROR: static verification data directory\n ${STC_ROOT}\n"
-		msg+=" does not exist or is not readable.\n"
-		printf "${msg}"
-  exit 1
-fi
-
+# check for software and script deps.
 if [ ! ${MET_VER} ]; then
   msg="MET version \${MET_VER} is not defined.\n"
   printf "${msg}"
@@ -317,8 +293,8 @@ if [ ! -x ${MET} ]; then
   exit 1
 fi
 
-if [ ! -r ${scrpt_dir}/GridStatConfigTemplate ]; then
-  msg="GridStatConfig template \n ${scrpt_dir}/GridStatConfigTemplate\n"
+if [ ! -r ${scrpt_dir}/GenEnsProdConfigTemplate ]; then
+  msg="GenEnsProdConfig template \n ${scrpt_dir}/GenEnsProdConfigTemplate\n"
   msg+=" does not exist or is not readable.\n"
   printf "${msg}"
   exit 1
@@ -340,30 +316,12 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
   # set and clean working directory based on looped forecast start date
   wrk_dir=${OUT_CYC_DIR}/${dirstr}${OUT_DT_SUBDIR}
   mkdir -p ${wrk_dir}
-  rm -f ${wrk_dir}/grid_stat_${PRFX}*.txt
-  rm -f ${wrk_dir}/grid_stat_${PRFX}*.stat
-  rm -f ${wrk_dir}/grid_stat_${PRFX}*.nc
-  rm -f ${wrk_dir}/${prfx}GridStatConfig
-  rm -f ${wrk_dir}/PLY_MSK.txt
-
-  # loop lines of the mask list, generate PLY_MSK.txt for GridStatConfig insert
-  msk_count=`wc -l < ${MSK_LST}`
-  line_count=1
-  while read msk; do
-    if [ ${line_count} -lt ${msk_count} ]; then
-      ply_msk="\"/MSK_GRDS/${msk}_mask_regridded_with_StageIV.nc\",\n"
-      printf ${ply_msk} >> ${wrk_dir}/PLY_MSK.txt
-    else
-      ply_msk="\"/MSK_GRDS/${msk}_mask_regridded_with_StageIV.nc\""
-      printf ${ply_msk} >> ${wrk_dir}/PLY_MSK.txt
-    fi
-    line_count=$(( ${line_count} + 1 ))
-  done <${MSK_LST}
 
   # Define directory privileges for singularity exec
   met="singularity exec -B ${wrk_dir}:/wrk_dir:rw,"
-  met+="${STC_ROOT}:/STC_ROOT:ro,${MSK_GRDS}:/MSK_GRDS:ro,"
-  met+="${in_dir}:/in_dir:ro ${MET}"
+  met+="${scrpt_dir}:/scrpt_dir:ro "
+  met+="${MET}"
+  printf "${cmd}\n"; eval "${cmd}"
 
   # loop lead hours for forecast valid time for each initialization time
   for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INT} )); do
@@ -378,66 +336,57 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
     vld_d=${anl_stop:8:2}
     vld_H=${anl_stop:11:2}
     
-    # forecast file name based on forecast initialization and lead
+    # forecast file name based on forecast initialization, accumulation and lead
     pdd_hr=`printf %03d $(( 10#${lead_hr} ))`
-    for_in=${CTR_FLW}_${ACC_INT}${VRF_FLD}_${dirstr}_F${pdd_hr}.nc
+				for acc_hr in ${acc_hrs[@]}; do
+						if [[ ${CMP_ACC} =~ ${TRUE} && ${acc_hr} -ge ${lead_hr} ]] || [[ ${CMP_ACC} =~ ${FALSE} ]]; then
+						  for mem_id in ${mem_ids[@]}; do
+						  		in_path=${in_dir}/${mem_id}${IN_ENS_SUBDIR}
+          f_in=${in_path}/${CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}.nc
+										if [ -r ${f_in} ]; then
+												# keep a record of the original members used for computation
+												printf "${f_in}\n" >> ${wrk_dir}/${CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}_ens_mems.txt
 
-    # obs file defined in terms of vld time
-    obs_in=StageIV_QPE_${vld_Y}${vld_m}${vld_d}${vld_H}.nc
+												# generate an ensemble index list on the fly
+												printf "/wrk_dir/${mem_id}\n" >> ${wrk_dir}/ens_list.txt
 
-    if [ -r ${in_dir}/${for_in} ]; then
-      if [ -r ${STC_ROOT}/${obs_in} ]; then
-        # update GridStatConfigTemplate archiving file in working directory
-        # this remains unchanged on inner loop
-        if [ ! -r ${wrk_dir}/${prfx}GridStatConfig ]; then
-          cat ${scrpt_dir}/GridStatConfigTemplate \
-            | sed "s/INT_MTHD/method = ${INT_MTHD}/" \
-            | sed "s/INT_WDTH/width = ${INT_WDTH}/" \
-            | sed "s/RNK_CRR/rank_corr_flag      = ${RNK_CRR}/" \
-            | sed "s/VRF_FLD/name       = \"${VRF_FLD}_${ACC_INT}hr\"/" \
+												# link the file to the work directory
+            cmd="ln -sf ${f_in} ${wrk_dir}/${mem_id}"
+												printf "${cmd}\n"; eval "${cmd}"
+										else
+												printf "ERROR: ensemble member ${f_in} does not exist or is not readable.\n"
+												exit 1
+										fi
+						  done
+								# define output file name depending on parameters
+						  f_out=${CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}_ens-${ens_min}-${ens_max}_prd.nc
+
+        # update GenEnsProdConfigTemplate archiving file in working directory
+        # this remains unchanged on accumulation intervals
+								if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
+										fld=${VRF_FLD}_${acc_hr}hr
+								else
+										fld=${VRF_FLD}
+								fi
+        if [ ! -r ${wrk_dir}/GenEnsProdConfig ]; then
+          cat ${scrpt_dir}/GenEnsProdConfigTemplate \
+            | sed "s/VRF_FLD/name       = \"${fld}\"/" \
             | sed "s/CAT_THR/cat_thresh = ${CAT_THR}/" \
-            | sed "/PLY_MSK/r ${wrk_dir}/PLY_MSK.txt" \
-            | sed "/PLY_MSK/d " \
-            | sed "s/BTSTRP/n_rep    = ${BTSTRP}/" \
             | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
-            | sed "s/PRFX/output_prefix    = \"${PRFX}\"/" \
             | sed "s/MET_VER/version           = \"V${MET_VER}\"/" \
-            > ${wrk_dir}/${prfx}GridStatConfig
+            > ${wrk_dir}/GenEnsProdConfig${acc_hr}
         fi
 
-        # Run gridstat
-        cmd="${met} grid_stat -v 10 \
-        /in_dir/${for_in} \
-        /STC_ROOT/${obs_in} \
-        /wrk_dir/${prfx}GridStatConfig \
-        -outdir /wrk_dir"
+        # Run gen_ens_prod
+        cmd="${met} gen_ens_prod -v 10 \
+        -ens /wrk_dir/ens_list.txt \
+        -out /wrk_dir/${f_out} \
+        -config /wrk_dir/GenEnsProdConfig${acc_hr} \
+				    ${ctr_mem}"
         printf "${cmd}\n"; eval "${cmd}"
-        
-      else
-        msg="Observation verification file\n ${STC_ROOT}/${obs_in}\n is not "
-        msg+=" readable or does not exist, skipping grid_stat for forecast "
-        msg+="initialization ${dirstr}, forecast hour ${lead_hr}.\n"
-        printf "${msg}"
-      fi
-
-    else
-      msg="gridstat input file\n ${wrk_dir}/${prfx}${for_in}\n is not readable " 
-      msg+=" or does not exist, skipping grid_stat for forecast initialization "
-      msg+="${dirstr}, forecast hour ${lead_hr}.\n"
-      printf "${msg}"
-    fi
-
-    # clean up working directory from accumulation time
-    cmd="rm -f ${wrk_dir}/${prfx}${for_in}"
-    printf "${cmd}\n"; eval "${cmd}"
+						fi
+    done 
   done
-
-  # clean up working directory from forecast start time
-  cmd="rm -f ${wrk_dir}/*regridded_with_StageIV.nc"
-  printf "${cmd}\n"; eval "${cmd}"
-
-  cmd="rm -f ${wrk_dir}/PLY_MSK.txt"
-  printf "${cmd}\n"; eval "${cmd}"
 done
 
 msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "

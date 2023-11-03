@@ -64,7 +64,7 @@ export ANL_MAX=120
 # Define the increment at which to process forecast outputs (HH)
 export ANL_INC=24
 
-# Compute precipitation accumulation from cf file, TRUE or FALSE
+# Compute precipitation accumulation, TRUE or FALSE
 export CMP_ACC=TRUE
 
 # Defines the min / max accumulation interval for precip

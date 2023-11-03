@@ -44,15 +44,15 @@ if [ ! ${USR_HME} ]; then
   exit 1
 elif [[ ! -d ${USR_HME} || ! -r ${USR_HME} ]]; then
   msg="ERROR: MET-tools clone directory\n ${USR_HME}\n does not exist or is"
-		msg+=" not readable.\n"
-		printf "${msg}"
+    msg+=" not readable.\n"
+    printf "${msg}"
   exit 1
 else
   scrpt_dir=${USR_HME}/Grid-Stat
   if [[ ! -d ${scrpt_dir} || ! -r ${scrpt_dir} ]]; then
     msg="ERROR: Grid-Stat script directory\n ${scrpt_dir}\n does not exist or is"
-				msg+=" not readable.\n"
-				printf "${msg}"
+        msg+=" not readable.\n"
+        printf "${msg}"
     exit 1
   fi
 fi
@@ -68,30 +68,30 @@ if [[ ${IF_ENS_PRD} =~ ${TRUE} ]]; then
   if [[ ! ${ENS_MIN} =~ ${N_RE} ]]; then
     printf "ERROR: min ensemble index \${ENS_MIN} is not numeric.\n"
     exit 1
-		elif [[ ! ${ENS_MAX} =~ ${N_RE} ]]; then
+    elif [[ ! ${ENS_MAX} =~ ${N_RE} ]]; then
     printf "ERROR: max ensemble index \${ENS_MAX} is not numeric.\n"
     exit 1
-		else
-				pstfx="_ens-${ENS_MIN}-${ENS_MAX}_prd"
+    else
+        pstfx="_ens-${ENS_MIN}-${ENS_MAX}_prd"
     msg="Computing gridstat on ${CTR_FLW} ensemble product from members"
-				msg+=" ${ENS_MIN} to ${ENS_MAX}.\n"
-				printf ${msg}
-		fi
+        msg+=" ${ENS_MIN} to ${ENS_MAX}.\n"
+        printf ${msg}
+    fi
 elif [[ ${IF_ENS_PRD} =~ ${FALSE} ]]; then
-		pstfx=""
+    pstfx=""
   printf "Computing gridstat on non-ensemble product.\n"
 else
   msg="ERROR: \${IF_ENS_PRD} must be TRUE or FALSE (case insensitive)"
-		msg+=" if verifying GenEnsProd output.\n"
-		printf "${msg}"
+    msg+=" if verifying GenEnsProd output.\n"
+    printf "${msg}"
   exit 1
 fi
 
 # Convert STRT_DT from 'YYYYMMDDHH' format to strt_dt Unix date format
 if [[ ! ${STRT_DT} =~ ${ISO_RE} ]]; then
   msg="ERROR: start date \${STRT_DT}\n ${STRT_DT}\n"
-		msg+=" is not in YYYYMMDDHH format.\n"
-		printf "${msg}"
+    msg+=" is not in YYYYMMDDHH format.\n"
+    printf "${msg}"
   exit 1
 else
   strt_dt="${STRT_DT:0:8} ${STRT_DT:8:2}"
@@ -101,8 +101,8 @@ fi
 # Convert STOP_DT from 'YYYYMMDDHH' format to stop_dt Unix date format 
 if [[ ! ${STOP_DT} =~ ${ISO_RE} ]]; then
   msg="ERROR: stop date \${STOP_DT}\n ${STOP_DT}\n"
-		msg+=" is not in YYYYMMDDHH format.\n"
-		printf "${msg}"
+    msg+=" is not in YYYYMMDDHH format.\n"
+    printf "${msg}"
   exit 1
 else
   stop_dt="${STOP_DT:0:8} ${STOP_DT:8:2}"
@@ -114,15 +114,15 @@ if [[ ! ${ANL_MIN} =~ ${N_RE} ]]; then
   printf "ERROR: min forecast hour \${ANL_MIN} is not numeric.\n"
   exit 1
 elif [ ${ANL_MIN} -lt 0 ]; then
-		printf "ERROR: min forecast hour ${ANL_MIN} must be non-negative.\n"
-		exit 1
+    printf "ERROR: min forecast hour ${ANL_MIN} must be non-negative.\n"
+    exit 1
 elif [[ ! ${ANL_MAX} =~ ${N_RE} ]]; then
   printf "ERROR: max forecast hour \${ANL_MAX} is not numeric.\n"
   exit 1
 elif [ ${ANL_MAX} -lt ${ANL_MIN} ]; then
   msg="ERROR: max forecast hour ${ANL_MAX} must be greater than or equal to"
-		msg+="min forecast hour ${ANL_MIN}.\n"
-		printf "${msg}"
+    msg+="min forecast hour ${ANL_MIN}.\n"
+    printf "${msg}"
 fi
 
 # define the interval at which to process forecast outputs (HH)
@@ -139,25 +139,25 @@ fi
 if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
   # define the accumulation intervals for precip
   if [[ ! ${ACC_MIN} =~ ${N_RE} ]]; then
-  		printf "ERROR: min precip accumulation interval compuation is not numeric.\n"
-  		exit 1
+      printf "ERROR: min precip accumulation interval compuation is not numeric.\n"
+      exit 1
   elif [ ${ACC_MIN} -le 0 ]; then
     msg="ERROR: min precip accumulation interval ${ACC_MIN} must be greater than"
-  		msg+=" zero.\n"
-  		printf "${msg}"
+      msg+=" zero.\n"
+      printf "${msg}"
     exit 1
   elif [[ ! ${ACC_MAX} =~ ${N_RE} ]]; then
-  		printf "ERROR: max precip accumulation interval compuation is not numeric.\n"
-  		exit 1
+      printf "ERROR: max precip accumulation interval compuation is not numeric.\n"
+      exit 1
   elif [ ${ACC_MAX} -lt ${ACC_MIN} ]; then
     msg="ERROR: max precip accumulation interval ${ACC_MAX} must be greater than"
-  		msg+=" min precip accumulation interval.\n"
-  		printf "${msg}"
+      msg+=" min precip accumulation interval.\n"
+      printf "${msg}"
     exit 1
   elif [[ ! ${ACC_INC} =~ ${N_RE} ]]; then
     msg="ERROR: inteval between precip accumulation computations \${ACC_INC}"
-  		msg+=" is not numeric.\n"
-  		printf "${msg}"
+      msg+=" is not numeric.\n"
+      printf "${msg}"
     exit 1
   elif [ ! $(( (${ACC_MAX} - ${ACC_MIN}) % ${ACC_INC} )) = 0 ]; then
     msg="ERROR: the interval [\${ACC_MIN}, \${ACC_MAX}]\n [${ACC_MIN}, ${ACC_MAX}]\n" 
@@ -165,30 +165,30 @@ if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
     printf "${msg}"
     exit 1
   else
-  		# define array of accumulation interval computation hours
-  		acc_hrs=()
-  		for (( acc_hr=${ACC_MIN}; acc_hr <= ${ACC_MAX}; acc_hr += ${ACC_INC} )); do
+      # define array of accumulation interval computation hours
+      acc_hrs=()
+      for (( acc_hr=${ACC_MIN}; acc_hr <= ${ACC_MAX}; acc_hr += ${ACC_INC} )); do
       # check that the precip accumulations are summable from wrfcf files
       if [ ! $(( ${acc_hr} % ${ANL_INC} )) = 0 ]; then
         printf "ERROR: precip accumulation ${acc_hr} is not a multiple of ${ANL_INC}.\n"
         exit 1
-  				else
-  						printf "Computing precipitation accumulation for interval ${acc_hr} hours.\n"
+          else
+              printf "Computing precipitation accumulation for interval ${acc_hr} hours.\n"
         acc_hrs+=( ${acc_hr} )
       fi
-  		done
+      done
   fi
 fi
 
 # check for input data root
 if [ ! ${IN_CYC_DIR} ]; then
-		msg="ERROR: directory of ISO date sub-directories \${IN_CYC_DIR} is"
-		msg+=" not defined.\n"
-		printf "${msg}"
-		exit 1
+    msg="ERROR: directory of ISO date sub-directories \${IN_CYC_DIR} is"
+    msg+=" not defined.\n"
+    printf "${msg}"
+    exit 1
 elif [[ ! -d ${IN_CYC_DIR} || ! -r ${IN_CYC_DIR} ]]; then
   msg="ERROR: input data root directory\n ${IN_CYC_DIR}\n"
-		msg+=" does not exist or is not readable.\n"
+    msg+=" does not exist or is not readable.\n"
   exit 1
 fi
 
@@ -196,7 +196,7 @@ fi
 if [ ! ${OUT_CYC_DIR} ]; then
   msg="ERROR: cycle gridstat output root directory \${OUT_CYC_DIR} "
   msg+="is not defined.\n"
-		printf "${msg}"
+    printf "${msg}"
   exit 1
 else
   cmd="mkdir -p ${OUT_CYC_DIR}"
@@ -206,21 +206,21 @@ fi
 # check for output data root created successfully
 if [[ ! -d ${OUT_CYC_DIR} || ! -w ${OUT_CYC_DIR} ]]; then
   msg="ERROR: output data root directory\n ${OUT_CYC_DIR}\n does not"
-		msg+=" exist or is not writable.\n"
+    msg+=" exist or is not writable.\n"
   exit 1
 fi
 
 if [ -z ${IN_DT_SUBDIR+x} ]; then
   msg="ERROR: cycle subdirectory for input data \${IN_DT_SUBDIR} is unset,"
   msg+=" set to empty string if not used.\n"
-		printf "${msg}"
+    printf "${msg}"
   exit 1
 fi
 
 if [ -z ${OUT_DT_SUBDIR+x} ]; then
   msg="ERROR: cycle subdirectory for input data \${OUT_DT_SUBDIR} is unset,"
   msg+=" set to empty string if not used.\n"
-		printf "${msg}"
+    printf "${msg}"
   exit 1
 fi
 
@@ -305,12 +305,12 @@ fi
 
 # check for software and data deps.
 if [ ! ${STC_ROOT} ]; then
-  printf "ERROR: \${STC_ROOT} is not defined.\n"	 
+  printf "ERROR: \${STC_ROOT} is not defined.\n"   
   exit 1
 elif [[ ! -d ${STC_ROOT} || ! -r ${STC_ROOT} ]]; then
   msg="ERROR: static verification data directory\n ${STC_ROOT}\n"
-		msg+=" does not exist or is not readable.\n"
-		printf "${msg}"
+    msg+=" does not exist or is not readable.\n"
+    printf "${msg}"
   exit 1
 fi
 
@@ -354,8 +354,8 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
   # check for work directory created successfully
   if [[ ! -d ${wrk_dir} || ! -w ${wrk_dir} ]]; then
     msg="ERROR: work directory\n ${wrk_dir}\n does not"
-  		msg+=" exist or is not writable.\n"
-				printf "${msg}"
+      msg+=" exist or is not writable.\n"
+        printf "${msg}"
     exit 1
   fi
 
@@ -397,14 +397,14 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
     
     pdd_hr=`printf %03d $(( 10#${lead_hr} ))`
 
-				for acc_hr in ${acc_hrs[@]}; do
-						if [[ ${CMP_ACC} =~ ${TRUE} && ${acc_hr} -le ${lead_hr} ]]; then
+        for acc_hr in ${acc_hrs[@]}; do
+            if [[ ${CMP_ACC} =~ ${TRUE} && ${acc_hr} -le ${lead_hr} ]]; then
         for_in=${CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}${pstfx}.nc
-								if [[ ${IF_ENS_PRD} =~ ${TRUE} ]]; then
-										fld=${VRF_FLD}_${acc_hr}hr_A${acc_hr}_ENS_MEAN
-								else
-										fld=${VRF_FLD}_${acc_hr}hr
-								fi
+                if [[ ${IF_ENS_PRD} =~ ${TRUE} ]]; then
+                    fld=${VRF_FLD}_${acc_hr}hr_A${acc_hr}_ENS_MEAN
+                else
+                    fld=${VRF_FLD}_${acc_hr}hr
+                fi
 
         # obs file defined in terms of valid time
         obs_in=StageIV_QPE_${vld_Y}${vld_m}${vld_d}${vld_H}.nc
@@ -453,14 +453,14 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
         # clean up working directory from accumulation time
         cmd="rm -f ${wrk_dir}/${for_in}"
         printf "${cmd}\n"; eval "${cmd}"
-						elif [[ ${CMP_ACC} =~ ${FALSE} ]]; then
+            elif [[ ${CMP_ACC} =~ ${FALSE} ]]; then
         for_in=${CTR_FLW}_${VRF_FLD}_${dirstr}_F${pdd_hr}${pstfx}.nc
 
-								if [[ ${IF_ENS_PRD} =~ ${TRUE} ]]; then
-										fld=${VRF_FLD}_ENS_MEAN
-								else
-										fld=${VRF_FLD}
-								fi
+                if [[ ${IF_ENS_PRD} =~ ${TRUE} ]]; then
+                    fld=${VRF_FLD}_ENS_MEAN
+                else
+                    fld=${VRF_FLD}
+                fi
 
         # obs file defined in terms of valid time
         obs_in=${VRF_REF}_${VRF_FLD}_${dirstr}_F${pdd_hr}${pstfx}.nc
@@ -510,8 +510,8 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
         cmd="rm -f ${wrk_dir}/${for_in}"
         printf "${cmd}\n"; eval "${cmd}"
 
-						fi
-				done
+            fi
+        done
   done
 
   # clean up working directory from forecast start time

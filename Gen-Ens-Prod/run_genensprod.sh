@@ -40,15 +40,15 @@ if [ ! ${USR_HME} ]; then
   exit 1
 elif [[ ! -d ${USR_HME} || ! -r ${USR_HME} ]]; then
   msg="ERROR: MET-tools clone directory\n ${USR_HME}\n does not exist or is"
-		msg+=" not readable.\n"
-		printf "${msg}"
+    msg+=" not readable.\n"
+    printf "${msg}"
   exit 1
 else
   scrpt_dir=${USR_HME}/Gen-Ens-Prod
   if [[ ! -d ${scrpt_dir} || ! -r ${scrpt_dir} ]]; then
     msg="ERROR: Gen-Ens-Prod script directory\n ${scrpt_dir}\n does not exist or"
-				msg+=" is not readable.\n"
-				printf "${msg}"
+        msg+=" is not readable.\n"
+        printf "${msg}"
     exit 1
   fi
 fi
@@ -62,8 +62,8 @@ fi
 # Convert STRT_DT from 'YYYYMMDDHH' format to strt_dt Unix date format
 if [[ ! ${STRT_DT} =~ ${ISO_RE} ]]; then
   msg="ERROR: start date \${STRT_DT}\n ${STRT_DT}\n"
-		msg+=" is not in YYYYMMDDHH format.\n"
-		printf "${msg}"
+    msg+=" is not in YYYYMMDDHH format.\n"
+    printf "${msg}"
   exit 1
 else
   strt_dt="${STRT_DT:0:8} ${STRT_DT:8:2}"
@@ -73,8 +73,8 @@ fi
 # Convert STOP_DT from 'YYYYMMDDHH' format to stop_dt Unix date format 
 if [[ ! ${STOP_DT} =~ ${ISO_RE} ]]; then
   msg="ERROR: stop date \${STOP_DT}\n ${STOP_DT}\n"
-		msg+=" is not in YYYYMMDDHH format.\n"
-		printf "${msg}"
+    msg+=" is not in YYYYMMDDHH format.\n"
+    printf "${msg}"
   exit 1
 else
   stop_dt="${STOP_DT:0:8} ${STOP_DT:8:2}"
@@ -86,15 +86,15 @@ if [[ ! ${ANL_MIN} =~ ${N_RE} ]]; then
   printf "ERROR: min forecast hour \${ANL_MIN} is not numeric.\n"
   exit 1
 elif [ ${ANL_MIN} -lt 0 ]; then
-		printf "ERROR: min forecast hour ${ANL_MIN} must be non-negative.\n"
-		exit 1
+    printf "ERROR: min forecast hour ${ANL_MIN} must be non-negative.\n"
+    exit 1
 elif [[ ! ${ANL_MAX} =~ ${N_RE} ]]; then
   printf "ERROR: max forecast hour \${ANL_MAX} is not numeric.\n"
   exit 1
 elif [ ${ANL_MAX} -lt ${ANL_MIN} ]; then
   msg="ERROR: max forecast hour ${ANL_MAX} must be greater than or equal to"
-		msg+="min forecast hour ${ANL_MIN}.\n"
-		printf "${msg}"
+    msg+="min forecast hour ${ANL_MIN}.\n"
+    printf "${msg}"
 fi
 
 # define the interval at which to process forecast outputs (HH)
@@ -107,31 +107,31 @@ elif [ ! $(( (${ANL_MAX} - ${ANL_MIN}) % ${ANL_INC} )) = 0 ]; then
   printf "${msg}"
   exit 1
 else
-		printf "Forecast start dates are incremented by ${ANL_INC} hours.\n"
+    printf "Forecast start dates are incremented by ${ANL_INC} hours.\n"
 fi
 
 if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
   # define the accumulation intervals for precip
   if [[ ! ${ACC_MIN} =~ ${N_RE} ]]; then
-  		printf "ERROR: min precip accumulation interval compuation is not numeric.\n"
-  		exit 1
+      printf "ERROR: min precip accumulation interval compuation is not numeric.\n"
+      exit 1
   elif [ ${ACC_MIN} -le 0 ]; then
     msg="ERROR: min precip accumulation interval ${ACC_MIN} must be greater than"
-  		msg+=" zero.\n"
-  		printf "${msg}"
+      msg+=" zero.\n"
+      printf "${msg}"
     exit 1
   elif [[ ! ${ACC_MAX} =~ ${N_RE} ]]; then
-  		printf "ERROR: max precip accumulation interval compuation is not numeric.\n"
-  		exit 1
+      printf "ERROR: max precip accumulation interval compuation is not numeric.\n"
+      exit 1
   elif [ ${ACC_MAX} -lt ${ACC_MIN} ]; then
     msg="ERROR: max precip accumulation interval ${ACC_MAX} must be greater than"
-  		msg+=" min precip accumulation interval.\n"
-  		printf "${msg}"
+      msg+=" min precip accumulation interval.\n"
+      printf "${msg}"
     exit 1
   elif [[ ! ${ACC_INC} =~ ${N_RE} ]]; then
     msg="ERROR: increment between precip accumulation intervals \${ACC_INC}"
-  		msg+=" is not numeric.\n"
-  		printf "${msg}"
+      msg+=" is not numeric.\n"
+      printf "${msg}"
     exit 1
   elif [ ! $(( (${ACC_MAX} - ${ACC_MIN}) % ${ACC_INC} )) = 0 ]; then
     msg="ERROR: the interval [\${ACC_MIN}, \${ACC_MAX}]\n [${ACC_MIN}, ${ACC_MAX}]\n" 
@@ -139,32 +139,32 @@ if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
     printf "${msg}"
     exit 1
   else
-  		# define array of accumulation interval computation hours
-  		acc_hrs=()
-  		for (( acc_hr=${ACC_MIN}; acc_hr <= ${ACC_MAX}; acc_hr += ${ACC_INC} )); do
-  				printf "Computing precipitation accumulation for interval ${acc_hr} hours.\n"
+      # define array of accumulation interval computation hours
+      acc_hrs=()
+      for (( acc_hr=${ACC_MIN}; acc_hr <= ${ACC_MAX}; acc_hr += ${ACC_INC} )); do
+          printf "Computing precipitation accumulation for interval ${acc_hr} hours.\n"
       acc_hrs+=( ${acc_hr} )
-  		done
+      done
   fi
 elif [[ ${CMP_ACC} =~ ${FALSE} ]]; then
-		# load an array with an empty string if no accumulations
-		printf "Not computing accumulation statistics.\n"
-		acc_hrs=( "" )
+    # load an array with an empty string if no accumulations
+    printf "Not computing accumulation statistics.\n"
+    acc_hrs=( "" )
 else
-		msg="ERROR: ${CMP_ACC} must be set 'TRUE' or 'FALSE' (case insensitive)"
-		msg+=" to compute accumulation statistics.\n"
-		exit 1
+    msg="ERROR: ${CMP_ACC} must be set 'TRUE' or 'FALSE' (case insensitive)"
+    msg+=" to compute accumulation statistics.\n"
+    exit 1
 fi
 
 # check for input data root
 if [ ! ${IN_CYC_DIR} ]; then
-		msg="ERROR: directory of ISO date sub-directories \${IN_CYC_DIR} is"
-		msg+=" not defined.\n"
-		printf "${msg}"
-		exit 1
+    msg="ERROR: directory of ISO date sub-directories \${IN_CYC_DIR} is"
+    msg+=" not defined.\n"
+    printf "${msg}"
+    exit 1
 elif [[ ! -d ${IN_CYC_DIR} || ! -r ${IN_CYC_DIR} ]]; then
   msg="ERROR: input data root directory\n ${IN_CYC_DIR}\n"
-		msg+=" does not exist or is not readable.\n"
+    msg+=" does not exist or is not readable.\n"
   exit 1
 fi
 
@@ -172,7 +172,7 @@ fi
 if [ ! ${OUT_CYC_DIR} ]; then
   msg="ERROR: cycle gridstat output root directory \${OUT_CYC_DIR} "
   msg+="is not defined.\n"
-		printf "${msg}"
+    printf "${msg}"
   exit 1
 else
   cmd="mkdir -p ${OUT_CYC_DIR}"
@@ -182,21 +182,21 @@ fi
 # check for output data root created successfully
 if [[ ! -d ${OUT_CYC_DIR} || ! -w ${OUT_CYC_DIR} ]]; then
   msg="ERROR: output data root directory\n ${OUT_CYC_DIR}\n does not"
-		msg+=" exist or is not writable.\n"
+    msg+=" exist or is not writable.\n"
   exit 1
 fi
 
 if [ -z ${IN_DT_SUBDIR+x} ]; then
   msg="ERROR: cycle subdirectory for input data \${IN_DT_SUBDIR} is unset,"
   msg+=" set to empty string if not used.\n"
-		printf "${msg}"
+    printf "${msg}"
   exit 1
 fi
 
 if [ -z ${OUT_DT_SUBDIR+x} ]; then
   msg="ERROR: cycle subdirectory for input data \${OUT_DT_SUBDIR} is unset,"
   msg+=" set to empty string if not used.\n"
-		printf "${msg}"
+    printf "${msg}"
   exit 1
 fi
 
@@ -205,77 +205,77 @@ fi
 if [ -z ${ENS_PRFX+x} ]; then
   msg="ERROR: ensemble member prefix to index value"
   msg+=" is unset, set to empty string if not used.\n"
-		printf "${msg}"
+    printf "${msg}"
   exit 1
 fi
 
 if [[ ! ${ENS_MIN} =~ ${N_RE} ]]; then
-		printf "ERROR: min ensemble index \${ENS_MIN} is not numeric.\n"
-		exit 1
+    printf "ERROR: min ensemble index \${ENS_MIN} is not numeric.\n"
+    exit 1
 else
-		# ensure base 10 for looping
+    # ensure base 10 for looping
   ens_min=`printf $(( 10#${ENS_MIN} ))`
 fi
 
 if [[ ! ${ENS_MAX} =~ ${N_RE} ]]; then
-		printf "ERROR: max ensemble index \${ENS_MAX} is not numeric.\n"
-		exit 1
+    printf "ERROR: max ensemble index \${ENS_MAX} is not numeric.\n"
+    exit 1
 else
-		# ensure base 10 for looping
+    # ensure base 10 for looping
   ens_max=`printf $(( 10#${ENS_MAX} ))`
 fi
 
 if [ -z ${CTR_MEM+x} ]; then
   msg="ERROR: control member name \${CTR_MEM} is unset, set to empty"
-		msg+=" string if not used.\n"
+    msg+=" string if not used.\n"
   printf "${msg}"
   exit 1
 elif [[ ${CTR_MEM} = "" ]]; then
-		printf "No control member is used for ensemble product computation.\n"
-		ctr_id=""
-		ctr_mem=""
+    printf "No control member is used for ensemble product computation.\n"
+    ctr_id=""
+    ctr_mem=""
 elif [[ ${CTR_MEM} =~ ${N_RE} ]]; then
-		ctr_id="${ENS_PRFX}`printf %0${ENS_PDD}d $(( 10#${CTR_MEM} ))`"
-		printf "Ensemble id ${ctr_id} is used as control for ensemble product computation.\n"
-		ctr_mem="-ctrl /wrk_dir/${ctr_id}"
+    ctr_id="${ENS_PRFX}`printf %0${ENS_PDD}d $(( 10#${CTR_MEM} ))`"
+    printf "Ensemble id ${ctr_id} is used as control for ensemble product computation.\n"
+    ctr_mem="-ctrl /wrk_dir/${ctr_id}"
 else 
-		msg="ERROR: \${CTR_MEM}\n ${CTR_MEM}\n should be set to a numerical index"
-		msg+=" or to an emptry string \"\" if unused.\n"
-		printf "${msg}"
-		exit 1
+    msg="ERROR: \${CTR_MEM}\n ${CTR_MEM}\n should be set to a numerical index"
+    msg+=" or to an emptry string \"\" if unused.\n"
+    printf "${msg}"
+    exit 1
 fi
 
 if [ ${ens_min} -lt 0 ]; then
-		printf "ERROR: min ensemble index ${ENS_MIN} must be non-negative.\n"
-		exit 1
+    printf "ERROR: min ensemble index ${ENS_MIN} must be non-negative.\n"
+    exit 1
 elif [ ${ens_max} -lt ${ens_min} ]; then
-		msg="ERROR: max ensemble index ${ENS_MAX} must be greater than or equal"
-		msg+=" to the minimum ensemble index."
-		exit 1
+    msg="ERROR: max ensemble index ${ENS_MAX} must be greater than or equal"
+    msg+=" to the minimum ensemble index."
+    exit 1
 else 
   # define array of ensemble member ids, padded ${ENS_PDD} digits
   mem_ids=()
-		mem_lst=""
+    mem_lst=""
   for (( ens_id=${ens_min}; ens_id <= ${ens_max}; ens_id++ )); do
-				mem_id=${ENS_PRFX}`printf %0${ENS_PDD}d $(( 10#${ens_id} ))`
+        mem_id=${ENS_PRFX}`printf %0${ENS_PDD}d $(( 10#${ens_id} ))`
 
-				# generate a complete list for looping
-				mem_ids+=( ${mem_id} )
-				if [ ! ${mem_id} = ${ctr_id} ]; then
-						# generate an argument for gen_ens_prod without control id
-						printf "Ensemble id ${mem_id} is used for ensemble product computation.\n"
-				  mem_lst+="/wrk_dir/${mem_id} "
-				fi
+        # generate a complete list for looping
+        mem_ids+=( ${mem_id} )
+        if [ ! ${mem_id} = ${ctr_id} ]; then
+            # generate an argument for gen_ens_prod without control id
+            printf "Ensemble id ${mem_id} is used for ensemble product computation.\n"
+          mem_lst+="/wrk_dir/${mem_id} "
+        fi
   done
-		ens_min=`printf %0${ENS_PDD}d $(( 10#${ens_min} ))`
-		ens_max=`printf %0${ENS_PDD}d $(( 10#${ens_max} ))`
+    ens_min=`printf %0${ENS_PDD}d $(( 10#${ens_min} ))`
+    ens_max=`printf %0${ENS_PDD}d $(( 10#${ens_max} ))`
 fi
 
 # define path from ensemble member indexed directories defined above
 if [ -z ${IN_ENS_SUBDIR+x} ]; then
   msg="ERROR: ensemble member subdirectory for input data \${IN_ENS_SUBDIR}"
   msg+=" is unset, set to empty string if not used.\n"
-		printf "${msg}"
+    printf "${msg}"
   exit 1
 fi
 
@@ -332,30 +332,30 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
   # set and clean working directory based on looped forecast start date
   wrk_dir=${OUT_CYC_DIR}/${dirstr}${OUT_DT_SUBDIR}
   cmd="mkdir -p ${wrk_dir}"
-		printf "${cmd}\n"; eval "${cmd}"
+    printf "${cmd}\n"; eval "${cmd}"
 
   for mem_id in ${mem_ids[@]}; do
-				cmd="rm -f ${wrk_dir}/${mem_id}"
-				printf "${cmd}\n"; eval "${cmd}"
-		done
+        cmd="rm -f ${wrk_dir}/${mem_id}"
+        printf "${cmd}\n"; eval "${cmd}"
+    done
 
   for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INC} )); do
     for acc_hr in ${acc_hrs[@]}; do
-						fname="ens_list_{CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}"
-						fname+="_ens-${ens_min}-${ens_max}_prd.nc"
+            fname="ens_list_{CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}"
+            fname+="_ens-${ens_min}-${ens_max}_prd.nc"
       cmd="rm -f ${wrk_dir}/${fname}"
-		  		printf "${cmd}\n"; eval "${cmd}"
+          printf "${cmd}\n"; eval "${cmd}"
 
-						fname="{CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}"
-						fname+="_ens-${ens_min}-${ens_max}_prd.nc"
+            fname="{CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}"
+            fname+="_ens-${ens_min}-${ens_max}_prd.nc"
       cmd="rm -f ${wrk_dir}/${fname}"
-		  		printf "${cmd}\n"; eval "${cmd}"
+          printf "${cmd}\n"; eval "${cmd}"
 
-						fname=GenEnsProdConfig${acc_hr}
+            fname=GenEnsProdConfig${acc_hr}
       cmd="rm -f ${wrk_dir}/${fname}"
-		  		printf "${cmd}\n"; eval "${cmd}"
-		  done
-		done
+          printf "${cmd}\n"; eval "${cmd}"
+      done
+    done
 
   # Define directory privileges for singularity exec
   met="singularity exec -B ${wrk_dir}:/wrk_dir:rw ${MET}"
@@ -375,41 +375,41 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
     
     # forecast file name based on forecast initialization, accumulation and lead
     pdd_hr=`printf %03d $(( 10#${lead_hr} ))`
-				for acc_hr in ${acc_hrs[@]}; do
-						if [[ ${CMP_ACC} =~ ${TRUE} && ${acc_hr} -le ${lead_hr} ]] ||\
-								 [[ ${CMP_ACC} =~ ${FALSE} ]]; then
-						  for mem_id in ${mem_ids[@]}; do
-						  		in_path=${in_dir}/${mem_id}${IN_ENS_SUBDIR}
+        for acc_hr in ${acc_hrs[@]}; do
+            if [[ ${CMP_ACC} =~ ${TRUE} && ${acc_hr} -le ${lead_hr} ]] ||\
+                 [[ ${CMP_ACC} =~ ${FALSE} ]]; then
+              for mem_id in ${mem_ids[@]}; do
+                  in_path=${in_dir}/${mem_id}${IN_ENS_SUBDIR}
           f_in=${in_path}/${CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}.nc
-										if [ -r ${f_in} ]; then
-												# keep a record of the original members used for computation
-												log_f="ens_list_${CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}"
-												log_f+="_ens-${ens_min}-${ens_max}_prd.txt"
-												printf "${f_in}\n" >> ${wrk_dir}/${log_f}
+                    if [ -r ${f_in} ]; then
+                        # keep a record of the original members used for computation
+                        log_f="ens_list_${CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}"
+                        log_f+="_ens-${ens_min}-${ens_max}_prd.txt"
+                        printf "${f_in}\n" >> ${wrk_dir}/${log_f}
 
-												# copy the ensemble file to the work directory
+                        # copy the ensemble file to the work directory
             cmd="cp -L ${f_in} ${wrk_dir}/${mem_id}"
-												printf "${cmd}\n"; eval "${cmd}"
-										else
-												msg="ERROR: ensemble member ${f_in} does not exist or is not"
-												msg+=" readable.\n"
-												printf "${msg}"
-												exit 1
-										fi
-						  done
-								# define output file name depending on parameters
-						  f_out="${CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}"
-								f_out+="_ens-${ens_min}-${ens_max}_prd.nc"
+                        printf "${cmd}\n"; eval "${cmd}"
+                    else
+                        msg="ERROR: ensemble member ${f_in} does not exist or is not"
+                        msg+=" readable.\n"
+                        printf "${msg}"
+                        exit 1
+                    fi
+              done
+                # define output file name depending on parameters
+              f_out="${CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}"
+                f_out+="_ens-${ens_min}-${ens_max}_prd.nc"
 
         # update GenEnsProdConfigTemplate archiving file in working directory
         # this remains unchanged on accumulation intervals
-								if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
-										fld=${VRF_FLD}_${acc_hr}hr
-										printf "Computing verification field ${fld}\n."
-								else
-										fld=${VRF_FLD}
-										printf "Computing verification field ${fld}\n."
-								fi
+                if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
+                    fld=${VRF_FLD}_${acc_hr}hr
+                    printf "Computing verification field ${fld}\n."
+                else
+                    fld=${VRF_FLD}
+                    printf "Computing verification field ${fld}\n."
+                fi
         if [ ! -r ${wrk_dir}/GenEnsProdConfig ]; then
           cat ${scrpt_dir}/GenEnsProdConfigTemplate \
             | sed "s/VRF_FLD/name       = \"${fld}\"/" \
@@ -424,13 +424,13 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
         -ens ${mem_lst} \
         -out /wrk_dir/${f_out} \
         -config /wrk_dir/GenEnsProdConfig${acc_hr} \
-				    ${ctr_mem}"
+            ${ctr_mem}"
         printf "${cmd}\n"; eval "${cmd}"
-						fi
-						for mem_id in ${mem_ids[@]}; do
-								cmd="rm -f ${wrk_dir}/${mem_id}"
-								printf "${cmd}\n"; eval "${cmd}"
-						done
+            fi
+            for mem_id in ${mem_ids[@]}; do
+                cmd="rm -f ${wrk_dir}/${mem_id}"
+                printf "${cmd}\n"; eval "${cmd}"
+            done
     done 
   done
 done

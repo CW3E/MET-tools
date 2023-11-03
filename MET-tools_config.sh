@@ -46,5 +46,8 @@ export N_RE=^[0-9]+$
 # Defines YYYYMMDDHH iso regular expression
 export ISO_RE=^[0-9]{10}$
 
+# Defines Pythonic string indentation
+export INDT="    "
+
 # Module loads
 module load singularitypro/3.9

@@ -47,8 +47,8 @@ if [ ! ${USR_HME} ]; then
   exit 1
 elif [[ ! -d ${USR_HME} || ! -r ${USR_HME} ]]; then
   msg="ERROR: MET-tools clone directory\n ${USR_HME}\n does not exist or is"
-		msg+=" not readable.\n"
-		printf "${msg}"
+    msg+=" not readable.\n"
+    printf "${msg}"
   exit 1
 else
   scrpt_dir=${USR_HME}/WRF-preprocess
@@ -66,15 +66,15 @@ fi
 
 # verification domain for the forecast data
 if [[ ! ${GRD} =~ ^d[0-9]{2}$ ]]; then
-		printf "ERROR: grid name must be in dXX format.\n"
-		exit 1
+    printf "ERROR: grid name must be in dXX format.\n"
+    exit 1
 fi
 
 # Convert STRT_DT from 'YYYYMMDDHH' format to strt_dt Unix date format
 if [[ ! ${STRT_DT} =~ ${ISO_RE} ]]; then
   msg="ERROR: start date \${STRT_DT}\n ${STRT_DT}\n"
-		msg+=" is not in YYYYMMDDHH format.\n"
-		printf "${msg}"
+    msg+=" is not in YYYYMMDDHH format.\n"
+    printf "${msg}"
   exit 1
 else
   strt_dt="${STRT_DT:0:8} ${STRT_DT:8:2}"
@@ -84,8 +84,8 @@ fi
 # Convert STOP_DT from 'YYYYMMDDHH' format to stop_dt Unix date format 
 if [[ ! ${STOP_DT} =~ ${ISO_RE} ]]; then
   msg="ERROR: stop date \${STOP_DT}\n ${STOP_DT}\n"
-		msg+=" is not in YYYYMMDDHH format.\n"
-		printf "${msg}"
+    msg+=" is not in YYYYMMDDHH format.\n"
+    printf "${msg}"
   exit 1
 else
   stop_dt="${STOP_DT:0:8} ${STOP_DT:8:2}"
@@ -97,15 +97,15 @@ if [[ ! ${ANL_MIN} =~ ${N_RE} ]]; then
   printf "ERROR: min forecast hour \${ANL_MIN} is not numeric.\n"
   exit 1
 elif [ ${ANL_MIN} -lt 0 ]; then
-		printf "ERROR: min forecast hour ${ANL_MIN} must be non-negative.\n"
-		exit 1
+    printf "ERROR: min forecast hour ${ANL_MIN} must be non-negative.\n"
+    exit 1
 elif [[ ! ${ANL_MAX} =~ ${N_RE} ]]; then
   printf "ERROR: max forecast hour \${ANL_MAX} is not numeric.\n"
   exit 1
 elif [ ${ANL_MAX} -lt ${ANL_MIN} ]; then
   msg="ERROR: max forecast hour ${ANL_MAX} must be greater than or equal to"
-		msg+="min forecast hour ${ANL_MIN}.\n"
-		printf "${msg}"
+    msg+="min forecast hour ${ANL_MIN}.\n"
+    printf "${msg}"
 fi
 
 # define the increment at which to process forecast outputs (HH)
@@ -121,13 +121,13 @@ fi
 
 # check for input data root
 if [ ! ${IN_CYC_DIR} ]; then
-		msg="ERROR: directory of ISO date sub-directories \${IN_CYC_DIR} is"
-		msg+=" not defined.\n"
-		printf "${msg}"
-		exit 1
+    msg="ERROR: directory of ISO date sub-directories \${IN_CYC_DIR} is"
+    msg+=" not defined.\n"
+    printf "${msg}"
+    exit 1
 elif [[ ! -d ${IN_CYC_DIR} || ! -r ${IN_CYC_DIR} ]]; then
   msg="ERROR: input data root directory\n ${IN_CYC_DIR}\n"
-		msg+=" does not exist or is not readable.\n"
+    msg+=" does not exist or is not readable.\n"
   exit 1
 fi
 
@@ -142,7 +142,7 @@ fi
 # check for output data root created successfully
 if [[ ! -d ${OUT_CYC_DIR} || ! -w ${OUT_CYC_DIR} ]]; then
   msg="ERROR: output data root directory\n ${OUT_CYC_DIR}\n does not"
-		msg+=" exist or is not writable.\n"
+    msg+=" exist or is not writable.\n"
   exit 1
 fi
 
@@ -176,48 +176,48 @@ fi
 # compute accumulation from cf file, TRUE or FALSE
 if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
   # define the accumulation intervals for precip
-		if [[ ! ${ACC_MIN} =~ ${N_RE} ]]; then
-				printf "ERROR: min precip accumulation interval compuation is not numeric.\n"
-				exit 1
-		elif [ ${ACC_MIN} -le 0 ]; then
+    if [[ ! ${ACC_MIN} =~ ${N_RE} ]]; then
+        printf "ERROR: min precip accumulation interval compuation is not numeric.\n"
+        exit 1
+    elif [ ${ACC_MIN} -le 0 ]; then
     msg="ERROR: min precip accumulation interval ${ACC_MIN} must be greater than"
-				msg+=" zero.\n"
-				printf "${msg}"
+        msg+=" zero.\n"
+        printf "${msg}"
     exit 1
-		elif [[ ! ${ACC_MAX} =~ ${N_RE} ]]; then
-				printf "ERROR: max precip accumulation interval compuation is not numeric.\n"
-				exit 1
-		elif [ ${ACC_MAX} -lt ${ACC_MIN} ]; then
+    elif [[ ! ${ACC_MAX} =~ ${N_RE} ]]; then
+        printf "ERROR: max precip accumulation interval compuation is not numeric.\n"
+        exit 1
+    elif [ ${ACC_MAX} -lt ${ACC_MIN} ]; then
     msg="ERROR: max precip accumulation interval ${ACC_MAX} must be greater than"
-				msg+=" min precip accumulation interval.\n"
-				printf "${msg}"
+        msg+=" min precip accumulation interval.\n"
+        printf "${msg}"
     exit 1
   elif [[ ! ${ACC_INC} =~ ${N_RE} ]]; then
     msg="ERROR: increment between precip accumulation intervals \${ACC_INC}"
-				msg+=" is not numeric.\n"
-				printf "${msg}"
+        msg+=" is not numeric.\n"
+        printf "${msg}"
     exit 1
   elif [ ! $(( (${ACC_MAX} - ${ACC_MIN}) % ${ACC_INC} )) = 0 ]; then
     msg="ERROR: the interval [\${ACC_MIN}, \${ACC_MAX}]\n [${ACC_MIN}, ${ACC_MAX}]\n" 
     msg+=" must be evenly divisible into increments of \${ACC_INC}, ${ACC_INC}.\n"
     printf "${msg}"
     exit 1
-		else
-				# define array of accumulation interval computation hours
-				acc_hrs=()
-				for (( acc_hr=${ACC_MIN}; acc_hr <= ${ACC_MAX}; acc_hr += ${ACC_INC} )); do
+    else
+        # define array of accumulation interval computation hours
+        acc_hrs=()
+        for (( acc_hr=${ACC_MIN}; acc_hr <= ${ACC_MAX}; acc_hr += ${ACC_INC} )); do
       # check that the precip accumulations are summable from wrfcf files
       if [ ! $(( ${acc_hr} % ${ANL_INC} )) = 0 ]; then
         printf "ERROR: precip accumulation ${acc_hr} is not a multiple of ${ANL_INC}.\n"
         exit 1
-						else
-								printf "Computing precipitation accumulation for interval ${acc_hr} hours.\n"
+            else
+                printf "Computing precipitation accumulation for interval ${acc_hr} hours.\n"
         acc_hrs+=( ${acc_hr} )
       fi
-				done
-		fi
+        done
+    fi
 elif [[ ${CMP_ACC} =~ ${FALSE} ]]; then
-		printf "run_wrf_preprocess does not compute precip accumulations.\n"
+    printf "run_wrf_preprocess does not compute precip accumulations.\n"
 else
   msg="ERROR: \${CMP_ACC} must be set to 'TRUE' or 'FALSE' to decide if "
   msg+="computing precip accumulation from wrfcf files."
@@ -263,7 +263,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
   # check for work directory created successfully
   if [[ ! -d ${wkr_dir} || ! -w ${wrk_dir} ]]; then
     msg="ERROR: work directory\n ${wrk_dir}\n does not"
-  		msg+=" exist or is not writable.\n"
+      msg+=" exist or is not writable.\n"
     exit 1
   fi
 
@@ -358,8 +358,8 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
             -pcpdir /in_dir \
             -pcprx \"wrfcf_.*\" "
             printf "${cmd}\n"; eval "${cmd}"
-										fi
-								done
+                    fi
+                done
       else
         msg="pcp_combine input file\n "
         msg+="${wrk_dir}/${f_out}\n is not "

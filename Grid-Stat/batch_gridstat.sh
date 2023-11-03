@@ -68,7 +68,7 @@ num_grds=${#GRDS[@]}
 num_mems=${#MEM_IDS[@]}
 for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
   for (( i_g = 0; i_g < ${num_grds}; i_g++ )); do
-				if [[ ${IF_ENS_MEAN} =~ ${TRUE} ]]; then
+        if [[ ${IF_ENS_MEAN} =~ ${TRUE} ]]; then
       CTR_FLW=${CTR_FLWS[$i_f]}
       GRD=${GRDS[$i_g]}
       INT_WDTH=${INT_WDTHS[$i_g]}
@@ -113,9 +113,9 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
       cmd="cfgs+=( \"${cfg_indx}\" )"
       printf "${cmd}\n"; eval "${cmd}"
 
-				fi
+        fi
 
-				if [[ ${IF_ENS_MEMS} =~ ${TRUE} ]]; then
+        if [[ ${IF_ENS_MEMS} =~ ${TRUE} ]]; then
       for (( i_m = 0; i_m < ${num_mems}; i_m++ )); do
         CTR_FLW=${CTR_FLWS[$i_f]}
         GRD=${GRDS[$i_g]}
@@ -157,7 +157,7 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
         printf "${cmd}\n"; eval "${cmd}"
   
       done
-				fi
+        fi
   done
 done
 

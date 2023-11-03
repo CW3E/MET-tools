@@ -1,7 +1,7 @@
 ##################################################################################
 # Description
 ##################################################################################
-# This script reads in arbitrary grid_stat_* output files from a MET analysis
+# This script reads in arbitrary MET ASCII output files 
 # and creates Pandas dataframes containing a time series for each file type
 # versus lead time to a verification period. The dataframes are saved into a
 # Pickled dictionary organized by MET file extension as key names, taken
@@ -43,103 +43,76 @@ from datetime import datetime as dt
 from datetime import timedelta
 import multiprocessing 
 from multiprocessing import Pool
-import post_processing_config as config
-
-##################################################################################
-# SET GLOBAL PARAMETERS 
-##################################################################################
-# define control flow to analyze 
-CTR_FLWS = [
-            'NRT_gfs',
-            'NRT_ecmwf',
-           ]
-
-# verification domain for the forecast data                                                                           
-GRDS = [
-        'd01',
-        'd02',
-        'd03',
-       ]                                                           
-
-# root directory for gridstat outputs
-IN_ROOT = '/cw3e/mead/projects/cwp106/scratch/' + config.CSE
-
-# root directory for processed pandas outputs
-OUT_ROOT = '/cw3e/mead/projects/cwp106/scratch/' + config.CSE
+from DataFrame_config import *
 
 ##################################################################################
 # Construct hyper-paramter array for batch processing gridstat data
 ##################################################################################
-# standard string indentation
-INDT = '    '
+# convert to date times
+if len(STRT_DT) != 10:
+    print('ERROR: STRT_DT, ' + STRT_DT + ', is not in YYYYMMDDHH format.')
+    sys.exit(1)
+else:
+    iso = STRT_DT[:4] + '-' + STRT_DT[4:6] + '-' + STRT_DT[6:8] + '_' +\
+            STRT_DT[8:]
+    strt_dt = dt.fromisoformat(iso)
 
-# Execute the following lines when run as a script
-if __name__ == '__main__':
-    # convert to date times
-    if len(config.STRT_DT) != 10:
-        print('ERROR: STRT_DT, ' + config.STRT_DT + ', is not in YYYYMMDDHH format.')
-        sys.exit(1)
-    else:
-        s_iso = config.STRT_DT[:4] + '-' + config.STRT_DT[4:6] + '-' + config.STRT_DT[6:8] +\
-                '_' + config.STRT_DT[8:]
-        strt_dt = dt.fromisoformat(s_iso)
+if len(STOP_DT) != 10:
+    print('ERROR: STOP_DT, ' + STOP_DT +\
+            ', is not in YYYYMMDDHH format.')
+    sys.exit(1)
+else:
+    iso = STOP_DT[:4] + '-' + STOP_DT[4:6] + '-' + STOP_DT[6:8] + '_' +\
+            STOP_DT[8:]
+    stop_dt = dt.fromisoformat(iso)
+
+if len(CYC_INC) != 2:
+    print('ERROR: CYC_INC, ' + CYC_INC + ', is not in HH format.')
+    sys.exit(1)
+else:
+    cyc_inc = CYC_INC + 'H'
+
+# container for map
+CNFGS = []
+
+# generate the date range for the analyses
+analyses = pd.date_range(start=strt_dt, end=stop_dt, freq=cyc_inc).to_pydatetime()
+
+print('Processing configurations:')
+for anl_dt in analyses:
+    anl_strng = anl_dt.strftime('%Y%m%d%H')
+    for CTR_FLW in CTR_FLWS:
+        for GRD in GRDS:
+            for PRFX in PRFXS:
+                print(INDT + anl_strng + ' ' + PRFX + ' ' + CTR_FLW +' ' + GRD)
+                # storage for configuration settings as arguments of proc_gridstat
+                # the function definition and role of these arguments are in the
+                # next section directly below
+                CNFG = []
+
+                # forecast zero hour date time
+                CNFG.append(anl_strng)
     
-    if len(config.STOP_DT) != 10:
-        print('ERROR: STOP_DT, ' + config.STOP_DT +\
-                ', is not in YYYYMMDDHH format.')
-        sys.exit(1)
-    else:
-        e_iso = config.STOP_DT[:4] + '-' + config.STOP_DT[4:6] + '-' + config.STOP_DT[6:8] +\
-                '_' + config.STOP_DT[8:]
-        end_dt = dt.fromisoformat(e_iso)
+                # control flow / directory name
+                CNFG.append(CTR_FLW)
     
-    if len(config.CYC_INT) != 2:
-        print('ERROR: CYC_INT, ' + config.CYC_INT + ', is not in HH format.')
-        sys.exit(1)
-    else:
-        cyc_int = config.CYC_INT + 'H'
+                # prefix for gridstat outputs
+                CNFG.append(PRFX)
     
-    # container for map
-    CNFGS = []
+                # grid to be processed
+                CNFG.append(GRD)
     
-    # generate the date range for the analyses
-    analyses = pd.date_range(start=strt_dt, end=end_dt, freq=cyc_int).to_pydatetime()
+                # path to cycle directories from IN_ROOT
+                CNFG.append('/' + CTR_FLW)
+                
+                # path to gridstat outputs from cycle directory
+                CNFG.append('')
     
-    print('Processing configurations:')
-    for anl_dt in analyses:
-        anl_strng = anl_dt.strftime('%Y%m%d%H')
-        for CTR_FLW in CTR_FLWS:
-            for GRD in GRDS:
-                for PRFX in config.PRFXS:
-                    print(INDT + anl_strng + ' ' + PRFX + ' ' + CTR_FLW +' ' + GRD)
-                    # storage for configuration settings as arguments of proc_gridstat
-                    # the function definition and role of these arguments are in the
-                    # next section directly below
-                    CNFG = []
+                # path to pandas output directories from OUT_ROOT
+                CNFG.append('/' + CTR_FLW)
     
-                    # forecast zero hour date time
-                    CNFG.append(anl_strng)
-        
-                    # control flow / directory name
-                    CNFG.append(CTR_FLW)
-        
-                    # prefix for gridstat outputs
-                    CNFG.append(PRFX)
-        
-                    # grid to be processed
-                    CNFG.append(GRD)
-        
-                    # path to cycle directories from IN_ROOT
-                    CNFG.append('/' + CTR_FLW)
-                    
-                    # path to gridstat outputs from cycle directory
-                    CNFG.append('')
-        
-                    # path to pandas output directories from OUT_ROOT
-                    CNFG.append('/' + CTR_FLW)
-        
-                    # append configuration to be mapped
-                    CNFGS.append(CNFG)
+                # append configuration to be mapped
+                CNFGS.append(CNFG)
 
 ##################################################################################
 # Data processing routines
@@ -281,14 +254,12 @@ def proc_gridstat(cnfg):
 ##################################################################################
 # Runs multiprocessing on parameter grid
 ##################################################################################
-# run lines if executed as a script
-if __name__ == '__main__':
-    # infer available cpus for workers
-    n_workers = multiprocessing.cpu_count() - 1
-    print('Running proc_gridstat with ' + str(n_workers) + ' total workers.')
+# infer available cpus for workers
+n_workers = multiprocessing.cpu_count() - 1
+print('Running proc_gridstat with ' + str(n_workers) + ' total workers.')
 
-    with Pool(n_workers) as pool:
-        print(*pool.map(proc_gridstat, CNFGS))
+with Pool(n_workers) as pool:
+    print(*pool.map(proc_gridstat, CNFGS))
 
 ##################################################################################
 # end

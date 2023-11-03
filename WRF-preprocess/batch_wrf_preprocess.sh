@@ -129,7 +129,7 @@ cmd="mkdir -p ${log_dir}"
 printf "${cmd}\n"; eval "${cmd}"
 
 cmd="./run_wrf_preprocess.sh ${!job} \
-	> ${log_dir}/wrf-preprocess_${jbid}_${indx}.log 2>&1"
+  > ${log_dir}/wrf-preprocess_${jbid}_${indx}.log 2>&1"
 printf "${cmd}\n"; eval "${cmd}"
 
 ##################################################################################

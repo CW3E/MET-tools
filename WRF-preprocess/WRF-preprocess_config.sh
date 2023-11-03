@@ -22,7 +22,7 @@ export CTR_FLWS=(
 ENS_PRFX="ens_"
 MEM_IDS=()
 for indx in {00..05..01}; do
-		MEM_IDS+=( ${ENS_PRFX}${indx} )
+    MEM_IDS+=( ${ENS_PRFX}${indx} )
 done
 
 # export MEM_IDS as an array containing an empty string if no indices or use array

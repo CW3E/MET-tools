@@ -423,7 +423,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
                 | sed "/PLY_MSK/d " \
                 | sed "s/BTSTRP/n_rep    = ${BTSTRP}/" \
                 | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
-                | sed "s/PRFX/output_prefix    = \"${acc_hr}\"/" \
+                | sed "s/PRFX/output_prefix    = \"${acc_hr}HR\"/" \
                 | sed "s/MET_VER/version           = \"V${MET_VER}\"/" \
                 > ${wrk_dir}/GridStatConfig${acc_hr}
             fi

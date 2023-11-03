@@ -108,13 +108,13 @@ elif [ ${ANL_MAX} -lt ${ANL_MIN} ]; then
 		printf "${msg}"
 fi
 
-# define the interval at which to process forecast outputs (HH)
-if [[ ! ${ANL_INT} =~ ${N_RE} ]]; then
-  printf "ERROR: hours interval between analyses \${ANL_INT} is not numeric.\n"
+# define the increment at which to process forecast outputs (HH)
+if [[ ! ${ANL_INC} =~ ${N_RE} ]]; then
+  printf "ERROR: hours increment between analyses \${ANL_INC} is not numeric.\n"
   exit 1
-elif [ ! $(( (${ANL_MAX} - ${ANL_MIN}) % ${ANL_INT} )) = 0 ]; then
+elif [ ! $(( (${ANL_MAX} - ${ANL_MIN}) % ${ANL_INC} )) = 0 ]; then
   msg="ERROR: the interval [\${ANL_MIN}, \${ANL_MAX}]\n [${ANL_MIN}, ${ANL_MAX}]\n" 
-  msg+=" must be evenly divisible into increments of \${ANL_INT}, ${ANL_INT}.\n"
+  msg+=" must be evenly divisible into increments of \${ANL_INC}, ${ANL_INC}.\n"
   printf "${msg}"
   exit 1
 fi
@@ -140,8 +140,9 @@ else
 fi
 
 # check for output data root created successfully
-if [ ! -d ${OUT_CYC_DIR} ]; then
-  printf "ERROR: output data root directory\n ${OUT_CYC_DIR}\n does not exist.\n"
+if [[ ! -d ${OUT_CYC_DIR} || ! -w ${OUT_CYC_DIR} ]]; then
+  msg="ERROR: output data root directory\n ${OUT_CYC_DIR}\n does not"
+		msg+=" exist or is not writable.\n"
   exit 1
 fi
 
@@ -191,23 +192,23 @@ if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
 				msg+=" min precip accumulation interval.\n"
 				printf "${msg}"
     exit 1
-  elif [[ ! ${ACC_INT} =~ ${N_RE} ]]; then
-    msg="ERROR: inteval between precip accumulation computations \${ACC_INT}"
+  elif [[ ! ${ACC_INC} =~ ${N_RE} ]]; then
+    msg="ERROR: increment between precip accumulation intervals \${ACC_INC}"
 				msg+=" is not numeric.\n"
 				printf "${msg}"
     exit 1
-  elif [ ! $(( (${ACC_MAX} - ${ACC_MIN}) % ${ACC_INT} )) = 0 ]; then
+  elif [ ! $(( (${ACC_MAX} - ${ACC_MIN}) % ${ACC_INC} )) = 0 ]; then
     msg="ERROR: the interval [\${ACC_MIN}, \${ACC_MAX}]\n [${ACC_MIN}, ${ACC_MAX}]\n" 
-    msg+=" must be evenly divisible into increments of \${ACC_INT}, ${ACC_INT}.\n"
+    msg+=" must be evenly divisible into increments of \${ACC_INC}, ${ACC_INC}.\n"
     printf "${msg}"
     exit 1
 		else
 				# define array of accumulation interval computation hours
 				acc_hrs=()
-				for (( acc_hr=${ACC_MIN}; acc_hr <= ${ACC_MAX}; acc_hr += ${ACC_INT} )); do
+				for (( acc_hr=${ACC_MIN}; acc_hr <= ${ACC_MAX}; acc_hr += ${ACC_INC} )); do
       # check that the precip accumulations are summable from wrfcf files
-      if [ ! $(( ${acc_hr} % ${ANL_INT} )) = 0 ]; then
-        printf "ERROR: precip accumulation ${acc_hr} is not a multiple of ${ANL_INT}.\n"
+      if [ ! $(( ${acc_hr} % ${ANL_INC} )) = 0 ]; then
+        printf "ERROR: precip accumulation ${acc_hr} is not a multiple of ${ANL_INC}.\n"
         exit 1
 						else
 								printf "Computing precipitation accumulation for interval ${acc_hr} hours.\n"
@@ -249,7 +250,7 @@ fi
 # define the number of dates to loop
 fcst_hrs=$(( (`date +%s -d "${stop_dt}"` - `date +%s -d "${strt_dt}"`) / 3600 ))
 
-for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
+for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
   # directory string for forecast analysis initialization time
   dirstr=`date +%Y%m%d%H -d "${strt_dt} ${cyc_hr} hours"`
   in_dir=${IN_CYC_DIR}/${dirstr}${IN_DT_SUBDIR}
@@ -259,6 +260,13 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
   cmd="mkdir -p ${wrk_dir}"
   printf "${cmd}\n"; eval "${cmd}"
       
+  # check for work directory created successfully
+  if [[ ! -d ${wkr_dir} || ! -w ${wrk_dir} ]]; then
+    msg="ERROR: work directory\n ${wrk_dir}\n does not"
+  		msg+=" exist or is not writable.\n"
+    exit 1
+  fi
+
   # set input paths
   if [ ! -d ${in_dir} ]; then
     msg="WARNING: data input path\n ${in_dir}\n does not exist,"
@@ -276,9 +284,9 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
     met="singularity exec -B ${wrk_dir}:/wrk_dir:rw,${wrk_dir}:/in_dir:ro ${MET}"
 
     # loop lead hours for forecast valid time for each initialization time
-    for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INT} )); do
+    for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INC} )); do
       # define valid times for wrfcf precip_bkt accumulation, evenly spaced
-      anl_strt_hr=$(( ${lead_hr} + ${cyc_hr} - ${ANL_INT} ))
+      anl_strt_hr=$(( ${lead_hr} + ${cyc_hr} - ${ANL_INC} ))
       anl_stop_hr=$(( ${lead_hr} + ${cyc_hr} ))
       anl_strt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_strt_hr} hours"`
       anl_stop=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_stop_hr} hours"`
@@ -338,11 +346,11 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
 
             # define padded forecast hour for name strings
             pdd_hr=`printf %03d $(( 10#${lead_hr} ))`
-            wrf_acc=${CTR_FLW}_${acc_hr}QPF_${init_Y}${init_m}${init_d}${init_H}_F${pdd_hr}
+            wrf_acc=${CTR_FLW}_${acc_hr}QPF_${init_Y}${init_m}${init_d}${init_H}_F${pdd_hr}.nc
 
             # Combine precip to accumulation period 
             cmd="${met} pcp_combine \
-            -sum ${init_Y}${init_m}${init_d}_${init_H}0000 ${ANL_INT} \
+            -sum ${init_Y}${init_m}${init_d}_${init_H}0000 ${ANL_INC} \
             ${vld_Y}${vld_m}${vld_d}_${vld_H}0000 ${acc_hr} \
             /wrk_dir/${wrf_acc} \
             -field 'name=\"precip_bkt\"; level=\"(0,*,*)\";'\

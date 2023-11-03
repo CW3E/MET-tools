@@ -39,15 +39,15 @@ export GRDS=(
 export STRT_DT=2022122300
 export STOP_DT=2022122300
 
-# Define the interval between forecast initializations (HH)
-export CYC_INT=24
+# Define the increment between forecast initializations (HH)
+export CYC_INC=24
 
 # Define min / max forecast hours for forecast outputs to be processed
 export ANL_MIN=24
 export ANL_MAX=120
 
-# Define the interval at which to process forecast outputs (HH)
-export ANL_INT=24
+# Define the increment at which to process forecast outputs (HH)
+export ANL_INC=24
 
 # Regrid to generic lat-lon for MET if native grid errors (TRUE or FALSE)
 export RGRD=TRUE
@@ -59,5 +59,5 @@ export CMP_ACC=TRUE
 export ACC_MIN=24
 export ACC_MAX=72
 
-# Defines the steps between min / max to compute accumulation intervals
-export ACC_INT=24
+# Defines the increment between min / max to compute accumulation intervals
+export ACC_INC=24

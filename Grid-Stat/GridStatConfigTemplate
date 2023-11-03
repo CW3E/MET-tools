@@ -30,7 +30,7 @@ obtype = "MC_PCP";
 //
 regrid = {
    to_grid    = OBS;
-   INT_MTHD;
+   method     = DW_MEAN;
    INT_WDTH;
    vld_thresh = 0.5;
    shape      = SQUARE;

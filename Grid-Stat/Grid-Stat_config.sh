@@ -10,22 +10,34 @@
 ##################################################################################
 # Define the case-wise sub-directory for path names with case-study nesting,
 # leave as empty string "" if not needed
-export CSE=DeepDive
+export CSE=DeepDive/2022122800_valid_date
 
 # Array of control flow names to be processed
 export CTR_FLWS=( 
-                 "2022122800_valid_date_wrf_ensemble"
+                 "WRF"
                 )
 
-# Array of ensemble indices to process, include an empty string if no indices
-export MEM_LIST=(
-                 "00"
-                 "01"
-                 "02"
-                 "03"
-                 "04"
-                 "05"
-                )
+# If computing ensemble mean verification
+export IF_ENS_MEAN=TRUE
+
+# min / max ensemble indices used to compute ensemble product
+# used in ensemble product naming conventions
+export ENS_MIN=00
+export ENS_MAX=05
+
+# If computing individual ensemble member verification
+export IF_ENS_MEMS=TRUE
+
+# Generate ensemble indices to process, used for individual member verification
+ENS_PRFX="ens_"
+MEM_IDS=()
+for indx in {00..05..01}; do
+		MEM_IDS+=( ${ENS_PRFX}${indx} )
+done
+
+# export MEM_IDS as an array containing an empty string if no indices or use array
+# construction as above, this is passed to batch_gridstat
+export MEM_IDS
 
 # Model grid / domain to be processed
 export GRDS=( 
@@ -33,15 +45,7 @@ export GRDS=(
              "d02"
             )
 
-# Specify thresholds levels for verification
-export CAT_THR="[ >0.0, >=10.0, >=25.0, >=50.0, >=100.0 ]"
-
-# Define the interpolation method and related parameters
-export INT_MTHDS=( 
-                  "DW_MEAN"
-                  "DW_MEAN"
-                 )
-
+# Define interpolation neighborhood size in 1-1 correspondence with model grids
 export INT_WDTHS=( 
                   "3"
                   "9"
@@ -50,25 +54,32 @@ export INT_WDTHS=(
 # Define the verification field
 export VRF_FLD=QPF
 
+# Specify thresholds levels for verification
+export CAT_THR="[ >0.0, >=10.0, >=25.0, >=50.0, >=100.0 ]"
+
 # Define first and last date time for forecast initialization (YYYYMMDDHH)
 export STRT_DT=2022122300
 export STOP_DT=2022122300
 
-# Define the interval between forecast initializations (HH)
-export CYC_INT=24
+# Define the increment between forecast initializations (HH)
+export CYC_INC=24
 
 # Define min / max forecast hours for forecast outputs to be processed
 export ANL_MIN=24
 export ANL_MAX=120
 
-# Define the interval at which to process forecast outputs (HH)
-export ANL_INT=24
+# Define the increment at which to process forecast outputs (HH)
+export ANL_INC=24
 
-# Define the accumulation interval for verification valid times
-export ACC_INT=24
+# Compute precipitation accumulation, TRUE or FALSE
+export CMP_ACC=TRUE
 
-# Regrid to generic lat-lon for MET if native grid errors (TRUE or FALSE)
-export RGRD=TRUE
+# Defines the min / max accumulation interval for precip
+export ACC_MIN=24
+export ACC_MAX=24
+
+# Defines the increment between min / max to compute accumulation intervals
+export ACC_INC=24
 
 # Neighborhood width for neighborhood methods (references StageIV grid)
 export NBRHD_WDTH=9
@@ -78,6 +89,3 @@ export BTSTRP=0
 
 # Rank correlation computation flag, TRUE or FALSE
 export RNK_CRR=FALSE
-
-# Optionally define a MET output prefix, use a blank string for no prefix
-export PRFX=""

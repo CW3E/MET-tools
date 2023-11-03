@@ -24,6 +24,9 @@ export ENS_PRFX="ens_"
 export ENS_MIN=00
 export ENS_MAX=05
 
+# Number of digits to padd ensemble index to
+export ENS_PDD=2
+
 # Define control member index, not to be used in ensemble spread calculation,
 # defined as empty string if not necessary
 export CTR_MEM=00
@@ -44,12 +47,6 @@ export NBRHD_WDTHS=(
 # Specify thresholds levels for verification
 export CAT_THR="[ >0.0, >=10.0, >=25.0, >=50.0, >=100.0 ]"
 
-# Define the interpolation method and related parameters
-export INT_MTHDS=( 
-                  "DW_MEAN"
-                  "DW_MEAN"
-                 )
-
 # Define the verification field
 export VRF_FLD=QPF
 
@@ -57,15 +54,15 @@ export VRF_FLD=QPF
 export STRT_DT=2022122300
 export STOP_DT=2022122300
 
-# Define the interval between forecast initializations (HH)
-export CYC_INT=24
+# Define the increment between forecast initializations (HH)
+export CYC_INC=24
 
 # Define min / max forecast hours for forecast outputs to be processed
 export ANL_MIN=24
 export ANL_MAX=120
 
-# Define the interval at which to process forecast outputs (HH)
-export ANL_INT=24
+# Define the increment at which to process forecast outputs (HH)
+export ANL_INC=24
 
 # Compute precipitation accumulation from cf file, TRUE or FALSE
 export CMP_ACC=TRUE
@@ -75,5 +72,4 @@ export ACC_MIN=24
 export ACC_MAX=72
 
 # Defines the steps between min / max to compute accumulation intervals
-export ACC_INT=24
-
+export ACC_INC=24

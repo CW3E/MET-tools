@@ -98,14 +98,16 @@ elif [ ${ANL_MAX} -lt ${ANL_MIN} ]; then
 fi
 
 # define the interval at which to process forecast outputs (HH)
-if [[ ! ${ANL_INT} =~ ${N_RE} ]]; then
-  printf "ERROR: hours interval between analyses \${ANL_INT} is not numeric.\n"
+if [[ ! ${ANL_INC} =~ ${N_RE} ]]; then
+  printf "ERROR: hours increment between analyses \${ANL_INC} is not numeric.\n"
   exit 1
-elif [ ! $(( (${ANL_MAX} - ${ANL_MIN}) % ${ANL_INT} )) = 0 ]; then
+elif [ ! $(( (${ANL_MAX} - ${ANL_MIN}) % ${ANL_INC} )) = 0 ]; then
   msg="ERROR: the interval [\${ANL_MIN}, \${ANL_MAX}]\n [${ANL_MIN}, ${ANL_MAX}]\n" 
-  msg+=" must be evenly divisible into increments of \${ANL_INT}, ${ANL_INT}.\n"
+  msg+=" must be evenly divisible into increments of \${ANL_INC}, ${ANL_INC}.\n"
   printf "${msg}"
   exit 1
+else
+		printf "Forecast start dates are incremented by ${ANL_INC} hours.\n"
 fi
 
 if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
@@ -126,20 +128,20 @@ if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
   		msg+=" min precip accumulation interval.\n"
   		printf "${msg}"
     exit 1
-  elif [[ ! ${ACC_INT} =~ ${N_RE} ]]; then
-    msg="ERROR: inteval between precip accumulation computations \${ACC_INT}"
+  elif [[ ! ${ACC_INC} =~ ${N_RE} ]]; then
+    msg="ERROR: increment between precip accumulation intervals \${ACC_INC}"
   		msg+=" is not numeric.\n"
   		printf "${msg}"
     exit 1
-  elif [ ! $(( (${ACC_MAX} - ${ACC_MIN}) % ${ACC_INT} )) = 0 ]; then
+  elif [ ! $(( (${ACC_MAX} - ${ACC_MIN}) % ${ACC_INC} )) = 0 ]; then
     msg="ERROR: the interval [\${ACC_MIN}, \${ACC_MAX}]\n [${ACC_MIN}, ${ACC_MAX}]\n" 
-    msg+=" must be evenly divisible into increments of \${ACC_INT}, ${ACC_INT}.\n"
+    msg+=" must be evenly divisible into increments of \${ACC_INC}, ${ACC_INC}.\n"
     printf "${msg}"
     exit 1
   else
   		# define array of accumulation interval computation hours
   		acc_hrs=()
-  		for (( acc_hr=${ACC_MIN}; acc_hr <= ${ACC_MAX}; acc_hr += ${ACC_INT} )); do
+  		for (( acc_hr=${ACC_MIN}; acc_hr <= ${ACC_MAX}; acc_hr += ${ACC_INC} )); do
   				printf "Computing precipitation accumulation for interval ${acc_hr} hours.\n"
       acc_hrs+=( ${acc_hr} )
   		done
@@ -178,8 +180,9 @@ else
 fi
 
 # check for output data root created successfully
-if [ ! -d ${OUT_CYC_DIR} ]; then
-  printf "ERROR: output data root directory\n ${OUT_CYC_DIR}\n does not exist.\n"
+if [[ ! -d ${OUT_CYC_DIR} || ! -w ${OUT_CYC_DIR} ]]; then
+  msg="ERROR: output data root directory\n ${OUT_CYC_DIR}\n does not"
+		msg+=" exist or is not writable.\n"
   exit 1
 fi
 
@@ -197,7 +200,7 @@ if [ -z ${OUT_DT_SUBDIR+x} ]; then
   exit 1
 fi
 
-# ensemble prefix and mem_ids below construct nested paths from ${IN_DT_SUBDIR}
+# ensemble prefix and ens_ids below construct nested paths from ${IN_DT_SUBDIR}
 # defined above to loop over and link to work directory
 if [ -z ${ENS_PRFX+x} ]; then
   msg="ERROR: ensemble member prefix to index value"
@@ -222,6 +225,26 @@ else
   ens_max=`printf $(( 10#${ENS_MAX} ))`
 fi
 
+if [ -z ${CTR_MEM+x} ]; then
+  msg="ERROR: control member name \${CTR_MEM} is unset, set to empty"
+		msg+=" string if not used.\n"
+  printf "${msg}"
+  exit 1
+elif [[ ${CTR_MEM} = "" ]]; then
+		printf "No control member is used for ensemble product computation.\n"
+		ctr_id=""
+		ctr_mem=""
+elif [[ ${CTR_MEM} =~ ${N_RE} ]]; then
+		ctr_id="${ENS_PRFX}`printf %0${ENS_PDD}d $(( 10#${CTR_MEM} ))`"
+		printf "Ensemble id ${ctr_id} is used as control for ensemble product computation.\n"
+		ctr_mem="-ctrl /wrk_dir/${ctr_id}"
+else 
+		msg="ERROR: \${CTR_MEM}\n ${CTR_MEM}\n should be set to a numerical index"
+		msg+=" or to an emptry string \"\" if unused.\n"
+		printf "${msg}"
+		exit 1
+fi
+
 if [ ${ens_min} -lt 0 ]; then
 		printf "ERROR: min ensemble index ${ENS_MIN} must be non-negative.\n"
 		exit 1
@@ -230,13 +253,22 @@ elif [ ${ens_max} -lt ${ens_min} ]; then
 		msg+=" to the minimum ensemble index."
 		exit 1
 else 
-  # define array of ensemble member ids, padded three digits
+  # define array of ensemble member ids, padded ${ENS_PDD} digits
   mem_ids=()
-  for (( mem_id=${ens_min}; mem_id <= ${ens_max}; mem_id++ )); do
-				mem_ids+=( ${ENS_PRFX}`printf %03d $(( 10#${mem_id} ))` )
+		mem_lst=""
+  for (( ens_id=${ens_min}; ens_id <= ${ens_max}; ens_id++ )); do
+				mem_id=${ENS_PRFX}`printf %0${ENS_PDD}d $(( 10#${ens_id} ))`
+
+				# generate a complete list for looping
+				mem_ids+=( ${mem_id} )
+				if [ ! ${mem_id} = ${ctr_id} ]; then
+						# generate an argument for gen_ens_prod without control id
+						printf "Ensemble id ${mem_id} is used for ensemble product computation.\n"
+				  mem_lst+="/wrk_dir/${mem_id} "
+				fi
   done
-		ens_min=`printf %03d $(( 10#${ens_min} ))`
-		ens_max=`printf %03d $(( 10#${ens_max} ))`
+		ens_min=`printf %0${ENS_PDD}d $(( 10#${ens_min} ))`
+		ens_max=`printf %0${ENS_PDD}d $(( 10#${ens_max} ))`
 fi
 
 # define path from ensemble member indexed directories defined above
@@ -256,22 +288,6 @@ fi
 if [ ! "${CAT_THR}" ]; then
   printf "ERROR: thresholds \${CAT_THR} is not defined.\n"
   exit 1
-fi
-
-if [ -z ${CTR_MEM+x} ]; then
-  msg="ERROR: control member name \${CTR_MEM} is unset, set to empty"
-		msg+=" string if not used.\n"
-  printf "${msg}"
-  exit 1
-elif [[ ${CTR_MEM} = "" ]]; then
-		${ctr_mem}=""
-elif [[ ${CTR_MEM} =~ ${N_RE} ]]; then
-		ctr_mem="-ctrl ${ENS_PRFX}`printf %03d $(( 10#${CTR_MEM} ))`"
-else 
-		msg="ERROR: \${CTR_MEM}\n ${CTR_MEM}\n should be set to a numerical index"
-		msg+=" or to an emptry string \"\" if unused.\n"
-		printf "${msg}"
-		exit 1
 fi
 
 # neighborhood width for neighborhood ensemble (maximum) probability estimates
@@ -306,7 +322,7 @@ fi
 # define the number of dates to loop
 fcst_hrs=$(( (`date +%s -d "${stop_dt}"` - `date +%s -d "${strt_dt}"`) / 3600 ))
 
-for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
+for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
   # directory string for forecast analysis initialization time
   dirstr=`date +%Y%m%d%H -d "${strt_dt} ${cyc_hr} hours"`
 
@@ -315,18 +331,39 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
 
   # set and clean working directory based on looped forecast start date
   wrk_dir=${OUT_CYC_DIR}/${dirstr}${OUT_DT_SUBDIR}
-  mkdir -p ${wrk_dir}
+  cmd="mkdir -p ${wrk_dir}"
+		printf "${cmd}\n"; eval "${cmd}"
+
+  for mem_id in ${mem_ids[@]}; do
+				cmd="rm -f ${wrk_dir}/${mem_id}"
+				printf "${cmd}\n"; eval "${cmd}"
+		done
+
+  for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INC} )); do
+    for acc_hr in ${acc_hrs[@]}; do
+						fname="ens_list_{CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}"
+						fname+="_ens-${ens_min}-${ens_max}_prd.nc"
+      cmd="rm -f ${wrk_dir}/${fname}"
+		  		printf "${cmd}\n"; eval "${cmd}"
+
+						fname="{CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}"
+						fname+="_ens-${ens_min}-${ens_max}_prd.nc"
+      cmd="rm -f ${wrk_dir}/${fname}"
+		  		printf "${cmd}\n"; eval "${cmd}"
+
+						fname=GenEnsProdConfig${acc_hr}
+      cmd="rm -f ${wrk_dir}/${fname}"
+		  		printf "${cmd}\n"; eval "${cmd}"
+		  done
+		done
 
   # Define directory privileges for singularity exec
-  met="singularity exec -B ${wrk_dir}:/wrk_dir:rw,"
-  met+="${scrpt_dir}:/scrpt_dir:ro "
-  met+="${MET}"
-  printf "${cmd}\n"; eval "${cmd}"
+  met="singularity exec -B ${wrk_dir}:/wrk_dir:rw ${MET}"
 
   # loop lead hours for forecast valid time for each initialization time
-  for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INT} )); do
+  for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INC} )); do
     # define valid times for accumulation    
-    anl_strt_hr=$(( ${lead_hr} + ${cyc_hr} - ${ACC_INT} ))
+    anl_strt_hr=$(( ${lead_hr} + ${cyc_hr} - ${ACC_INC} ))
     anl_stop_hr=$(( ${lead_hr} + ${cyc_hr} ))
     anl_strt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_strt_hr} hours"`
     anl_stop=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_stop_hr} hours"`
@@ -339,34 +376,39 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
     # forecast file name based on forecast initialization, accumulation and lead
     pdd_hr=`printf %03d $(( 10#${lead_hr} ))`
 				for acc_hr in ${acc_hrs[@]}; do
-						if [[ ${CMP_ACC} =~ ${TRUE} && ${acc_hr} -ge ${lead_hr} ]] || [[ ${CMP_ACC} =~ ${FALSE} ]]; then
+						if [[ ${CMP_ACC} =~ ${TRUE} && ${acc_hr} -le ${lead_hr} ]] ||\
+								 [[ ${CMP_ACC} =~ ${FALSE} ]]; then
 						  for mem_id in ${mem_ids[@]}; do
 						  		in_path=${in_dir}/${mem_id}${IN_ENS_SUBDIR}
           f_in=${in_path}/${CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}.nc
 										if [ -r ${f_in} ]; then
 												# keep a record of the original members used for computation
-												printf "${f_in}\n" >> ${wrk_dir}/${CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}_ens_mems.txt
+												log_f="ens_list_${CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}"
+												log_f+="_ens-${ens_min}-${ens_max}_prd.txt"
+												printf "${f_in}\n" >> ${wrk_dir}/${log_f}
 
-												# generate an ensemble index list on the fly
-												printf "/wrk_dir/${mem_id}\n" >> ${wrk_dir}/ens_list.txt
-
-												# link the file to the work directory
-            cmd="ln -sf ${f_in} ${wrk_dir}/${mem_id}"
+												# copy the ensemble file to the work directory
+            cmd="cp -L ${f_in} ${wrk_dir}/${mem_id}"
 												printf "${cmd}\n"; eval "${cmd}"
 										else
-												printf "ERROR: ensemble member ${f_in} does not exist or is not readable.\n"
+												msg="ERROR: ensemble member ${f_in} does not exist or is not"
+												msg+=" readable.\n"
+												printf "${msg}"
 												exit 1
 										fi
 						  done
 								# define output file name depending on parameters
-						  f_out=${CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}_ens-${ens_min}-${ens_max}_prd.nc
+						  f_out="${CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}"
+								f_out+="_ens-${ens_min}-${ens_max}_prd.nc"
 
         # update GenEnsProdConfigTemplate archiving file in working directory
         # this remains unchanged on accumulation intervals
 								if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
 										fld=${VRF_FLD}_${acc_hr}hr
+										printf "Computing verification field ${fld}\n."
 								else
 										fld=${VRF_FLD}
+										printf "Computing verification field ${fld}\n."
 								fi
         if [ ! -r ${wrk_dir}/GenEnsProdConfig ]; then
           cat ${scrpt_dir}/GenEnsProdConfigTemplate \
@@ -379,12 +421,16 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INT} )); do
 
         # Run gen_ens_prod
         cmd="${met} gen_ens_prod -v 10 \
-        -ens /wrk_dir/ens_list.txt \
+        -ens ${mem_lst} \
         -out /wrk_dir/${f_out} \
         -config /wrk_dir/GenEnsProdConfig${acc_hr} \
 				    ${ctr_mem}"
         printf "${cmd}\n"; eval "${cmd}"
 						fi
+						for mem_id in ${mem_ids[@]}; do
+								cmd="rm -f ${wrk_dir}/${mem_id}"
+								printf "${cmd}\n"; eval "${cmd}"
+						done
     done 
   done
 done

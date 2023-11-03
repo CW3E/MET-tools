@@ -57,7 +57,7 @@ export OUT_ROOT=${VRF_ROOT}/${CSE}
 # flow, ensemble member and grid settings are defined dynamically in the below and
 # should be set in the loops.
 ##################################################################################
-# storage for configurations in pseudo-multiarray
+# storage for configuration array names in pseudo-multiarray
 cfgs=()
 
 num_flws=${#CTR_FLWS[@]}

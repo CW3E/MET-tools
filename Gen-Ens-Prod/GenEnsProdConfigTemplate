@@ -54,7 +54,7 @@ ens = {
          level      = [ "(*,*)" ];
          CAT_THR;
          ensemble_flag = TRUE;
-      },
+      }
    ];
 }
 

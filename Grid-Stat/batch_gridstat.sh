@@ -6,8 +6,9 @@
 #SBATCH -p shared
 #SBATCH -t 01:00:00
 #SBATCH -J batch_gridstat
+#SBATCH -o ./logs/batch_gridstat-%A_%a.out
 #SBATCH --export=ALL
-#SBATCH --array=0-11
+#SBATCH --array=0-13
 ##################################################################################
 # Description
 ##################################################################################
@@ -59,56 +60,104 @@ export OUT_ROOT=${VRF_ROOT}/${CSE}
 # flow, ensemble member and grid settings are defined dynamically in the below and
 # should be set in the loops.
 ##################################################################################
-# storage for configurations in pseudo-multiarray
+# storage for configuration array names in pseudo-multiarray
 cfgs=()
 
-num_grds=${#GRDS[@]}
-num_mems=${#MEM_LIST[@]}
 num_flws=${#CTR_FLWS[@]}
-for (( i_g = 0; i_g < ${num_grds}; i_g++ )); do
-  for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
-    for (( i_m = 0; i_m < ${num_mems}; i_m++ )); do
+num_grds=${#GRDS[@]}
+num_mems=${#MEM_IDS[@]}
+for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
+  for (( i_g = 0; i_g < ${num_grds}; i_g++ )); do
+				if [[ ${IF_ENS_MEAN} =~ ${TRUE} ]]; then
       CTR_FLW=${CTR_FLWS[$i_f]}
       GRD=${GRDS[$i_g]}
-      INT_MTHD=${INT_MTHDS[$i_g]}
       INT_WDTH=${INT_WDTHS[$i_g]}
-      MEM=${MEM_LIST[$i_m]}
-
-      cfg_indx="cfg_${i_g}${i_f}${i_m}"
+  
+      cfg_indx="cfg_${i_f}${i_g}_mean"
       cmd="${cfg_indx}=()"
       printf "${cmd}\n"; eval "${cmd}"
-
+  
       cmd="${cfg_indx}+=(\"CTR_FLW=${CTR_FLW}\")"
       printf "${cmd}\n"; eval "${cmd}"
-
+  
       cmd="${cfg_indx}+=(\"GRD=${GRD}\")"
       printf "${cmd}\n"; eval "${cmd}"
-
-      cmd="${cfg_indx}+=(\"INT_MTHD=${INT_MTHD}\")"
+  
+      cmd="${cfg_indx}+=(\"IF_ENS_PRD=TRUE\")"
       printf "${cmd}\n"; eval "${cmd}"
-
+  
+      cmd="${cfg_indx}+=(\"ENS_MIN=${ENS_MIN}\")"
+      printf "${cmd}\n"; eval "${cmd}"
+  
+      cmd="${cfg_indx}+=(\"ENS_MAX=${ENS_MAX}\")"
+      printf "${cmd}\n"; eval "${cmd}"
+  
       cmd="${cfg_indx}+=(\"INT_WDTH=${INT_WDTH}\")"
       printf "${cmd}\n"; eval "${cmd}"
-
-      cmd="${cfg_indx}+=(\"IN_CYC_DIR=${IN_ROOT}/${CTR_FLW}\")"
+  
+      cmd="${cfg_indx}+=(\"IN_CYC_DIR=${IN_ROOT}/${CTR_FLW}/GenEnsProd\")"
       printf "${cmd}\n"; eval "${cmd}"
-
-      cmd="${cfg_indx}+=(\"OUT_CYC_DIR=${OUT_ROOT}/${CTR_FLW}\")"
+  
+      cmd="${cfg_indx}+=(\"OUT_CYC_DIR=${OUT_ROOT}/${CTR_FLW}/GridStat\")"
       printf "${cmd}\n"; eval "${cmd}"
-
+  
       # subdirectory of cycle-named directory containing data to be analyzed,
       # includes leading '/', left as blank string if not needed
-      cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/ens_${MEM}/${GRD}\")"
+      cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/${GRD}\")"
       printf "${cmd}\n"; eval "${cmd}"
       
       # subdirectory of cycle-named directory where output is to be saved
-      cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/ens_${MEM}/${GRD}\")"
+      cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/mean/${GRD}\")"
       printf "${cmd}\n"; eval "${cmd}"
       
       cmd="cfgs+=( \"${cfg_indx}\" )"
       printf "${cmd}\n"; eval "${cmd}"
 
-    done
+				fi
+
+				if [[ ${IF_ENS_MEMS} =~ ${TRUE} ]]; then
+      for (( i_m = 0; i_m < ${num_mems}; i_m++ )); do
+        CTR_FLW=${CTR_FLWS[$i_f]}
+        GRD=${GRDS[$i_g]}
+        INT_WDTH=${INT_WDTHS[$i_g]}
+        MEM=${MEM_IDS[$i_m]}
+  
+        cfg_indx="cfg_${i_g}${i_f}${i_m}"
+        cmd="${cfg_indx}=()"
+        printf "${cmd}\n"; eval "${cmd}"
+  
+        cmd="${cfg_indx}+=(\"CTR_FLW=${CTR_FLW}\")"
+        printf "${cmd}\n"; eval "${cmd}"
+  
+        cmd="${cfg_indx}+=(\"GRD=${GRD}\")"
+        printf "${cmd}\n"; eval "${cmd}"
+  
+        cmd="${cfg_indx}+=(\"IF_ENS_PRD=FALSE\")"
+        printf "${cmd}\n"; eval "${cmd}"
+  
+        cmd="${cfg_indx}+=(\"INT_WDTH=${INT_WDTH}\")"
+        printf "${cmd}\n"; eval "${cmd}"
+  
+        cmd="${cfg_indx}+=(\"IN_CYC_DIR=${IN_ROOT}/${CTR_FLW}/Preprocess\")"
+        printf "${cmd}\n"; eval "${cmd}"
+  
+        cmd="${cfg_indx}+=(\"OUT_CYC_DIR=${OUT_ROOT}/${CTR_FLW}/GridStat\")"
+        printf "${cmd}\n"; eval "${cmd}"
+  
+        # subdirectory of cycle-named directory containing data to be analyzed,
+        # includes leading '/', left as blank string if not needed
+        cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/${MEM}/${GRD}\")"
+        printf "${cmd}\n"; eval "${cmd}"
+        
+        # subdirectory of cycle-named directory where output is to be saved
+        cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/${MEM}/${GRD}\")"
+        printf "${cmd}\n"; eval "${cmd}"
+        
+        cmd="cfgs+=( \"${cfg_indx}\" )"
+        printf "${cmd}\n"; eval "${cmd}"
+  
+      done
+				fi
   done
 done
 

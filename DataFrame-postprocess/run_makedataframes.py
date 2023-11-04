@@ -46,7 +46,7 @@ from multiprocessing import Pool
 from DataFrame_config import *
 
 ##################################################################################
-# Construct hyper-paramter array for batch processing gridstat data
+# Construct hyper-paramter array for batch processing ASCII outputs
 ##################################################################################
 # convert to date times
 if len(STRT_DT) != 10:
@@ -82,9 +82,18 @@ print('Processing configurations:')
 for anl_dt in analyses:
     anl_strng = anl_dt.strftime('%Y%m%d%H')
     for CTR_FLW in CTR_FLWS:
-        for GRD in GRDS:
-            for PRFX in PRFXS:
-                print(INDT + anl_strng + ' ' + PRFX + ' ' + CTR_FLW +' ' + GRD)
+        for MEM_ID in MEM_IDS:
+            for GRD in GRDS:
+                if MEM_ID == '':
+                    mem_id = ''
+                else:
+                    mem_id = '/' + MEM_ID
+
+                if GRD == '':
+                    grd = ''
+                else:
+                    grd = '/' + GRD
+
                 # storage for configuration settings as arguments of proc_gridstat
                 # the function definition and role of these arguments are in the
                 # next section directly below
@@ -96,19 +105,16 @@ for anl_dt in analyses:
                 # control flow / directory name
                 CNFG.append(CTR_FLW)
     
-                # prefix for gridstat outputs
-                CNFG.append(PRFX)
-    
                 # grid to be processed
                 CNFG.append(GRD)
     
-                # path to cycle directories from IN_ROOT
-                CNFG.append('/' + CTR_FLW)
+                # path to ASCII input cycle directories from IN_ROOT
+                CNFG.append('/' + CTR_FLW )
                 
-                # path to gridstat outputs from cycle directory
-                CNFG.append('')
+                # path to ASCII outputs from cycle directory
+                CNFG.append(mem_id + grd)
     
-                # path to pandas output directories from OUT_ROOT
+                # path to output pandas cycle directories from OUT_ROOT
                 CNFG.append('/' + CTR_FLW)
     
                 # append configuration to be mapped
@@ -120,13 +126,7 @@ for anl_dt in analyses:
 #  function for multiprocessing parameter map
 def proc_gridstat(cnfg):
     # unpack argument list
-    anl_strng, ctr_flw, prfx, grid, in_cyc_dir, in_dt_subdir, out_cyc_dir = cnfg
-
-    # include underscore if prefix is of nonzero length
-    if len(prfx) > 0:
-        pfx = '_' + prfx
-    else:
-        pfx = ''
+    anl_strng, ctr_flw, grid, in_cyc_dir, in_dt_subdir, out_cyc_dir = cnfg
 
     # include underscore if grid is of nonzero length
     if len(grid) > 0:
@@ -163,7 +163,7 @@ def proc_gridstat(cnfg):
     
         # define the gridstat files to open based on the analysis date
         in_paths = in_data_root + '/' + anl_strng + in_dt_subdir  +\
-                   '/grid_stat' + pfx + '*.txt'
+                   '/' + pfx + '*.txt'
 
         print('Loading grid_stat ASCII outputs from in_paths:', file=log_f)
         print(INDT + in_paths, file=log_f)

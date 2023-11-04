@@ -66,7 +66,7 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
   for (( i_g = 0; i_g < ${num_grds}; i_g++ )); do
     CTR_FLW=${CTR_FLWS[$i_f]}
     GRD=${GRDS[$i_g]}
-        NBRHD_WDTH=${NBRHD_WDTHS[$i_g]}
+    NBRHD_WDTH=${NBRHD_WDTHS[$i_g]}
 
     cfg_indx="cfg_${i_f}${i_g}"
     cmd="${cfg_indx}=()"
@@ -78,14 +78,14 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
     cmd="${cfg_indx}+=(\"NBRHD_WDTH=${NBRHD_WDTH}\")"
     printf "${cmd}\n"; eval "${cmd}"
 
-    cmd="${cfg_indx}+=(\"IN_CYC_DIR=${IN_ROOT}/${CTR_FLW}/Preprocess\")"
+    cmd="${cfg_indx}+=(\"IN_DT_ROOT=${IN_ROOT}/${CTR_FLW}/Preprocess\")"
     printf "${cmd}\n"; eval "${cmd}"
 
-    cmd="${cfg_indx}+=(\"OUT_CYC_DIR=${OUT_ROOT}/${CTR_FLW}/GenEnsProd\")"
+    cmd="${cfg_indx}+=(\"OUT_DT_ROOT=${OUT_ROOT}/${CTR_FLW}/GenEnsProd\")"
     printf "${cmd}\n"; eval "${cmd}"
 
     # subdirectory of cycle-named directory containing data to be analyzed,
-        # leading to ensemble indexed directory
+    # leading to ensemble indexed directory
     # includes leading '/', left as blank string if not needed
     cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=\"\"\")"
     printf "${cmd}\n"; eval "${cmd}"

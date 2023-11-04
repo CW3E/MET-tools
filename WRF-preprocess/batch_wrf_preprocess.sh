@@ -87,7 +87,7 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
       printf "${cmd}\n"; eval "${cmd}"
 
       # This path defines the location of each cycle directory relative to IN_ROOT
-      cmd="${cfg_indx}+=(\"IN_CYC_DIR=${IN_ROOT}/${CTR_FLW}\")"
+      cmd="${cfg_indx}+=(\"IN_DT_ROOT=${IN_ROOT}/${CTR_FLW}\")"
       printf "${cmd}\n"; eval "${cmd}"
 
       # subdirectory of cycle-named directory containing data to be analyzed,
@@ -96,7 +96,7 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
       printf "${cmd}\n"; eval "${cmd}"
       
       # This path defines the location of each cycle directory relative to OUT_ROOT
-      cmd="${cfg_indx}+=(\"OUT_CYC_DIR=${OUT_ROOT}/${CTR_FLW}/Preprocess\")"
+      cmd="${cfg_indx}+=(\"OUT_DT_ROOT=${OUT_ROOT}/${CTR_FLW}/Preprocess\")"
       printf "${cmd}\n"; eval "${cmd}"
 
       # subdirectory of cycle-named directory where output is to be saved

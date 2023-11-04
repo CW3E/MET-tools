@@ -95,10 +95,10 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
       cmd="${cfg_indx}+=(\"INT_WDTH=${INT_WDTH}\")"
       printf "${cmd}\n"; eval "${cmd}"
   
-      cmd="${cfg_indx}+=(\"IN_CYC_DIR=${IN_ROOT}/${CTR_FLW}/GenEnsProd\")"
+      cmd="${cfg_indx}+=(\"IN_DT_ROOT=${IN_ROOT}/${CTR_FLW}/GenEnsProd\")"
       printf "${cmd}\n"; eval "${cmd}"
   
-      cmd="${cfg_indx}+=(\"OUT_CYC_DIR=${OUT_ROOT}/${CTR_FLW}/GridStat\")"
+      cmd="${cfg_indx}+=(\"OUT_DT_ROOT=${OUT_ROOT}/${CTR_FLW}/GridStat\")"
       printf "${cmd}\n"; eval "${cmd}"
   
       # subdirectory of cycle-named directory containing data to be analyzed,
@@ -138,10 +138,10 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
         cmd="${cfg_indx}+=(\"INT_WDTH=${INT_WDTH}\")"
         printf "${cmd}\n"; eval "${cmd}"
   
-        cmd="${cfg_indx}+=(\"IN_CYC_DIR=${IN_ROOT}/${CTR_FLW}/Preprocess\")"
+        cmd="${cfg_indx}+=(\"IN_DT_ROOT=${IN_ROOT}/${CTR_FLW}/Preprocess\")"
         printf "${cmd}\n"; eval "${cmd}"
   
-        cmd="${cfg_indx}+=(\"OUT_CYC_DIR=${OUT_ROOT}/${CTR_FLW}/GridStat\")"
+        cmd="${cfg_indx}+=(\"OUT_DT_ROOT=${OUT_ROOT}/${CTR_FLW}/GridStat\")"
         printf "${cmd}\n"; eval "${cmd}"
   
         # subdirectory of cycle-named directory containing data to be analyzed,

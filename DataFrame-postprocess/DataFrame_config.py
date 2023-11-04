@@ -18,11 +18,14 @@ INDT = os.environ['INDT']
 # Case study directory structure
 CSE = 'DeepDive/2022122800_valid_date'
 
+# Prefix for outputs
+PRFX = 'grid_stat_24H'
+
 # root directory for ASCII outputs
 IN_ROOT = VRF_ROOT + '/' + CSE
 
 # root directory for processed pandas outputs
-OUT_ROOT = VRF_ROOT + '/' +CSE
+OUT_ROOT = VRF_ROOT + '/' + CSE
 
 # define control flows to analyze for lineplots 
 CTR_FLWS = [

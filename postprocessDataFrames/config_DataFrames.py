@@ -18,8 +18,11 @@ INDT = os.environ['INDT']
 # Case study directory structure
 CSE = 'DeepDive/2022122800_valid_date'
 
-# Prefix for outputs
-PRFX = 'grid_stat_24H'
+# MET-tool subdirectory name
+MET_TOOL = 'GridStat'
+
+# Prefix for MET product outputs
+PRFX = 'grid_stat_QPF'
 
 # root directory for ASCII outputs
 IN_ROOT = VRF_ROOT + '/' + CSE
@@ -59,10 +62,10 @@ STOP_DT = '2022122300'
 # increment between zero hours for forecast data (string HH)
 CYC_INC = '24'
 
-# Min forecast lead time to proces in hours
+# Min forecast lead time to proces in hours (string HH)
 ANL_MIN = '24'
 
-# Max forecast lead time to plot in hours
+# Max forecast lead time to plot in hours (string HH)
 ANL_MAX = '240'
 
 # incrment between verification valid times (string HH)
@@ -71,9 +74,9 @@ ANL_INC = '24'
 # Compute precipitation accumulation, True or False
 CMP_ACC=True
 
-# Defines the min / max accumulation interval for precip
-ACC_MIN=24
-ACC_MAX=24
+# Defines the min / max accumulation interval for precip (string HH)
+ACC_MIN='24'
+ACC_MAX='24'
 
-# Defines the increment between min / max to compute accumulation intervals
-ACC_INC=24
+# Defines the increment between min / max to compute accumulation intervals (string HH)
+ACC_INC='24'

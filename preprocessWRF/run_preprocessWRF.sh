@@ -51,9 +51,9 @@ elif [[ ! -d ${USR_HME} || ! -r ${USR_HME} ]]; then
   printf "${msg}"
   exit 1
 else
-  scrpt_dir=${USR_HME}/WRF-preprocess
+  scrpt_dir=${USR_HME}/preprocessWRF
   if [ ! -d ${scrpt_dir} ]; then
-    printf "ERROR: WRF-preprocessing directory\n ${scrpt_dir}\n does not exist.\n"
+    printf "ERROR: preprocessingWRF directory\n ${scrpt_dir}\n does not exist.\n"
     exit 1
   fi
 fi
@@ -219,10 +219,11 @@ if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
     done
   fi
 elif [[ ${CMP_ACC} =~ ${FALSE} ]]; then
-  printf "run_wrf_preprocess does not compute precip accumulations.\n"
+  printf "run_preprocessWRF does not compute precip accumulations.\n"
 else
   msg="ERROR: \${CMP_ACC} must be set to 'TRUE' or 'FALSE' to decide if "
   msg+="computing precip accumulation from wrfcf files."
+  printf "${msg}"
   exit 1
 fi
 

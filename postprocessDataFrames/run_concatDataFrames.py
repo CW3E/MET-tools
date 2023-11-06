@@ -2,7 +2,7 @@
 # Description
 ##################################################################################
 # This script reads in arbitrary grid_stats_*.bin output files from
-# proc_gridstat.py and concatenates Pandas dataframes of pecified statistics
+# makeDataFrames.py and concatenates Pandas dataframes of pecified statistics
 # types writing workflow parameters as labels for later statistical encoding.
 # The dataframes are saved into a dictionary with key names associated
 # to the Grid-Stat statistics type, written to a Pickled binary file.

@@ -5,8 +5,8 @@
 #SBATCH --mem=120G
 #SBATCH -p shared
 #SBATCH -t 01:00:00
-#SBATCH -J batch_gridstat
-#SBATCH -o ./logs/batch_gridstat-%A_%a.out
+#SBATCH -J GridStat
+#SBATCH -o ./logs/GridStat-%A_%a.out
 #SBATCH --export=ALL
 #SBATCH --array=0-13
 ##################################################################################
@@ -14,8 +14,8 @@
 ##################################################################################
 # This script utilizes SLURM job arrays to batch process collections of cf
 # compliant, preprocessed WRF outputs and / or preprocessed global model data
-# using the MET Grid-Stat tool. This script is designed to set the parameters for
-# the companion run_gridstat.sh script as a job array map, allowing batch
+# using the MET GridStat tool. This script is designed to set the parameters for
+# the companion run_GridStat.sh script as a job array map, allowing batch
 # processing over multiple configurations and valid dates with a single call.
 ##################################################################################
 # License Statement
@@ -42,9 +42,9 @@
 #set -x
 
 # Source configuration files to define majority of required variables
-source ../MET-tools_config.sh
-source ./Grid-Stat_config.sh
-source ../vxmask/mask_config.sh
+source ../config_MET-tools.sh
+source ./config_GridStat.sh
+source ../vxmask/config_vxmask.sh
 
 # root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
 export IN_ROOT=${VRF_ROOT}/${CSE}
@@ -173,14 +173,14 @@ printf "Loading configuration parameters ${cfgs[$indx]}:"
 cfg=${cfgs[$indx]}
 job="${cfg}[@]"
 
-cmd="cd ${USR_HME}/Grid-Stat"
+cmd="cd ${USR_HME}/GridStat"
 printf ${cmd}; eval "${cmd}"
 
 log_dir=${OUT_ROOT}/batch_logs
 cmd="mkdir -p ${log_dir}"
 printf ${cmd}; eval "${cmd}"
 
-cmd="./run_gridstat.sh ${!job} > ${log_dir}/gridstat_${jbid}_${indx}.log 2>&1"
+cmd="./run_GridStat.sh ${!job} > ${log_dir}/GridStat_${jbid}_${indx}.log 2>&1"
 printf ${cmd}; eval "${cmd}"
 
 ##################################################################################

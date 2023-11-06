@@ -5,8 +5,8 @@
 #SBATCH --mem=120G
 #SBATCH -p shared
 #SBATCH -t 01:00:00
-#SBATCH -J batch_genensprod
-#SBATCH -o ./logs/batch_genensprod-%A_%a.out
+#SBATCH -J GenEnsProd
+#SBATCH -o ./logs/GenEnsProd-%A_%a.out
 #SBATCH --export=ALL
 #SBATCH --array=0-1
 ##################################################################################
@@ -40,8 +40,8 @@
 #set -x
 
 # Source configuration files to define majority of required variables
-source ../MET-tools_config.sh
-source ./GenEnsProd_config.sh
+source ../config_MET-tools.sh
+source ./config_GenEnsProd.sh
 
 # root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
 export IN_ROOT=${VRF_ROOT}/${CSE}
@@ -117,14 +117,14 @@ printf "Loading configuration parameters ${cfgs[$indx]}:"
 cfg=${cfgs[$indx]}
 job="${cfg}[@]"
 
-cmd="cd ${USR_HME}/Gen-Ens-Prod"
+cmd="cd ${USR_HME}/GenEnsProd"
 printf "${cmd}\n"; eval "${cmd}"
 
 log_dir=${OUT_ROOT}/batch_logs
 cmd="mkdir -p ${log_dir}"
 printf "${cmd}\n"; eval "${cmd}"
 
-cmd="./run_genensprod.sh ${!job} > ${log_dir}/genensprod_${jbid}_${indx}.log 2>&1"
+cmd="./run_GenEnsProd.sh ${!job} > ${log_dir}/GenEnsProd_${jbid}_${indx}.log 2>&1"
 printf "${cmd}\n"; eval "${cmd}"
 
 ##################################################################################

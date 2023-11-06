@@ -5,8 +5,8 @@
 #SBATCH --mem=20G
 #SBATCH -p shared
 #SBATCH -t 00:30:00
-#SBATCH -J batch_gridstat
-#SBATCH -o ./logs/makedataframes-%A_%a.out
+#SBATCH -J makeDataFrames
+#SBATCH -o ./logs/makeDataFrames-%A_%a.out
 #SBATCH --export=ALL
 ##################################################################################
 # Description
@@ -32,15 +32,15 @@
 ##################################################################################
 # SET GLOBAL PARAMETERS
 ##################################################################################
-source ../MET-tools_config.sh
-export SCRPT_ROOT=${USR_HME}/DataFrame-postprocess
+source ../config_MET-tools.sh
+export SCRPT_ROOT=${USR_HME}/postprocessDataFrames
 
 ##################################################################################
 # run the batch processing with native Python multiprocessing
 cmd="cd ${SCRPT_ROOT}"
 printf "${cmd}\n"; eval ${cmd}
 
-cmd="python -u run_makedataframes.py"
+cmd="${DATAFRAMES} -u run_makeDataFrames.py"
 printf "${cmd}\n"; eval ${cmd}
 
 ##################################################################################

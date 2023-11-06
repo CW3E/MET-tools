@@ -5,8 +5,8 @@
 #SBATCH --mem=120G
 #SBATCH -p shared
 #SBATCH -t 01:00:00
-#SBATCH -J batch_wrf_preprocess
-#SBATCH -o ./logs/batch_wrf_preprocess-%A_%a.out
+#SBATCH -J preprocessWRF
+#SBATCH -o ./logs/preprocessWRF-%A_%a.out
 #SBATCH --export=ALL
 #SBATCH --array=0-11
 ##################################################################################
@@ -42,8 +42,8 @@
 #set -x
 
 # Source the configuration file to define majority of required variables
-source ../MET-tools_config.sh
-source ./WRF-preprocess_config.sh
+source ../config_MET-tools.sh
+source ./config_preprocessWRF.sh
 
 # root directory for cycle time (YYYYMMDDHH) directories of WRF output files
 export IN_ROOT=${SIM_ROOT}/${CSE}
@@ -121,15 +121,15 @@ printf "Loading configuration parameters ${cfgs[$indx]}:\n"
 cfg=${cfgs[$indx]}
 job="${cfg}[@]"
 
-cmd="cd ${USR_HME}/WRF-preprocess"
+cmd="cd ${USR_HME}/preprocessWRF"
 printf "${cmd}\n"; eval "${cmd}"
 
 log_dir=${OUT_ROOT}/batch_logs
 cmd="mkdir -p ${log_dir}"
 printf "${cmd}\n"; eval "${cmd}"
 
-cmd="./run_wrf_preprocess.sh ${!job} \
-  > ${log_dir}/wrf-preprocess_${jbid}_${indx}.log 2>&1"
+cmd="./run_preprocessWRF.sh ${!job} \
+  > ${log_dir}/preprocessWRF_${jbid}_${indx}.log 2>&1"
 printf "${cmd}\n"; eval "${cmd}"
 
 ##################################################################################

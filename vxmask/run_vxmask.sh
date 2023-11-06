@@ -5,8 +5,8 @@
 #SBATCH --mem=12G
 #SBATCH -p shared
 #SBATCH -t 01:00:00
-#SBATCH -J run_vxmask
-#SBATCH -o vxmask-%j.out
+#SBATCH -J vxmask
+#SBATCH -o ./logs/vxmask-%j.out
 #SBATCH --export=ALL
 #################################################################################
 # Description
@@ -43,8 +43,8 @@
 #set -x
 
 # Source the configuration file to define majority of required variables
-source ../MET-tools_config.sh
-source ./mask_config.sh
+source ../config_MET-tools.sh
+source ./config_vxmask.sh
           
 #################################################################################
 # CHECK WORKFLOW PARAMETERS
@@ -59,7 +59,7 @@ elif [ ! -d ${USR_HME} ]; then
   printf $"ERROR: MET-tools clone directory\n ${USR_HME}\n does not exist.\n"
   exit 1
 else
-  script_dir=${USR_HME}/Grid-Stat
+  script_dir=${USR_HME}/vxmask
   if [ ! -d ${script_dir} ]; then
     printf "ERROR: Grid-Stat script directory\n ${script_dir}\n does not exist.\n"
     exit 1
@@ -124,13 +124,13 @@ printf "${cmd}\n"; eval "${cmd}"
 
 while read msk; do
   # masks are recreated depending on the existence of files from previous analyses
-  out_path=${MSK_GRDS}/${msk}_mask_regridded_with_StageIV.nc
+  out_path=${MSK_GRDS}/${msk}_StageIVGrid.nc
   if [ ! -r "${out_path}" ]; then
     # regridded mask does not exist in mask out, create from scratch
     cmd="singularity exec instance://MET gen_vx_mask -v 10 \
     /MSK_ROOT/${OBS_F_IN} \
     -type poly /MSK_LTLN/${msk}.txt \
-    /MSK_GRDS/${msk}_mask_regridded_with_StageIV.nc"
+    /MSK_GRDS/${msk}_StageIVGrid.nc"
     printf "${cmd}\n"; eval "${cmd}"
   else
     # mask exists and is readable, skip this step

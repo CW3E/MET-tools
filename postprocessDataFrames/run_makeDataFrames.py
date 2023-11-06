@@ -8,7 +8,7 @@
 # agnostically from bash wildcard patterns.
 #
 # Batches of hyper-parameter-dependent data can be processed by constructing
-# lists of proc_gridstat arguments which define configurations that will be mapped
+# lists of makeDataFrames arguments which define configurations that will be mapped
 # to run in parallel through Python multiprocessing.
 #
 ##################################################################################
@@ -43,13 +43,13 @@ from datetime import datetime as dt
 from datetime import timedelta
 import multiprocessing 
 from multiprocessing import Pool
-from DataFrame_config import *
+from config_DataFrames import *
 
 ##################################################################################
 # Construct hyper-paramter array for batch processing ASCII outputs
 ##################################################################################
 # convert to date times
-if len(STRT_DT) != 10:
+if not STRT_DT.isdigit() or len(STRT_DT) != 10:
     print('ERROR: STRT_DT, ' + STRT_DT + ', is not in YYYYMMDDHH format.')
     sys.exit(1)
 else:
@@ -57,7 +57,7 @@ else:
             STRT_DT[8:]
     strt_dt = dt.fromisoformat(iso)
 
-if len(STOP_DT) != 10:
+if not STRT_DT.isdigit() or len(STOP_DT) != 10:
     print('ERROR: STOP_DT, ' + STOP_DT +\
             ', is not in YYYYMMDDHH format.')
     sys.exit(1)
@@ -66,67 +66,139 @@ else:
             STOP_DT[8:]
     stop_dt = dt.fromisoformat(iso)
 
-if len(CYC_INC) != 2:
+if not CYC_INC.isdigit():
     print('ERROR: CYC_INC, ' + CYC_INC + ', is not in HH format.')
     sys.exit(1)
 else:
     cyc_inc = CYC_INC + 'H'
 
+if not ANL_MIN.isdigit():
+    print('ERROR: ANL_MIN, ' + ANL_MIN + ', is not in HH format.')
+    sys.exit(1)
+else:
+    anl_min = int(ANL_MIN)
+
+if not ANL_MAX.isdigit():
+    print('ERROR: ANL_MAX, ' + ANL_MAX + ', is not in HH format.')
+    sys.exit(1)
+else:
+    anl_max = int(ANL_MAX)
+
+if not ANL_INC.isdigit():
+    print('ERROR: ANL_INC, ' + ANL_INC + ', is not in HH format.')
+    sys.exit(1)
+else:
+    anl_inc = int(ANL_INC)
+
+if (anl_max - anl_min) % anl_inc != 0:
+    print('ERROR: the interval [ANL_MIN, ANL_MAX]')
+    print('[' + ANL_MIN + ',' + ANL_MAX+ ']')
+    print('must be evenly divisible into increments of ANL_INC,' +\
+            ANL_INC + '.')
+
+print('Parsing analysis lead times:')
+for i_anl in range(anl_min, anl_max + anl_inc, anl_inc):
+    print(INDT + str(i_anl))
+
+PFXS = []
+if CMP_ACC:
+    if not ACC_MIN.isdigit():
+        print('ERROR: ACC_MIN, ' + ACC_MIN + ', is not in HH format.')
+        sys.exit(1)
+    else:
+        acc_min = int(ACC_MIN)
+    
+    if not ACC_MAX.isdigit():
+        print('ERROR: ACC_MAX, ' + ACC_MAX + ', is not in HH format.')
+        sys.exit(1)
+    else:
+        acc_max = int(ACC_MAX)
+    
+    if not ACC_INC.isdigit():
+        print('ERROR: ACC_INC, ' + ACC_INC + ', is not in HH format.')
+        sys.exit(1)
+    else:
+        acc_inc = int(ACC_INC)
+
+    if (acc_max - acc_min) % acc_inc != 0:
+        print('ERROR: the interval [ACC_MIN, ACC_MAX]')
+        print('[' + ACC_MIN + ',' + ACC_MAX+ ']')
+        print('must be evenly divisible into increments of ACC_INC,' +\
+                ACC_INC + '.')
+
+    print('Parsing precipitation accumulations:')
+    for i_acc in range(acc_min, acc_max + acc_inc, acc_inc):
+        acc_hr = str(i_acc) + 'hr'
+        print(INDT + acc_hr)
+        PFXS += [PRFX + '_' + acc_hr]
+
+else:
+    print('Not parsing precipitation accumulation.')
+    PFXS += [PRFX]
+
 # container for map
-CNFGS = []
+CFGS = []
 
 # generate the date range for the analyses
-analyses = pd.date_range(start=strt_dt, end=stop_dt, freq=cyc_inc).to_pydatetime()
+anl_dt = pd.date_range(start=strt_dt, end=stop_dt, freq=cyc_inc).to_pydatetime()
 
 print('Processing configurations:')
-for anl_dt in analyses:
+for anl_dt in anl_dt:
     anl_strng = anl_dt.strftime('%Y%m%d%H')
     for CTR_FLW in CTR_FLWS:
         for MEM_ID in MEM_IDS:
             for GRD in GRDS:
-                if MEM_ID == '':
-                    mem_id = ''
-                else:
-                    mem_id = '/' + MEM_ID
+                for PFX in PFXS:
+                    if MEM_ID == '':
+                        mem_id = ''
+                    else:
+                        mem_id = '/' + MEM_ID
 
-                if GRD == '':
-                    grd = ''
-                else:
-                    grd = '/' + GRD
+                    if GRD == '':
+                        grd = ''
+                    else:
+                        grd = '/' + GRD
 
-                # storage for configuration settings as arguments of proc_gridstat
-                # the function definition and role of these arguments are in the
-                # next section directly below
-                CNFG = []
+                    # storage for configuration settings as arguments of makeDataFrames
+                    # the function definition and role of these arguments are in the
+                    # next section directly below
+                    CFG = []
 
-                # forecast zero hour date time
-                CNFG.append(anl_strng)
+                    # forecast zero hour date time
+                    CFG.append(anl_strng)
     
-                # control flow / directory name
-                CNFG.append(CTR_FLW)
+                    # control flow / directory name
+                    CFG.append(CTR_FLW)
     
-                # grid to be processed
-                CNFG.append(GRD)
+                    # grid to be processed
+                    CFG.append(GRD)
     
-                # path to ASCII input cycle directories from IN_ROOT
-                CNFG.append('/' + CTR_FLW )
-                
-                # path to ASCII outputs from cycle directory
-                CNFG.append(mem_id + grd)
+                    # path to ASCII input cycle directories from IN_DT_ROOT including '/'
+                    CFG.append(IN_ROOT + '/' + CTR_FLW )
+                    
+                    # path to ASCII outputs from cycle directory including '/'
+                    CFG.append(mem_id + grd)
     
-                # path to output pandas cycle directories from OUT_ROOT
-                CNFG.append('/' + CTR_FLW)
+                    # path to output pandas cycle directories from OUT_ROOT
+                    CFG.append(OUT_ROOT + '/' + CTR_FLW + '/' + MET_TOOL)
     
-                # append configuration to be mapped
-                CNFGS.append(CNFG)
+                    # path to pandas outputs from cycle directory including '/'
+                    CFG.append('')
+
+                    # prefix for ASCII output generated by MET
+                    CFG.append(PFX)
+    
+                    # append configuration to be mapped
+                    CFGS.append(CFG)
 
 ##################################################################################
 # Data processing routines
 ##################################################################################
 #  function for multiprocessing parameter map
-def proc_gridstat(cnfg):
+def makeDataFrames(cfg):
     # unpack argument list
-    anl_strng, ctr_flw, grid, in_cyc_dir, in_dt_subdir, out_cyc_dir = cnfg
+    anl_strng, ctr_flw, grid, in_dt_root, in_dt_subdir,\
+            out_dt_root, out_dt_subdir, pfx = cfg
 
     # include underscore if grid is of nonzero length
     if len(grid) > 0:
@@ -137,50 +209,45 @@ def proc_gridstat(cnfg):
     log_dir = OUT_ROOT + '/batch_logs'
     os.system('mkdir -p ' + log_dir)
 
-    with open(log_dir + '/proc_gridstat' + pfx + grd + '_' + ctr_flw + '_' +\
+    with open(log_dir + '/df_' + pfx + grd + '_' + ctr_flw + '_' +\
               anl_strng + '.log', 'w') as log_f:
 
-        # define derived data paths 
-        in_data_root = IN_ROOT + in_cyc_dir 
-
-        out_data_root = OUT_ROOT + out_cyc_dir
-        os.system('mkdir -p ' + out_data_root)
+        os.system('mkdir -p ' + out_dt_root)
         
         # check for input / output root directory
-        if not os.path.isdir(in_data_root):
-            print('ERROR: input data root directory ' + in_data_root +\
+        if not os.path.isdir(in_dt_root):
+            print('ERROR: input data root directory ' + in_dt_root +\
                     ' does not exist.', file=log_f)
             sys.exit(1)
         
         # check for input / output root directory
-        elif not os.path.isdir(out_data_root):
-            print('ERROR: output data root directory ' + out_data_root +\
+        elif not os.path.isdir(out_dt_root):
+            print('ERROR: output data root directory ' + out_dt_root +\
                     ' does not exist.', file=log_f)
             sys.exit(1)
         
         # initiate empty dictionary for storage of dataframes by keyname
         data_dict = {}
     
-        # define the gridstat files to open based on the analysis date
-        in_paths = in_data_root + '/' + anl_strng + in_dt_subdir  +\
-                   '/' + pfx + '*.txt'
+        # define the ASCII files to open based on the analysis date
+        # looping the analysis times
+        in_paths = []
+        for i_anl in range(anl_min, anl_max + anl_inc, anl_inc):
+            in_path = in_dt_root + '/' + anl_strng + in_dt_subdir + '/' + pfx +\
+                    '_' + str(i_anl) + '0000L' + '*.txt'
+            print('Searching path ' + in_path + ':')
+            for path in sorted(glob.glob(in_path)):
+                print(INDT + 'Found ' + path)
+                in_paths += [ path ] 
 
-        print('Loading grid_stat ASCII outputs from in_paths:', file=log_f)
-        print(INDT + in_paths, file=log_f)
-    
         # define the output binary file for pickled dataframe per date
-        out_dir = out_data_root + '/' + anl_strng
-        out_path = out_dir + '/grid_stats' + pfx + grd + '_' + anl_strng + '.bin'
+        out_dir = out_dt_root + '/' + anl_strng
+        out_path = out_dir + '/' + pfx + grd + '_' + anl_strng + '.bin'
         os.system('mkdir -p ' + out_dir)
 
         print('Writing Pandas dataframe pickled binary files to out_path:',
                 file=log_f)
         print(INDT + out_path, file=log_f)
-
-        # loop sorted grid_stat_pfx* files, sorting compares first on the
-        # length of lead time for non left-padded values
-        in_paths = sorted(glob.glob(in_paths),
-                          key=lambda x:(len(x.split('_')[-4]), x))
         for in_path in in_paths:
             print('Opening file ' + in_path, file=log_f)
     
@@ -249,17 +316,17 @@ def proc_gridstat(cnfg):
         with open(out_path, 'wb') as f:
             pickle.dump(data_dict, f)
 
-        print('Completed: ' + anl_strng + '_' + prfx + grid + ctr_flw) 
+        print('Completed: ' + anl_strng + '_' + pfx + grid + ctr_flw) 
 
 ##################################################################################
 # Runs multiprocessing on parameter grid
 ##################################################################################
 # infer available cpus for workers
 n_workers = multiprocessing.cpu_count() - 1
-print('Running proc_gridstat with ' + str(n_workers) + ' total workers.')
+print('Running makeDataFrames with ' + str(n_workers) + ' total workers.')
 
 with Pool(n_workers) as pool:
-    print(*pool.map(proc_gridstat, CNFGS))
+    print(*pool.map(makeDataFrames, CFGS))
 
 ##################################################################################
 # end

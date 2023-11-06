@@ -2,7 +2,7 @@
 # Description
 #################################################################################
 # The purpose of this script is to compute simple ensemble products using MET
-# Gen-Ens-Prod Tool after pre-procssing WRF forecast data using WRF-preprocess
+# GenEnsProd Tool after pre-procssing WRF forecast data using WRF-preprocess
 # scripts in this repository.
 #
 #################################################################################
@@ -44,9 +44,9 @@ elif [[ ! -d ${USR_HME} || ! -r ${USR_HME} ]]; then
   printf "${msg}"
   exit 1
 else
-  scrpt_dir=${USR_HME}/Gen-Ens-Prod
+  scrpt_dir=${USR_HME}/GenEnsProd
   if [[ ! -d ${scrpt_dir} || ! -r ${scrpt_dir} ]]; then
-    msg="ERROR: Gen-Ens-Prod script directory\n ${scrpt_dir}\n does not exist or"
+    msg="ERROR: GenEnsProd script directory\n ${scrpt_dir}\n does not exist or"
     msg+=" is not readable.\n"
     printf "${msg}"
     exit 1
@@ -153,6 +153,7 @@ elif [[ ${CMP_ACC} =~ ${FALSE} ]]; then
 else
   msg="ERROR: ${CMP_ACC} must be set 'TRUE' or 'FALSE' (case insensitive)"
   msg+=" to compute accumulation statistics.\n"
+  printf "${msg}"
   exit 1
 fi
 

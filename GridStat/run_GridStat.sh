@@ -48,9 +48,9 @@ elif [[ ! -d ${USR_HME} || ! -r ${USR_HME} ]]; then
   printf "${msg}"
   exit 1
 else
-  scrpt_dir=${USR_HME}/Grid-Stat
+  scrpt_dir=${USR_HME}/GridStat
   if [[ ! -d ${scrpt_dir} || ! -r ${scrpt_dir} ]]; then
-    msg="ERROR: Grid-Stat script directory\n ${scrpt_dir}\n does not exist or is"
+    msg="ERROR: GridStat script directory\n ${scrpt_dir}\n does not exist or is"
     msg+=" not readable.\n"
     printf "${msg}"
     exit 1
@@ -256,9 +256,9 @@ fi
 # loop lines of the mask list, set temporary exit status before searching for masks
 error=0
 while read msk; do
-  fpath=${MSK_GRDS}/${msk}_mask_regridded_with_StageIV.nc
+  fpath=${MSK_GRDS}/${msk}_StageIVGrid.nc
   if [ -r "${fpath}" ]; then
-    printf "Found\n ${fpath}_mask_regridded_with_StageIV.nc\n landmask.\n"
+    printf "Found\n ${fpath}\n landmask.\n"
   else
     msg="ERROR: verification region landmask\n ${fpath}\n"
     msg+=" does not exist or is not readable.\n"
@@ -273,6 +273,7 @@ if [ ${error} -eq 1 ]; then
   msg="ERROR: Exiting due to missing landmasks, please see the above error "
   msg+="messages and verify the location for these files. These files can be "
   msg+="generated from lat-lon text files using the run_vxmask.sh script."
+  printf "${msg}"
   exit 1
 fi
 
@@ -371,10 +372,10 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
   line_count=1
   while read msk; do
     if [ ${line_count} -lt ${msk_count} ]; then
-      ply_msk="\"/MSK_GRDS/${msk}_mask_regridded_with_StageIV.nc\",\n"
+      ply_msk="\"/MSK_GRDS/${msk}_StageIVGrid.nc\",\n"
       printf ${ply_msk} >> ${wrk_dir}/PLY_MSK.txt
     else
-      ply_msk="\"/MSK_GRDS/${msk}_mask_regridded_with_StageIV.nc\""
+      ply_msk="\"/MSK_GRDS/${msk}_StageIVGrid.nc\""
       printf ${ply_msk} >> ${wrk_dir}/PLY_MSK.txt
     fi
     line_count=$(( ${line_count} + 1 ))
@@ -419,13 +420,13 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
               cat ${scrpt_dir}/GridStatConfigTemplate \
                 | sed "s/INT_WDTH/width = ${INT_WDTH}/" \
                 | sed "s/RNK_CRR/rank_corr_flag      = ${RNK_CRR}/" \
-                | sed "s/VRF_FLD/name       = \"${VRF_FLD}_${acc_hr}hr\"/" \
+                | sed "s/VRF_FLD/name       = \"${fld}\"/" \
                 | sed "s/CAT_THR/cat_thresh = ${CAT_THR}/" \
                 | sed "/PLY_MSK/r ${wrk_dir}/PLY_MSK.txt" \
                 | sed "/PLY_MSK/d " \
                 | sed "s/BTSTRP/n_rep    = ${BTSTRP}/" \
                 | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
-                | sed "s/PRFX/output_prefix    = \"${fld}\"/" \
+                | sed "s/PRFX/output_prefix    = \"${VRF_FLD}_${acc_hr}hr\"/" \
                 | sed "s/MET_VER/version           = \"V${MET_VER}\"/" \
                 > ${wrk_dir}/GridStatConfig${acc_hr}
             fi
@@ -517,7 +518,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
   done
 
   # clean up working directory from forecast start time
-  cmd="rm -f ${wrk_dir}/*regridded_with_StageIV.nc"
+  cmd="rm -f ${wrk_dir}/*_StageIVGrid.nc"
   printf "${cmd}\n"; eval "${cmd}"
 
   cmd="rm -f ${wrk_dir}/PLY_MSK.txt"

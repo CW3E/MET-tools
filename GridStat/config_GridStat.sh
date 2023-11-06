@@ -2,7 +2,7 @@
 ##################################################################################
 # Description
 ##################################################################################
-# This configuration file is for the Grid-Stat related verification parameters.
+# This configuration file is for the GridStat related verification parameters.
 # These will be passed to steps in the workflow for generating statistics.
 #
 ##################################################################################

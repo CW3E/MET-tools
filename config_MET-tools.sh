@@ -7,11 +7,13 @@
 # workflow, defining HPC system settings
 #
 ##################################################################################
+# MODULE LOADS
+##################################################################################
+module load singularitypro/3.9
+
+##################################################################################
 # HPC PARAMETERS
 ##################################################################################
-# Using GMT time zone for time computations
-export TZ="GMT"
-
 # Root directory for MET-tools git clone
 export USR_HME=/expanse/lustre/projects/ddp181/cgrudzien/JEDI-MPAS-Common-Case/MET-tools
 
@@ -30,11 +32,24 @@ export SOFT_ROOT=/expanse/lustre/projects/ddp181/cgrudzien/SOFT_ROOT
 # NetCDF tools singularity image path
 export NETCDF_TOOLS=${SOFT_ROOT}/MET_tools_conda_netcdf.sif
 
+# Conda / Mamba installation path
+export MAMBA_EXE=${SOFT_ROOT}/Micromamba/micromamba
+export MAMBA_ROOT_PREFIX=${SOFT_ROOT}/Micromamba
+
+# create aliases for Conda / Mamba environment calls
+export DATAFRAMES="${MAMBA_EXE} run -n DataFrames python"
+
 # MET version
 export MET_VER="11.0.1"
 
 # MET singularity image path 
 export MET=${SOFT_ROOT}/met-${MET_VER}.sif
+
+##################################################################################
+# WORKFLOW UTILITY DEFINITIONS
+##################################################################################
+# Using GMT time zone for time computations
+export TZ="GMT"
 
 # Defines case-insensitive switch commands
 export TRUE=[Tt][Rr][Uu][Ee]
@@ -48,6 +63,3 @@ export ISO_RE=^[0-9]{10}$
 
 # Defines Pythonic string indentation
 export INDT="    "
-
-# Module loads
-module load singularitypro/3.9

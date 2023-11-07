@@ -25,7 +25,7 @@ export SIM_ROOT=/expanse/lustre/scratch/cgrudzien/temp_project/JEDI-MPAS-Common-
 export VRF_ROOT=/expanse/lustre/scratch/cgrudzien/temp_project/JEDI-MPAS-Common-Case/VERIFICATION
 
 # Root directory for verification static data
-export STC_ROOT=/expanse/lustre/scratch/cgrudzien/temp_project/JEDI-MPAS-Common-Case/DATA/DeepDive/Verification/StageIV
+export STC_ROOT=/expanse/lustre/scratch/cgrudzien/temp_project/JEDI-MPAS-Common-Case/DATA/DeepDive/Verification
 
 # Root directory for software environment singularity images
 export SOFT_ROOT=/expanse/lustre/projects/ddp181/cgrudzien/SOFT_ROOT

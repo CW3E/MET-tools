@@ -34,9 +34,9 @@ OUT_ROOT = VRF_ROOT + '/' + CSE
 CTR_FLWS = [
             'WRF',
             #'MPAS',
-            #'GFS',
-            #'GEFS',
-            #'ECMWF',
+            'GFS',
+            'GEFS',
+            'ECMWF',
            ]
 
 # ensemble member indices, used for ISO date sub-directory nesting, set based on

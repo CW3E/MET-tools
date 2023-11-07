@@ -407,10 +407,9 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
         else
           fld=${VRF_FLD}_${acc_hr}hr
         fi
-        
 
-        # obs file defined in terms of valid time
-        obs_in=StageIV_QPE_${vld_Y}${vld_m}${vld_d}${vld_H}.nc
+        # obs file defined in terms of valid time, path relative to STC_ROOT
+        obs_in=StageIV/StageIV_QPE_${vld_Y}${vld_m}${vld_d}${vld_H}.nc
 
         if [ -r ${in_dir}/${for_in} ]; then
           if [ -r ${STC_ROOT}/${obs_in} ]; then
@@ -466,6 +465,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
         fi
 
         # obs file defined in terms of valid time
+        # NOTE: reference fields other than StageIV still in development
         obs_in=${VRF_REF}_${VRF_FLD}_${dirstr}_F${pdd_hr}${pstfx}.nc
         
         if [ -r ${in_dir}/${for_in} ]; then

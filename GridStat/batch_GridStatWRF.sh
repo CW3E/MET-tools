@@ -5,8 +5,8 @@
 #SBATCH --mem=20G
 #SBATCH -p shared
 #SBATCH -t 01:00:00
-#SBATCH -J GridStat
-#SBATCH -o ./logs/GridStat-%A_%a.out
+#SBATCH -J GridStatWRF
+#SBATCH -o ./logs/GridStatWRF-%A_%a.out
 #SBATCH --export=ALL
 #SBATCH --array=0-13
 ##################################################################################
@@ -43,7 +43,7 @@
 
 # Source configuration files to define majority of required variables
 source ../config_MET-tools.sh
-source ./config_GridStat.sh
+source ./config_GridStatWRF.sh
 source ../vxmask/config_vxmask.sh
 
 # root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
@@ -71,7 +71,7 @@ num_grds=${#GRDS[@]}
 num_mems=${#MEM_IDS[@]}
 for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
   for (( i_g = 0; i_g < ${num_grds}; i_g++ )); do
-        if [[ ${IF_ENS_MEAN} =~ ${TRUE} ]]; then
+    if [[ ${IF_ENS_MEAN} =~ ${TRUE} ]]; then
       CTR_FLW=${CTR_FLWS[$i_f]}
       GRD=${GRDS[$i_g]}
       INT_WDTH=${INT_WDTHS[$i_g]}
@@ -116,9 +116,9 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
       cmd="cfgs+=( \"${cfg_indx}\" )"
       printf "${cmd}\n"; eval "${cmd}"
 
-        fi
+    fi
 
-        if [[ ${IF_ENS_MEMS} =~ ${TRUE} ]]; then
+    if [[ ${IF_ENS_MEMS} =~ ${TRUE} ]]; then
       for (( i_m = 0; i_m < ${num_mems}; i_m++ )); do
         CTR_FLW=${CTR_FLWS[$i_f]}
         GRD=${GRDS[$i_g]}
@@ -160,7 +160,7 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
         printf "${cmd}\n"; eval "${cmd}"
   
       done
-        fi
+    fi
   done
 done
 
@@ -177,14 +177,14 @@ cfg=${cfgs[$indx]}
 job="${cfg}[@]"
 
 cmd="cd ${USR_HME}/GridStat"
-printf ${cmd}; eval "${cmd}"
+printf "${cmd}\n"; eval "${cmd}"
 
 log_dir=${OUT_ROOT}/batch_logs
 cmd="mkdir -p ${log_dir}"
-printf ${cmd}; eval "${cmd}"
+printf "${cmd}\n"; eval "${cmd}"
 
-cmd="./run_GridStat.sh ${!job} > ${log_dir}/GridStat_${jbid}_${indx}.log 2>&1"
-printf ${cmd}; eval "${cmd}"
+cmd="./run_GridStat.sh ${!job} > ${log_dir}/GridStatWRF_${jbid}_${indx}.log 2>&1"
+printf "${cmd}\n"; eval "${cmd}"
 
 ##################################################################################
 # end

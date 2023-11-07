@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --account=ddp181
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=24
+#SBATCH --ntasks-per-node=128
 #SBATCH --mem=20G
-#SBATCH -p shared
+#SBATCH -p debug
 #SBATCH -t 00:30:00
 #SBATCH -J makeDataFrames
 #SBATCH -o ./logs/makeDataFrames-%A_%a.out

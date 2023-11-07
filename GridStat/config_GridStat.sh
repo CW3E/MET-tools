@@ -6,7 +6,7 @@
 # These will be passed to steps in the workflow for generating statistics.
 #
 ##################################################################################
-# GRID-STAT PARAMETERS
+# GridStat PARAMETERS
 ##################################################################################
 # Define the case-wise sub-directory for path names with case-study nesting,
 # leave as empty string "" if not needed

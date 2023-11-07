@@ -66,7 +66,7 @@ CYC_INC = '24'
 ANL_MIN = '24'
 
 # Max forecast lead time to plot in hours (string HH)
-ANL_MAX = '240'
+ANL_MAX = '120'
 
 # incrment between verification valid times (string HH)
 ANL_INC = '24'

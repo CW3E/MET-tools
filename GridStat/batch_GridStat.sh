@@ -2,7 +2,7 @@
 #SBATCH --account=ddp181
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=16
-#SBATCH --mem=120G
+#SBATCH --mem=20G
 #SBATCH -p shared
 #SBATCH -t 01:00:00
 #SBATCH -J GridStat
@@ -51,6 +51,9 @@ export IN_ROOT=${VRF_ROOT}/${CSE}
 
 # root directory for cycle time (YYYYMMDDHH) directories of gridstat outputs
 export OUT_ROOT=${VRF_ROOT}/${CSE}
+
+# set number of openmpi threads
+export OMP_NUM_THREADS=16
 
 ##################################################################################
 # Contruct job array and environment for submission

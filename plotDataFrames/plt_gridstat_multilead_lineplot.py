@@ -32,8 +32,7 @@
 # Imports
 ##################################################################################
 import matplotlib
-# use this setting on COMET / Skyriver for x forwarding
-matplotlib.use('AGG')
+matplotlib.use('TkAgg')
 from datetime import datetime as dt
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize as nrm
@@ -45,89 +44,69 @@ import pandas as pd
 import pickle
 import os
 import sys
-import post_processing_config as config
-from proc_gridstat import OUT_ROOT
 
-##################################################################################
-# SET GLOBAL PARAMETERS 
-##################################################################################
-
-# MET stat file type - should be non-leveled data
-TYPE = 'cnt'
-
-# MET stat column names to be made to heat plots / labels
-STATS = ['RMSE', 'PR_CORR']
-
-# plot title
-TITLE='24hr accumulated precip at ' + config.VALID_DT[:4] + '-' + config.VALID_DT[4:6] + '-' +\
-        config.VALID_DT[6:8] + '_' + config.VALID_DT[8:]
-
-# plot sub-title title
-SUBTITLE='Verification region -'
-lnd_msk_split = config.LND_MSK.split('_')
-for split in lnd_msk_split:
-    SUBTITLE += ' ' + split
-
-# fig saved automatically to OUT_PATH
-if len(config.FIG_LAB) > 0:
-    fig_lab = '_' + config.FIG_LAB
-else:
-    fig_lab = ''
-
-OUT_DIR = OUT_ROOT + '/figures' + config.FIG_CSE
-OUT_PATH = OUT_DIR + '/' + config.VALID_DT + '_' + config.LND_MSK + '_' + STATS[0] + '_' +\
-           STATS[1] + fig_lab + '_lineplot.png'
+# Execute configuration file supplied as command line argument
+CFG = sys.argv[1]
+cmd = 'from ' + CFG + ' import *'
+print(cmd)
+exec(cmd)
 
 ##################################################################################
 # Make data checks and determine all lead times over all files
 ##################################################################################
-if len(config.STRT_DT) != 10:
-    print('ERROR: STRT_DT, ' + config.STRT_DT + ', is not in YYYYMMDDHH format.')
+if not STRT_DT.isdigit() or len(STRT_DT) != 10:
+    print('ERROR: STRT_DT\n' + STRT_DT + '\n is not in YYYYMMDDHH format.')
     sys.exit(1)
 else:
-    sd_iso = config.STRT_DT[:4] + '-' + config.STRT_DT[4:6] + '-' + config.STRT_DT[6:8] +\
-            '_' + config.STRT_DT[8:]
-    strt_dt = dt.fromisoformat(sd_iso)
+    iso = STRT_DT[:4] + '-' + STRT_DT[4:6] + '-' + STRT_DT[6:8] + '_' +\
+            STRT_DT[8:]
+    strt_dt = dt.fromisoformat(iso)
 
-if len(config.END_DT) != 10:
-    print('ERROR: END_DT, ' + config.END_DT + ', is not in YYYYMMDDHH format.')
+if not STRT_DT.isdigit() or len(STOP_DT) != 10:
+    print('ERROR: STOP_DT\n' + STOP_DT + '\n is not in YYYYMMDDHH format.')
     sys.exit(1)
 else:
-    ed_iso = config.END_DT[:4] + '-' + config.END_DT[4:6] + '-' + config.END_DT[6:8] +\
-            '_' + config.END_DT[8:]
-    end_dt = dt.fromisoformat(ed_iso)
+    iso = STOP_DT[:4] + '-' + STOP_DT[4:6] + '-' + STOP_DT[6:8] + '_' +\
+            STOP_DT[8:]
+    stop_dt = dt.fromisoformat(iso)
 
-if len(config.VALID_DT) != 10:
-    print('ERROR: VALID_DT, ' + config.VALID_DT + ', is not in YYYYMMDDHH format.')
+if not CYC_INC.isdigit():
+    print('ERROR: CYC_INC\n' + CYC_INC + '\n is not in HH format.')
     sys.exit(1)
 else:
-    v_iso = config.VALID_DT[:4] + '-' + config.VALID_DT[4:6] + '-' + config.VALID_DT[6:8] +\
-            '_' + config.VALID_DT[8:]
-    valid_dt = dt.fromisoformat(v_iso)
+    cyc_inc = CYC_INC + 'H'
 
-if len(config.CYC_INT) != 2:
-    print('ERROR: CYC_INT, ' + config.CYC_INT + ', is not in HH format.')
+if not VALID_DT.isdigit() or len(VALID_DT) != 10:
+    print('ERROR: VALID_DT, ' + VALID_DT + ', is not in YYYYMMDDHH format.')
     sys.exit(1)
 else:
-    cyc_int = config.CYC_INT + 'H'
+    iso = VALID_DT[:4] + '-' + VALID_DT[4:6] + '-' + VALID_DT[6:8] +\
+            '_' + VALID_DT[8:]
+    valid_dt = dt.fromisoformat(iso)
+
+if len(CYC_INC) != 2:
+    print('ERROR: CYC_INC, ' + CYC_INC + ', is not in HH format.')
+    sys.exit(1)
+else:
+    cyc_inc = CYC_INC + 'H'
 
 # generate the date range and forecast leads for the analysis, parse binary files
 # for relevant fields
 plt_data = {}
-fcst_zhs = pd.date_range(start=strt_dt, end=end_dt, freq=cyc_int).to_pydatetime()
+fcst_zhs = pd.date_range(start=strt_dt, end=stop_dt, freq=cyc_inc).to_pydatetime()
 
 fcst_leads = []
-for ctr_flw in config.CTR_FLWS:
+for ctr_flw in CTR_FLWS:
     # define derived data paths 
-    data_root = OUT_ROOT + '/' + ctr_flw
+    data_root = IN_ROOT + '/' + ctr_flw + '/' + MET_TOOL
 
-    for prfx in config.PRFXS:
-        if len(prfx) > 0:
-            pfx = '_' + prfx
-        else:
-            pfx = ''
-        
-        for grid in config.GRDS:
+    for grid in GRDS:
+        for mem in MEM_IDS:
+            if len(mem) > 0:
+                ens = '_' + mem
+            else:
+                ens = ''
+
             if len(grid) > 0:
                 grd = '_' + grid
             else:
@@ -136,32 +115,32 @@ for ctr_flw in config.CTR_FLWS:
             # create label based on configuration
             split_string = ctr_flw.split('_')
             split_len = len(split_string)
-            idx_len = len(config.LAB_IDX)
+            idx_len = len(LAB_IDX)
             line_lab = ''
             lab_len = min(idx_len, split_len)
             if lab_len > 1:
                 for i_ll in range(lab_len, 1, -1):
-                    i_li = config.LAB_IDX[-i_ll]
+                    i_li = LAB_IDX[-i_ll]
                     line_lab += split_string[i_li] + '_'
     
-                i_li = config.LAB_IDX[-1]
+                i_li = LAB_IDX[-1]
                 line_lab += split_string[i_li]
     
             else:
                 line_lab += split_string[0]
 
-            if pfx:
-                line_lab += pfx
+            if ENS_LAB:
+                line_lab += ens
     
-            if config.GRD_LAB:
+            if GRD_LAB:
                     line_lab += grd
 
-            key = ctr_flw + pfx + grd
+            key = ctr_flw + ens + grd
             for fcst_zh in fcst_zhs:
                 # define the input name
-                zh_strng = fcst_zh.strftime('%Y%m%d%H')
-                in_path = data_root + '/' + zh_strng + '/grid_stats' + pfx + grd +\
-                          '_' + zh_strng + '.bin'
+                zh_str = fcst_zh.strftime('%Y%m%d%H')
+                in_path = data_root + '/' + zh_str + '/' + PRFX + ens + grd +\
+                          '_' + zh_str + '.bin'
                 
                 try:
                     with open(in_path, 'rb') as f:
@@ -194,7 +173,7 @@ for ctr_flw in config.CTR_FLWS:
                 
                 # cut down df to specified valid date / region / relevant stats
                 stat_data = data[vals]
-                stat_data = stat_data.loc[(stat_data['VX_MASK'] == config.LND_MSK)]
+                stat_data = stat_data.loc[(stat_data['VX_MASK'] == MSK)]
                 stat_data = stat_data.loc[(stat_data['FCST_VALID_END'] ==
                                            valid_dt.strftime('%Y%m%d_%H%M%S'))]
 
@@ -205,11 +184,11 @@ for ctr_flw in config.CTR_FLWS:
     
                     if key in plt_data.keys():
                         # if there is existing data, concatenate dataframes
-                        plt_data[key] = pd.concat([plt_data[key], stat_data],
-                                                   axis=0)
+                        plt_data[key]['data'] = pd.concat([plt_data[key]['data'],
+                            stat_data], axis=0)
                     else:
                         # if this is a first instance, create fields
-                        plt_data[key] = stat_data
+                        plt_data[key] = {'data': stat_data, 'label': line_lab}
 
                     # obtain leads of data 
                     fcst_leads += leads
@@ -219,10 +198,7 @@ fcst_leads = sorted(list(set(fcst_leads)), key=lambda x:(len(x), x))
 i_fl = 0
 while i_fl < len(fcst_leads):
     ld = fcst_leads[i_fl][:-4]
-    if int(ld) > int(config.MAX_LD):
-        del fcst_leads[i_fl]
-    else:
-        i_fl += 1
+    i_fl += 1
 
 num_leads = len(fcst_leads)
 
@@ -245,96 +221,57 @@ stat0 = STATS[0]
 stat1 = STATS[1]
 
 # loop configurations, load trimmed data from plt_data dictionary
-for ctr_flw in config.CTR_FLWS:
-    for prfx in config.PRFXS:
-        if len(prfx) > 0:
-            pfx = '_' + prfx
+for key in plt_data.keys():
+    data = plt_data[key]['data']
+    line_lab = plt_data[key]['label']
+    
+    # infer existence of confidence interval data with precedence for bootstrap
+    cnf_lvs = []
+    for i_ns in range(2):
+        stat = STATS[i_ns]
+        if stat + '_BCL' in data and\
+            not (data[stat + '_BCL'].isnull().values.any()):
+                cnf_lvs.append('_BC')
+    
+        elif stat + '_NCL' in data and\
+            not (data[stat + '_NCL'].isnull().values.any()):
+                cnf_lvs.append('_NC')
+    
         else:
-            pfx = ''
-
-        for grid in config.GRDS:
-            if len(grid) > 0:
-                grd = '_' + grid
-            else:
-                grd = ''
+            cnf_lvs.append(False)
+    
+        exec('ax = ax%s'%i_ns)
+        if cnf_lvs[i_ns]:
+            tmp = np.empty([num_leads, 3])
+            tmp[:] = np.nan
+    
+            for i_nl in range(num_leads):
+                val = data.loc[(data['FCST_LEAD'] == fcst_leads[i_nl])]
+                if not val.empty:
+                    tmp[i_nl, 0] = val[STATS[i_ns]]
+                    tmp[i_nl, 1] = val[STATS[i_ns] + cnf_lvs[i_ns] + 'L']
+                    tmp[i_nl, 2] = val[STATS[i_ns] + cnf_lvs[i_ns] + 'U']
             
-            key = ctr_flw + pfx + grd 
-            try:
-                data = plt_data[key]
+            l0 = ax.fill_between(range(num_leads), tmp[:, 1], tmp[:, 2], alpha=0.5)
+            l1, = ax.plot(range(num_leads), tmp[:, 0], linewidth=2)
+            exec('ax%s_l.append([l1,l0])'%i_ns)
+            l = l1
     
-            except:
-                continue
+        else:
+            tmp = np.empty([num_leads])
+            tmp[:] = np.nan
+        
+            for i_nl in range(num_leads):
+                val = data.loc[(data['FCST_LEAD'] == fcst_leads[i_nl])]
+                if not val.empty:
+                    tmp[i_nl] = val[STATS[i_ns]]
             
-            # create label based on configuration
-            split_string = ctr_flw.split('_')
-            split_len = len(split_string)
-            idx_len = len(LAB_IDX)
-            line_lab = ''
-            lab_len = min(idx_len, split_len)
-            if lab_len > 1:
-                for i_ll in range(lab_len, 1, -1):
-                    i_li = LAB_IDX[-i_ll]
-                    line_lab += split_string[i_li] + '_'
+            l, = ax.plot(range(num_leads), tmp[:], linewidth=2)
+            exec('ax%s_l.append([l])'%i_ns)
     
-                i_li = LAB_IDX[-1]
-                line_lab += split_string[i_li]
-    
-            else:
-                line_lab += split_string[0]
-
-            if pfx:
-                line_lab += pfx
-    
-            if GRD_LAB:
-                    line_lab += grd
-
-            # infer existence of confidence interval data with precedence for bootstrap
-            cnf_lvs = []
-            for i_ns in range(2):
-                stat = STATS[i_ns]
-                if stat + '_BCL' in data and\
-                    not (data[stat + '_BCL'].isnull().values.any()):
-                        cnf_lvs.append('_BC')
-    
-                elif stat + '_NCL' in data and\
-                    not (data[stat + '_NCL'].isnull().values.any()):
-                        cnf_lvs.append('_NC')
-    
-                else:
-                    cnf_lvs.append(False)
-    
-                exec('ax = ax%s'%i_ns)
-                if cnf_lvs[i_ns]:
-                    tmp = np.empty([num_leads, 3])
-                    tmp[:] = np.nan
-            
-                    for i_nl in range(num_leads):
-                        val = data.loc[(data['FCST_LEAD'] == fcst_leads[i_nl])]
-                        if not val.empty:
-                            tmp[i_nl, 0] = val[STATS[i_ns]]
-                            tmp[i_nl, 1] = val[STATS[i_ns] + cnf_lvs[i_ns] + 'L']
-                            tmp[i_nl, 2] = val[STATS[i_ns] + cnf_lvs[i_ns] + 'U']
-                    
-                    l0 = ax.fill_between(range(num_leads), tmp[:, 1], tmp[:, 2], alpha=0.5)
-                    l1, = ax.plot(range(num_leads), tmp[:, 0], linewidth=2)
-                    exec('ax%s_l.append([l1,l0])'%i_ns)
-                    l = l1
-    
-                else:
-                    tmp = np.empty([num_leads])
-                    tmp[:] = np.nan
-                
-                    for i_nl in range(num_leads):
-                        val = data.loc[(data['FCST_LEAD'] == fcst_leads[i_nl])]
-                        if not val.empty:
-                            tmp[i_nl] = val[STATS[i_ns]]
-                    
-                    l, = ax.plot(range(num_leads), tmp[:], linewidth=2)
-                    exec('ax%s_l.append([l])'%i_ns)
-    
-            # add the line type to the legend
-            line_list.append(l)
-            line_labs.append(line_lab)
+    # add the line type to the legend
+    line_list.append(l)
+    line_labs.append(line_lab)
 
 # set colors and markers
 line_count = len(line_list)
@@ -411,9 +348,9 @@ fig.legend(line_list, line_labs, fontsize=18, ncol=ncols, loc='center',
            bbox_to_anchor=[0.5, 0.83])
 
 # save figure and display
-os.system('mkdir -p ' + OUT_DIR)
+os.system('mkdir -p ' + OUT_ROOT)
 plt.savefig(OUT_PATH)
-#plt.show()
+plt.show()
 
 ##################################################################################
 # end

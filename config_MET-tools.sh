@@ -10,7 +10,9 @@
 # MODULE LOADS
 ##################################################################################
 module load singularitypro/3.9
-module load openmpi
+module load cpu/0.17.3b
+module load gcc/10.2.0/npcyll4
+module load openmpi/4.1.1
 
 ##################################################################################
 # HPC PARAMETERS

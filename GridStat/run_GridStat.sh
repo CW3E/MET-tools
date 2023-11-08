@@ -474,6 +474,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
             # this remains unchanged on inner loop
             if [ ! -r ${wrk_dir}/GridStatConfig${acc_hr} ]; then
               cat ${scrpt_dir}/GridStatConfigTemplate \
+                | sed "s/CTR_FLW/model = \"${CTR_FLW}\"/" \
                 | sed "s/INT_WDTH/width = ${INT_WDTH}/" \
                 | sed "s/RNK_CRR/rank_corr_flag      = ${RNK_CRR}/" \
                 | sed "s/VRF_FLD/name       = \"${fld}\"/" \

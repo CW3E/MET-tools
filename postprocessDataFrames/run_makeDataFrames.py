@@ -265,8 +265,8 @@ def makeDataFrames(cfg):
     
         # define the ASCII files to open based on the analysis date
         # looping the analysis times
-        in_files = []
         for i_anl in range(anl_min, anl_max + anl_inc, anl_inc):
+            in_files = []
             in_dir = in_dt_root + '/' + anl_strng + in_dt_subdir 
            
             if not os.path.isdir(in_dir):

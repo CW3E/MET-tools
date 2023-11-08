@@ -33,7 +33,7 @@
 ##################################################################################
 import matplotlib
 # use this setting on COMET / Skyriver for x forwarding
-matplotlib.use('AGG')
+matplotlib.use('TkAgg')
 from datetime import datetime as dt
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize as nrm

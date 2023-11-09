@@ -52,7 +52,7 @@ export VRF_FLD=QPF
 
 # Define first and last date time for forecast initialization (YYYYMMDDHH)
 export STRT_DT=2022122300
-export STOP_DT=2022122300
+export STOP_DT=2022122700
 
 # Define the increment between forecast initializations (HH)
 export CYC_INC=24

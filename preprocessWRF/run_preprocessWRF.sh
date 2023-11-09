@@ -255,11 +255,11 @@ fcst_hrs=$(( (`date +%s -d "${stop_dt}"` - `date +%s -d "${strt_dt}"`) / 3600 ))
 
 for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
   # directory string for forecast analysis initialization time
-  dirstr=`date +%Y%m%d%H -d "${strt_dt} ${cyc_hr} hours"`
-  in_dir=${IN_DT_ROOT}/${dirstr}${IN_DT_SUBDIR}
+  cyc_dt=`date +%Y%m%d%H -d "${strt_dt} ${cyc_hr} hours"`
+  in_dir=${IN_DT_ROOT}/${cyc_dt}${IN_DT_SUBDIR}
 
   # set output path
-  wrk_dir=${OUT_DT_ROOT}/${dirstr}${OUT_DT_SUBDIR}
+  wrk_dir=${OUT_DT_ROOT}/${cyc_dt}${OUT_DT_SUBDIR}
   cmd="mkdir -p ${wrk_dir}"
   printf "${cmd}\n"; eval "${cmd}"
       
@@ -274,7 +274,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
   # set input paths
   if [ ! -d ${in_dir} ]; then
     msg="WARNING: data input path\n ${in_dir}\n does not exist,"
-    msg+="skipping analysis for ${dirstr}.\n"
+    msg+="skipping analysis for ${cyc_dt}.\n"
     printf "${msg}"
   else
     printf "Processing forecasts in\n ${in_dir}\n directory.\n"
@@ -329,7 +329,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
 
       else
         msg="Either\n ${f_pr}\n or\n ${f_in}\n is not readable or "
-        msg+="does not exist, skipping forecast initialization ${dirstr}, "
+        msg+="does not exist, skipping forecast initialization ${cyc_dt}, "
         msg+="forecast hour ${lead_hr}.\n"
         printf "${msg}"
       fi
@@ -343,10 +343,10 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
             vld_H=${anl_stop:11:2}
       
             # Set forecast initialization string
-            init_Y=${dirstr:0:4}
-            init_m=${dirstr:4:2}
-            init_d=${dirstr:6:2}
-            init_H=${dirstr:8:2}
+            init_Y=${cyc_dt:0:4}
+            init_m=${cyc_dt:4:2}
+            init_d=${cyc_dt:6:2}
+            init_H=${cyc_dt:8:2}
 
             # define padded forecast hour for name strings
             pdd_hr=`printf %03d $(( 10#${lead_hr} ))`
@@ -368,7 +368,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
         msg="pcp_combine input file\n "
         msg+="${wrk_dir}/${f_out}\n is not "
         msg+="readable or does not exist, skipping pcp_combine for "
-        msg+="forecast initialization ${dirstr}, forecast hour ${lead_hr}.\n"
+        msg+="forecast initialization ${cyc_dt}, forecast hour ${lead_hr}.\n"
         printf "${msg}"
       fi
     done

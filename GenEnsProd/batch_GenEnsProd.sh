@@ -8,7 +8,7 @@
 #SBATCH -J GenEnsProd
 #SBATCH -o ./logs/GenEnsProd-%A_%a.out
 #SBATCH --export=ALL
-#SBATCH --array=0-1
+#SBATCH --array=0-9
 ##################################################################################
 # Description
 ##################################################################################
@@ -60,6 +60,31 @@ export OMP_NUM_THREADS=16
 # flow, ensemble member and grid settings are defined dynamically in the below and
 # should be set in the loops.
 ##################################################################################
+# Convert STRT_DT from 'YYYYMMDDHH' format to strt_dt Unix date format
+if [[ ! ${STRT_DT} =~ ${ISO_RE} ]]; then
+  msg="ERROR: start date \${STRT_DT}\n ${STRT_DT}\n"
+  msg+=" is not in YYYYMMDDHH format.\n"
+  printf "${msg}"
+  exit 1
+else
+  strt_dt="${STRT_DT:0:8} ${STRT_DT:8:2}"
+  strt_dt=`date -d "${strt_dt}"`
+fi
+
+# Convert STOP_DT from 'YYYYMMDDHH' format to stop_dt Unix date format 
+if [[ ! ${STOP_DT} =~ ${ISO_RE} ]]; then
+  msg="ERROR: stop date \${STOP_DT}\n ${STOP_DT}\n"
+  msg+=" is not in YYYYMMDDHH format.\n"
+  printf "${msg}"
+  exit 1
+else
+  stop_dt="${STOP_DT:0:8} ${STOP_DT:8:2}"
+  stop_dt=`date -d "${stop_dt}"`
+fi
+
+# define the number of dates to loop
+cyc_hrs=$(( (`date +%s -d "${stop_dt}"` - `date +%s -d "${strt_dt}"`) / 3600 ))
+
 # storage for configuration array names in pseudo-multiarray
 cfgs=()
 
@@ -67,44 +92,55 @@ num_flws=${#CTR_FLWS[@]}
 num_grds=${#GRDS[@]}
 for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
   for (( i_g = 0; i_g < ${num_grds}; i_g++ )); do
-    CTR_FLW=${CTR_FLWS[$i_f]}
-    GRD=${GRDS[$i_g]}
-    NBRHD_WDTH=${NBRHD_WDTHS[$i_g]}
+    i_c=0
+    for (( cyc_hr = 0; cyc_hr <= ${cyc_hrs}; cyc_hr += ${CYC_INC} )); do
+      # directory string for forecast analysis initialization time
+      cyc_dt=`date +%Y%m%d%H -d "${strt_dt} ${cyc_hr} hours"`
 
-    cfg_indx="cfg_${i_f}${i_g}"
-    cmd="${cfg_indx}=()"
-    printf "${cmd}\n"; eval "${cmd}"
+      CTR_FLW=${CTR_FLWS[$i_f]}
+      GRD=${GRDS[$i_g]}
+      NBRHD_WDTH=${NBRHD_WDTHS[$i_g]}
 
-    cmd="${cfg_indx}+=(\"CTR_FLW=${CTR_FLW}\")"
-    printf "${cmd}\n"; eval "${cmd}"
+      cfg_indx="cfg_${i_f}${i_g}${i_c}"
+      cmd="${cfg_indx}=()"
+      printf "${cmd}\n"; eval "${cmd}"
 
-    cmd="${cfg_indx}+=(\"NBRHD_WDTH=${NBRHD_WDTH}\")"
-    printf "${cmd}\n"; eval "${cmd}"
+      cmd="${cfg_indx}+=(\"CTR_FLW=${CTR_FLW}\")"
+      printf "${cmd}\n"; eval "${cmd}"
 
-    cmd="${cfg_indx}+=(\"IN_DT_ROOT=${IN_ROOT}/${CTR_FLW}/Preprocess\")"
-    printf "${cmd}\n"; eval "${cmd}"
+      cmd="${cfg_indx}+=(\"CYC_DT=${cyc_dt}\")"
+      printf "${cmd}\n"; eval "${cmd}"
 
-    cmd="${cfg_indx}+=(\"OUT_DT_ROOT=${OUT_ROOT}/${CTR_FLW}/GenEnsProd\")"
-    printf "${cmd}\n"; eval "${cmd}"
+      cmd="${cfg_indx}+=(\"NBRHD_WDTH=${NBRHD_WDTH}\")"
+      printf "${cmd}\n"; eval "${cmd}"
 
-    # subdirectory of cycle-named directory containing data to be analyzed,
-    # leading to ensemble indexed directory
-    # includes leading '/', left as blank string if not needed
-    cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=\"\"\")"
-    printf "${cmd}\n"; eval "${cmd}"
-    
-    # subdirectory of cycle-named directory where output is to be saved
-    # includes leading '/', left as blank string if not needed
-    cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/${GRD}\")"
-    printf "${cmd}\n"; eval "${cmd}"
-    
-    # subdirectory of ensemble indexed directory for input data
-    # includes leading '/', left as blank string if not needed
-    cmd="${cfg_indx}+=(\"IN_ENS_SUBDIR=/${GRD}\")"
-    printf "${cmd}\n"; eval "${cmd}"
-    
-    cmd="cfgs+=( \"${cfg_indx}\" )"
-    printf "${cmd}\n"; eval "${cmd}"
+      cmd="${cfg_indx}+=(\"IN_DT_ROOT=${IN_ROOT}/${CTR_FLW}/Preprocess\")"
+      printf "${cmd}\n"; eval "${cmd}"
+
+      cmd="${cfg_indx}+=(\"OUT_DT_ROOT=${OUT_ROOT}/${CTR_FLW}/GenEnsProd\")"
+      printf "${cmd}\n"; eval "${cmd}"
+
+      # subdirectory of cycle-named directory containing data to be analyzed,
+      # leading to ensemble indexed directory
+      # includes leading '/', left as blank string if not needed
+      cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=\"\"\")"
+      printf "${cmd}\n"; eval "${cmd}"
+      
+      # subdirectory of cycle-named directory where output is to be saved
+      # includes leading '/', left as blank string if not needed
+      cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/${GRD}\")"
+      printf "${cmd}\n"; eval "${cmd}"
+      
+      # subdirectory of ensemble indexed directory for input data
+      # includes leading '/', left as blank string if not needed
+      cmd="${cfg_indx}+=(\"IN_ENS_SUBDIR=/${GRD}\")"
+      printf "${cmd}\n"; eval "${cmd}"
+      
+      cmd="cfgs+=( \"${cfg_indx}\" )"
+      printf "${cmd}\n"; eval "${cmd}"
+
+      i_c=$(( ${i_c} + 1 ))
+    done
   done
 done
 

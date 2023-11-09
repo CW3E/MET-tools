@@ -59,26 +59,13 @@ if [ ! ${CTR_FLW} ]; then
   exit 1
 fi
 
-# Convert STRT_DT from 'YYYYMMDDHH' format to strt_dt Unix date format
-if [[ ! ${STRT_DT} =~ ${ISO_RE} ]]; then
-  msg="ERROR: start date \${STRT_DT}\n ${STRT_DT}\n"
-  msg+=" is not in YYYYMMDDHH format.\n"
+if [[ ! ${CYC_DT} =~ ${N_RE} ]]; then
+  msg="ERROR: cycle date directory string \${CYC_DT}\n ${CYC_DT}\n is not numeric."
   printf "${msg}"
   exit 1
 else
-  strt_dt="${STRT_DT:0:8} ${STRT_DT:8:2}"
-  strt_dt=`date -d "${strt_dt}"`
-fi
-
-# Convert STOP_DT from 'YYYYMMDDHH' format to stop_dt Unix date format 
-if [[ ! ${STOP_DT} =~ ${ISO_RE} ]]; then
-  msg="ERROR: stop date \${STOP_DT}\n ${STOP_DT}\n"
-  msg+=" is not in YYYYMMDDHH format.\n"
-  printf "${msg}"
-  exit 1
-else
-  stop_dt="${STOP_DT:0:8} ${STOP_DT:8:2}"
-  stop_dt=`date -d "${stop_dt}"`
+  cyc_dt="${CYC_DT:0:8} ${CYC_DT:8:2}"
+  cyc_dt=`date -d "${cyc_dt}"`
 fi
 
 # define min / max forecast hours for forecast outputs to be processed
@@ -318,88 +305,87 @@ fi
 #################################################################################
 # Process data
 #################################################################################
-# define the number of dates to loop
-fcst_hrs=$(( (`date +%s -d "${stop_dt}"` - `date +%s -d "${strt_dt}"`) / 3600 ))
+# cycle date directory of cf-compliant input files
+in_dir=${IN_DT_ROOT}/${CYC_DT}${IN_DT_SUBDIR}
 
-for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
-  # directory string for forecast analysis initialization time
-  dirstr=`date +%Y%m%d%H -d "${strt_dt} ${cyc_hr} hours"`
+# set and clean working directory based on looped forecast start date
+wrk_dir=${OUT_DT_ROOT}/${CYC_DT}${OUT_DT_SUBDIR}
+cmd="mkdir -p ${wrk_dir}"
+printf "${cmd}\n"; eval "${cmd}"
 
-  # cycle date directory of cf-compliant input files
-  in_dir=${IN_DT_ROOT}/${dirstr}${IN_DT_SUBDIR}
-
-  # set and clean working directory based on looped forecast start date
-  wrk_dir=${OUT_DT_ROOT}/${dirstr}${OUT_DT_SUBDIR}
-  cmd="mkdir -p ${wrk_dir}"
+for mem_id in ${mem_ids[@]}; do
+  cmd="rm -f ${wrk_dir}/${mem_id}"
   printf "${cmd}\n"; eval "${cmd}"
+done
 
-  for mem_id in ${mem_ids[@]}; do
-    cmd="rm -f ${wrk_dir}/${mem_id}"
+for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INC} )); do
+  for acc_hr in ${acc_hrs[@]}; do
+    fname="ens_list_{CTR_FLW}_${acc_hr}${VRF_FLD}_${CYC_DT}_F${pdd_hr}"
+    fname+="_ens-${ens_min}-${ens_max}_prd.nc"
+    cmd="rm -f ${wrk_dir}/${fname}"
+    printf "${cmd}\n"; eval "${cmd}"
+
+    fname="{CTR_FLW}_${acc_hr}${VRF_FLD}_${CYC_DT}_F${pdd_hr}"
+    fname+="_ens-${ens_min}-${ens_max}_prd.nc"
+    cmd="rm -f ${wrk_dir}/${fname}"
+    printf "${cmd}\n"; eval "${cmd}"
+
+    fname=GenEnsProdConfig${acc_hr}
+    cmd="rm -f ${wrk_dir}/${fname}"
     printf "${cmd}\n"; eval "${cmd}"
   done
+done
 
-  for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INC} )); do
-    for acc_hr in ${acc_hrs[@]}; do
-      fname="ens_list_{CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}"
-      fname+="_ens-${ens_min}-${ens_max}_prd.nc"
-      cmd="rm -f ${wrk_dir}/${fname}"
-      printf "${cmd}\n"; eval "${cmd}"
+# Define directory privileges for singularity exec
+met="singularity exec -B ${wrk_dir}:/wrk_dir:rw ${MET}"
 
-      fname="{CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}"
-      fname+="_ens-${ens_min}-${ens_max}_prd.nc"
-      cmd="rm -f ${wrk_dir}/${fname}"
-      printf "${cmd}\n"; eval "${cmd}"
+# loop lead hours for forecast valid time for each initialization time
+for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INC} )); do
+  # define valid times for accumulation    
+  vld_dt=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${lead_hr} hours"`
 
-      fname=GenEnsProdConfig${acc_hr}
-      cmd="rm -f ${wrk_dir}/${fname}"
-      printf "${cmd}\n"; eval "${cmd}"
-    done
-  done
+  vld_Y=${vld_dt:0:4}
+  vld_m=${vld_dt:5:2}
+  vld_d=${vld_dt:8:2}
+  vld_H=${vld_dt:11:2}
+  
+  # forecast file name based on forecast initialization, accumulation and lead
+  pdd_hr=`printf %03d $(( 10#${lead_hr} ))`
+  for acc_hr in ${acc_hrs[@]}; do
+    if [[ ${CMP_ACC} =~ ${TRUE} && ${acc_hr} -le ${lead_hr} ]] ||\
+      [[ ${CMP_ACC} =~ ${FALSE} ]]; then
+      # create switch to break loop on if missing files
+      error=0
 
-  # Define directory privileges for singularity exec
-  met="singularity exec -B ${wrk_dir}:/wrk_dir:rw ${MET}"
+      # define output file name depending on parameters
+      f_out="${CTR_FLW}_${acc_hr}${VRF_FLD}_${CYC_DT}_F${pdd_hr}"
+      f_out+="_ens-${ens_min}-${ens_max}_prd.nc"
 
-  # loop lead hours for forecast valid time for each initialization time
-  for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INC} )); do
-    # define valid times for accumulation    
-    anl_strt_hr=$(( ${lead_hr} + ${cyc_hr} - ${ACC_INC} ))
-    anl_stop_hr=$(( ${lead_hr} + ${cyc_hr} ))
-    anl_strt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_strt_hr} hours"`
-    anl_stop=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_stop_hr} hours"`
+      for mem_id in ${mem_ids[@]}; do
+        in_path=${in_dir}/${mem_id}${IN_ENS_SUBDIR}
+        f_in=${in_path}/${CTR_FLW}_${acc_hr}${VRF_FLD}_${CYC_DT}_F${pdd_hr}.nc
+         if [ -r ${f_in} ]; then
+           # keep a record of the original members used for computation
+           log_f="ens_list_${CTR_FLW}_${acc_hr}${VRF_FLD}_${CYC_DT}_F${pdd_hr}"
+           log_f+="_ens-${ens_min}-${ens_max}_prd.txt"
+           printf "${f_in}\n" >> ${wrk_dir}/${log_f}
 
-    vld_Y=${anl_stop:0:4}
-    vld_m=${anl_stop:5:2}
-    vld_d=${anl_stop:8:2}
-    vld_H=${anl_stop:11:2}
-    
-    # forecast file name based on forecast initialization, accumulation and lead
-    pdd_hr=`printf %03d $(( 10#${lead_hr} ))`
-    for acc_hr in ${acc_hrs[@]}; do
-      if [[ ${CMP_ACC} =~ ${TRUE} && ${acc_hr} -le ${lead_hr} ]] ||\
-        [[ ${CMP_ACC} =~ ${FALSE} ]]; then
-        for mem_id in ${mem_ids[@]}; do
-          in_path=${in_dir}/${mem_id}${IN_ENS_SUBDIR}
-          f_in=${in_path}/${CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}.nc
-           if [ -r ${f_in} ]; then
-             # keep a record of the original members used for computation
-             log_f="ens_list_${CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}"
-             log_f+="_ens-${ens_min}-${ens_max}_prd.txt"
-             printf "${f_in}\n" >> ${wrk_dir}/${log_f}
-
-             # copy the ensemble file to the work directory
-             cmd="cp -L ${f_in} ${wrk_dir}/${mem_id}"
-             printf "${cmd}\n"; eval "${cmd}"
-           else
-             msg="ERROR: ensemble member ${f_in} does not exist or is not"
-             msg+=" readable.\n"
-             printf "${msg}"
-             exit 1
-           fi
-        done
-        # define output file name depending on parameters
-        f_out="${CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}"
-        f_out+="_ens-${ens_min}-${ens_max}_prd.nc"
-
+           # copy the ensemble file to the work directory
+           cmd="cp -L ${f_in} ${wrk_dir}/${mem_id}"
+           printf "${cmd}\n"; eval "${cmd}"
+         else
+           msg="WARNING: ensemble member\n ${f_in}\n does not exist or is not"
+           msg+=" readable - skipping configuration:\n ${f_out}\n"
+           printf "${msg}"
+           cmd="rm -f ${log_f}"
+           printf "${cmd}\n"; eval "${cmd}"
+           error=1
+           break
+         fi
+      done
+      if [ ${error} = 1 ]; then
+        break
+      else
         # update GenEnsProdConfigTemplate archiving file in working directory
         # this remains unchanged on accumulation intervals
         if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
@@ -426,12 +412,12 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
         ${ctr_mem}"
         printf "${cmd}\n"; eval "${cmd}"
       fi
-      for mem_id in ${mem_ids[@]}; do
-        cmd="rm -f ${wrk_dir}/${mem_id}"
-        printf "${cmd}\n"; eval "${cmd}"
-      done
-    done 
-  done
+    fi
+    for mem_id in ${mem_ids[@]}; do
+      cmd="rm -f ${wrk_dir}/${mem_id}"
+      printf "${cmd}\n"; eval "${cmd}"
+    done
+  done 
 done
 
 msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "

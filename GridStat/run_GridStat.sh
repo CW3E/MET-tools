@@ -343,13 +343,13 @@ fcst_hrs=$(( (`date +%s -d "${stop_dt}"` - `date +%s -d "${strt_dt}"`) / 3600 ))
 
 for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
   # directory string for forecast analysis initialization time
-  dirstr=`date +%Y%m%d%H -d "${strt_dt} ${cyc_hr} hours"`
+  cyc_dt=`date +%Y%m%d%H -d "${strt_dt} ${cyc_hr} hours"`
 
   # cycle date directory of cf-compliant input files
-  in_dir=${IN_DT_ROOT}/${dirstr}${IN_DT_SUBDIR}
+  in_dir=${IN_DT_ROOT}/${cyc_dt}${IN_DT_SUBDIR}
 
   # set and clean working directory based on looped forecast start date
-  wrk_dir=${OUT_DT_ROOT}/${dirstr}${OUT_DT_SUBDIR}
+  wrk_dir=${OUT_DT_ROOT}/${cyc_dt}${OUT_DT_SUBDIR}
   cmd="mkdir -p ${wrk_dir}"
   printf "${cmd}\n"; eval "${cmd}"
 
@@ -401,7 +401,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
 
     for acc_hr in ${acc_hrs[@]}; do
       if [[ ${CMP_ACC} =~ ${TRUE} && ${acc_hr} -le ${lead_hr} ]]; then
-        for_in=${CTR_FLW}_${acc_hr}${VRF_FLD}_${dirstr}_F${pdd_hr}${pstfx}.nc
+        for_in=${CTR_FLW}_${acc_hr}${VRF_FLD}_${cyc_dt}_F${pdd_hr}${pstfx}.nc
         if [[ ${IF_ENS_PRD} =~ ${TRUE} ]]; then
           fld=${VRF_FLD}_${acc_hr}hr_A${acc_hr}_ENS_MEAN
         else
@@ -417,6 +417,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
             # this remains unchanged on inner loop
             if [ ! -r ${wrk_dir}/GridStatConfig${acc_hr} ]; then
               cat ${scrpt_dir}/GridStatConfigTemplate \
+                | sed "s/CTR_FLW/model = \"${CTR_FLW}\"/" \
                 | sed "s/INT_WDTH/width = ${INT_WDTH}/" \
                 | sed "s/RNK_CRR/rank_corr_flag      = ${RNK_CRR}/" \
                 | sed "s/VRF_FLD/name       = \"${fld}\"/" \
@@ -441,14 +442,14 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
           else
             msg="Observation verification file\n ${STC_ROOT}/${obs_in}\n is not "
             msg+=" readable or does not exist, skipping grid_stat for forecast "
-            msg+="initialization ${dirstr}, forecast hour ${lead_hr}.\n"
+            msg+="initialization ${cyc_dt}, forecast hour ${lead_hr}.\n"
             printf "${msg}"
           fi
 
         else
           msg="gridstat input file\n ${in_dir}/${for_in}\n is not readable " 
           msg+=" or does not exist, skipping grid_stat for forecast initialization "
-          msg+="${dirstr}, forecast hour ${lead_hr}.\n"
+          msg+="${cyc_dt}, forecast hour ${lead_hr}.\n"
           printf "${msg}"
         fi
 
@@ -456,7 +457,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
         cmd="rm -f ${wrk_dir}/${for_in}"
         printf "${cmd}\n"; eval "${cmd}"
       elif [[ ${CMP_ACC} =~ ${FALSE} ]]; then
-        for_in=${CTR_FLW}_${VRF_FLD}_${dirstr}_F${pdd_hr}${pstfx}.nc
+        for_in=${CTR_FLW}_${VRF_FLD}_${cyc_dt}_F${pdd_hr}${pstfx}.nc
 
         if [[ ${IF_ENS_PRD} =~ ${TRUE} ]]; then
           fld=${VRF_FLD}_ENS_MEAN
@@ -466,7 +467,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
 
         # obs file defined in terms of valid time
         # NOTE: reference fields other than StageIV still in development
-        obs_in=${VRF_REF}_${VRF_FLD}_${dirstr}_F${pdd_hr}${pstfx}.nc
+        obs_in=${VRF_REF}_${VRF_FLD}_${cyc_dt}_F${pdd_hr}${pstfx}.nc
         
         if [ -r ${in_dir}/${for_in} ]; then
           if [ -r ${STC_ROOT}/${obs_in} ]; then
@@ -499,14 +500,14 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
           else
             msg="Observation verification file\n ${STC_ROOT}/${obs_in}\n is not "
             msg+=" readable or does not exist, skipping grid_stat for forecast "
-            msg+="initialization ${dirstr}, forecast hour ${lead_hr}.\n"
+            msg+="initialization ${cyc_dt}, forecast hour ${lead_hr}.\n"
             printf "${msg}"
           fi
 
         else
           msg="gridstat input file\n ${in_dir}/${for_in}\n is not readable " 
           msg+=" or does not exist, skipping grid_stat for forecast initialization "
-          msg+="${dirstr}, forecast hour ${lead_hr}.\n"
+          msg+="${cyc_dt}, forecast hour ${lead_hr}.\n"
           printf "${msg}"
         fi
 

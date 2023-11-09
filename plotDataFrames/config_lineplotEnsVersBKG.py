@@ -8,7 +8,6 @@
 # SOURCE GLOBAL PARAMETERS
 ##################################################################################
 import os
-import subprocess
 
 USR_HME = os.environ['USR_HME']
 VRF_ROOT = os.environ['VRF_ROOT']

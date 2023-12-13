@@ -82,7 +82,7 @@ GRDS = [
        ]
 
 # threshold value for leveled data plot
-LEV = '>=10.0'
+LEV = '>=25.0'
 
 # include model grid in legend label True or False
 GRD_LAB = True
@@ -108,6 +108,8 @@ SUBTITLE='Verification region -'
 lnd_msk_split = MSK.split('_')
 for split in lnd_msk_split:
     SUBTITLE += ' ' + split
+
+SUBTITLE += ', Threshold ' + LEV + ' mm'
 
 OUT_PATH = OUT_ROOT + '/' + VALID_DT + '_' + MSK + '_' + STATS[0] + '_' +\
            STATS[1] + '_lev_' + LEV + fig_lab + '_lineplot.png'

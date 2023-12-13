@@ -163,6 +163,7 @@ for ctr_flw in CTR_FLWS:
                         'VX_MASK',
                         'FCST_LEAD',
                         'FCST_VALID_END',
+                        'FCST_THRESH',
                        ]
 
                 # include the statistics and their confidence intervals

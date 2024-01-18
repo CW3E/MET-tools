@@ -18,19 +18,19 @@ module load openmpi/4.1.1
 # HPC PARAMETERS
 ##################################################################################
 # Root directory for MET-tools git clone
-export USR_HME=/expanse/lustre/scratch/cgrudzien/temp_project/JEDI-MPAS-Common-Case/MET-tools
+export USR_HME=/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/MET-tools
 
 # Root directory of simulation IO
-export SIM_ROOT=/expanse/lustre/scratch/cgrudzien/temp_project/JEDI-MPAS-Common-Case/SIMULATION_IO
+export SIM_ROOT=/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/SIMULATION_IO
 
 # Root directory of simulation verification IO
-export VRF_ROOT=/expanse/lustre/scratch/cgrudzien/temp_project/JEDI-MPAS-Common-Case/VERIFICATION
+export VRF_ROOT=/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/VERIFICATION
 
 # Root directory for verification static data
-export STC_ROOT=/expanse/lustre/scratch/cgrudzien/temp_project/JEDI-MPAS-Common-Case/DATA/DeepDive/Verification
+export STC_ROOT=/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/DATA/DeepDive/Verification
 
 # Root directory for software environment singularity images
-export SOFT_ROOT=/expanse/lustre/scratch/cgrudzien/temp_project/SOFT_ROOT
+export SOFT_ROOT=/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/SOFT_ROOT
 
 # NetCDF tools singularity image path
 export NETCDF_TOOLS=${SOFT_ROOT}/MET_tools_conda_netcdf.sif

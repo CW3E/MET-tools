@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --account=ddp181
+#SBATCH --account=cwp157
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=16
 #SBATCH --mem=20G
-#SBATCH -p shared
+#SBATCH -p cw3e-shared
 #SBATCH -t 01:00:00
 #SBATCH -J GenEnsProd
 #SBATCH -o ./logs/GenEnsProd-%A_%a.out

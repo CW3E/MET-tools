@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --account=ddp181
+#SBATCH --account=cwp157
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=16
-#SBATCH --mem=120G
-#SBATCH -p shared
+#SBATCH --mem=150G
+#SBATCH -p cw3e-shared
 #SBATCH -t 01:00:00
 #SBATCH -J preprocessWRF
 #SBATCH -o ./logs/preprocessWRF-%A_%a.out

@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --account=ddp181
+#SBATCH --account=cwp157
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --mem=12G
-#SBATCH -p shared
+#SBATCH -p cw3e-shared
 #SBATCH -t 01:00:00
 #SBATCH -J vxmask
 #SBATCH -o ./logs/vxmask-%j.out

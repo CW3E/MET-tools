@@ -12,11 +12,8 @@ import xarray as xr
 import numpy as np
 import pandas as pd
 from datetime import datetime as dt
+import cftime
 import ipdb
-
-USR_HME = os.environ['USR_HME']
-VRF_ROOT = os.environ['VRF_ROOT']
-INDT = os.environ['INDT']
 
 ##################################################################################
 # Utility Methods
@@ -37,40 +34,79 @@ def cf_precip(ds_in):
     start_dt = ds_in.START_DATE
 
     precip = precip_g + precip_c
-    for attr in precip_g.attrs:
-        if attr == 'description':
-            precip.attrs[attr] = 'Sum of grid- / convective-scale precipitation'
-
-        else:
-            precip.attrs[attr] = precip_g.attrs[attr] 
-
-    precip.attrs['standard_name'] = 'total_precipitation_amount'
-    precip.attrs['long_name'] = 'Accumulated Total Precipitation Over Simulation'
 
     valid_dt = dt.combine(pd.to_datetime(valid_dt).date(), dt.min.time())
     start_dt = dt.fromisoformat(start_dt)
-
+    fcst_time = ( (valid_dt - start_dt).total_seconds() / 3600 )
     ds_out = xr.Dataset(
             data_vars=dict(
-                precip=(precip.dims, precip.values),
-                forecast_reference_time=(precip.dims[0], np.array([start_dt],
-                    dtype='datetime64[ns]'))
+                precip=(['time', 'south_north', 'west_east'], precip.values),
+                forecast_reference_time=(['time'], np.array([fcst_time])),
                 ),
             coords=dict(
-                lon=(precip.dims[1:], np.squeeze(precip.XLONG.values)),
-                lat=(precip.dims[1:], np.squeeze(precip.XLAT.values)),
-                time=precip.XTIME.values,
+                time=(['time'], np.array([fcst_time])),
+                lat=(['south_north', 'west_east'],
+                    np.squeeze(precip.XLAT.values)),
+                lon=(['south_north', 'west_east'],
+                    np.squeeze(precip.XLONG.values)),
+                south_north=('south_north', precip.south_north.values),
+                west_east=('west_east', precip.west_east.values),
                 ),
             )
 
-    ds_out.precip.attrs = precip.attrs
+    fill_val = 1e20
+    ds_out.fillna(fill_val)
+
+    ds_out.precip.attrs = {
+        'description': 'Sum of grid- / convective-scale precipitation',
+        'standard_name': 'total_precipitation_amount',
+        'long_name': 'Accumulated Total Precipitation Over Simulation',
+        'units': 'mm',
+        'missing_value': fill_val,
+        }
+
+    ds_out.time.attrs = {
+        'long_name': 'Time',
+        'standard_name': 'time',
+        'description': 'Valid date time of data',
+        'units': 'hours since ' + start_dt.strftime('%Y-%m-%d %H:%M:%S'),
+        }
+
     ds_out.forecast_reference_time.attrs = {
-         'long_name': 'Forecast Reference Time',
-         'standard_name': 'forecast_reference_time',
-         'valid_time': valid_dt.strftime('%Y%m%d_%H%M%S'),
-         'init_time': start_dt.strftime('%Y%m%d_%H%M%S'),
-         'fcst_time': ( (valid_dt - start_dt).total_seconds() / 3600 ),
-         'description': 'Simulation / accumulation initial time',
+        'long_name': 'Forecast Reference Time',
+        'standard_name': 'forecast_reference_time',
+        'valid_time': valid_dt.strftime('%Y%m%d_%H%M%S'),
+        'init_time': start_dt.strftime('%Y%m%d_%H%M%S'),
+        'fcst_time': fcst_time,
+        'description': 'Simulation / accumulation initial time',
+        }
+
+    ds_out.lat.attrs = {
+        'long_name': 'Latitude',
+        'standard_name': 'latitude',
+        'units': 'degrees_north',
+        'missing_value': fill_val,
+        }
+
+    ds_out.lon.attrs = {
+        'long_name': 'Longitude',
+        'standard_name': 'longitude',
+        'units': 'degrees_east',
+        'missing_value': fill_val,
+        }
+
+    ds_out.south_north.attrs = {
+        'long_name': 'y coordinate of projection',
+        'standard_name': 'projection_y_coordinate',
+        'axis': 'Y',
+        'units': 'none',
+        }
+
+    ds_out.west_east.attrs = {
+        'long_name': 'x coordinate of projection',
+        'standard_name': 'projection_x_coordinate',
+        'axis': 'X',
+        'units': 'none',
         }
 
     return ds_out
@@ -80,24 +116,30 @@ def cf_precip_bkt(ds_curr, ds_prev):
 
     Inputs are precip data arrays at
     """
+    ds_out = ds_curr.rename_vars({'precip': 'precip_bkt'})
+    ds_out.precip_bkt.values = ds_curr.precip.values - ds_prev.precip.values
+    # KEEP DEBUGGING HERE TO DETERMINE APPROPRIATE STEPS TO GET ACCUMULATION
+    curr_dt = cftime.num2pydate(ds_curr.time.values, ds_curr.time.units)[0]
+    prev_dt = cftime.num2pydate(ds_prev.time.values, ds_curr.time.units)[0]
 
-    precip_bkt = (ds_curr.precip - ds_prev.precip).to_dataset(name='precip_bkt')
-    precip_bkt = precip_bkt.assign_coords({'time': ds_curr.time.values[0]})
-    curr_dt = dt.combine(pd.to_datetime(ds_curr.time.values[0]).date(),
-            dt.min.time())
-    prev_dt = dt.combine(pd.to_datetime(ds_prev.time.values[0]).date(),
-            dt.min.time())
-
-    acc_inc = str((curr_dt - prev_dt).total_seconds() / 3600)
-    ref_time = ds_curr.forecast_reference_time.to_dataset()
-    ds_out = xr.Dataset.merge(precip_bkt, ref_time)
+    acc_inc = int((curr_dt - prev_dt).total_seconds() / 3600)
+    acc_str = str(acc_inc)
+    curr_hr = int(curr_dt.total_seconds() / 3600)
+    prev_hr = curr_hr - acc_inc
+    fill_val = 1e20
+    bnds = xr.Dataset(data_vars={'time_bnds': (['time', 'nbnds'],
+        np.reshape(np.array([prev_hr, curr_hr]), [1,2]))})
     ds_out.precip_bkt.attrs = {
-            'standard_name': 'precipitation_amount_' + acc_inc + '_hours',
+            'standard_name': 'precipitation_amount_' + acc_str + '_hours',
             'long_name': 'Accumulated Precipitation Over Past ' +\
-                    acc_inc + ' Hours',
+                    acc_str + ' Hours',
             'units': 'mm',
-            'accum_intvl': acc_inc + ' hours',
+            'accum_intvl': acc_str + ' hours',
+            'missing_value': fill_val,
+            'cell_methods': 'time: sum',
            }
+
+    ds_out.time.attrs['bounds'] = 'time_bnds'
 
     return ds_out
 

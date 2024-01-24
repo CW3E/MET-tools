@@ -8,7 +8,7 @@
 #SBATCH -J preprocessWRF
 #SBATCH -o ./logs/preprocessWRF-%A_%a.out
 #SBATCH --export=ALL
-#SBATCH --array=0-11
+#SBATCH --array=0
 ##################################################################################
 # Description
 ##################################################################################
@@ -128,7 +128,7 @@ log_dir=${OUT_ROOT}/batch_logs
 cmd="mkdir -p ${log_dir}"
 printf "${cmd}\n"; eval "${cmd}"
 
-cmd="./run_preprocessWRF.sh ${!job} \
+cmd="./run_preprocessWRFpy.sh ${!job} \
   > ${log_dir}/preprocessWRF_${jbid}_${indx}.log 2>&1"
 printf "${cmd}\n"; eval "${cmd}"
 

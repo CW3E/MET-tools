@@ -42,17 +42,17 @@ export STOP_DT=2022122700
 # Define the increment between forecast initializations (HH)
 export CYC_INC=24
 
-# Define min / max forecast hours for forecast outputs to be processed
-export ANL_MIN=24
+# Define min / max forecast hours for cf outputs to be generated
+export ANL_MIN=0
 export ANL_MAX=120
 
-# Define the increment at which to process forecast outputs (HH)
+# Define the increment at which to generate cf outputs (HH)
 export ANL_INC=24
 
 # Regrid to generic lat-lon for MET if native grid errors (TRUE or FALSE)
 export RGRD=TRUE
 
-# Compute precipitation accumulation from cf file, TRUE or FALSE
+# Compute precipitation accumulations from cf files, TRUE or FALSE
 export CMP_ACC=TRUE
 
 # Defines the min / max accumulation interval for precip

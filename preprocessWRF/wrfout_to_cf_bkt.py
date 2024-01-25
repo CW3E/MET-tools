@@ -25,20 +25,28 @@
 ##################################################################################
 import xarray as xr
 import sys
-from config_wrfcf import cf_precip
+from config_wrfcf import cf_precip, cf_precip_bkt
 
 ##################################################################################
+
 # file name paths are taken as script arguments
-f_in = sys.argv[1]
-f_out = sys.argv[2]
+f_curr = sys.argv[1]
+f_prev = sys.argv[2]
+f_save = sys.argv[3]
 
 # load datasets in xarray
-ds_in = xr.open_dataset(f_in)
+ds_curr = xr.open_dataset(f_curr)
+ds_prev = xr.open_dataset(f_prev)
 
 # extract cf precip
-ds_out = cf_precip(ds_in)
+precip_curr = cf_precip(ds_curr)
+precip_prev = cf_precip(ds_prev)
 
-ds_out.to_netcdf(path=f_out)
+precip_bkt = cf_precip_bkt(precip_curr, precip_prev)
+
+ds_out = xr.Dataset.merge(precip_curr, precip_bkt)
+ds_out.time.attrs['bounds'] = 'time_bnds'
+ds_out.to_netcdf(path=f_save)
 
 #    if (out2dMet@precip_g .or. out2dMet@precip_c .or. out2dMet@precip) then
 #      precip_g = (/wrfout->RAINNC/)                                ;precip_g

@@ -58,12 +58,6 @@ else
   fi
 fi
 
-# control flow to be processed
-if [ ! ${CTR_FLW} ]; then
-  printf "ERROR: control flow name \${CTR_FLW} is not defined.\n"
-  exit 1
-fi
-
 # verification domain for the forecast data
 if [[ ! ${GRD} =~ ^d[0-9]{2}$ ]]; then
   printf "ERROR: grid name must be in dXX format.\n"
@@ -271,6 +265,14 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
     exit 1
   fi
 
+  # clean work directory from previous wrfcf files
+  cmd="rm ${wrk_dir}/wrfcf*"
+  printf "${cmd}\n"; eval "${cmd}"
+
+  # clean work directory from previous accumulation files
+  cmd="rm ${wrk_dir}/WRF_*QPF*"
+  printf "${cmd}\n"; eval "${cmd}"
+
   # set input paths
   if [ ! -d ${in_dir} ]; then
     msg="WARNING: data input path\n ${in_dir}\n does not exist,"
@@ -289,31 +291,28 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
 
     # loop lead hours for forecast valid time for each initialization time
     for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INC} )); do
-      # define valid times for wrfcf precip_bkt accumulation, evenly spaced
-      anl_strt_hr=$(( ${lead_hr} + ${cyc_hr} - ${ANL_INC} ))
-      anl_stop_hr=$(( ${lead_hr} + ${cyc_hr} ))
-      anl_strt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_strt_hr} hours"`
-      anl_stop=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_stop_hr} hours"`
+      # define valid times for wrfcf precip evenly spaced
+      anl_hr=$(( ${lead_hr} + ${cyc_hr} ))
+      anl_dt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_hr} hours"`
 
       # set input file names
-      f_pr="wrfout_${GRD}_${anl_strt}"
-      f_in="wrfout_${GRD}_${anl_stop}"
+      f_in="wrfout_${GRD}_${anl_dt}"
       
-      # set output file name
-      f_out="wrfcf_${anl_strt}_to_${anl_stop}.nc"
+      # set output file names
+      f_out="wrfcf_${anl_dt}.nc"
 
-      if [[ -r ${in_dir}/${f_pr} && -r ${in_dir}/${f_in} ]]; then
+      if [[ -r ${in_dir}/${f_in} ]]; then
         cmd="/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/SOFT_ROOT/Micromamba/envs/xarray/bin/"
         cmd+="python wrfout_to_cf.py"
-        cmd+=" '${in_dir}/${f_in}' '${in_dir}/${f_pr}' '${wrk_dir}/${f_out}'"
+        cmd+=" '${in_dir}/${f_in}' '${wrk_dir}/${f_out}'"
         printf "${cmd}\n"; eval "${cmd}"
 
         if [[ ${RGRD} = ${TRUE} ]]; then
-          #-remapbil,global_${gres} -selname,precip,precip_bkt,IVT,IVTU,IVTV,IWV \
+          #-remapbil,global_${gres} -selname,precip,IVT,IVTU,IVTV,IWV \
           # regrids to lat-lon from native grid with CDO
           cmd="${netcdf_tools} \
           cdo -f nc4 sellonlatbox,${lon1},${lon2},${lat1},${lat2} \
-          -remapbil,global_${gres} -selname,precip,precip_bkt \
+          -remapbil,global_${gres} -selname,precip \
           /wrk_dir/${f_out} /wrk_dir/${f_out}_tmp"
           printf "${cmd}\n"; eval "${cmd}"
 
@@ -329,7 +328,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
         fi
 
       else
-        msg="Either\n ${f_pr}\n or\n ${f_in}\n is not readable or "
+        msg="Input\n ${f_in}\n is not readable or "
         msg+="does not exist, skipping forecast initialization ${cyc_dt}, "
         msg+="forecast hour ${lead_hr}.\n"
         printf "${msg}"
@@ -337,31 +336,28 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
       if [[ ${CMP_ACC} = ${TRUE} ]]; then
         for acc_hr in ${acc_hrs[@]}; do
           if [ ${lead_hr} -ge ${acc_hr} ]; then
-            # set accumulation valid time string
-            vld_Y=${anl_stop:0:4}
-            vld_m=${anl_stop:5:2}
-            vld_d=${anl_stop:8:2}
-            vld_H=${anl_stop:11:2}
-      
-            # Set forecast initialization string
-            init_Y=${cyc_dt:0:4}
-            init_m=${cyc_dt:4:2}
-            init_d=${cyc_dt:6:2}
-            init_H=${cyc_dt:8:2}
+            # define accumulation start / stop hours
+            acc_strt=$(( ${lead_hr} + ${cyc_hr} ))
+            acc_stop=$(( ${lead_hr} + ${cyc_hr} - ${acc_hr} ))
+
+            # start / stop date strings
+            anl_strt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${acc_strt} hours"`
+            anl_stop=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${acc_stop} hours"`
 
             # define padded forecast hour for name strings
             pdd_hr=`printf %03d $(( 10#${lead_hr} ))`
-            wrf_acc=${CTR_FLW}_${acc_hr}QPF_${init_Y}${init_m}${init_d}${init_H}_F${pdd_hr}.nc
+
+            init_dt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt}"`
+
+            # WRF QPF file name convention following similar products
+            wrf_acc=WRF_${acc_hr}QPF_${init_dt}_F${pdd_hr}.nc
 
             # Combine precip to accumulation period 
             cmd="${met} pcp_combine \
-            -sum ${init_Y}${init_m}${init_d}_${init_H}0000 ${ANL_INC} \
-            ${vld_Y}${vld_m}${vld_d}_${vld_H}0000 ${acc_hr} \
+            -subtract /in_dir/wrfcf_${anl_strt}.nc /in_dir/wrfcf_${anl_stop}.nc\
             /wrk_dir/${wrf_acc} \
-            -field 'name=\"precip_bkt\"; level=\"(0,*,*)\";'\
-            -name \"QPF_${acc_hr}hr\" \
-            -pcpdir /in_dir \
-            -pcprx \"wrfcf_.*\" "
+            -field 'name=\"precip\"; level=\"(0,*,*)\";'\
+            -name \"QPF_${acc_hr}hr\" "
             printf "${cmd}\n"; eval "${cmd}"
           fi
         done

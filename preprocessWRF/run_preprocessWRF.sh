@@ -58,12 +58,6 @@ else
   fi
 fi
 
-# control flow to be processed
-if [ ! ${CTR_FLW} ]; then
-  printf "ERROR: control flow name \${CTR_FLW} is not defined.\n"
-  exit 1
-fi
-
 # verification domain for the forecast data
 if [[ ! ${GRD} =~ ^d[0-9]{2}$ ]]; then
   printf "ERROR: grid name must be in dXX format.\n"
@@ -271,6 +265,14 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
     exit 1
   fi
 
+  # clean work directory from previous wrfcf files
+  cmd="rm ${wrk_dir}/wrfcf*"
+  printf "${cmd}\n"; eval "${cmd}"
+
+  # clean work directory from previous accumulation files
+  cmd="rm ${wrk_dir}/WRF_*QPF*"
+  printf "${cmd}\n"; eval "${cmd}"
+
   # set input paths
   if [ ! -d ${in_dir} ]; then
     msg="WARNING: data input path\n ${in_dir}\n does not exist,"
@@ -351,7 +353,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
 
             # define padded forecast hour for name strings
             pdd_hr=`printf %03d $(( 10#${lead_hr} ))`
-            wrf_acc=${CTR_FLW}_${acc_hr}QPF_${init_Y}${init_m}${init_d}${init_H}_F${pdd_hr}.nc
+            wrf_acc=WRF_${acc_hr}QPF_${init_Y}${init_m}${init_d}${init_H}_F${pdd_hr}.nc
 
             # Combine precip to accumulation period 
             cmd="${met} pcp_combine \
@@ -365,12 +367,6 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
             printf "${cmd}\n"; eval "${cmd}"
           fi
         done
-      else
-        msg="pcp_combine input file\n "
-        msg+="${wrk_dir}/${f_out}\n is not "
-        msg+="readable or does not exist, skipping pcp_combine for "
-        msg+="forecast initialization ${cyc_dt}, forecast hour ${lead_hr}.\n"
-        printf "${msg}"
       fi
     done
   fi

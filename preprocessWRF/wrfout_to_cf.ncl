@@ -122,7 +122,7 @@ begin
   end if
   ; set the mapping coordinates
   x@coordinates = "lon lat"
-  x@grid_mapping = "Lambert_Conformal"
+  ;x@grid_mapping = "Lambert_Conformal"
 end
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -162,15 +162,15 @@ begin
   ;        included with only specific WRF physics options.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ; output settings
-  axis                       = True      ;one-dimensional coordinate fields
-  projection                 = True     ;CF projection info with fields
+  axis                       = False     ;one-dimensional coordinate fields
+  projection                 = False    ;CF projection info with fields
   outPtop                    = False     ;include Ptop in the output file
   ;outCMIP                    = False     ;use CMIP variable names in output
   ;MissingValue               = -999999   ;missing value
   ; Note: MissingValue is currently assigned in the procedure assignVarAttCoord
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ; set the netcdf file global attributes
-  fileAtt                = True
+  fileAtt                = False
   fileAtt@creation_date  =  systemfunc("date")
   fileAtt@institution = "CW3E - Scripps Institution of Oceanography"
   fileAtt@created_by = ""
@@ -222,7 +222,7 @@ begin
   out2dMet@rho               = False      ;density at lowest eta level
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ; three-dimensional upper-level (eta levels) meteorology variables
-  outEta                     = True 
+  outEta                     = False
   outEta@p_e                 = False      ;pressure - eta
   outEta@Z_e                 = False      ;geopotential height - eta
   outEta@T_e                 = False      ;temperature - eta
@@ -274,7 +274,7 @@ begin
   outPressure@avo_p          = False      ;absolute vorticity - pressure
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ; two-dimensional surface energy budget / radiation variables
-  out2dRadFlx                = True
+  out2dRadFlx                = False
   out2dRadFlx@SW_d           = False      ;SW flux - downward - sfc - instant
   out2dRadFlx@LW_d           = False      ;LW flux - downward - sfc - instant
   out2dRadFlx@SW_u           = False      ;SW flux - upward - sfc - instant
@@ -298,15 +298,15 @@ begin
   out2dRadFlx@u_star         = False      ;friction velocity (u*)
   out2dRadFlx@LWP            = False      ;liquid water path
   out2dRadFlx@IWP            = False      ;ice water path
-  out2dRadFlx@IWV            = True       ;integrated water vapor
-  out2dRadFlx@IVT            = True       ;integrated vapor transport
-  out2dRadFlx@IVTU           = True       ;integrated vapor transport - u-component
-  out2dRadFlx@IVTV           = True       ;integrated vapor transport - v-component
+  out2dRadFlx@IWV            = False      ;integrated water vapor
+  out2dRadFlx@IVT            = False      ;integrated vapor transport
+  out2dRadFlx@IVTU           = False      ;integrated vapor transport - u-component
+  out2dRadFlx@IVTV           = False      ;integrated vapor transport - v-component
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ; two-dimensional surface/soil variables
   out2dLandSoil              = False
-  out2dLandSoil@LandMask     = True       ;land mask (1 - land, 0 - water)
-  out2dLandSoil@LandUse      = True       ;land use category
+  out2dLandSoil@LandMask     = False      ;land mask (1 - land, 0 - water)
+  out2dLandSoil@LandUse      = False      ;land use category
   out2dLandSoil@SoilT_L      = False      ;soil temperature at lower boundary
   out2dLandSoil@SoilT_B      = False      ;bottom soil temperature
   out2dLandSoil@GroundFlx    = False      ;ground heat flux
@@ -315,7 +315,7 @@ begin
   out2dLandSoil@SnowDens     = False      ;snow density
   out2dLandSoil@SnowFlx      = False      ;snow phase change heat flux
   out2dLandSoil@SnowMelt     = False      ;melted snow; accumulated
-  out2dLandSoil@SeaIce       = True       ;sea ice flag
+  out2dLandSoil@SeaIce       = False      ;sea ice flag
   out2dLandSoil@WaterFlx     = False      ;surface evaporation
   out2dLandSoil@SfcRunoff    = False      ;surface runoff flux
   out2dLandSoil@SubRunoff    = False      ;subsurface runoff flux
@@ -323,9 +323,9 @@ begin
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ; three-dimensional soil variables
   outSoil                    = False
-  outSoil@SoilTemp           = True       ;temperature - soil
-  outSoil@SoilMoist          = True       ;moisture - soil
-  outSoil@SoilWater          = True       ;water - soil
+  outSoil@SoilTemp           = False      ;temperature - soil
+  outSoil@SoilMoist          = False      ;moisture - soil
+  outSoil@SoilWater          = False      ;water - soil
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ; two-dimensional CLimate WRF (CLWRF) variables
   ;  (http://www.meteo.unican.es/en/software/clwrf)
@@ -336,9 +336,9 @@ begin
   outCLWRF@T_sfc_max         = False      ;temperature at sfc - max.
   outCLWRF@T_sfc_mean        = False      ;temperature at sfc - mean
   outCLWRF@T_sfc_std         = False      ;temperature at sfc - std. dev.
-  outCLWRF@T_2m_min          = True       ;temperature at 2 m - min.
-  outCLWRF@T_2m_max          = True       ;temperature at 2 m - max.
-  outCLWRF@T_2m_mean         = True       ;temperature at 2 m - mean
+  outCLWRF@T_2m_min          = False      ;temperature at 2 m - min.
+  outCLWRF@T_2m_max          = False      ;temperature at 2 m - max.
+  outCLWRF@T_2m_mean         = False      ;temperature at 2 m - mean
   outCLWRF@T_2m_std          = False      ;temperature at 2 m - std. dev.
   outCLWRF@r_v_2m_min        = False      ;mixing ratio at 2 m - min.
   outCLWRF@r_v_2m_max        = False      ;mixing ratio at 2 m - max.
@@ -496,56 +496,56 @@ begin
     Z_sfc!1 = "west_east"
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ; one-dimensional coordinate system
-  if (axis) then
-    ; DFS 6/23/2019 - Produce projection coordinates for use in MET
-    conv=57.29578 ; Degrees to radians
-    a = 6371.141 ; Radius of earth at 35N
-    TRUELAT1=wrfout@TRUELAT1
-    TRUELAT2=wrfout@TRUELAT2
-    MOAD_CEN_LAT=wrfout@MOAD_CEN_LAT
-    STAND_LON=wrfout@STAND_LON
+  ;if (axis) then
+  ;  ;; DFS 6/23/2019 - Produce projection coordinates for use in MET
+  ;  ;conv=57.29578 ; Degrees to radians
+  ;  ;a = 6371.141 ; Radius of earth at 35N
+  ;  ;TRUELAT1=wrfout@TRUELAT1
+  ;  ;TRUELAT2=wrfout@TRUELAT2
+  ;  ;MOAD_CEN_LAT=wrfout@MOAD_CEN_LAT
+  ;  ;STAND_LON=wrfout@STAND_LON
 
-    xn = log10(cos(TRUELAT1 / conv)) - log10(cos(TRUELAT2 / conv))
-    xn = xn / (log10(tan((45. - TRUELAT1 / 2.) / conv)) - log10(tan((45. - TRUELAT2 / 2.) / conv)))
-    psi1 = 90. - TRUELAT1
-    psi1 = psi1 / conv
-    psi0 = (90. - MOAD_CEN_LAT) / conv
-    xc = 0.
-    yc = (-1.*a) / xn * sin(psi1) * (tan(psi0 / 2.) / tan(psi1 / 2.))^xn
+  ;  ;xn = log10(cos(TRUELAT1 / conv)) - log10(cos(TRUELAT2 / conv))
+  ;  ;xn = xn / (log10(tan((45. - TRUELAT1 / 2.) / conv)) - log10(tan((45. - TRUELAT2 / 2.) / conv)))
+  ;  ;psi1 = 90. - TRUELAT1
+  ;  ;psi1 = psi1 / conv
+  ;  ;psi0 = (90. - MOAD_CEN_LAT) / conv
+  ;  ;xc = 0.
+  ;  ;yc = (-1.*a) / xn * sin(psi1) * (tan(psi0 / 2.) / tan(psi1 / 2.))^xn
 
-    ylon = lon - STAND_LON
-    ylon = where(ylon.gt.180.,ylon-360.,ylon)
-    ylon = where(ylon.lt.-180.,ylon+360.,ylon)
-    flp = xn * ylon / conv
-    psx = (90. - lat) / conv
-    r = (-1.*a) / xn * sin(psi1) * (tan(psx / 2.) / tan(psi1 / 2.))^xn
-    xloc = -r * sin(flp)
-    yloc = r * cos(flp)
-    xloc = xloc - xc
-    yloc = yloc - yc
+  ;  ;ylon = lon - STAND_LON
+  ;  ;ylon = where(ylon.gt.180.,ylon-360.,ylon)
+  ;  ;ylon = where(ylon.lt.-180.,ylon+360.,ylon)
+  ;  ;flp = xn * ylon / conv
+  ;  ;psx = (90. - lat) / conv
+  ;  ;r = (-1.*a) / xn * sin(psi1) * (tan(psx / 2.) / tan(psi1 / 2.))^xn
+  ;  ;xloc = -r * sin(flp)
+  ;  ;yloc = r * cos(flp)
+  ;  ;xloc = xloc - xc
+  ;  ;yloc = yloc - yc
 
-    south_north = yloc(:,0)
-      south_north@long_name = "y coordinate of projection"
-      south_north@standard_name = "projection_y_coordinate"
-      south_north@axis = "Y"
-      south_north@units = "km"
-      south_north!0 = "south_north"
-      south_north&south_north = south_north
-     west_east = xloc(0,:)
-      west_east@long_name = "x coordinate of projection"
-      west_east@standard_name = "projection_x_coordinate"
-      west_east@axis = "X"
-      west_east@units = "km"
-      west_east!0 = "west_east"
-      west_east&west_east = west_east
-    Lambert_Conformal = 1
-      Lambert_Conformal!0 = "projection"
-      Lambert_Conformal@grid_mapping_name = "lambert_conformal_conic";
-      Lambert_Conformal@standard_parallel = (/TRUELAT1,TRUELAT2/);
-      Lambert_Conformal@longitude_of_central_meridian = STAND_LON
-      Lambert_Conformal@latitude_of_projection_origin = MOAD_CEN_LAT
-    ; END DFS changes
-  end if
+  ;  ;south_north = yloc(:,0)
+  ;  ;  south_north@long_name = "y coordinate of projection"
+  ;  ;  south_north@standard_name = "projection_y_coordinate"
+  ;  ;  south_north@axis = "Y"
+  ;  ;  south_north@units = "km"
+  ;  ;  south_north!0 = "south_north"
+  ;  ;  south_north&south_north = south_north
+  ;  ; west_east = xloc(0,:)
+  ;  ;  west_east@long_name = "x coordinate of projection"
+  ;  ;  west_east@standard_name = "projection_x_coordinate"
+  ;  ;  west_east@axis = "X"
+  ;  ;  west_east@units = "km"
+  ;  ;  west_east!0 = "west_east"
+  ;  ;  west_east&west_east = west_east
+  ;  ;Lambert_Conformal = 1
+  ;  ;  Lambert_Conformal!0 = "projection"
+  ;  ;  Lambert_Conformal@grid_mapping_name = "lambert_conformal_conic";
+  ;  ;  Lambert_Conformal@standard_parallel = (/TRUELAT1,TRUELAT2/);
+  ;  ;  Lambert_Conformal@longitude_of_central_meridian = STAND_LON
+  ;  ;  Lambert_Conformal@latitude_of_projection_origin = MOAD_CEN_LAT
+  ;  ;; END DFS changes
+  ;end if
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ; two-dimensional near-surface / surface met variables
   ;   -retrieved directly from the wrfout file - or
@@ -1931,7 +1931,9 @@ begin
   ; establish a variable for a new line in the attributes
   nl = integertochar(10)  ; newline character
   ; create the global attributes
-  fileattdef(wrfpost, fileAtt)
+  if (fileAtt) then
+    fileattdef(wrfpost, fileAtt)
+  end if
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;;;;; write post-processed WRF data to netCDF file ;;;;;;;;;;;;;;;;;
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1978,7 +1980,7 @@ begin
     ; -two-dimensional mapping variables
     wrfpost->lat=lat(limS_N(0):limS_N(1),limW_E(0):limW_E(1))
     wrfpost->lon=lon(limS_N(0):limS_N(1),limW_E(0):limW_E(1))
-    wrfpost->Z_sfc=Z_sfc(limS_N(0):limS_N(1),limW_E(0):limW_E(1))
+    ;wrfpost->Z_sfc=Z_sfc(limS_N(0):limS_N(1),limW_E(0):limW_E(1))
     ; -two-dimensional near-surface / surface met variables
     if (out2dMet) then
       if (isvar("SST")) then

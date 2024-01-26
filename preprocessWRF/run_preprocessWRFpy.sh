@@ -302,9 +302,14 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
       f_out="wrfcf_${anl_dt}.nc"
 
       if [[ -r ${in_dir}/${f_in} ]]; then
-        cmd="/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/SOFT_ROOT/Micromamba/envs/xarray/bin/"
-        cmd+="python wrfout_to_cf.py"
-        cmd+=" '${in_dir}/${f_in}' '${wrk_dir}/${f_out}'"
+        #cmd="/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/SOFT_ROOT/Micromamba/envs/xarray/bin/"
+        #cmd+="python wrfout_to_cf.py"
+        #cmd+=" '${in_dir}/${f_in}' '${wrk_dir}/${f_out}'"
+        #printf "${cmd}\n"; eval "${cmd}"
+
+        cmd="${netcdf_tools} \
+        ncl 'file_in=\"/in_dir/${f_in}\"' \
+        'file_out=\"/wrk_dir/${f_out}\"' /scrpt_dir/wrfout_to_cf.ncl"
         printf "${cmd}\n"; eval "${cmd}"
 
         if [[ ${RGRD} = ${TRUE} ]]; then
@@ -347,7 +352,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
             # define padded forecast hour for name strings
             pdd_hr=`printf %03d $(( 10#${lead_hr} ))`
 
-            init_dt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt}"`
+            init_dt=`date +%Y%m%d%H -d "${strt_dt}"`
 
             # WRF QPF file name convention following similar products
             wrf_acc=WRF_${acc_hr}QPF_${init_dt}_F${pdd_hr}.nc
@@ -361,12 +366,6 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
             printf "${cmd}\n"; eval "${cmd}"
           fi
         done
-      else
-        msg="pcp_combine input file\n "
-        msg+="${wrk_dir}/${f_out}\n is not "
-        msg+="readable or does not exist, skipping pcp_combine for "
-        msg+="forecast initialization ${cyc_dt}, forecast hour ${lead_hr}.\n"
-        printf "${msg}"
       fi
     done
   fi

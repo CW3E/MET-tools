@@ -128,7 +128,7 @@ log_dir=${OUT_ROOT}/batch_logs
 cmd="mkdir -p ${log_dir}"
 printf "${cmd}\n"; eval "${cmd}"
 
-cmd="./run_preprocessWRFpy.sh ${!job} \
+cmd="./run_preprocessWRF.sh ${!job} \
   > ${log_dir}/preprocessWRF_${jbid}_${indx}.log 2>&1"
 printf "${cmd}\n"; eval "${cmd}"
 

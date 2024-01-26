@@ -81,8 +81,9 @@ def cf_precip(ds_in):
     ds_out.time.attrs = {
         'long_name': 'Time',
         'standard_name': 'time',
-        'description': 'Valid date time of data',
+        'description': 'Time',
         'units': 'seconds since 1970-01-01T00:00:00',
+        'calendar': 'standard',
         }
 
     ds_out.lat.attrs = {

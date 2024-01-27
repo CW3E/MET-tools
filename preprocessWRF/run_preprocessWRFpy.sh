@@ -302,15 +302,15 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
       f_out="wrfcf_${anl_dt}.nc"
 
       if [[ -r ${in_dir}/${f_in} ]]; then
-        #cmd="/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/SOFT_ROOT/Micromamba/envs/xarray/bin/"
-        #cmd+="python wrfout_to_cf.py"
-        #cmd+=" '${in_dir}/${f_in}' '${wrk_dir}/${f_out}'"
-        #printf "${cmd}\n"; eval "${cmd}"
-
-        cmd="${netcdf_tools} \
-        ncl 'file_in=\"/in_dir/${f_in}\"' \
-        'file_out=\"/wrk_dir/${f_out}\"' /scrpt_dir/wrfout_to_cf.ncl"
+        cmd="/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/SOFT_ROOT/Micromamba/envs/xarray/bin/"
+        cmd+="python wrfout_to_cf.py"
+        cmd+=" '${in_dir}/${f_in}' '${wrk_dir}/${f_out}'"
         printf "${cmd}\n"; eval "${cmd}"
+
+        #cmd="${netcdf_tools} \
+        #ncl 'file_in=\"/in_dir/${f_in}\"' \
+        #'file_out=\"/wrk_dir/${f_out}\"' /scrpt_dir/wrfout_to_cf.ncl"
+        #printf "${cmd}\n"; eval "${cmd}"
 
         if [[ ${RGRD} = ${TRUE} ]]; then
           #-remapbil,global_${gres} -selname,precip,IVT,IVTU,IVTV,IWV \

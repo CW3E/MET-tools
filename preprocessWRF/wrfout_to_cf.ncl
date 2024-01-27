@@ -215,7 +215,7 @@ begin
   out2dMet@rain_bkt_g        = False      ;rain bucket - grid scale
   out2dMet@rain_bkt_c        = False      ;rain bucket - cumulus
   out2dMet@snow_bkt_g        = False      ;snow bucket - grid scale
-  out2dMet@precip_bkt        = True       ;precip bucket - user-specified
+  out2dMet@precip_bkt        = False      ;precip bucket - user-specified
   out2dMet@precip_fr         = False      ;fraction of frozen nonconv. precip
   out2dMet@dryairmass        = False      ;total dry air mass in column
   out2dMet@pblh              = False      ;PBL height

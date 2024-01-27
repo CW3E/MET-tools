@@ -40,57 +40,6 @@ ds_out = cf_precip(ds_in)
 
 ds_out.to_netcdf(path=f_out)
 
-#    if (out2dMet@precip_g .or. out2dMet@precip_c .or. out2dMet@precip) then
-#      precip_g = (/wrfout->RAINNC/)                                ;precip_g
-#        precip_g@long_name = "Accumulated Total Grid Scale Precipitation"
-#        precip_g@standard_name = "large_scale_precipitation_amount"
-#        precip_g@units = "mm"
-#        assignVarAttCoord(precip_g,time,0,0)
-#      precip_c = (/wrfout->RAINC/)                                 ;precip_c
-#        precip_c@long_name = "Accumulated Total Cumulus Precipitation"
-#        precip_c@standard_name = "convective_precipitation_amount"
-#        precip_c@units = "mm"
-#        assignVarAttCoord(precip_c,time,0,0)
-#      precip = precip_g + precip_c                                ;precip
-#        precip@long_name = "Accumulated Total Precipitation Over Simulation"
-#        precip@standard_name = "total_precipitation_amount"
-#        precip@units = "mm"
-#        assignVarAttCoord(precip,time,0,0)
-#    end if
-#    if (out2dMet@precip_bkt) then
-#      ; This is a user-defined bucket, where we read in other input files
-#      precip_bkt = new((/nTime,nS_N,nW_E/), float, "No_FillValue")
-#      if (fcst_time .eq. 0) then
-#        precip_bkt = 0.
-#        TimeDiff = 0
-#      else
-#        wrfout_prev = addfile(file_prev+".nc","r")
-#        prev_time = wrfout_prev->Times
-#        prev_time_c = wrf_times_c(prev_time, 1)
-#        PrevRef = prev_time_c(0)
-#        TimeDiff = tointeger(ValidRef - PrevRef)
-#        pr_prev_g = (/wrfout_prev->RAINNC/)
-#        pr_prev_c = (/wrfout_prev->RAINC/)
-#        pr_curr_g = (/wrfout->RAINNC/)
-#        pr_curr_c = (/wrfout->RAINC/)
-#        precip_prev = pr_prev_g + pr_prev_c
-#        precip_curr = pr_curr_g + pr_curr_c
-#        precip_bkt = precip_curr - precip_prev
-#     end if
-#        precip_bkt@long_name = "Accumulated Precipitation Over Past "+tostring(TimeDiff)+" Hours"
-#        precip_bkt@standard_name = "precipitation_amount_"+tostring(TimeDiff)+"_hours"
-#        precip_bkt@units = "mm"
-#        precip_bkt@accum_intvl = tostring(TimeDiff)+" hours"
-#        assignVarAttCoord(precip_bkt,time,0,0)
-#    end if
-#
-#      if (isvar("precip") .and. (out2dMet@precip)) then
-#        wrfpost->precip=precip(limTime(0):limTime(1),limS_N(0):limS_N(1),  \
-#                                   limW_E(0):limW_E(1))
-#      if (isvar("precip_bkt")) then
-#        wrfpost->precip_bkt=precip_bkt(limTime(0):limTime(1),limS_N(0):limS_N(1),  \
-#                                   limW_E(0):limW_E(1))
-#
 #    ;  Note: process both IVT and IWV, even if only one is specified
 #    if (out2dRadFlx@IVT .or. out2dRadFlx@IWV .or. out2dRadFlx@IVTU .or. out2dRadFlx@IVTV) then
 #      ; -create the variable

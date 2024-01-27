@@ -50,6 +50,7 @@ def cf_precip(ds_in):
     ds_out = xr.Dataset(
             data_vars=dict(
                 precip=(['time', 'south_north', 'west_east'], precip.values),
+                forecast_reference_time=(['time'], np.array([start_nx])),
                 ),
             coords=dict(
                 time=(['time'], np.array([valid_nx])),
@@ -84,6 +85,7 @@ def cf_precip(ds_in):
         'description': 'Time',
         'units': 'seconds since 1970-01-01T00:00:00',
         'calendar': 'standard',
+        'axis': 'T',
         }
 
     ds_out.lat.attrs = {
@@ -114,6 +116,16 @@ def cf_precip(ds_in):
         'units': 'none',
         }
 
+    ds_out.forecast_reference_time.attrs = {
+        'long_name': 'Forecast Reference Time',
+        'standard_name': 'forecast_reference_time',
+        'valid_time': valid_dt.strftime('%Y%m%d_%H0000'),
+        'init_time': start_dt.strftime('%Y%m%d_%H0000'),
+        'fcst_time': int(accu_sec / 3600),
+        'units': 'seconds since 1970-01-01T00:00:00',
+        'description': 'Simulation initial time',
+        }
+
     return ds_out
 
 def cf_precip_bkt(ds_curr, ds_prev):
@@ -123,27 +135,28 @@ def cf_precip_bkt(ds_curr, ds_prev):
     """
     ds_out = ds_curr.rename_vars({'precip': 'precip_bkt'})
     ds_out.precip_bkt.values = ds_curr.precip.values - ds_prev.precip.values
-    curr_hr = ds_curr.time.values[0]
-    prev_hr = ds_prev.time.values[0]
+    curr_nx = ds_curr.precip.valid_time_ut
+    curr_is = ds_curr.precip.valid_time
+    curr_ac = ds_curr.precip.accum_time_sec
+    prev_nx = ds_prev.precip.valid_time_ut
+    prev_is = ds_prev.precip.valid_time
+    prev_ac = ds_prev.precip.accum_time_sec
+    accu_sec = curr_ac - prev_ac
 
-    acc_inc = int(curr_hr - prev_hr)
-    acc_str = str(acc_inc)
+    acc_str = str(int((curr_nx - prev_nx) / 3600 ))
     fill_val = 1e20
-    bnds = xr.Dataset(data_vars={'time_bnds': (['time', 'nbnds'],
-        np.reshape(np.array([prev_hr, curr_hr]), [1,2]))})
-
-    ds_out = xr.Dataset.merge(ds_out, bnds)
     ds_out.precip_bkt.attrs = {
-            'standard_name': 'precipitation_amount_' + acc_str + '_hours',
-            'long_name': 'Accumulated Precipitation Over Past ' +\
-                    acc_str + ' Hours',
-            'units': 'mm',
-            'accum_intvl': acc_str + ' hours',
-            'missing_value': fill_val,
-            'cell_methods': 'time: sum',
-           }
-
-    ds_out.time.attrs['bounds'] = 'time_bnds'
+        'standard_name': 'precipitation_amount_' + acc_str + '_hours',
+        'long_name': 'Accumulated Precipitation Over Past ' +\
+                acc_str + ' Hours',
+        'units': 'mm',
+        'missing_value': fill_val,
+        'valid_time': curr_is,
+        'valid_time_ut': curr_nx,
+        'init_time': prev_is,
+        'init_time_ut': prev_nx,
+        'accum_time_sec': accu_sec,
+        }
 
     return ds_out
 

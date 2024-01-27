@@ -32,9 +32,6 @@ export STC_ROOT=/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/DATA/De
 # Root directory for software environment singularity images
 export SOFT_ROOT=/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/SOFT_ROOT
 
-# NetCDF tools singularity image path
-export NETCDF_TOOLS=${SOFT_ROOT}/MET_tools_conda_netcdf.sif
-
 # Conda / Mamba installation path
 export MAMBA_EXE=${SOFT_ROOT}/Micromamba/micromamba
 export MAMBA_ROOT_PREFIX=${SOFT_ROOT}/Micromamba

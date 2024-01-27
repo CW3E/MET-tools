@@ -157,13 +157,10 @@ fi
 if [[ ${RGRD} = ${TRUE} ]]; then
   # standard coordinates that can be used to regrid West-WRF
   printf "WRF outputs will be regridded for MET compatibility.\n"
-  gres=(0.08 0.027 0.009)
-  lat1=(5 29 35)
-  lat2=(65 51 40.5)
-  lon1=(162 223.5 235)
-  lon2=(272 253.5 240.5)
+  rgrd="1"
 elif [[ ${RGRD} = ${FALSE} ]]; then
   printf "WRF outputs will be used with MET in their native grid.\n"
+  rgrd="0"
 else
   printf "ERROR: \${RGRD} must equal 'TRUE' or 'FALSE' (case insensitive).\n"
   exit 1
@@ -221,13 +218,6 @@ else
   exit 1
 fi
 
-if [ ! -x ${NETCDF_TOOLS} ]; then
-  msg="NetCDF tools singularity image\n ${NETCDF_TOOLS}\n does not exist"
-  msg+=" or is not executable.\n"
-  printf "${msg}"
-  exit 1
-fi
-
 if [ ! -r ${scrpt_dir}/wrfout_to_cf.ncl ]; then
   msg="Auxiliary script\n ${scrpt_dir}/wrfout_to_cf.ncl\n does not exist"
   msg+=" or is not executable.\n"
@@ -281,11 +271,6 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
   else
     printf "Processing forecasts in\n ${in_dir}\n directory.\n"
   
-    # Define directory privileges for singularity exec NETCDF_TOOLS
-    netcdf_tools="singularity exec -B ${wrk_dir}:/wrk_dir:rw,"
-    netcdf_tools+="${in_dir}:/in_dir:ro,${scrpt_dir}:/scrpt_dir:ro "
-    netcdf_tools+="${NETCDF_TOOLS} "
-
     # Define directory privileges for singularity exec MET
     met="singularity exec -B ${wrk_dir}:/wrk_dir:rw,${wrk_dir}:/in_dir:ro ${MET}"
 
@@ -307,33 +292,8 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
       if [[ -r ${in_dir}/${f_pr} && -r ${in_dir}/${f_in} ]]; then
         cmd="/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/SOFT_ROOT/Micromamba/envs/xarray/bin/"
         cmd+="python wrfout_to_cf_bkt.py"
-        cmd+=" '${in_dir}/${f_in}' '${in_dir}/${f_pr}' '${wrk_dir}/${f_out}'"
+        cmd+=" '${in_dir}/${f_in}' '${in_dir}/${f_pr}' '${wrk_dir}/${f_out}' '${rgrd}'"
         printf "${cmd}\n"; eval "${cmd}"
-
-        #cmd="${netcdf_tools} \
-        #ncl 'file_in=\"/in_dir/${f_in}\"' 'file_prev=\"/in_dir/${f_pr}\"' \
-        #'file_out=\"/wrk_dir/${f_out}\"' /scrpt_dir/wrfout_to_cf.ncl"
-        #printf "${cmd}\n"; eval "${cmd}"
-
-        if [[ ${RGRD} = ${TRUE} ]]; then
-          #-remapbil,global_${gres} -selname,precip,precip_bkt,IVT,IVTU,IVTV,IWV \
-          # regrids to lat-lon from native grid with CDO
-          cmd="${netcdf_tools} \
-          cdo -f nc4 sellonlatbox,${lon1},${lon2},${lat1},${lat2} \
-          -remapbil,global_${gres} -selname,precip,precip_bkt \
-          /wrk_dir/${f_out} /wrk_dir/${f_out}_tmp"
-          printf "${cmd}\n"; eval "${cmd}"
-
-          # Adds forecast_reference_time back in from first output
-          cmd="${netcdf_tools} \
-          ncks -A -v forecast_reference_time \
-          /wrk_dir/${f_out} /wrk_dir/${f_out}_tmp"
-          printf "${cmd}\n"; eval "${cmd}"
-
-          # removes temporary data with regridded cf compliant outputs
-          cmd="mv ${wrk_dir}/${f_out}_tmp ${wrk_dir}/${f_out}"
-          printf "${cmd}\n"; eval "${cmd}"
-        fi
 
       else
         msg="Either\n ${f_pr}\n or\n ${f_in}\n is not readable or "

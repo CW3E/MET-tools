@@ -25,9 +25,9 @@
 ##################################################################################
 import xarray as xr
 import sys
+import os
 from config_wrfcf import cf_precip, cf_precip_bkt
 from cdo import Cdo
-import ipdb
 
 ##################################################################################
 
@@ -38,7 +38,7 @@ f_save = sys.argv[3]
 
 try:
     # check for optional regridding argument, convert to bool
-    rgrd = bool(sys.argv[4])
+    rgrd = bool(int(sys.argv[4]))
 
 except:
     # no regridding unless specified
@@ -59,22 +59,23 @@ ds_out.to_netcdf(path=f_save)
 
 if rgrd:
     # regridding values for CDO
-    gres=0.080453
-    lat1=5.493056
-    lat2=65.86125
-    lon1=165.790278
-    lon2=276.291806
+    gres='global_0.08'
+    lat1=5.
+    lat2=65.
+    lon1=162.
+    lon2=272.
 
     # use CDO for regridding the data for MET compatibility
     cdo = Cdo()
-    options = '-f nc4 -remapbil,global_' + str(gres)
-    rgr_ds = cdo.sellonlatbox(lon1,lon2,lat1,lat2, input=f_save,
-            returnXarray='precip,precip_bkt',  options=options)
+    rgr_ds = cdo.sellonlatbox(lon1,lon2,lat1,lat2,
+            input=cdo.remapbil(gres, input=f_save,
+                returnXarray='precip,precip_bkt'),
+            returnXarray='precip,precip_bkt',  options='-f nc4' )
 
     rgr_ds = xr.open_dataset(rgr_ds)
     tmp_ds = xr.open_dataset(f_save)
     rgr_ds['forecast_reference_time'] = tmp_ds.forecast_reference_time
-    ipdb.set_trace()
+    os.system('rm -f ' + f_save)
     rgr_ds.to_netcdf(path=f_save)
 
 #    ;  Note: process both IVT and IWV, even if only one is specified

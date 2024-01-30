@@ -26,8 +26,9 @@
 import xarray as xr
 import sys
 import os
-from config_wrfcf import cf_precip, cf_precip_bkt
+from config_mpascf import cf_precip, cf_precip_bkt
 from cdo import Cdo
+import ipdb
 
 ##################################################################################
 
@@ -36,12 +37,29 @@ f_curr = sys.argv[1]
 f_prev = sys.argv[2]
 f_save = sys.argv[3]
 
+# regridding values for CDO
+gres='global_0.08'
+lat1=5.
+lat2=65.
+lon1=162.
+lon2=272.
+
+ipdb.set_trace()
+# use CDO for regridding the data for MET compatibility
+cdo = Cdo()
+rgr_ds = cdo.sellonlatbox(lon1,lon2,lat1,lat2,
+        input=cdo.remapbil(gres, input=f_curr,
+            returnXarray='rainc,rainnc'),
+        returnXarray='rainc,rainnc',  options='-f nc4' )
+
 try:
-    # check for optional regridding argument, convert to bool
+    # check for optional regridding argument (1/0), convert to bool
     rgrd = bool(int(sys.argv[4]))
 
 except:
     # no regridding unless specified
+    print('Regridding option not specified or not integer, must be 1 or 0.')
+    print('Defaulting to regridding - False.')
     rgrd = False
 
 # load datasets in xarray
@@ -49,6 +67,7 @@ ds_curr = xr.open_dataset(f_curr)
 ds_prev = xr.open_dataset(f_prev)
 
 # extract cf precip
+ipdb.set_trace()
 precip_curr = cf_precip(ds_curr)
 precip_prev = cf_precip(ds_prev)
 

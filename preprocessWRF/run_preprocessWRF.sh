@@ -5,7 +5,7 @@
 # This script runs a batch processing routine for a given control flow /
 # grid configuration and date range as defined in the companion batch and config
 # scripts. This driver script loops the calls to the WRF preprocessing script
-# wrfout_to_cf.ncl to ready WRF outputs for MET, and will optionally compute
+# wrfout_to_cf.py to ready WRF outputs for MET, and will optionally compute
 # accumulated precip in addition. This script is based on original
 # source code provided by Rachel Weihs, Caroline Papadopoulos and Daniel
 # Steinhoff.  This is re-written to homogenize project structure and to include
@@ -218,8 +218,8 @@ else
   exit 1
 fi
 
-if [ ! -r ${scrpt_dir}/wrfout_to_cf.ncl ]; then
-  msg="Auxiliary script\n ${scrpt_dir}/wrfout_to_cf.ncl\n does not exist"
+if [ ! -r ${scrpt_dir}/wrfout_to_cf.py ]; then
+  msg="Auxiliary script\n ${scrpt_dir}/wrfout_to_cf.py\n does not exist"
   msg+=" or is not executable.\n"
   printf "${msg}"
   exit 1
@@ -291,7 +291,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
 
       if [[ -r ${in_dir}/${f_pr} && -r ${in_dir}/${f_in} ]]; then
         cmd="/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/SOFT_ROOT/Micromamba/envs/xarray/bin/"
-        cmd+="python wrfout_to_cf_bkt.py"
+        cmd+="python wrfout_to_cf.py"
         cmd+=" '${in_dir}/${f_in}' '${in_dir}/${f_pr}' '${wrk_dir}/${f_out}' '${rgrd}'"
         printf "${cmd}\n"; eval "${cmd}"
 

@@ -9,6 +9,32 @@
 ##################################################################################
 # GRID-STAT PARAMETERS
 ##################################################################################
+# load MPAS modules used to build convert_mpas executable
+module load cpu/0.15.4
+module load intel/19.1.1.217
+module load intel-mpi/2019.8.254
+module load netcdf-c/4.7.4
+module load netcdf-fortran/4.5.3
+module load netcdf-cxx/4.2
+module load hdf5/1.10.6
+module load parallel-netcdf/1.12.1
+module load cmake/3.18.2
+
+# set micromamba environment
+# >>> mamba initialize >>>
+# !! Contents within this block are managed by 'mamba init' !!
+export MAMBA_EXE='/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/SOFT_ROOT/Micromamba/micromamba';
+export MAMBA_ROOT_PREFIX='/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/SOFT_ROOT/Micromamba';
+__mamba_setup="$("$MAMBA_EXE" shell hook --shell bash --root-prefix "$MAMBA_ROOT_PREFIX" 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__mamba_setup"
+else
+    alias micromamba="$MAMBA_EXE"  # Fallback on help from mamba activate
+fi
+unset __mamba_setup
+# <<< mamba initialize <<<
+micromamba activate xarray
+
 # Define the case-wise sub-directory for path names with case-study nesting,
 # leave as empty string "" if not needed
 export CSE=DeepDive/2022122800_valid_date
@@ -42,17 +68,14 @@ export STOP_DT=2022122700
 # Define the increment between forecast initializations (HH)
 export CYC_INC=24
 
-# Define min / max forecast hours for forecast outputs to be processed
-export ANL_MIN=24
+# Define min / max forecast hours for cf outputs to be generated
+export ANL_MIN=0
 export ANL_MAX=120
 
-# Define the increment at which to process forecast outputs (HH)
+# Define the increment at which to generate cf outputs (HH)
 export ANL_INC=24
 
-# Regrid to generic lat-lon for MET if native grid errors (TRUE or FALSE)
-export RGRD=TRUE
-
-# Compute precipitation accumulation from cf file, TRUE or FALSE
+# Compute precipitation accumulations from cf files, TRUE or FALSE
 export CMP_ACC=TRUE
 
 # Defines the min / max accumulation interval for precip

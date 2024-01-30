@@ -25,20 +25,60 @@
 ##################################################################################
 import xarray as xr
 import sys
-from config_wrfcf import cf_precip
+import os
+from config_wrfcf import cf_precip, cf_precip_bkt
+from cdo import Cdo
 
 ##################################################################################
+
 # file name paths are taken as script arguments
-f_in = sys.argv[1]
-f_out = sys.argv[2]
+f_curr = sys.argv[1]
+f_prev = sys.argv[2]
+f_save = sys.argv[3]
+
+try:
+    # check for optional regridding argument (1/0), convert to bool
+    rgrd = bool(int(sys.argv[4]))
+
+except:
+    # no regridding unless specified
+    print('Regridding option not specified or not integer, must be 1 or 0.')
+    print('Defaulting to regridding - False.')
+    rgrd = False
 
 # load datasets in xarray
-ds_in = xr.open_dataset(f_in)
+ds_curr = xr.open_dataset(f_curr)
+ds_prev = xr.open_dataset(f_prev)
 
 # extract cf precip
-ds_out = cf_precip(ds_in)
+precip_curr = cf_precip(ds_curr)
+precip_prev = cf_precip(ds_prev)
 
-ds_out.to_netcdf(path=f_out)
+precip_bkt = cf_precip_bkt(precip_curr, precip_prev)
+
+ds_out = xr.Dataset.merge(precip_curr, precip_bkt)
+ds_out.to_netcdf(path=f_save)
+
+if rgrd:
+    # regridding values for CDO
+    gres='global_0.08'
+    lat1=5.
+    lat2=65.
+    lon1=162.
+    lon2=272.
+
+    # use CDO for regridding the data for MET compatibility
+    cdo = Cdo()
+    rgr_ds = cdo.sellonlatbox(lon1,lon2,lat1,lat2,
+            input=cdo.remapbil(gres, input=f_save,
+                returnXarray='precip,precip_bkt'),
+            returnXarray='precip,precip_bkt',  options='-f nc4' )
+
+    rgr_ds = xr.open_dataset(rgr_ds)
+    tmp_ds = xr.open_dataset(f_save)
+    rgr_ds['forecast_reference_time'] = tmp_ds.forecast_reference_time
+    os.system('rm -f ' + f_save)
+    rgr_ds.to_netcdf(path=f_save)
 
 #    ;  Note: process both IVT and IWV, even if only one is specified
 #    if (out2dRadFlx@IVT .or. out2dRadFlx@IWV .or. out2dRadFlx@IVTU .or. out2dRadFlx@IVTV) then

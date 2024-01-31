@@ -33,7 +33,7 @@ OUT_ROOT = VRF_ROOT + '/' + CSE
 # define control flows to analyze for lineplots 
 CTR_FLWS = [
             'WRF',
-            #'MPAS',
+            'MPAS',
             'GFS',
             'GEFS',
             'ECMWF',

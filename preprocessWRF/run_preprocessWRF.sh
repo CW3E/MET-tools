@@ -73,9 +73,6 @@ if [[ ! ${STRT_DT} =~ ${ISO_RE} ]]; then
 else
   strt_dt="${STRT_DT:0:8} ${STRT_DT:8:2}"
   strt_dt=`date -d "${strt_dt}"`
-
-  # define forecast initialization string
-  init_dt=`date +%Y%m%d%H -d "${strt_dt}"`
 fi
 
 # Convert STOP_DT from 'YYYYMMDDHH' format to stop_dt Unix date format 
@@ -323,7 +320,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
             pdd_hr=`printf %03d $(( 10#${lead_hr} ))`
 
             # WRF QPF file name convention following similar products
-            wrf_acc=WRF_${acc_hr}QPF_${init_dt}_F${pdd_hr}.nc
+            wrf_acc=WRF_${acc_hr}QPF_${cyc_dt}_F${pdd_hr}.nc
 
             # Combine precip to accumulation period 
             cmd="${met} pcp_combine \

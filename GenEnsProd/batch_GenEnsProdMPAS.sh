@@ -96,7 +96,6 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
     cyc_dt=`date +%Y%m%d%H -d "${strt_dt} ${cyc_hr} hours"`
 
     CTR_FLW=${CTR_FLWS[$i_f]}
-    GRD=${GRDS[$i_g]}
 
     cfg_indx="cfg_${i_f}${i_c}"
     cmd="${cfg_indx}=()"

@@ -55,7 +55,7 @@ else:
 # define control flows to analyze for lineplots 
 CTR_FLWS = [
             'WRF',
-            #'MPAS',
+            'MPAS',
             'GFS',
             'GEFS',
             'ECMWF',
@@ -82,7 +82,7 @@ GRDS = [
        ]
 
 # threshold value for leveled data plot
-LEV = '>=25.0'
+LEV = '>=100.0'
 
 # include model grid in legend label True or False
 GRD_LAB = True

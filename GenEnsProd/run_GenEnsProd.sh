@@ -397,6 +397,7 @@ for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INC} )); do
         fi
         if [ ! -r ${wrk_dir}/GenEnsProdConfig ]; then
           cat ${scrpt_dir}/GenEnsProdConfigTemplate \
+            | sed "s/CTR_FLW/model = \"${CTR_FLW}\"/" \
             | sed "s/VRF_FLD/name       = \"${fld}\"/" \
             | sed "s/CAT_THR/cat_thresh = ${CAT_THR}/" \
             | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \

@@ -403,7 +403,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
       if [[ ${CMP_ACC} =~ ${TRUE} && ${acc_hr} -le ${lead_hr} ]]; then
         for_in=${CTR_FLW}_${acc_hr}${VRF_FLD}_${cyc_dt}_F${pdd_hr}${pstfx}.nc
         if [[ ${IF_ENS_PRD} =~ ${TRUE} ]]; then
-          fld=${VRF_FLD}_${acc_hr}hr_A${acc_hr}_ENS_MEAN
+          fld=${VRF_FLD}_${acc_hr}hr_0_all_all_ENS_MEAN
         else
           fld=${VRF_FLD}_${acc_hr}hr
         fi
@@ -460,7 +460,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
         for_in=${CTR_FLW}_${VRF_FLD}_${cyc_dt}_F${pdd_hr}${pstfx}.nc
 
         if [[ ${IF_ENS_PRD} =~ ${TRUE} ]]; then
-          fld=${VRF_FLD}_ENS_MEAN
+          fld=${VRF_FLD}_0_all_all_ENS_MEAN
         else
           fld=${VRF_FLD}
         fi

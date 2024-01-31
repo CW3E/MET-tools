@@ -55,7 +55,7 @@ else:
 # define control flows to analyze for lineplots 
 CTR_FLWS = [
             'WRF',
-            #'MPAS',
+            'MPAS',
             'GFS',
             'GEFS',
             'ECMWF',

@@ -8,7 +8,7 @@
 #SBATCH -J preprocessWRF
 #SBATCH -o ./logs/preprocessWRF-%A_%a.out
 #SBATCH --export=ALL
-#SBATCH --array=0
+#SBATCH --array=0-11
 ##################################################################################
 # Description
 ##################################################################################

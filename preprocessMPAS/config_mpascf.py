@@ -5,21 +5,29 @@
 # Python dataframes for the MET-tools workflow.
 #
 ##################################################################################
-# SOURCE GLOBAL PARAMETERS
+# Imports
 ##################################################################################
 import os
 import xarray as xr
 import numpy as np
 import pandas as pd
 from datetime import datetime as dt
-import cftime
-import ipdb
+
+##################################################################################
+# Utility definitions
+##################################################################################
+# regridding values for CDO
+GRES='global_0.08'
+LAT1=5.
+LAT2=65.
+LON1=162.
+LON2=272.
 
 ##################################################################################
 # Utility Methods
 ##################################################################################
 
-def cf_precip(ds_in):
+def cf_precip(ds_in, f_time=None):
     """Computes total precip from the dataset in and returns a dataset out.
 
     Total precip is computed from rainc + rainnc, with attributes copied from
@@ -30,8 +38,14 @@ def cf_precip(ds_in):
     # unpack grid- / convective-scale precip
     precip_g = ds_in.rainnc
     precip_c = ds_in.rainc
-    valid_dt = ds_in.xtime.values[0]
-    start_dt = ds_in.config_start_time
+    if f_time == None:
+        valid_dt = ds_in.xtime.values[0]
+        start_dt = ds_in.config_start_time
+
+    else:
+        ds_time = xr.open_dataset(f_time)
+        valid_dt = ds_time.xtime.values[0]
+        start_dt = ds_time.config_start_time
 
     precip = precip_g + precip_c
 
@@ -48,26 +62,28 @@ def cf_precip(ds_in):
     # accumulations are computed from simulation inialization time
     accu_sec = valid_nx - start_nx
 
-    ipdb.set_trace()
+    # infer grid dimensions
+    nlat = len(ds_in.latitude.values)
+    nlon = len(ds_in.longitude.values)
+
     ds_out = xr.Dataset(
             data_vars=dict(
-                precip=(['time', 'yCell', 'xCell'], precip.values),
+                precip=(['time', 'lat', 'lon'], np.reshape(precip.values,
+                    [1, nlat, nlon])
+                    ),
                 forecast_reference_time=(['time'], np.array([start_nx])),
                 ),
             coords=dict(
                 time=(['time'], np.array([valid_nx])),
-                lat=(['yCell', 'xCell'],
-                    np.squeeze(ds_in.latCell.values)),
-                lon=(['yCell', 'xCell'],
-                    np.squeeze(ds_in.lonCell.values)),
-                yCell=('yCell', ds_in.yCell.values),
-                xCell=('xCell', ds_in.xCell.values),
+                lat=('lat', ds_in.latitude.values),
+                lon=('lon', ds_in.longitude.values),
                 ),
             )
 
-    ipdb.set_trace()
     fill_val = 1e20
     ds_out.fillna(fill_val)
+
+    ds_out.attrs = {'Conventions': 'CF-1.6'}
 
     ds_out.precip.attrs = {
         'description': 'Sum of grid- / convective-scale precipitation',
@@ -92,31 +108,19 @@ def cf_precip(ds_in):
         }
 
     ds_out.lat.attrs = {
-        'long_name': 'Latitude',
+        'long_name': 'latitude',
         'standard_name': 'latitude',
         'units': 'degrees_north',
         'missing_value': fill_val,
+        'axis': 'Y',
         }
 
     ds_out.lon.attrs = {
-        'long_name': 'Longitude',
+        'long_name': 'longitude',
         'standard_name': 'longitude',
         'units': 'degrees_east',
         'missing_value': fill_val,
-        }
-
-    ds_out.yCell.attrs = {
-        'long_name': 'y coordinate of projection',
-        'standard_name': 'projection_y_coordinate',
-        'axis': 'Y',
-        'units': 'none',
-        }
-
-    ds_out.xCell.attrs = {
-        'long_name': 'x coordinate of projection',
-        'standard_name': 'projection_x_coordinate',
         'axis': 'X',
-        'units': 'none',
         }
 
     ds_out.forecast_reference_time.attrs = {

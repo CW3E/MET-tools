@@ -1,18 +1,37 @@
 #!/bin/bash
-#SBATCH --account=cwp157
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=16
-#SBATCH --mem=249208M
-#SBATCH -p cw3e-compute
-#SBATCH -t 01:00:00
-#SBATCH -J convert_mpas
-
+##################################################################################
+# Description
+##################################################################################
+#
+##################################################################################
+# License Statement
+##################################################################################
+#
+# Copyright 2023 CW3E, Contact Colin Grudzien cgrudzien@ucsd.edu
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+#     Unless required by applicable law or agreed to in writing, software
+#     distributed under the License is distributed on an "AS IS" BASIS,
+#     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#     See the License for the specific language governing permissions and
+#     limitations under the License.
+# 
+##################################################################################
 # take the input file from script argument
 F_IN=$1
 
-# clean up old link of executable and relink
-rm -f ./convert_mpas
-ln -sf ${SOFT_ROOT}/convert_mpas/convert_mpas ./
+# Regrid to generic lat-lon grid for MET, passed to convert_mpas tool
+nlat=750
+nlon=1375
+lat1=4.96
+lat2=65.
+lon1=162.
+lon2=272.
 
 # clean up old configuration files
 rm -f ./target_domain
@@ -21,21 +40,13 @@ rm -f ./include_fields
 # clean up old lalon files
 rm -f latlon.nc
 
-# Regrid to generic lat-lon grid for MET, passed to convert_mpas tool
-NLAT=750
-NLON=1375
-LAT1=5.
-LAT2=65.
-LON1=162.
-LON2=272.
-
 # set domain parameters from configuration file
-printf "nlat = ${NLAT}\n" >> ./target_domain
-printf "nlon = ${NLON}\n" >> ./target_domain
-printf "startlat = ${LAT1}\n" >> ./target_domain
-printf "startlon = ${LON1}\n" >> ./target_domain
-printf "endlat = ${LAT2}\n" >> ./target_domain
-printf "endlon = ${LON2}\n" >> ./target_domain
+printf "nlat = ${nlat}\n" >> ./target_domain
+printf "nlon = ${nlon}\n" >> ./target_domain
+printf "startlat = ${lat1}\n" >> ./target_domain
+printf "startlon = ${lon1}\n" >> ./target_domain
+printf "endlat = ${lat2}\n" >> ./target_domain
+printf "endlon = ${lon2}\n" >> ./target_domain
 
 # set fields to be regridded
 printf "rainc\n" >> ./include_fields
@@ -43,26 +54,37 @@ printf "rainnc\n" >> ./include_fields
 
 # run convert mpas
 ./convert_mpas ${F_IN}
+error=$?
 
 # remove link / configuration files
 rm -f ./convert_mpas
 rm -f ./target_domain
 rm -f ./include_fields
 
-# rename output to something non-generic
-IFS="." read -ra tmp_array <<< "$F_IN"
-str_len=${#tmp_array[@]}
+# check exit status
+if [ ${error} -ne 0 ]; then
+  printf "ERROR: convert_mpas did not complete successfully.\n"
+  exit 1
+fi
+
+# replace history / diag from input file name with latlon, mv output to name
+f_in=`basename ${F_IN}`
+IFS="." read -ra tmp_array <<< "$f_in"
+str_len=$(( ${#tmp_array[@]} - 1 ))
 rename=""
 for (( i = 0 ; i < ${str_len} ; i ++ )); do
   tmp_str=${tmp_array[i]}
-  if [[ ${tmp_str} = "history" && ${tmp_str} = "diag" ]]; then
+  if [[ ${tmp_str} = "history" || ${tmp_str} = "diag" ]]; then
     rename="${rename}latlon."
   else
     rename="${rename}${tmp_array[i]}."
   fi
 done
 
-rename="${rename}latlon.${tmp_array[$str_len]}"
+rename="${rename}nc"
+
 mv latlon.nc ${rename}
 
 exit 0
+
+##################################################################################

@@ -8,7 +8,7 @@
 #SBATCH -J preprocessWRF
 #SBATCH -o ./logs/preprocessWRF-%A_%a.out
 #SBATCH --export=ALL
-#SBATCH --array=0-11
+#SBATCH --array=0
 ##################################################################################
 # Description
 ##################################################################################
@@ -78,9 +78,6 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
 
       cfg_indx="cfg_${i_f}${i_m}${i_g}"
       cmd="${cfg_indx}=()"
-      printf "${cmd}\n"; eval "${cmd}"
-
-      cmd="${cfg_indx}+=(\"CTR_FLW=${CTR_FLW}\")"
       printf "${cmd}\n"; eval "${cmd}"
 
       cmd="${cfg_indx}+=(\"GRD=${GRD}\")"

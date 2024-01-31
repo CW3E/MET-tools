@@ -1,20 +1,20 @@
 #!/bin/bash
-#SBATCH --account=ddp181
+#SBATCH --account=cwp157
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=16
-#SBATCH --mem=120G
-#SBATCH -p shared
+#SBATCH --ntasks-per-node=1
+#SBATCH --mem=249208M
+#SBATCH -p cw3e-compute
 #SBATCH -t 01:00:00
-#SBATCH -J preprocessWRF
-#SBATCH -o ./logs/preprocessWRF-%A_%a.out
+#SBATCH -J preprocessMPAS
+#SBATCH -o ./logs/preprocessMPAS-%A_%a.out
 #SBATCH --export=ALL
-#SBATCH --array=0-11
+#SBATCH --array=0-5
 ##################################################################################
 # Description
 ##################################################################################
-# This script batch preprocesses collections of WRF model outputs in parallel with
-# the HPC system scheduler. This script constructs a parameter map for
-# run_wrf_preprocess.sh script as a job array, allowing batch processing over
+# This script batch preprocesses collections of MPAS model outputs in parallel
+# with the HPC system scheduler. This script constructs a parameter map for
+# run_mpas_preprocess.sh script as a job array, allowing batch processing over
 # multiple configurations simultaneously.
 #
 ##################################################################################
@@ -43,9 +43,9 @@
 
 # Source the configuration file to define majority of required variables
 source ../config_MET-tools.sh
-source ./config_preprocessWRF.sh
+source ./config_preprocessMPAS.sh
 
-# root directory for cycle time (YYYYMMDDHH) directories of WRF output files
+# root directory for cycle time (YYYYMMDDHH) directories of MPAS output files
 export IN_ROOT=${SIM_ROOT}/${CSE}
 
 # root directory for cycle time (YYYYMMDDHH) directories of cf-compliant outputs
@@ -65,47 +65,37 @@ cfgs=()
 
 num_flws=${#CTR_FLWS[@]}
 num_mems=${#MEM_IDS[@]}
-num_grds=${#GRDS[@]}
 
 # NOTE: SLURM JOB ARRAY SHOULD HAVE INDICES CORRESPONDING TO EACH OF THE
 # CONFIGURATIONS DEFINED BELOW
 for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
   for (( i_m = 0; i_m < ${num_mems}; i_m++ )); do
-    for (( i_g = 0; i_g < ${num_grds}; i_g++ )); do
-      CTR_FLW=${CTR_FLWS[$i_f]}
-      GRD=${GRDS[$i_g]}
-      MEM=${MEM_IDS[$i_m]}
+    CTR_FLW=${CTR_FLWS[$i_f]}
+    MEM=${MEM_IDS[$i_m]}
 
-      cfg_indx="cfg_${i_f}${i_m}${i_g}"
-      cmd="${cfg_indx}=()"
-      printf "${cmd}\n"; eval "${cmd}"
+    cfg_indx="cfg_${i_f}${i_m}${i_g}"
+    cmd="${cfg_indx}=()"
+    printf "${cmd}\n"; eval "${cmd}"
 
-      cmd="${cfg_indx}+=(\"CTR_FLW=${CTR_FLW}\")"
-      printf "${cmd}\n"; eval "${cmd}"
+    # This path defines the location of each cycle directory relative to IN_ROOT
+    cmd="${cfg_indx}+=(\"IN_DT_ROOT=${IN_ROOT}/${CTR_FLW}\")"
+    printf "${cmd}\n"; eval "${cmd}"
 
-      cmd="${cfg_indx}+=(\"GRD=${GRD}\")"
-      printf "${cmd}\n"; eval "${cmd}"
+    # subdirectory of cycle-named directory containing data to be analyzed,
+    # includes leading '/', left as blank string if not needed
+    cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/atmosphere_model/${MEM}\")"
+    printf "${cmd}\n"; eval "${cmd}"
+    
+    # This path defines the location of each cycle directory relative to OUT_ROOT
+    cmd="${cfg_indx}+=(\"OUT_DT_ROOT=${OUT_ROOT}/${CTR_FLW}/Preprocess\")"
+    printf "${cmd}\n"; eval "${cmd}"
 
-      # This path defines the location of each cycle directory relative to IN_ROOT
-      cmd="${cfg_indx}+=(\"IN_DT_ROOT=${IN_ROOT}/${CTR_FLW}\")"
-      printf "${cmd}\n"; eval "${cmd}"
+    # subdirectory of cycle-named directory where output is to be saved
+    cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/${MEM}\")"
+    printf "${cmd}\n"; eval "${cmd}"
 
-      # subdirectory of cycle-named directory containing data to be analyzed,
-      # includes leading '/', left as blank string if not needed
-      cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/wrf/${MEM}\")"
-      printf "${cmd}\n"; eval "${cmd}"
-      
-      # This path defines the location of each cycle directory relative to OUT_ROOT
-      cmd="${cfg_indx}+=(\"OUT_DT_ROOT=${OUT_ROOT}/${CTR_FLW}/Preprocess\")"
-      printf "${cmd}\n"; eval "${cmd}"
-
-      # subdirectory of cycle-named directory where output is to be saved
-      cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/${MEM}/${GRD}\")"
-      printf "${cmd}\n"; eval "${cmd}"
-
-      cmd="cfgs+=( \"${cfg_indx}\" )"
-      printf "${cmd}\n"; eval "${cmd}"
-    done
+    cmd="cfgs+=( \"${cfg_indx}\" )"
+    printf "${cmd}\n"; eval "${cmd}"
   done
 done
 
@@ -121,15 +111,15 @@ printf "Loading configuration parameters ${cfgs[$indx]}:\n"
 cfg=${cfgs[$indx]}
 job="${cfg}[@]"
 
-cmd="cd ${USR_HME}/preprocessWRF"
+cmd="cd ${USR_HME}/preprocessMPAS"
 printf "${cmd}\n"; eval "${cmd}"
 
 log_dir=${OUT_ROOT}/batch_logs
 cmd="mkdir -p ${log_dir}"
 printf "${cmd}\n"; eval "${cmd}"
 
-cmd="./run_preprocessWRF.sh ${!job} \
-  > ${log_dir}/preprocessWRF_${jbid}_${indx}.log 2>&1"
+cmd="./run_preprocessMPAS.sh ${!job} \
+  > ${log_dir}/preprocessMPAS_${jbid}_${indx}.log 2>&1"
 printf "${cmd}\n"; eval "${cmd}"
 
 ##################################################################################

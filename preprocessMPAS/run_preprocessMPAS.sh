@@ -67,6 +67,9 @@ if [[ ! ${STRT_DT} =~ ${ISO_RE} ]]; then
 else
   strt_dt="${STRT_DT:0:8} ${STRT_DT:8:2}"
   strt_dt=`date -d "${strt_dt}"`
+
+  # define forecast initialization string
+  init_dt=`date +%Y%m%d%H -d "${strt_dt}"`
 fi
 
 # Convert STOP_DT from 'YYYYMMDDHH' format to stop_dt Unix date format 
@@ -201,7 +204,27 @@ else
 fi
 
 if [ ! -x ${MET} ]; then
-  msg="MET singularity image\n ${MET}\n does not exist or is not executable.\n"
+  msg="ERROR: MET singularity image\n ${MET}\n does not exist"
+  msg+=" or is not executable.\n"
+  printf "${msg}"
+  exit 1
+fi
+
+if [ ! -r ${scrpt_dir}/config_mpascf.py ]; then
+  msg="ERROR: Python module\n ${scrpt_dir}/config_mpascf.py\n does not exist.\n"
+  printf "${msg}"
+  exit 1
+fi
+
+if [ ! -r ${scrpt_dir}/mpas_to_cf.py ]; then
+  msg="ERROR: Auxiliary script\n ${scrpt_dir}/mpas_to_cf.py\n does not exist.\n"
+  printf "${msg}"
+  exit 1
+fi
+
+if [ ! -x ${scrpt_dir}/mpas_to_latlon.sh ]; then
+  msg="ERROR: Auxiliary script\n ${scrpt_dir}/mpas_to_latlon.sh\n does not exist"
+  msg+=" or is not executable.\n"
   printf "${msg}"
   exit 1
 fi
@@ -255,27 +278,56 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
 
     # loop lead hours for forecast valid time for each initialization time
     for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INC} )); do
-      # define valid times for mpascf precip_bkt accumulation, evenly spaced
-      anl_strt_hr=$(( ${lead_hr} + ${cyc_hr} - ${ANL_INC} ))
-      anl_stop_hr=$(( ${lead_hr} + ${cyc_hr} ))
-      anl_strt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_strt_hr} hours"`
-      anl_stop=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_stop_hr} hours"`
+      # define valid times for mpascf precip evenly spaced
+      anl_hr=$(( ${lead_hr} + ${cyc_hr} ))
+      anl_dt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_hr} hours"`
 
-      # set input file names
-      f_pr=`ls *.latlon.*${anl_strt}`
-      f_in=`ls *.latlon.*${anl_stop}`
-      
-      # set output file name
-      f_out="mpascf_${anl_strt}_to_${anl_stop}.nc"
+      # set input file name
+      cd ${in_dir}
+      f_in=`ls ${in_dir}/*.history.*${anl_dt}.nc`
+      echo ${f_in}
 
-      if [[ -r ${in_dir}/${f_pr} && -r ${in_dir}/${f_in} ]]; then
+      if [[ -r ${f_in} ]]; then
+        cmd="cd ${wrk_dir}"
+        printf "${cmd}\n"; eval "${cmd}"
+
+        # link convert_mpas executable
+        cmd="ln -sfr ${SOFT_ROOT}/convert_mpas/convert_mpas ./"
+        printf "${cmd}\n"; eval "${cmd}"
+
+        # run script from work directory to hold temp outputs from convert_mpas
+        cmd="${scrpt_dir}/mpas_to_latlon.sh ${f_in}"
+        printf "${cmd}\n"
+        ${scrpt_dir}/mpas_to_latlon.sh ${f_in}
+        error=$?
+
+        # remove link
+        cmd="rm -f ./convert_mpas"
+        printf "${cmd}\n"; eval "${cmd}"
+
+        if [ ${error} -ne 0 ]; then
+          printf "ERROR: mpas_to_latlon.sh did not complete successfully.\n"
+          exit 1
+        fi
+
+        # set temporary lat-lon file name from work directory
+        f_tmp=`ls *.latlon.*${anl_dt}.nc`
+        
+        # set output cf file name
+        f_out="mpascf_${anl_dt}.nc"
+
+        # return to script directory
+        cmd="cd ${scrpt_dir}"
+        printf "${cmd}\n"; eval "${cmd}"
+
+        # NOTE: need to formalize into container
         cmd="/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/SOFT_ROOT/Micromamba/envs/xarray/bin/"
         cmd+="python mpas_to_cf.py"
-        cmd+=" '${in_dir}/${f_in}' '${in_dir}/${f_pr}' '${wrk_dir}/${f_out}' '${rgrd}'"
+        cmd+=" '${wrk_dir}/${f_tmp}' '${wrk_dir}/${f_out}' '${f_in}'"
         printf "${cmd}\n"; eval "${cmd}"
 
       else
-        msg="Either\n ${f_pr}\n or\n ${f_in}\n is not readable or "
+        msg="Input file\n ${f_in}\n is not readable or "
         msg+="does not exist, skipping forecast initialization ${cyc_dt}, "
         msg+="forecast hour ${lead_hr}.\n"
         printf "${msg}"
@@ -283,31 +335,26 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
       if [[ ${CMP_ACC} = ${TRUE} ]]; then
         for acc_hr in ${acc_hrs[@]}; do
           if [ ${lead_hr} -ge ${acc_hr} ]; then
-            # set accumulation valid time string
-            vld_Y=${anl_stop:0:4}
-            vld_m=${anl_stop:5:2}
-            vld_d=${anl_stop:8:2}
-            vld_H=${anl_stop:11:2}
-      
-            # Set forecast initialization string
-            init_Y=${cyc_dt:0:4}
-            init_m=${cyc_dt:4:2}
-            init_d=${cyc_dt:6:2}
-            init_H=${cyc_dt:8:2}
+            # define accumulation start / stop hours
+            acc_strt=$(( ${lead_hr} + ${cyc_hr}  - ${acc_hr} ))
+            acc_stop=$(( ${lead_hr} + ${cyc_hr} ))
+
+            # start / stop date strings
+            anl_strt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${acc_strt} hours"`
+            anl_stop=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${acc_stop} hours"`
 
             # define padded forecast hour for name strings
             pdd_hr=`printf %03d $(( 10#${lead_hr} ))`
-            mpas_acc=MPAS_${acc_hr}QPF_${init_Y}${init_m}${init_d}${init_H}_F${pdd_hr}.nc
+
+            # WRF QPF file name convention following similar products
+            mpas_acc=MPAS_${acc_hr}QPF_${init_dt}_F${pdd_hr}.nc
 
             # Combine precip to accumulation period 
             cmd="${met} pcp_combine \
-            -sum ${init_Y}${init_m}${init_d}_${init_H}0000 ${ANL_INC} \
-            ${vld_Y}${vld_m}${vld_d}_${vld_H}0000 ${acc_hr} \
+            -subtract /in_dir/mpascf_${anl_stop}.nc /in_dir/mpascf_${anl_strt}.nc\
             /wrk_dir/${mpas_acc} \
-            -field 'name=\"precip_bkt\"; level=\"(0,*,*)\";'\
-            -name \"QPF_${acc_hr}hr\" \
-            -pcpdir /in_dir \
-            -pcprx \"mpascf_.*\" "
+            -field 'name=\"precip\"; level=\"(0,*,*)\";'\
+            -name \"QPF_${acc_hr}hr\" "
             printf "${cmd}\n"; eval "${cmd}"
           fi
         done

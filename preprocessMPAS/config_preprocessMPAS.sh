@@ -7,7 +7,7 @@
 # accumulation files from WRF outputs.
 #
 ##################################################################################
-# GRID-STAT PARAMETERS
+# MPAS Preprocessing Settings
 ##################################################################################
 # load MPAS modules used to build convert_mpas executable
 module load cpu/0.15.4
@@ -19,6 +19,8 @@ module load netcdf-cxx/4.2
 module load hdf5/1.10.6
 module load parallel-netcdf/1.12.1
 module load cmake/3.18.2
+
+newgrp cwp157
 
 # set micromamba environment
 # >>> mamba initialize >>>
@@ -41,7 +43,7 @@ export CSE=DeepDive/2022122800_valid_date
 
 # Array of control flow names to be processed
 export CTR_FLWS=( 
-                 "WRF"
+                 "MPAS"
                 )
 
 # Generate ensemble indices to process
@@ -54,12 +56,6 @@ done
 # export MEM_IDS as an array containing an empty string if no indices or use array
 # construction as above, this is passed to batch_wrf_preprocess
 export MEM_IDS
-
-# Model grid / domain to be processed
-export GRDS=( 
-             "d01"
-             "d02"
-            )
 
 # Define first and last date time for forecast initialization (YYYYMMDDHH)
 export STRT_DT=2022122300

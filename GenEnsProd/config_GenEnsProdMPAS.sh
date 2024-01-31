@@ -14,7 +14,7 @@ export CSE=DeepDive/2022122800_valid_date
 
 # Array of control flow names to be processed
 export CTR_FLWS=( 
-                 "WRF"
+                 "MPAS"
                 )
 
 # Prefix for ensemble members directory names
@@ -31,18 +31,9 @@ export ENS_PDD=2
 # defined as empty string if not necessary
 export CTR_MEM=00
 
-# Model grid / domain to be processed
-export GRDS=( 
-             "d01"
-             "d02"
-            )
-
 # Neighborhood widths for neighborhood methods,
 # references model grid with 1-1 correspondence
-export NBRHD_WDTHS=(
-                    "3"
-                    "9"
-                   )
+export NBRHD_WDTH=3
 
 # Specify thresholds levels for verification
 export CAT_THR="[ >0.0, >=10.0, >=25.0, >=50.0, >=100.0 ]"

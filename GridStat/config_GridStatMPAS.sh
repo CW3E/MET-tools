@@ -14,7 +14,7 @@ export CSE=DeepDive/2022122800_valid_date
 
 # Array of control flow names to be processed
 export CTR_FLWS=( 
-                 "WRF"
+                 "MPAS"
                 )
 
 # If computing ensemble mean verification
@@ -39,17 +39,8 @@ done
 # construction as above, this is passed to batch_gridstat
 export MEM_IDS
 
-# Model grid / domain to be processed
-export GRDS=( 
-             "d01"
-             "d02"
-            )
-
 # Define interpolation neighborhood size in 1-1 correspondence with model grids
-export INT_WDTHS=( 
-                  "3"
-                  "3"
-                 )
+export INT_WDTH=3
 
 # Define the verification field
 export VRF_FLD=QPF

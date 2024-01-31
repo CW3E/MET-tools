@@ -7,9 +7,10 @@
 # accumulation files from WRF outputs.
 #
 ##################################################################################
-# GRID-STAT PARAMETERS
+# WRF preprocessing parameters
 ##################################################################################
 # set micromamba environment
+# NOTE: need to formalize into container
 # >>> mamba initialize >>>
 # !! Contents within this block are managed by 'mamba init' !!
 export MAMBA_EXE='/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/SOFT_ROOT/Micromamba/micromamba';

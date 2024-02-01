@@ -25,7 +25,6 @@
 ##################################################################################
 import sys
 from config_mpascf import *
-from cdo import Cdo
 
 ##################################################################################
 # file name paths are taken as script arguments

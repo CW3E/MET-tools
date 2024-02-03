@@ -9,52 +9,61 @@ From: ubuntu:22.04
     AUTHOR_NAME Colin Grudzien
     AUTHOR_EMAIL cgrudzien@ucsd.edu
 
-    LAST_UPDATED 2024.01.31
+    CO_AUTHOR_NAME Jozette Conti
+    CO_AUTHOR_EMAIL jlconti@ucsd.edu
+
+    CO_AUTHOR_NAME Patrick Mulrooney
+    CO_AUTHOR_EMAIL pmulrooney@ucsd.edu
+
+    LAST_UPDATED 2024.02.02
 
 %files
-./MET-tools-py.yml /opt
+    # import yaml specs from current git repository specifications
+    ./MET-tools-py.yml /opt
+
+%environment
+    # export generic path to bind work scripts / modules to
+    export PYTHONPATH=/scrpt_dir
 
 %post -c /bin/bash
     # run verbose
     set -x
 
-    printf "===========\n"
-    printf "Create minimal environment for the container installation\n"
+    # Create minimal environment for the container installation
     apt-get update
-    apt-get -y install curl
-    apt-get -y install tar
+    apt-get -y install wget
+    apt-get -y install find
+    apt-get -y sha256sum
 
-    printf "===========\n"
-    printf "===========\n"
-    printf "Prepare micromamba installation\n"
-    mmpath=/opt/Micromamba
-    mkdir -p ${mmpath}
-    cd ${mmpath}
-    curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
-    export MAMBA_ROOT_PREFIX=/opt/Micromamba/bin
-    eval "$(./bin/micromamba shell hook -s posix)"
-    ${mmpath}/bin/micromamba shell init -s bash -p ${mmpath}
-    alias mm=micromamba
+    # Define miniconda version numbers
+    export CONDA_VERSION=py39_23.11.0-2-Linux-x86_64.sh
+    export SHA256SUM=b911ff745c55db982078ac51ed4d848da0170f16ba642822a3bc7dd3fc8c61ba
 
-    printf "===========\n"
-    printf "===========\n"
-    printf "Install packages"
-    mm create -f MET-tools-py.yml
+    # Define download / install path, chekc download
+    export mcp=/opt/conda
+    mkdir -p ${mcp}
+    wget https://repo.anaconda.com/miniconda/Miniconda3-${CONDA_VERSION} -O ${mcp}/miniconda.sh
+    echo "${SHA256SUM} ${mcp}/miniconda.sh" > miniconda.sha256
+    sha256sum --strict --status -c miniconda.sha256
+    error=$?
+    if [ ${error} -ne 0 ]; then
+      exit ${error}
+    fi
+    
+    # Install environment at prefix
+    bash ${mcp}/miniconda.sh -b -u -p ${mcp}
+    rm -f ${mcp}/miniconda.sh miniconda.sha256
+    . ${mcp}/etc/profile.d/conda.sh
+    conda env create -y -f /opt/MET-tools-py.yml
+    rm -f /opt/MET-tools-py.yml
 
-    printf "===========\n"
-    printf "===========\n"
-    printf "Cleaning environment\n"
+    # Run cleanup
+    find ${mcp}/ -follow -type f -name '*.a' -delete && \
+      find ${mcp}/ -follow -type f -name '*.js.map' -delete && \
+      ${mcp}/bin/conda clean -afy
 
-    printf "===========\n"
-    printf "===========\n"
-    printf "Completed installation of MET-tools-py\n"
-%runscript
-    /bin/bash
-    mmpath=/opt/Micromamba
-    export MAMBA_ROOT_PREFIX=/opt/Micromamba/bin
-    eval "$(./bin/micromamba shell hook -s posix)"
-    ${mmpath}/bin/micromamba shell init -s bash -p ${mmpath}
-    alias mm=micromamba
-    mm activate MET-tools-py
-
+    # Activate environment at system profile level for exec/ run/ instance/ shell
+    # provides Python libraries and all backends
+    printf ". ${mcp}/etc/profile.d/conda.sh\n" >> $SINGULARITY_ENVIRONMENT
+    printf "conda activate MET-tools-py\n" >> $SINGULARITY_ENVIRONMENT
 %test

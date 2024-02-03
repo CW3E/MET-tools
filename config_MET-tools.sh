@@ -32,12 +32,8 @@ export STC_ROOT=/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/DATA/De
 # Root directory for software environment singularity images
 export SOFT_ROOT=/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/SOFT_ROOT
 
-# Conda / Mamba installation path
-export MAMBA_EXE=${SOFT_ROOT}/Micromamba/micromamba
-export MAMBA_ROOT_PREFIX=${SOFT_ROOT}/Micromamba
-
-# create aliases for Conda / Mamba environment calls
-export DATAFRAMES="${MAMBA_EXE} run -n DataFrames python"
+# MET-tools-py singularity image path
+export MET_TOOLS_PY=${SOFT_ROOT}/MET-tools-py.sif
 
 # MET version
 export MET_VER="11.0.1"

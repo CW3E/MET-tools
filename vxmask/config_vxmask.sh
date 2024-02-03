@@ -9,6 +9,9 @@
 ##################################################################################
 # Mask Parameters
 ##################################################################################
+# Source HPC parameters
+source ../config_MET-tools.sh
+
 # Root directory for landmasks, lat-lon files, and reference StageIV grid
 export MSK_ROOT=${USR_HME}/vxmask
 

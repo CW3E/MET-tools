@@ -24,6 +24,7 @@ from datetime import datetime as dt
 # Utility definitions
 ##################################################################################
 # regridding values for CDO
+# NOTE: need to revise to regrid directly to verification grid
 GRES='global_0.08'
 LAT1=5.
 LAT2=65.

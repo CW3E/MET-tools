@@ -32,15 +32,10 @@
 ##################################################################################
 # SET GLOBAL PARAMETERS
 ##################################################################################
-source ../config_MET-tools.sh
-export SCRPT_ROOT=${USR_HME}/postprocessDataFrames
+source ./config_DataFrames.sh
 
 ##################################################################################
-# run the batch processing with native Python multiprocessing
-cmd="cd ${SCRPT_ROOT}"
-printf "${cmd}\n"; eval ${cmd}
-
-cmd="${DATAFRAMES} -u run_makeDataFrames.py"
+cmd="${MTPY}run_makeDataFrames.py"
 printf "${cmd}\n"; eval ${cmd}
 
 ##################################################################################

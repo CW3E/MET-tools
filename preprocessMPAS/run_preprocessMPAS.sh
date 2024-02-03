@@ -207,6 +207,13 @@ if [ ! -x ${MET} ]; then
   exit 1
 fi
 
+if [ ! -x ${MET_TOOLS_PY} ]; then
+  msg="ERROR: MET-tools-py singularity image\n ${MET_TOOLS_PY}\n does not exist"
+  msg+=" or is not executable.\n"
+  printf "${msg}"
+  exit 1
+fi
+
 if [ ! -r ${scrpt_dir}/config_mpascf.py ]; then
   msg="ERROR: Python module\n ${scrpt_dir}/config_mpascf.py\n does not exist.\n"
   printf "${msg}"
@@ -273,6 +280,11 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
     # Define directory privileges for singularity exec MET
     met="singularity exec -B ${wrk_dir}:/wrk_dir:rw,${wrk_dir}:/in_dir:ro ${MET}"
 
+    # Define directory privileges for singularity exec MET_TOOLS_PY
+    met_tools_py="singularity exec -B "
+    met_tools_py+="${wrk_dir}:/wrk_dir:rw,${in_dir}:/in_dir:ro,${scrpt_dir}:/scrpt_dir:ro "
+    met_tools_py+="${MET_TOOLS_PY} python"
+
     # loop lead hours for forecast valid time for each initialization time
     for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INC} )); do
       # define valid times for mpascf precip evenly spaced
@@ -310,17 +322,13 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
         # set temporary lat-lon file name from work directory
         f_tmp=`ls *.latlon.*${anl_dt}.nc`
         
-        # set output cf file name
+        # set output cf file name, convert to cf from latlon tmp
+        # NOTE: currently convert_mpas doesn't carry time coords from input
+        # to regridded output, f_in is reused here to recover timing information
+        f_in=`basename ${f_in}`
         f_out="mpascf_${anl_dt}.nc"
-
-        # return to script directory
-        cmd="cd ${scrpt_dir}"
-        printf "${cmd}\n"; eval "${cmd}"
-
-        # NOTE: need to formalize into container
-        cmd="/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/SOFT_ROOT/Micromamba/envs/xarray/bin/"
-        cmd+="python mpas_to_cf.py"
-        cmd+=" '${wrk_dir}/${f_tmp}' '${wrk_dir}/${f_out}' '${f_in}'"
+        cmd="${met_tools_py} /scrpt_dir/mpas_to_cf.py"
+        cmd+=" '/wrk_dir/${f_tmp}' '/wrk_dir/${f_out}' '/in_dir/${f_in}'"
         printf "${cmd}\n"; eval "${cmd}"
 
       else

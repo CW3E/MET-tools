@@ -8,9 +8,6 @@
 # SOURCE GLOBAL PARAMETERS
 ##################################################################################
 import os
-
-USR_HME = os.environ['USR_HME']
-VRF_ROOT = os.environ['VRF_ROOT']
 INDT = os.environ['INDT']
 
 ##################################################################################
@@ -44,7 +41,7 @@ MSK = 'CA_All'
 # I/O PARAMETERS
 ##################################################################################
 # root directory of figure outputs
-OUT_ROOT = VRF_ROOT + '/' + CSE + '/figures' + FIG_CSE
+OUT_ROOT = '/out_root/' + CSE + '/figures' + FIG_CSE
 
 # fig saved automatically to OUT_PATH
 if len(FIG_LAB) > 0:
@@ -110,4 +107,4 @@ OUT_PATH = OUT_ROOT + '/' + VALID_DT + '_' + MSK + '_' + STATS[0] + '_' +\
            STATS[1] + fig_lab + '_lineplot.png'
 
 # root directory of pickled dataframe binaries
-IN_ROOT = VRF_ROOT + '/' + CSE
+IN_ROOT = '/in_root/' + CSE

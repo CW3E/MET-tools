@@ -39,8 +39,7 @@
 # uncoment to make verbose for debugging
 #set -x
 
-# Source configuration files to define majority of required variables
-source ../config_MET-tools.sh
+# Source GenEnsProd parameters for processing WRF data
 source ./config_GenEnsProdWRF.sh
 
 # root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files

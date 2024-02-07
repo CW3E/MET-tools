@@ -14,6 +14,11 @@ export SCRPT_DIR=${USR_HME}/plotDataFrames
 MTPY="singularity exec -B "
 MTPY+="${SCRPT_DIR}:/scrpt_dir:ro,${VRF_ROOT}:/in_root:ro,${VRF_ROOT}:/out_root:rw "
 MTPY+="${MET_TOOLS_PY} python /scrpt_dir/"
-export MTPY
+
+# simple wrapper function for interactive shell python-like calls of scripts
+mtpython() {
+  cmd="${MTPY}$1 $2"
+  echo "${cmd}"; eval ${cmd}
+}
 
 ##################################################################################

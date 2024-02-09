@@ -32,7 +32,6 @@
 # Imports
 ##################################################################################
 import matplotlib
-matplotlib.use('TkAgg')
 from datetime import datetime as dt
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize as nrm
@@ -83,12 +82,6 @@ else:
     iso = VALID_DT[:4] + '-' + VALID_DT[4:6] + '-' + VALID_DT[6:8] +\
             '_' + VALID_DT[8:]
     valid_dt = dt.fromisoformat(iso)
-
-if len(CYC_INC) != 2:
-    print('ERROR: CYC_INC, ' + CYC_INC + ', is not in HH format.')
-    sys.exit(1)
-else:
-    cyc_inc = CYC_INC + 'H'
 
 # generate the date range and forecast leads for the analysis, parse binary files
 # for relevant fields

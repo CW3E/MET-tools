@@ -225,6 +225,13 @@ if [ ! -x ${MET} ]; then
   exit 1
 fi
 
+if [ ! -x ${MET_TOOLS_PY} ]; then
+  msg="ERROR: MET-tools-py singularity image\n ${MET_TOOLS_PY}\n does not exist"
+  msg+=" or is not executable.\n"
+  printf "${msg}"
+  exit 1
+fi
+
 if [ ! -r ${scrpt_dir}/config_wrfcf.py ]; then
   msg="ERROR: Python module\n ${scrpt_dir}/config_wrfcf.py\n does not exist.\n"
   printf "${msg}"
@@ -280,6 +287,11 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
     # Define directory privileges for singularity exec MET
     met="singularity exec -B ${wrk_dir}:/wrk_dir:rw,${wrk_dir}:/in_dir:ro ${MET}"
 
+    # Define directory privileges for singularity exec MET_TOOLS_PY
+    met_tools_py="singularity exec -B "
+    met_tools_py+="${wrk_dir}:/wrk_dir:rw,${in_dir}:/in_dir:ro,${scrpt_dir}:/scrpt_dir:ro "
+    met_tools_py+="${MET_TOOLS_PY} python"
+
     # loop lead hours for forecast valid time for each initialization time
     for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INC} )); do
       # define valid times for wrfcf precip evenly spaced
@@ -293,10 +305,8 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
       f_out="wrfcf_${anl_dt}.nc"
 
       if [[ -r ${in_dir}/${f_in} ]]; then
-        # NOTE: need to formalize into container
-        cmd="/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/SOFT_ROOT/Micromamba/envs/xarray/bin/"
-        cmd+="python wrfout_to_cf.py"
-        cmd+=" '${in_dir}/${f_in}' '${wrk_dir}/${f_out}' '${rgrd}'"
+        cmd="${met_tools_py} /scrpt_dir/wrfout_to_cf.py"
+        cmd+=" '/in_dir/${f_in}' '/wrk_dir/${f_out}' '${rgrd}'"
         printf "${cmd}\n"; eval "${cmd}"
 
       else

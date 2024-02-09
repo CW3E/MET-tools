@@ -8,8 +8,6 @@
 # SOURCE GLOBAL PARAMETERS
 ##################################################################################
 import os
-USR_HME = os.environ['USR_HME']
-VRF_ROOT = os.environ['VRF_ROOT']
 INDT = os.environ['INDT']
 
 ##################################################################################
@@ -24,11 +22,11 @@ MET_TOOL = 'GridStat'
 # Prefix for MET product outputs
 PRFX = 'grid_stat_QPF'
 
-# root directory for ASCII outputs
-IN_ROOT = VRF_ROOT + '/' + CSE
+# root directory for ASCII outputs (singularity bind /in_root)
+IN_ROOT = '/in_root/' + CSE
 
-# root directory for processed pandas outputs
-OUT_ROOT = VRF_ROOT + '/' + CSE
+# root directory for processed pandas outputs (singularity bind /out_root)
+OUT_ROOT = '/out_root/' + CSE
 
 # define control flows to analyze for lineplots 
 CTR_FLWS = [

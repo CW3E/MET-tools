@@ -41,8 +41,7 @@
 # uncoment to make verbose for debugging
 #set -x
 
-# Source configuration files to define majority of required variables
-source ../config_MET-tools.sh
+# Source configuration for gridstat WRF
 source ./config_GridStatWRF.sh
 source ../vxmask/config_vxmask.sh
 

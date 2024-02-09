@@ -9,7 +9,11 @@
 ##################################################################################
 # MPAS Preprocessing Settings
 ##################################################################################
+# Source HPC parameters
+source ../config_MET-tools.sh
+
 # load MPAS modules used to build convert_mpas executable
+# NOTE: this is temporary -- need to wrap convert_mpas into singularity
 module load cpu/0.15.4
 module load intel/19.1.1.217
 module load intel-mpi/2019.8.254
@@ -19,23 +23,6 @@ module load netcdf-cxx/4.2
 module load hdf5/1.10.6
 module load parallel-netcdf/1.12.1
 module load cmake/3.18.2
-
-newgrp cwp157
-
-# set micromamba environment
-# >>> mamba initialize >>>
-# !! Contents within this block are managed by 'mamba init' !!
-export MAMBA_EXE='/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/SOFT_ROOT/Micromamba/micromamba';
-export MAMBA_ROOT_PREFIX='/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/SOFT_ROOT/Micromamba';
-__mamba_setup="$("$MAMBA_EXE" shell hook --shell bash --root-prefix "$MAMBA_ROOT_PREFIX" 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__mamba_setup"
-else
-    alias micromamba="$MAMBA_EXE"  # Fallback on help from mamba activate
-fi
-unset __mamba_setup
-# <<< mamba initialize <<<
-micromamba activate xarray
 
 # Define the case-wise sub-directory for path names with case-study nesting,
 # leave as empty string "" if not needed

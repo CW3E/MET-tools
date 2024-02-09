@@ -41,8 +41,7 @@
 # uncoment to make verbose for debugging
 #set -x
 
-# Source the configuration file to define majority of required variables
-source ../config_MET-tools.sh
+# Source tool configuration
 source ./config_preprocessMPAS.sh
 
 # root directory for cycle time (YYYYMMDDHH) directories of MPAS output files

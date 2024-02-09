@@ -33,7 +33,6 @@
 # Imports
 ##################################################################################
 import matplotlib
-matplotlib.use('TkAgg')
 from datetime import datetime as dt
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize as nrm

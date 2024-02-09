@@ -26,6 +26,7 @@
 F_IN=$1
 
 # Regrid to generic lat-lon grid for MET, passed to convert_mpas tool
+# NOTE: need to revise to regrid directly to verification grid
 nlat=750
 nlon=1375
 lat1=4.96

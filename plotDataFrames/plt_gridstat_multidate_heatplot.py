@@ -33,6 +33,7 @@
 ##################################################################################
 import matplotlib
 from datetime import datetime as dt
+from datetime import timedelta as td
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize as nrm
 from matplotlib.cm import get_cmap
@@ -43,6 +44,7 @@ import pandas as pd
 import pickle
 import os
 import sys
+import ipdb
 
 # Execute configuration file supplied as command line argument
 CFG = sys.argv[1]
@@ -53,33 +55,39 @@ exec(cmd)
 ##################################################################################
 # Make data checks and determine all lead times over all files
 ##################################################################################
-if not STRT_DT.isdigit() or len(STRT_DT) != 10:
-    print('ERROR: STRT_DT\n' + STRT_DT + '\n is not in YYYYMMDDHH format.')
+if not ANL_STRT.isdigit() or len(ANL_STRT) != 10:
+    print('ERROR: ANL_STRT\n' + ANL_STRT + '\n is not in YYYYMMDDHH format.')
     sys.exit(1)
 else:
-    iso = STRT_DT[:4] + '-' + STRT_DT[4:6] + '-' + STRT_DT[6:8] + '_' +\
-            STRT_DT[8:]
-    strt_dt = dt.fromisoformat(iso)
+    iso = ANL_STRT[:4] + '-' + ANL_STRT[4:6] + '-' + ANL_STRT[6:8] + '_' +\
+            ANL_STRT[8:]
+    anl_strt = dt.fromisoformat(iso)
 
-if not STRT_DT.isdigit() or len(STOP_DT) != 10:
-    print('ERROR: STOP_DT\n' + STOP_DT + '\n is not in YYYYMMDDHH format.')
+if not ANL_STRT.isdigit() or len(ANL_STOP) != 10:
+    print('ERROR: ANL_STOP\n' + ANL_STOP + '\n is not in YYYYMMDDHH format.')
     sys.exit(1)
 else:
-    iso = STOP_DT[:4] + '-' + STOP_DT[4:6] + '-' + STOP_DT[6:8] + '_' +\
-            STOP_DT[8:]
-    stop_dt = dt.fromisoformat(iso)
+    iso = ANL_STOP[:4] + '-' + ANL_STOP[4:6] + '-' + ANL_STOP[6:8] + '_' +\
+            ANL_STOP[8:]
+    anl_stop = dt.fromisoformat(iso)
 
-if not CYC_INC.isdigit():
-    print('ERROR: CYC_INC\n' + CYC_INC + '\n is not in HH format.')
+if not ANL_INC.isdigit():
+    print('ERROR: ANL_INC\n' + ANL_INC + '\n is not in HH format.')
     sys.exit(1)
 else:
-    cyc_inc = CYC_INC + 'H'
+    anl_inc = ANL_INC + 'h'
 
 if not MAX_LD.isdigit():
     print('ERROR: MAX_LD, ' + MAX_LD + ', is not HH format.')
     sys.exit(1)
 else:
     max_ld = int(MAX_LD)
+
+if not CYC_INC.isdigit():
+    print('ERROR: CYC_INC\n' + CYC_INC + '\n is not in HH format.')
+    sys.exit(1)
+else:
+    cyc_inc = CYC_INC + 'h'
 
 try:
     if DYN_SCL:
@@ -97,10 +105,26 @@ except:
     print('If True supply ALPHA value or if False supply min / max scale.')
     sys.exit(1)
 
+
+# generate valid date range
+ipdb.set_trace()
+anl_dts = pd.date_range(start=anl_strt, end=anl_stop, freq=anl_inc).to_pydatetime()
+total_dts = len(anl_dts)
+
+fcst_strt = anl_dts[0] - td(hours=max_ld)
+fcst_stop = anl_dts[0] - td(hours=int(CYC_INC))
+fcst_zhs = pd.date_range(start=fcst_strt, end=fcst_stop, freq=cyc_inc)
+for i_d in range(1, total_dts):
+    fcst_strt = anl_dts[i_d] - td(hours=max_ld)
+    fcst_stop = anl_dts[i_d] - td(hours=int(CYC_INC))
+    fcst_zhs = fcst_zhs.union(pd.date_range(start=fcst_strt,
+        end=fcst_stop, freq=cyc_inc))
+
 # generate the date range and forecast leads for the analysis, parse binary files
 # for relevant fields
+fcst_zhs = fcst_zhs.to_pydatetime()
+ipdb.set_trace()
 plt_data = {}
-fcst_zhs = pd.date_range(start=strt_dt, end=stop_dt, freq=cyc_inc).to_pydatetime()
 
 fcst_leads = []
 # define derived data paths 

@@ -26,7 +26,8 @@ STATS = ['RMSE', 'PR_CORR']
 # define control flows to analyze for lineplots 
 CTR_FLWS = [
             'WRF',
-            'MPAS',
+            'MPAS_60-3_WestCoast',
+            'MPAS_60-3_WWRF',
             'GFS',
             'GEFS',
             'ECMWF',
@@ -67,7 +68,7 @@ MSK = 'CA_All'
 ##################################################################################
 # List of indices for the underscore-separated components of control flow name
 # to use in the plot legend
-LAB_IDX = [0]
+LAB_IDX = [0, 2]
 
 # Include ensemble index in legend label True or False
 ENS_LAB = False

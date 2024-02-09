@@ -33,17 +33,20 @@ MEM = 'mean'
 # verification domains to plot - defined as empty string if not needed
 GRD = ''
 
-# starting date and zero hour of forecast cycles (string YYYYMMDDHH)
-STRT_DT = '2022122300'
+# starting valid date for verification (string YYYYMMDDHH)
+ANL_STRT = '2022122400'
 
-# final date and zero hour of data of forecast cycles (string YYYYMMDDHH)
-STOP_DT = '2022122700'
+# end valid date for verification (string YYYYMMDDHH)
+ANL_STOP = '2022122800'
+
+# increment between verification valid dates (string HH)
+ANL_INC = '24'
+
+# Max forecast lead hours
+MAX_LD = '120'
 
 # increment between zero hours for forecast data (string HH)
 CYC_INC = '24'
-
-# Max forecast lead to include
-MAX_LD = '120'
 
 # Land mask for verification
 MSK = 'CA_All'
@@ -132,8 +135,8 @@ if len(FIG_LAB) > 0:
 else:
     fig_lab = ''
 
-OUT_PATH = OUT_ROOT + '/' + STRT_DT + '-to-' + STOP_DT + '_FCST-' + MAX_LD + '_' +\
-           MSK + '_' + STAT + '_' + CTR_FLW + grd + fig_lab +\
+OUT_PATH = OUT_ROOT + '/' + ANL_STRT + '-to-' + ANL_STOP + '_FCST-' + MAX_LD +\
+           '_' + MSK + '_' + STAT + '_' + CTR_FLW + grd + fig_lab +\
 	       '_heatplot.png'
 
 ##################################################################################

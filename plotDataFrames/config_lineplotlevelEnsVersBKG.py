@@ -52,14 +52,15 @@ else:
 # define control flows to analyze for lineplots 
 CTR_FLWS = [
             'WRF',
-            'MPAS',
+            'MPAS_60-3_WestCoast',
+            'MPAS_60-3_WWRF',
             'GFS',
             'GEFS',
             'ECMWF',
            ]
 
 # Legend label, indices of underscore components of control flow name to use
-LAB_IDX = [0]
+LAB_IDX = [0, 2]
 
 # ensemble member indices to plot
 MEM_IDS = ['']
@@ -79,7 +80,7 @@ GRDS = [
        ]
 
 # threshold value for leveled data plot
-LEV = '>=100.0'
+LEV = '>0.0'
 
 # include model grid in legend label True or False
 GRD_LAB = True

@@ -7,6 +7,8 @@
 ##################################################################################
 import os
 INDT = os.environ['INDT']
+VRF_ROOT = os.environ['VRF_ROOT']
+IF_SING = os.environ['IF_SING']
 
 ##################################################################################
 # WORKFLOW PARAMETERS
@@ -26,7 +28,7 @@ STATS = ['RMSE', 'PR_CORR']
 # define control flows to analyze for lineplots 
 CTR_FLWS = [
             'WRF',
-            'MPAS_60-3_WestCoast',
+            'MPAS_60-3_CA',
             'MPAS_60-3_WWRF',
             'GFS',
             'GEFS',
@@ -105,10 +107,12 @@ else:
     fig_lab = ''
 
 # root directory of pickled dataframe binaries
-IN_ROOT = '/in_root/' + CSE
+#IN_ROOT = '/in_root/' + CSE
+IN_ROOT = VRF_ROOT + '/' + CSE
 
 # root directory of figure outputs
-OUT_ROOT = '/out_root/' + CSE + '/figures/' + FIG_CSE
+#OUT_ROOT = '/out_root/' + CSE + '/figures/' + FIG_CSE
+OUT_ROOT = VRF_ROOT + '/' + CSE + '/figures/' + FIG_CSE
 
 # path of saved figure
 OUT_PATH = OUT_ROOT + '/' + VALID_DT + '_' + MSK + '_' + STATS[0] + '_' +\

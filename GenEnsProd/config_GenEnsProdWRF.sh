@@ -70,6 +70,9 @@ export ANL_INC=24
 # Compute precipitation accumulation, TRUE or FALSE
 export CMP_ACC=TRUE
 
+# Require all ensemble members, no missing files, TRUE or FALSE
+export FULL_ENS=TRUE
+
 # Defines the min / max accumulation interval for precip
 export ACC_MIN=24
 export ACC_MAX=72

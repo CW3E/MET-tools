@@ -8,6 +8,8 @@
 import os
 import seaborn as sns
 INDT = os.environ['INDT']
+VRF_ROOT = os.environ['VRF_ROOT']
+IF_SING = os.environ['IF_SING']
 
 ##################################################################################
 # WORKFLOW PARAMETERS
@@ -18,17 +20,17 @@ MET_TOOL = 'GridStat'
 # Prefix for MET product outputs
 PRFX = 'grid_stat_QPF_24hr'
 
-# MET stat file type - should be non-leveled data
-TYPE = 'cnt'
+# MET stat file type -- should be leveled data
+TYPE = 'nbrcnt'
 
 # MET stat column names to be made to heat plots / labels
-STAT = 'RMSE'
+STAT = 'FSS'
 
 # define control flows to analyze for lineplots 
-CTR_FLW = 'MPAS'
+CTR_FLW = 'MPAS_60-3_CA'
 
 # ensemble member indices to plot
-MEM = 'mean'
+MEM = 'ens_01'
 
 # verification domains to plot - defined as empty string if not needed
 GRD = ''
@@ -51,12 +53,15 @@ CYC_INC = '24'
 # Land mask for verification
 MSK = 'CA_All'
 
+# accumulation threshold
+LEV = '>=100.0'
+
 ##################################################################################
 # PlOT RENDERING PARAMETERS
 ##################################################################################
 # List of indices for the underscore-separated components of control flow name
 # to use in the plot title
-LAB_IDX = [0]
+LAB_IDX = [0, 2]
 
 # Include ensemble index in plot title True or False
 ENS_LAB = False
@@ -65,7 +70,7 @@ ENS_LAB = False
 GRD_LAB = True
 
 # Plot title generated from above parameters
-TITLE = STAT + ' - '
+TITLE = STAT + ' - ' + ' Precip Thresh ' + LEV + ' mm - '
 split_string = CTR_FLW.split('_')
 split_len = len(split_string)
 idx_len = len(LAB_IDX)
@@ -92,12 +97,12 @@ if GRD_LAB:
     TITLE += grd
 
 lnd_msk_split = MSK.split('_')
-TITLE += ', Verification Region -'
+SUBTITLE = 'Verification Region -'
 for split in lnd_msk_split:
-    TITLE += ' ' + split
+    SUBTITLE += ' ' + split
 
 # Bool switch for choosing color bar scale
-DYN_SCL = True
+DYN_SCL = False
 
 # If DYN_SCL is True:
 #    set the heat map scale dynamically based on inner 100 - ALPHA range of data
@@ -109,7 +114,8 @@ MIN_SCALE = 0
 MAX_SCALE = 1
 
 # define color map to be used for heat plot color bar
-COLOR_MAP = sns.color_palette('viridis', as_cmap=True)
+COLOR_MAP = sns.cubehelix_palette(20, start=.75, rot=1.50, as_cmap=True,
+                                          reverse=True, dark=0.25)
 
 ##################################################################################
 # I/O PARAMETERS
@@ -117,8 +123,11 @@ COLOR_MAP = sns.color_palette('viridis', as_cmap=True)
 # Case study directory structure for input data
 CSE = 'DeepDive/2022122800_valid_date'
 
-# root directory of pickled dataframe binaries
-IN_ROOT = '/in_root/' + CSE
+# root directory of pickled dataframe binaries, switch for singularity vs conda
+if IF_SING == 'TRUE':
+    IN_ROOT = '/in_root/' + CSE
+else:
+    IN_ROOT = VRF_ROOT + '/' + CSE
 
 # figure case study nesting
 FIG_CSE = ''
@@ -126,8 +135,11 @@ FIG_CSE = ''
 # figure label to be included in autosaved path
 FIG_LAB = 'ENS'
 
-# root directory of figure outputs
-OUT_ROOT = '/out_root/' + CSE + '/figures/' + FIG_CSE
+# root directory of figure outputs, switch for singularity vs conda
+if IF_SING == 'TRUE':
+    OUT_ROOT = '/out_root/' + CSE + '/figures/' + FIG_CSE
+else:
+    OUT_ROOT = VRF_ROOT + '/' + CSE + '/figures/' + FIG_CSE
 
 # fig saved automatically to OUT_PATH
 if len(FIG_LAB) > 0:
@@ -136,7 +148,7 @@ else:
     fig_lab = ''
 
 OUT_PATH = OUT_ROOT + '/' + ANL_STRT + '-to-' + ANL_STOP + '_FCST-' + MAX_LD +\
-           '_' + MSK + '_' + STAT + '_' + CTR_FLW + grd + fig_lab +\
+           '_' + MSK + '_' + STAT + '_' + LEV + '_' + CTR_FLW + grd + fig_lab +\
 	       '_heatplot.png'
 
 ##################################################################################

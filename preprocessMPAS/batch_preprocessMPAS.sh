@@ -8,7 +8,7 @@
 #SBATCH -J preprocessMPAS
 #SBATCH -o ./logs/preprocessMPAS-%A_%a.out
 #SBATCH --export=ALL
-#SBATCH --array=0-5
+#SBATCH --array=0-11
 ##################################################################################
 # Description
 ##################################################################################
@@ -74,6 +74,9 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
 
     cfg_indx="cfg_${i_f}${i_m}${i_g}"
     cmd="${cfg_indx}=()"
+    printf "${cmd}\n"; eval "${cmd}"
+
+    cmd="${cfg_indx}+=(\"CTR_FLW=${CTR_FLW}\")"
     printf "${cmd}\n"; eval "${cmd}"
 
     # This path defines the location of each cycle directory relative to IN_ROOT

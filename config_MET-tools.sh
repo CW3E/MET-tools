@@ -32,14 +32,17 @@ export STC_ROOT=/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/DATA/De
 # Root directory for software environment singularity images
 export SOFT_ROOT=/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/SOFT_ROOT
 
-# MET-tools-py singularity image path
-export MET_TOOLS_PY=${SOFT_ROOT}/MET-tools-py.sif
-
 # MET version
 export MET_VER="11.0.1"
 
 # MET singularity image path 
 export MET=${SOFT_ROOT}/met-${MET_VER}.sif
+
+# MET-tools-py singularity image path
+export MET_TOOLS_PY=${SOFT_ROOT}/MET-tools-py.sif
+
+# convert_mpas singularity image path
+export CONVERT_MPAS=${SOFT_ROOT}/convert_mpas.sif
 
 ##################################################################################
 # WORKFLOW UTILITY DEFINITIONS

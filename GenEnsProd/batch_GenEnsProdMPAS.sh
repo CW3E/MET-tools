@@ -8,7 +8,7 @@
 #SBATCH -J GenEnsProdMPAS
 #SBATCH -o ./logs/GenEnsProdMPAS-%A_%a.out
 #SBATCH --export=ALL
-#SBATCH --array=0-4
+#SBATCH --array=0-9
 ##################################################################################
 # Description
 ##################################################################################
@@ -101,6 +101,9 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
     printf "${cmd}\n"; eval "${cmd}"
 
     cmd="${cfg_indx}+=(\"CTR_FLW=${CTR_FLW}\")"
+    printf "${cmd}\n"; eval "${cmd}"
+
+    cmd="${cfg_indx}+=(\"FULL_ENS=${FULL_ENS}\")"
     printf "${cmd}\n"; eval "${cmd}"
 
     cmd="${cfg_indx}+=(\"CYC_DT=${cyc_dt}\")"

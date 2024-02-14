@@ -1,21 +1,20 @@
 ##################################################################################
 # Description
 ##################################################################################
-# This script is designed to generate line plots in Matplotlib from MET grid_stat
-# output files, preprocessed with the companion script proc_24hr_QPF.py.  This
-# plotting scheme is designed to plot thresholded data as lines in the vertical
-# axis and the number of lead hours to the valid time for verification from the
-# forecast initialization in the horizontal axis. The global parameters for the
-# script below control the initial times for the forecast initializations, as
-# well as the valid date of the verification. Stats to compare can be reset in
-# the global parameters with heat map color bar changing scale dynamically. Here
-# the threshold level to be plotted must be specified.
+# This script is designed to generate line plots in Matplotlib from MET ASCII
+# output files, converted to dataframes with the companion postprocessing routines.
+# This plotting scheme is designed to plot thresholded data as lines in the
+# vertical axis and the number of lead hours to the valid time for verification
+# from the forecast initialization in the horizontal axis.
+#
+# Parameters for the script are to be supplied from a configuration file, with
+# name supplied as a command line argument.
 #
 ##################################################################################
 # License Statement
 ##################################################################################
 #
-# Copyright 2023 CW3E, Contact Colin Grudzien cgrudzien@ucsd.edu
+# Copyright 2024 CW3E, Contact Colin Grudzien cgrudzien@ucsd.edu
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -90,6 +89,9 @@ if len(CYC_INC) != 2:
 else:
     cyc_inc = CYC_INC + 'H'
 
+if not MSK:
+    print('ERROR: Landmask variable MSK is not defined.')
+    sys.exit(1)
 
 if not LEV:
     print('ERROR: threshold value for leveled data "LEV" is not defined.')
@@ -205,9 +207,11 @@ fcst_leads = sorted(list(set(fcst_leads)), key=lambda x:(len(x), x))
 i_fl = 0
 while i_fl < len(fcst_leads):
     ld = fcst_leads[i_fl][:-4]
-    i_fl += 1
+    if int(ld) <= max_ld:
+        i_fl += 1
 
-num_leads = len(fcst_leads)
+    else:
+        del fcst_leads[i_fl]
 
 ##################################################################################
 # Begin plotting
@@ -219,6 +223,7 @@ fig = plt.figure(figsize=(12,9.6))
 ax0 = fig.add_axes([.110, .395, .85, .33])
 ax1 = fig.add_axes([.110, .065, .85, .33])
 
+num_leads = len(fcst_leads)
 line_list = []
 line_labs = []
 ax0_l = []

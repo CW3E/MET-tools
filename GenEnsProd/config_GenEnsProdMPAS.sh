@@ -17,7 +17,8 @@ export CSE=DeepDive/2022122800_valid_date
 
 # Array of control flow names to be processed
 export CTR_FLWS=( 
-                 "MPAS"
+                 "MPAS_60-3_WWRF"
+                 "MPAS_60-3_CA"
                 )
 
 # Prefix for ensemble members directory names
@@ -60,6 +61,9 @@ export ANL_INC=24
 
 # Compute precipitation accumulation, TRUE or FALSE
 export CMP_ACC=TRUE
+
+# Require all ensemble members, no missing files, TRUE or FALSE
+export FULL_ENS=FALSE
 
 # Defines the min / max accumulation interval for precip
 export ACC_MIN=24

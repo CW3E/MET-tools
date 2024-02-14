@@ -241,17 +241,11 @@ elif [ ${ens_max} -lt ${ens_min} ]; then
 else 
   # define array of ensemble member ids, padded ${ENS_PDD} digits
   mem_ids=()
-  mem_lst=""
   for (( ens_id=${ens_min}; ens_id <= ${ens_max}; ens_id++ )); do
     mem_id=${ENS_PRFX}`printf %0${ENS_PDD}d $(( 10#${ens_id} ))`
 
     # generate a complete list for looping
     mem_ids+=( ${mem_id} )
-    if [ ! ${mem_id} = ${ctr_id} ]; then
-      # generate an argument for gen_ens_prod without control id
-      printf "Ensemble id ${mem_id} is used for ensemble product computation.\n"
-      mem_lst+="/wrk_dir/${mem_id} "
-    fi
   done
   ens_min=`printf %0${ENS_PDD}d $(( 10#${ens_min} ))`
   ens_max=`printf %0${ENS_PDD}d $(( 10#${ens_max} ))`
@@ -361,26 +355,34 @@ for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INC} )); do
       f_out="${CTR_FLW}_${acc_hr}${VRF_FLD}_${CYC_DT}_F${pdd_hr}"
       f_out+="_ens-${ens_min}-${ens_max}_prd.nc"
 
+      # define the ensemble member list name and cleanup existing
+      mem_lst="ens_list_${CTR_FLW}_${acc_hr}${VRF_FLD}_${CYC_DT}_F${pdd_hr}"
+      mem_lst+="_ens-${ens_min}-${ens_max}_prd.txt"
+
+      cmd="rm -f ${wrk_dir}/${mem_lst}"
+      printf "${cmd}\n"; eval "${cmd}"
+
       for mem_id in ${mem_ids[@]}; do
         in_path=${in_dir}/${mem_id}${IN_ENS_SUBDIR}
         f_in=${in_path}/${CTR_FLW}_${acc_hr}${VRF_FLD}_${CYC_DT}_F${pdd_hr}.nc
          if [ -r ${f_in} ]; then
-           # keep a record of the original members used for computation
-           log_f="ens_list_${CTR_FLW}_${acc_hr}${VRF_FLD}_${CYC_DT}_F${pdd_hr}"
-           log_f+="_ens-${ens_min}-${ens_max}_prd.txt"
-           printf "${f_in}\n" >> ${wrk_dir}/${log_f}
-
+           if [ ${mem_id} != ${ctr_id} ]; then
+             # generate list of ensemble members used on the fly
+             printf "/wrk_dir/${mem_id} " >> ${wrk_dir}/${mem_lst}
+           fi
            # copy the ensemble file to the work directory
            cmd="cp -L ${f_in} ${wrk_dir}/${mem_id}"
            printf "${cmd}\n"; eval "${cmd}"
          else
            msg="WARNING: ensemble member\n ${f_in}\n does not exist or is not"
-           msg+=" readable - skipping configuration:\n ${f_out}\n"
+           msg+=" readable.\n"
            printf "${msg}"
-           cmd="rm -f ${log_f}"
-           printf "${cmd}\n"; eval "${cmd}"
-           error=1
-           break
+           if [[ ${FULL_ENS} =~ ${TRUE} ]]; then
+             cmd="rm -f ${mem_lst}"
+             printf "${cmd}\n"; eval "${cmd}"
+             error=1
+             break
+           fi
          fi
       done
       if [ ${error} = 1 ]; then
@@ -407,7 +409,7 @@ for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INC} )); do
 
         # Run gen_ens_prod
         cmd="${met} gen_ens_prod -v 10 \
-        -ens ${mem_lst} \
+        -ens `cat ${wrk_dir}/${mem_lst}` \
         -out /wrk_dir/${f_out} \
         -config /wrk_dir/GenEnsProdConfig${acc_hr} \
         ${ctr_mem}"

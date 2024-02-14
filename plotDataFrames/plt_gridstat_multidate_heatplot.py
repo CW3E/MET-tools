@@ -1,20 +1,20 @@
 ##################################################################################
 # Description
 ##################################################################################
-# This script is designed to generate heat plots in Matplotlib from MET grid_stat
-# output files, preprocessed with the companion script proc_gridstat.py. This
-# plotting scheme is designed to plot forecast lead in the vertical axis and the
-# valid time for verification from the forecast initialization in the horizontal
-# axis. The global parameters for the script below control the initial times for
-# the forecast initializations, as well as the valid date of the verification.
-# Stats to compare can be reset in the global parameters with heat map color bar
-# changing scale dynamically.
+# This script is designed to generate heat plots in Matplotlib from MET ASCII
+# output files, converted to dataframes with the companion postprocessing routines.
+# This plotting scheme is designed to plot forecast lead in the vertical axis and
+# the valid time for verification from the forecast initialization in the
+# horizontal axis.
+#
+# Parameters for the script are to be supplied from a configuration file, with
+# name supplied as a command line argument.
 #
 ##################################################################################
 # License Statement
 ##################################################################################
 #
-# Copyright 2023 CW3E, Contact Colin Grudzien cgrudzien@ucsd.edu
+# Copyright 2024 CW3E, Contact Colin Grudzien cgrudzien@ucsd.edu
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,7 +44,6 @@ import pandas as pd
 import pickle
 import os
 import sys
-import ipdb
 
 # Execute configuration file supplied as command line argument
 CFG = sys.argv[1]
@@ -105,9 +104,11 @@ except:
     print('If True supply ALPHA value or if False supply min / max scale.')
     sys.exit(1)
 
+if not MSK:
+    print('ERROR: Landmask variable MSK is not defined.')
+    sys.exit(1)
 
 # generate valid date range
-ipdb.set_trace()
 anl_dts = pd.date_range(start=anl_strt, end=anl_stop, freq=anl_inc).to_pydatetime()
 total_dts = len(anl_dts)
 
@@ -123,7 +124,6 @@ for i_d in range(1, total_dts):
 # generate the date range and forecast leads for the analysis, parse binary files
 # for relevant fields
 fcst_zhs = fcst_zhs.to_pydatetime()
-ipdb.set_trace()
 plt_data = {}
 
 fcst_leads = []
@@ -180,7 +180,7 @@ for fcst_zh in fcst_zhs:
                 stat_data], axis=0)
         else:
             # if this is a first instance, create fields
-            plt_data[key] = {'data': stat_data, 'label': line_lab}
+            plt_data[key] = {'data': stat_data}
 
         # obtain leads of data 
         fcst_leads += leads
@@ -190,9 +190,11 @@ fcst_leads = sorted(list(set(fcst_leads)), key=lambda x:(len(x), x))
 i_fl = 0
 while i_fl < len(fcst_leads):
     ld = fcst_leads[i_fl][:-4]
-    i_fl += 1
+    if int(ld) <= max_ld:
+        i_fl += 1
 
-num_leads = len(fcst_leads)
+    else:
+        del fcst_leads[i_fl]
 
 ##################################################################################
 # Begin plotting
@@ -201,14 +203,13 @@ num_leads = len(fcst_leads)
 fig = plt.figure(figsize=(12,9.6))
 
 # Set the axes
-ax0 = fig.add_axes([.92, .18, .03, .77])
-ax1 = fig.add_axes([.07, .18, .84, .77])
-
-num_leads = len(fcst_leads)
-# NOTE: need to continue revising here to handle forecast valid date range
-num_dates = len(anl_dates)
+ax0 = fig.add_axes([.92, .18, .03, .72])
+ax1 = fig.add_axes([.07, .18, .84, .72])
 
 # create array storage for stats
+num_leads = len(fcst_leads)
+num_dates = len(anl_dts)
+
 tmp = np.empty([num_leads, num_dates])
 tmp[:] = np.nan
 fcst_dates = []
@@ -222,14 +223,15 @@ for i_nd in range(num_dates):
             # on the first lead-loop of each date pack the date tick labels
             if ( i_nd % 2 ) == 0 or num_dates < 10:
               # if 10 or more dates, only use every other as a label
-              fcst_dates.append(anl_dates[i_nd].strftime('%Y%m%d'))
+              fcst_dates.append(anl_dts[i_nd].strftime('%Y%m%d'))
             else:
                 fcst_dates.append('')
 
         try:
             # try to load data for the date / lead combination
-            val = plt_data.loc[(plt_data['FCST_LEAD'] == fcst_leads[i_nl]) &
-                                (plt_data['FCST_VALID_END'] == anl_dates[i_nd].strftime('%Y%m%d_%H%M%S'))]
+            val = plt_data[key]['data'].loc[(plt_data[key]['data']['FCST_LEAD'] ==\
+                    fcst_leads[i_nl]) & (plt_data[key]['data']['FCST_VALID_END'] ==\
+                    anl_dts[i_nd].strftime('%Y%m%d_%H%M%S'))]
             
             if not val.empty:
                 tmp[i_nl, i_nd] = val[STAT]
@@ -279,6 +281,9 @@ plt.figtext(.02, .565, lab2, horizontalalignment='center',
             verticalalignment='center', fontsize=20, rotation=90)
 
 plt.figtext(.5, .98, TITLE, horizontalalignment='center',
+            verticalalignment='center', fontsize=20)
+
+plt.figtext(.5, .94, SUBTITLE, horizontalalignment='center',
             verticalalignment='center', fontsize=20)
 
 # save figure and display

@@ -58,6 +58,12 @@ else
   fi
 fi
 
+# control flow to be processed
+if [ ! ${CTR_FLW} ]; then
+  printf "ERROR: control flow name \${CTR_FLW} is not defined.\n"
+  exit 1
+fi
+
 # Convert STRT_DT from 'YYYYMMDDHH' format to strt_dt Unix date format
 if [[ ! ${STRT_DT} =~ ${ISO_RE} ]]; then
   msg="ERROR: start date \${STRT_DT}\n ${STRT_DT}\n"
@@ -258,15 +264,15 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
   fi
 
   # clean work directory from previous mpas regridded lat lon files
-  cmd="rm ${wrk_dir}/*.latlon.*"
+  cmd="rm -f ${wrk_dir}/*.latlon.*"
   printf "${cmd}\n"; eval "${cmd}"
 
   # clean work directory from previous mpascf files
-  cmd="rm ${wrk_dir}/mpascf*"
+  cmd="rm -f ${wrk_dir}/mpascf*"
   printf "${cmd}\n"; eval "${cmd}"
 
   # clean work directory from previous accumulation files
-  cmd="rm ${wrk_dir}/MPAS_*QPF*"
+  cmd="rm -f ${wrk_dir}/${CTR_FLW}_*QPF*"
   printf "${cmd}\n"; eval "${cmd}"
 
   # set input paths
@@ -294,25 +300,19 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
       # set input file name
       cd ${in_dir}
       f_in=`ls ${in_dir}/*.history.*${anl_dt}.nc`
-      echo ${f_in}
 
       if [[ -r ${f_in} ]]; then
         cmd="cd ${wrk_dir}"
         printf "${cmd}\n"; eval "${cmd}"
 
-        # link convert_mpas executable
-        cmd="ln -sfr ${SOFT_ROOT}/convert_mpas/convert_mpas ./"
-        printf "${cmd}\n"; eval "${cmd}"
+        # cut down to file name alone
+        f_in=`basename ${f_in}`
 
         # run script from work directory to hold temp outputs from convert_mpas
-        cmd="${scrpt_dir}/mpas_to_latlon.sh ${f_in}"
+        cmd="${scrpt_dir}/mpas_to_latlon.sh ${CONVERT_MPAS} ${wrk_dir} ${in_dir} ${f_in}"
         printf "${cmd}\n"
-        ${scrpt_dir}/mpas_to_latlon.sh ${f_in}
+        ${scrpt_dir}/mpas_to_latlon.sh ${CONVERT_MPAS} ${wrk_dir} ${in_dir} ${f_in}
         error=$?
-
-        # remove link
-        cmd="rm -f ./convert_mpas"
-        printf "${cmd}\n"; eval "${cmd}"
 
         if [ ${error} -ne 0 ]; then
           printf "ERROR: mpas_to_latlon.sh did not complete successfully.\n"
@@ -325,7 +325,6 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
         # set output cf file name, convert to cf from latlon tmp
         # NOTE: currently convert_mpas doesn't carry time coords from input
         # to regridded output, f_in is reused here to recover timing information
-        f_in=`basename ${f_in}`
         f_out="mpascf_${anl_dt}.nc"
         cmd="${met_tools_py} /scrpt_dir/mpas_to_cf.py"
         cmd+=" '/wrk_dir/${f_tmp}' '/wrk_dir/${f_out}' '/in_dir/${f_in}'"
@@ -351,8 +350,8 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
             # define padded forecast hour for name strings
             pdd_hr=`printf %03d $(( 10#${lead_hr} ))`
 
-            # WRF QPF file name convention following similar products
-            mpas_acc=MPAS_${acc_hr}QPF_${cyc_dt}_F${pdd_hr}.nc
+            # CTR_FLW QPF file name convention following similar products
+            mpas_acc=${CTR_FLW}_${acc_hr}QPF_${cyc_dt}_F${pdd_hr}.nc
 
             # Combine precip to accumulation period 
             cmd="${met} pcp_combine \

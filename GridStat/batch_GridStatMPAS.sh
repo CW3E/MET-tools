@@ -8,7 +8,7 @@
 #SBATCH -J GridStatMPAS
 #SBATCH -o ./logs/GridStatMPAS-%A_%a.out
 #SBATCH --export=ALL
-#SBATCH --array=0-6
+#SBATCH --array=0-13
 ##################################################################################
 # Description
 ##################################################################################

@@ -79,6 +79,9 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
       cmd="${cfg_indx}=()"
       printf "${cmd}\n"; eval "${cmd}"
 
+      cmd="${cfg_indx}+=(\"CTR_FLW=${CTR_FLW}\")"
+      printf "${cmd}\n"; eval "${cmd}"
+
       cmd="${cfg_indx}+=(\"GRD=${GRD}\")"
       printf "${cmd}\n"; eval "${cmd}"
 

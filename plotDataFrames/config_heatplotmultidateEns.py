@@ -84,11 +84,19 @@ if lab_len > 1:
 else:
     TITLE += split_string[0]
 
+if len(MEM) > 0:
+    ens = '_' + MEM
+else:
+    ens = ''
+
 if len(GRD) > 0:
     grd = '_' + GRD
 
 else:
     grd = ''
+
+if ENS_LAB:
+    TITLE += ens
 
 if GRD_LAB:
     TITLE += grd
@@ -119,17 +127,17 @@ COLOR_MAP = sns.color_palette('viridis', as_cmap=True)
 # Case study directory structure for input data
 CSE = 'DeepDive/2022122800_valid_date'
 
-# root directory of pickled dataframe binaries, switch for singularity vs conda
-if IF_SING == 'TRUE':
-    IN_ROOT = '/in_root/' + CSE
-else:
-    IN_ROOT = VRF_ROOT + '/' + CSE
-
 # figure case study nesting
 FIG_CSE = ''
 
 # figure label to be included in autosaved path
 FIG_LAB = 'ENS'
+
+# root directory of pickled dataframe binaries, switch for singularity vs conda
+if IF_SING == 'TRUE':
+    IN_ROOT = '/in_root/' + CSE
+else:
+    IN_ROOT = VRF_ROOT + '/' + CSE
 
 # root directory of figure outputs, switch for singularity vs conda
 if IF_SING == 'TRUE':

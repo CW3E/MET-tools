@@ -29,7 +29,6 @@ STATS = ['RMSE', 'PR_CORR']
 CTR_FLWS = [
             'WRF',
             'MPAS_60-3_CA',
-            'MPAS_60-3_WWRF',
             'GFS',
             'GEFS',
             'ECMWF',
@@ -106,13 +105,17 @@ if len(FIG_LAB) > 0:
 else:
     fig_lab = ''
 
-# root directory of pickled dataframe binaries
-#IN_ROOT = '/in_root/' + CSE
-IN_ROOT = VRF_ROOT + '/' + CSE
+# root directory of pickled dataframe binaries, switch for singularity vs conda
+if IF_SING == 'TRUE':
+    IN_ROOT = '/in_root/' + CSE
+else:
+    IN_ROOT = VRF_ROOT + '/' + CSE
 
-# root directory of figure outputs
-#OUT_ROOT = '/out_root/' + CSE + '/figures/' + FIG_CSE
-OUT_ROOT = VRF_ROOT + '/' + CSE + '/figures/' + FIG_CSE
+# root directory of figure outputs, switch for singularity vs conda
+if IF_SING == 'TRUE':
+    OUT_ROOT = '/out_root/' + CSE + '/figures/' + FIG_CSE
+else:
+    OUT_ROOT = VRF_ROOT + '/' + CSE + '/figures/' + FIG_CSE
 
 # path of saved figure
 OUT_PATH = OUT_ROOT + '/' + VALID_DT + '_' + MSK + '_' + STATS[0] + '_' +\

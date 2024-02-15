@@ -30,7 +30,7 @@ STAT = 'FSS'
 CTR_FLW = 'MPAS_60-3_CA'
 
 # ensemble member indices to plot
-MEM = 'ens_01'
+MEM = 'mean'
 
 # verification domains to plot - defined as empty string if not needed
 GRD = ''
@@ -54,7 +54,7 @@ CYC_INC = '24'
 MSK = 'CA_All'
 
 # accumulation threshold
-LEV = '>=100.0'
+LEV = '>0.0'
 
 ##################################################################################
 # PlOT RENDERING PARAMETERS
@@ -87,11 +87,19 @@ if lab_len > 1:
 else:
     TITLE += split_string[0]
 
+if len(MEM) > 0:
+    ens = '_' + MEM
+else:
+    ens = ''
+
 if len(GRD) > 0:
     grd = '_' + GRD
 
 else:
     grd = ''
+
+if ENS_LAB:
+    TITLE += MEM
 
 if GRD_LAB:
     TITLE += grd
@@ -123,17 +131,17 @@ COLOR_MAP = sns.cubehelix_palette(20, start=.75, rot=1.50, as_cmap=True,
 # Case study directory structure for input data
 CSE = 'DeepDive/2022122800_valid_date'
 
-# root directory of pickled dataframe binaries, switch for singularity vs conda
-if IF_SING == 'TRUE':
-    IN_ROOT = '/in_root/' + CSE
-else:
-    IN_ROOT = VRF_ROOT + '/' + CSE
-
 # figure case study nesting
 FIG_CSE = ''
 
 # figure label to be included in autosaved path
 FIG_LAB = 'ENS'
+
+# root directory of pickled dataframe binaries, switch for singularity vs conda
+if IF_SING == 'TRUE':
+    IN_ROOT = '/in_root/' + CSE
+else:
+    IN_ROOT = VRF_ROOT + '/' + CSE
 
 # root directory of figure outputs, switch for singularity vs conda
 if IF_SING == 'TRUE':

@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH --account=cwp157
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=16
+#SBATCH --ntasks-per-node=128
 #SBATCH --mem=20G
-#SBATCH -p cw3e-shared
-#SBATCH -t 01:00:00
+#SBATCH -p cw3e-compute
+#SBATCH -t 06:00:00
 #SBATCH -J GridStat_BKG
 #SBATCH -o ./logs/GridStatBKG-%A_%a.out
 #SBATCH --export=ALL
@@ -52,7 +52,7 @@ export IN_ROOT=${STC_ROOT}
 export OUT_ROOT=${VRF_ROOT}/${CSE}
 
 # set number of openmpi threads
-export OMP_NUM_THREADS=16
+export OMP_NUM_THREADS=128
 
 ##################################################################################
 # Contruct job array and environment for submission

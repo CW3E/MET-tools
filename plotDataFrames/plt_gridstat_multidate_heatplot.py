@@ -46,7 +46,7 @@ import os
 import sys
 
 # Execute configuration file supplied as command line argument
-CFG = sys.argv[1]
+CFG = sys.argv[1].split('.')[0]
 cmd = 'from ' + CFG + ' import *'
 print(cmd)
 exec(cmd)

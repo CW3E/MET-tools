@@ -34,9 +34,6 @@
 import matplotlib
 from datetime import datetime as dt
 import matplotlib.pyplot as plt
-from matplotlib.colors import Normalize as nrm
-from matplotlib.cm import get_cmap
-from matplotlib.colorbar import Colorbar as cb
 import seaborn as sns
 import numpy as np
 import pandas as pd
@@ -45,7 +42,7 @@ import os
 import sys
 
 # Execute configuration file supplied as command line argument
-CFG = sys.argv[1]
+CFG = sys.argv[1].split('.')[0]
 cmd = 'from ' + CFG + ' import *'
 print(cmd)
 exec(cmd)
@@ -82,12 +79,6 @@ else:
     iso = VALID_DT[:4] + '-' + VALID_DT[4:6] + '-' + VALID_DT[6:8] +\
             '_' + VALID_DT[8:]
     valid_dt = dt.fromisoformat(iso)
-
-if len(CYC_INC) != 2:
-    print('ERROR: CYC_INC, ' + CYC_INC + ', is not in HH format.')
-    sys.exit(1)
-else:
-    cyc_inc = CYC_INC + 'H'
 
 if not MSK:
     print('ERROR: Landmask variable MSK is not defined.')
@@ -204,14 +195,6 @@ for ctr_flw in CTR_FLWS:
 
 # find all unique values for forecast leads, sorted for plotting, less than max lead
 fcst_leads = sorted(list(set(fcst_leads)), key=lambda x:(len(x), x))
-i_fl = 0
-while i_fl < len(fcst_leads):
-    ld = fcst_leads[i_fl][:-4]
-    if int(ld) <= max_ld:
-        i_fl += 1
-
-    else:
-        del fcst_leads[i_fl]
 
 ##################################################################################
 # Begin plotting

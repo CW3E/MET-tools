@@ -34,9 +34,6 @@
 import matplotlib
 from datetime import datetime as dt
 import matplotlib.pyplot as plt
-from matplotlib.colors import Normalize as nrm
-from matplotlib.cm import get_cmap
-from matplotlib.colorbar import Colorbar as cb
 import seaborn as sns
 import numpy as np
 import pandas as pd
@@ -45,7 +42,7 @@ import os
 import sys
 
 # Execute configuration file supplied as command line argument
-CFG = sys.argv[1]
+CFG = sys.argv[1].split('.')[0]
 cmd = 'from ' + CFG + ' import *'
 print(cmd)
 exec(cmd)
@@ -192,14 +189,6 @@ for ctr_flw in CTR_FLWS:
 
 # find all unique values for forecast leads, sorted for plotting, less than max lead
 fcst_leads = sorted(list(set(fcst_leads)), key=lambda x:(len(x), x))
-i_fl = 0
-while i_fl < len(fcst_leads):
-    ld = fcst_leads[i_fl][:-4]
-    if int(ld) <= max_ld:
-        i_fl += 1
-
-    else:
-        del fcst_leads[i_fl]
 
 ##################################################################################
 # Begin plotting

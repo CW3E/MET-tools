@@ -91,7 +91,7 @@ From: ubuntu:22.04
 
     # configure / build HDF5
     cd hdf5-1.14.3
-    ./configure --with-zlib=${LIBDIR} --prefix=${LIBDIR} --enable-hl --enable-build-mode=production
+    ./configure --with-zlib=${LIBDIR} --prefix=${LIBDIR} --enable-hl --enable-build-mode=production --enable-fortran
     make check install
 
     # return to LIBDIR and download NetCDF C libs
@@ -114,7 +114,7 @@ From: ubuntu:22.04
    
     # configure and build NetCDF F libs
     cd netcdf-fortran-4.6.1
-    ./configure --prefix=${LIBDIR}
+    ./configure --prefix=${LIBDIR} --disable-fortran-type-check
     make check
     make install
 

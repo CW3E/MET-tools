@@ -22,8 +22,17 @@
 #     limitations under the License.
 # 
 ##################################################################################
+# take the file path for the convert_mpas singularity image from script argument
+CONVERT_MPAS=$1
+
+# take the work directory from script argument
+WORK_DIR=$2
+
+# take the inputs directory from script argument
+IN_DIR=$3
+
 # take the input file from script argument
-F_IN=$1
+F_IN=$4
 
 # Regrid to generic lat-lon grid for MET, passed to convert_mpas tool
 # NOTE: need to revise to regrid directly to verification grid
@@ -53,12 +62,11 @@ printf "endlon = ${lon2}\n" >> ./target_domain
 printf "rainc\n" >> ./include_fields
 printf "rainnc\n" >> ./include_fields
 
-# run convert mpas
-./convert_mpas ${F_IN}
+# run convert mpas from singularity exec command
+singularity exec --home ${WORK_DIR} -B ${IN_DIR}:/in_dir:ro ${CONVERT_MPAS} convert_mpas /in_dir/${F_IN}
 error=$?
 
 # remove link / configuration files
-rm -f ./convert_mpas
 rm -f ./target_domain
 rm -f ./include_fields
 

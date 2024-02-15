@@ -17,7 +17,8 @@ export CSE=DeepDive/2022122800_valid_date
 
 # Array of control flow names to be processed
 export CTR_FLWS=( 
-                 "MPAS"
+                 "MPAS_60-3_WWRF"
+                 "MPAS_60-3_CA"
                 )
 
 # If computing ensemble mean verification
@@ -79,7 +80,7 @@ export ACC_INC=24
 export NBRHD_WDTH=9
 
 # Number of bootstrap resamplings, set 0 for off
-export BTSTRP=0
+export BTSTRP=1000
 
 # Rank correlation computation flag, TRUE or FALSE
-export RNK_CRR=FALSE
+export RNK_CRR=TRUE

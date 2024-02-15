@@ -12,25 +12,14 @@
 # Source HPC parameters
 source ../config_MET-tools.sh
 
-# load MPAS modules used to build convert_mpas executable
-# NOTE: this is temporary -- need to wrap convert_mpas into singularity
-module load cpu/0.15.4
-module load intel/19.1.1.217
-module load intel-mpi/2019.8.254
-module load netcdf-c/4.7.4
-module load netcdf-fortran/4.5.3
-module load netcdf-cxx/4.2
-module load hdf5/1.10.6
-module load parallel-netcdf/1.12.1
-module load cmake/3.18.2
-
 # Define the case-wise sub-directory for path names with case-study nesting,
 # leave as empty string "" if not needed
 export CSE=DeepDive/2022122800_valid_date
 
 # Array of control flow names to be processed
 export CTR_FLWS=( 
-                 "MPAS"
+                 "MPAS_60-3_WWRF"
+                 "MPAS_60-3_CA"
                 )
 
 # Generate ensemble indices to process

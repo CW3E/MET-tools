@@ -1,0 +1,1735 @@
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+Lmod has detected the following error: These module(s) or extension(s) exist
+but cannot be loaded as requested: "apptainer/1.1.9"
+   Try: "module spider apptainer/1.1.9" to see how to load the module(s).
+
+
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+Lmod has detected the following error: These module(s) or extension(s) exist
+but cannot be loaded as requested: "apptainer/1.1.9"
+   Try: "module spider apptainer/1.1.9" to see how to load the module(s).
+
+
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+
+The following have been reloaded with a version change:
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Inactive Modules:
+  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Lmod is automatically replacing "intel/2023.2.1" with "gcc/13.2.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+The following have been reloaded with a version change:
+  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+Inactive Modules:
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.27     2) ncarcompilers/1.0.0     3) netcdf/4.9.2  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+
+The following have been reloaded with a version change:
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06  1) hdf5/1.12.2 => hdf5/1.14.3
+
+
+
+
+Inactive Modules:
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2  1) cray-mpich/8.1.27     3) gcc/13.2.0      5) ncarcompilers/1.0.0
+  2) craype/2.7.23         4) hdf5/1.14.3     6) netcdf/4.9.2
+
+
+
+The following have been reloaded with a version change:
+  1) ncarenv/23.09 => ncarenv/23.06
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+
+Activating Modules:
+  1) hdf5/1.12.2     2) ncarcompilers/1.0.0     3) netcdf/4.9.2
+
+cfg_00=()
+cfg_00+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02")
+cfg_00+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC")
+cfg_00+=("IN_DT_SUBDIR=/mean")
+cfg_00+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess")
+cfg_00+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_00" )
+cfg_10=()
+cfg_10+=("CTR_FLW=nghido_letkf_OIE60km_WarmStart_ctrl_01.01")
+cfg_10+=("IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/ExtendedFC")
+cfg_10+=("IN_DT_SUBDIR=/mean")
+cfg_10+=("OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_ctrl_01.01/Preprocess")
+cfg_10+=("OUT_DT_SUBDIR=/mean")
+cfgs+=( "cfg_10" )
+Processing data for job index .
+Loading configuration parameters cfg_00:
+cd /glade/work/ersawyer/derecho/MET-tools/preprocessMPAS
+mkdir -p /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs
+./run_preprocessMPAS.sh CTR_FLW=nghido_letkf_OIE60km_WarmStart_aro_01.02 IN_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/ExtendedFC IN_DT_SUBDIR=/mean OUT_DT_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/nghido_letkf_OIE60km_WarmStart_aro_01.02/Preprocess OUT_DT_SUBDIR=/mean   > /glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION/2023021818_cycle_start/batch_logs/preprocessMPAS__.log 2>&1
+=>> PBS: job killed: walltime 309 exceeded limit 300

@@ -28,20 +28,47 @@ CONVERT_MPAS=$1
 # take the work directory from script argument
 WORK_DIR=$2
 
+# take the mesh directory from the file with mesh data
+MESH_IN_DIR=$3
+
+# take the mesh file containing mesh data
+MESH_IN_FILE=$4
+
 # take the inputs directory from script argument
-IN_DIR=$3
+FIELD_IN_DIR=$5
 
 # take the input file from script argument
-F_IN=$4
+FIELD_IN_FILE=$6
 
 # Regrid to generic lat-lon grid for MET, passed to convert_mpas tool
 # NOTE: need to revise to regrid directly to verification grid
-nlat=750
-nlon=1375
-lat1=4.96
-lat2=65.
-lon1=162.
-lon2=272.
+#nlat=750
+#nlon=1375
+#lat1=4.96
+#lat2=65.
+#lon1=162.
+#lon2=272.
+
+#nlat=426
+#nlon=319
+#lat1=30.
+#lat2=50.
+#lon1=235.
+#lon2=250.
+
+#nlat=200
+#nlon=150
+#lat1=30.
+#lat2=50.
+#lon1=-110.
+#lon2=-125.
+
+nlat=200
+nlon=150
+lat1=30.
+lat2=50.
+lon1=-125.
+lon2=-110.
 
 # clean up old configuration files
 rm -f ./target_domain
@@ -63,8 +90,11 @@ printf "rainc\n" >> ./include_fields
 printf "rainnc\n" >> ./include_fields
 
 # run convert mpas from singularity exec command
-singularity exec --home ${WORK_DIR} -B ${IN_DIR}:/in_dir:ro ${CONVERT_MPAS} convert_mpas /in_dir/${F_IN}
+#apptainer exec --home ${WORK_DIR} -B ${IN_DIR}:/in_dir:ro ${CONVERT_MPAS} convert_mpas /in_dir/${F_IN}
+#apptainer exec --home ${WORK_DIR} -B ${FIELD_IN_DIR}:/in_dir:ro ${CONVERT_MPAS} convert_mpas $MPAS_MESH /in_dir/${F_IN}
+apptainer exec --home ${WORK_DIR} -B ${MESH_IN_DIR}:/mesh_in_dir:ro,${FIELD_IN_DIR}:/field_in_dir:ro ${CONVERT_MPAS} convert_mpas /mesh_in_dir/${MESH_IN_FILE} /field_in_dir/${FIELD_IN_FILE}
 error=$?
+
 
 # remove link / configuration files
 rm -f ./target_domain
@@ -77,13 +107,13 @@ if [ ${error} -ne 0 ]; then
 fi
 
 # replace history / diag from input file name with latlon, mv output to name
-f_in=`basename ${F_IN}`
+f_in=`basename ${FIELD_IN_FILE}`
 IFS="." read -ra tmp_array <<< "$f_in"
 str_len=$(( ${#tmp_array[@]} - 1 ))
 rename=""
 for (( i = 0 ; i < ${str_len} ; i ++ )); do
   tmp_str=${tmp_array[i]}
-  if [[ ${tmp_str} = "history" || ${tmp_str} = "diag" ]]; then
+  if [[ ${tmp_str} = "mpasout" || ${tmp_str} = "diag" ]]; then
     rename="${rename}latlon."
   else
     rename="${rename}${tmp_array[i]}."

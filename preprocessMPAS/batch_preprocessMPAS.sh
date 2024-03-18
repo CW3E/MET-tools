@@ -1,14 +1,14 @@
 #!/bin/bash
-#SBATCH --account=cwp157
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --mem=249208M
-#SBATCH -p cw3e-compute
-#SBATCH -t 01:00:00
-#SBATCH -J preprocessMPAS
-#SBATCH -o ./logs/preprocessMPAS-%A_%a.out
-#SBATCH --export=ALL
-#SBATCH --array=0-11
+
+#PBS -q main
+#PBS -A UCSD0047 
+#PBS -l select=1:ncpus=128:mpiprocs=32
+#PBS -l walltime=00:05:00
+#PBS -N preprocessMPAS 
+#PBS -o ./logs/preprocessMPAS-
+#PBS -j oe 
+#PBS -J 0-1
+
 ##################################################################################
 # Description
 ##################################################################################
@@ -80,12 +80,12 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
     printf "${cmd}\n"; eval "${cmd}"
 
     # This path defines the location of each cycle directory relative to IN_ROOT
-    cmd="${cfg_indx}+=(\"IN_DT_ROOT=${IN_ROOT}/${CTR_FLW}\")"
+    cmd="${cfg_indx}+=(\"IN_DT_ROOT=${IN_ROOT}/${CTR_FLW}/ExtendedFC\")"
     printf "${cmd}\n"; eval "${cmd}"
 
     # subdirectory of cycle-named directory containing data to be analyzed,
     # includes leading '/', left as blank string if not needed
-    cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/atmosphere_model/${MEM}\")"
+    cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/${MEM}\")"
     printf "${cmd}\n"; eval "${cmd}"
     
     # This path defines the location of each cycle directory relative to OUT_ROOT
@@ -103,8 +103,8 @@ done
 
 ##################################################################################
 # run the processing script looping parameter arrays
-jbid=${SLURM_ARRAY_JOB_ID}
-indx=${SLURM_ARRAY_TASK_ID}
+jbid=${PBS_ARRAY_JOBID}
+indx=${PBS_ARRAYID}
 
 printf "Processing data for job index ${indx}.\n"
 printf "Loading configuration parameters ${cfgs[$indx]}:\n"

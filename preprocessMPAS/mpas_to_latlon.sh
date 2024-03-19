@@ -42,12 +42,12 @@ FIELD_IN_FILE=$6
 
 # Regrid to generic lat-lon grid for MET, passed to convert_mpas tool
 # NOTE: need to revise to regrid directly to verification grid
-#nlat=750
-#nlon=1375
-#lat1=4.96
-#lat2=65.
-#lon1=162.
-#lon2=272.
+nlat=750
+nlon=1375
+lat1=4.96
+lat2=65.
+lon1=162.
+lon2=272.
 
 #nlat=426
 #nlon=319
@@ -63,12 +63,12 @@ FIELD_IN_FILE=$6
 #lon1=-110.
 #lon2=-125.
 
-nlat=200
-nlon=150
-lat1=30.
-lat2=50.
-lon1=-125.
-lon2=-110.
+#nlat=200
+#nlon=150
+#lat1=30.
+#lat2=50.
+#lon1=-125.
+#lon2=-110.
 
 # clean up old configuration files
 rm -f ./target_domain

@@ -7,7 +7,7 @@
 #PBS -N preprocessMPAS 
 #PBS -o ./logs/preprocessMPAS-
 #PBS -j oe 
-#PBS -J 0-11
+#PBS -J 0-1
 
 ##################################################################################
 # Description

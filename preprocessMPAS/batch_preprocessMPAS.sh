@@ -5,9 +5,9 @@
 #PBS -l select=1:ncpus=128:mpiprocs=32
 #PBS -l walltime=01:00:00
 #PBS -N preprocessMPAS 
-#PBS -o ./logs/preprocessMPAS-${PBS_JOBID}-${PBS_ARRAY_INDEX}
+#PBS -o ./logs/preprocessMPAS-
 #PBS -j oe 
-#PBS -J 0-1
+#PBS -J 0-11
 
 ##################################################################################
 # Description
@@ -105,6 +105,8 @@ done
 # run the processing script looping parameter arrays
 jbid=${PBS_JOBID}
 indx=${PBS_ARRAY_INDEX}
+
+mv ./logs/preprocessMPAS- ./logs/preprocessMPAS_${jbid}_${indx}
 
 printf "Processing data for job index ${indx}.\n"
 printf "Loading configuration parameters ${cfgs[$indx]}:\n"

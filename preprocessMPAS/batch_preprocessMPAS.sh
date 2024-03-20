@@ -5,7 +5,7 @@
 #PBS -l select=1:ncpus=128:mpiprocs=32
 #PBS -l walltime=01:00:00
 #PBS -N preprocessMPAS 
-#PBS -o ./logs/preprocessMPAS-${PBS_JOBID}
+#PBS -o ./logs/preprocessMPAS-${PBS_JOBID}-${PBS_ARRAY_INDEX}
 #PBS -j oe 
 #PBS -J 0-1
 

@@ -1,13 +1,11 @@
 #!/bin/bash
-#SBATCH --account=cwp157
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --mem=12G
-#SBATCH -p cw3e-shared
-#SBATCH -t 01:00:00
-#SBATCH -J vxmask
-#SBATCH -o ./logs/vxmask-%j.out
-#SBATCH --export=ALL
+#PBS -q main
+#PBS -A UCSD0047 
+#PBS -l select=1:ncpus=128:mpiprocs=32
+#PBS -l walltime=01:00:00
+#PBS -N vxmask
+#PBS -o ./logs/vxmask.out
+#PBS -j oe 
 #################################################################################
 # Description
 #################################################################################
@@ -36,6 +34,11 @@
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
 #
+
+##################################################################################
+# RENAME LOG FILE
+##################################################################################
+mv ./logs/vxmask.out ./logs/vxmask_${PBS_JOBID}.out
 ##################################################################################
 # SET GLOBAL PARAMETERS
 ##################################################################################
@@ -115,7 +118,8 @@ fi
 
 #################################################################################
 # Process data
-#################################################################################
+################################################################################
+
 # Set up singularity container with specific directory privileges
 cmd="singularity instance start -B ${MSK_ROOT}:/MSK_ROOT:ro,"
 cmd+="${MSK_LTLN}:/MSK_LTLN:ro,${MSK_GRDS}:/MSK_GRDS:rw ${MET} MET"

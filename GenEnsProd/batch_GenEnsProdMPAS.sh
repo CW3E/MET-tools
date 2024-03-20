@@ -1,14 +1,12 @@
 #!/bin/bash
-#SBATCH --account=cwp157
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=16
-#SBATCH --mem=20G
-#SBATCH -p cw3e-shared
-#SBATCH -t 01:00:00
-#SBATCH -J GenEnsProdMPAS
-#SBATCH -o ./logs/GenEnsProdMPAS-%A_%a.out
-#SBATCH --export=ALL
-#SBATCH --array=0-9
+#PBS -q main
+#PBS -A UCSD0047 
+#PBS -l select=1:ncpus=128:mpiprocs=32
+#PBS -l walltime=01:00:00
+#PBS -N GenEnsProdMPAS 
+#PBS -o ./logs/GenEnsProdMPAS-${PBS_JOBID}-${PBS_ARRAY_INDEX}.out
+#PBS -j oe 
+#PBS -J 0-1
 ##################################################################################
 # Description
 ##################################################################################

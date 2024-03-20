@@ -1,14 +1,13 @@
 #!/bin/bash
-#SBATCH --account=cwp157
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=128
-#SBATCH --mem=20G
-#SBATCH -p cw3e-compute
-#SBATCH -t 06:00:00
-#SBATCH -J GridStatMPAS
-#SBATCH -o ./logs/GridStatMPAS-%A_%a.out
-#SBATCH --export=ALL
-#SBATCH --array=0-13
+
+#PBS -q main
+#PBS -A UCSD0047 
+#PBS -l select=1:ncpus=128:mpiprocs=32
+#PBS -l walltime=01:00:00
+#PBS -N GridStatMPAS 
+#PBS -o ./logs/GridStatMPAS
+#PBS -j oe 
+#PBS -J 0-1
 ##################################################################################
 # Description
 ##################################################################################
@@ -35,6 +34,10 @@
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
 # 
+##################################################################################
+# RENAME LOG FILE
+##################################################################################
+mv ./logs/GridStatMPAS ./logs/GridStatMPAS_${PBS_JOBID}_${PBS_ARRAY_INDEX}
 ##################################################################################
 # SET GLOBAL PARAMETERS
 ##################################################################################
@@ -152,8 +155,8 @@ done
 
 ##################################################################################
 # run the processing script looping parameter arrays
-jbid=${SLURM_ARRAY_JOB_ID}
-indx=${SLURM_ARRAY_TASK_ID}
+jbid=${PBS_JOBID}
+indx=${PBS_ARRAY_INDEX}
 
 printf "Processing data for job index ${indx}."
 printf "Loading configuration parameters ${cfgs[$indx]}:"

@@ -121,7 +121,7 @@ fi
 ################################################################################
 
 # Set up singularity container with specific directory privileges
-cmd="singularity instance start -B ${MSK_ROOT}:/MSK_ROOT:ro,"
+cmd="apptainer instance start -B ${MSK_ROOT}:/MSK_ROOT:ro,"
 cmd+="${MSK_LTLN}:/MSK_LTLN:ro,${MSK_GRDS}:/MSK_GRDS:rw ${MET} MET"
 printf "${cmd}\n"; eval "${cmd}"
 
@@ -130,7 +130,7 @@ while read msk; do
   out_path=${MSK_GRDS}/${msk}_StageIVGrid.nc
   if [ ! -r "${out_path}" ]; then
     # regridded mask does not exist in mask out, create from scratch
-    cmd="singularity exec instance://MET gen_vx_mask -v 10 \
+    cmd="apptainer exec instance://MET gen_vx_mask -v 10 \
     /MSK_ROOT/${OBS_F_IN} \
     -type poly /MSK_LTLN/${msk}.txt \
     /MSK_GRDS/${msk}_StageIVGrid.nc"
@@ -144,7 +144,7 @@ while read msk; do
 done<${MSK_LST}
 
 # End MET Process and singularity stop
-cmd="singularity instance stop MET"
+cmd="apptainer instance stop MET"
 printf "${cmd}\n"; eval "${cmd}"
 
 msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "

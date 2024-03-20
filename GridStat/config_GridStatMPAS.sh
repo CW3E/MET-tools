@@ -17,8 +17,8 @@ export CSE=DeepDive/2022122800_valid_date
 
 # Array of control flow names to be processed
 export CTR_FLWS=( 
-                 "MPAS_60-3_WWRF"
-                 "MPAS_60-3_CA"
+                 "nghido_letkf_OIE60km_WarmStart_aro_01.02"
+		             "nghido_letkf_OIE60km_WarmStart_ctrl_01.01"
                 )
 
 # If computing ensemble mean verification
@@ -30,7 +30,7 @@ export ENS_MIN=00
 export ENS_MAX=05
 
 # If computing individual ensemble member verification
-export IF_ENS_MEMS=TRUE
+export IF_ENS_MEMS=FALSE
 
 # Generate ensemble indices to process, used for individual member verification
 ENS_PRFX="ens_"
@@ -53,18 +53,18 @@ export VRF_FLD=QPF
 export CAT_THR="[ >0.0, >=10.0, >=25.0, >=50.0, >=100.0 ]"
 
 # Define first and last date time for forecast initialization (YYYYMMDDHH)
-export STRT_DT=2022122300
-export STOP_DT=2022122700
+export STRT_DT=2023021818
+export STOP_DT=2023022000
 
 # Define the increment between forecast initializations (HH)
-export CYC_INC=24
+export CYC_INC=6
 
 # Define min / max forecast hours for forecast outputs to be processed
-export ANL_MIN=24
-export ANL_MAX=120
+export ANL_MIN=0
+export ANL_MAX=168
 
 # Define the increment at which to process forecast outputs (HH)
-export ANL_INC=24
+export ANL_INC=6
 
 # Compute precipitation accumulation, TRUE or FALSE
 export CMP_ACC=TRUE

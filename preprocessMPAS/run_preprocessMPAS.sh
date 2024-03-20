@@ -349,8 +349,8 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
             acc_stop=$(( ${lead_hr} + ${cyc_hr} ))
 
             # start / stop date strings
-            anl_strt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${acc_strt} hours"`
-            anl_stop=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${acc_stop} hours"`
+            anl_strt=`date +%Y-%m-%d_%H.%M.%S -d "${strt_dt} ${acc_strt} hours"`
+            anl_stop=`date +%Y-%m-%d_%H.%M.%S -d "${strt_dt} ${acc_stop} hours"`
 
             # define padded forecast hour for name strings
             pdd_hr=`printf %03d $(( 10#${lead_hr} ))`

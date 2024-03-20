@@ -23,7 +23,7 @@ export CTR_FLWS=(
 		 "nghido_letkf_OIE60km_WarmStart_ctrl_01.01"
                 )
 # Generate ensemble indices to process
-ENS_PRFX="mem_"
+ENS_PRFX="mem"
 MEM_IDS=()
 for indx in {001..006..001}; do
     MEM_IDS+=( ${ENS_PRFX}${indx} )

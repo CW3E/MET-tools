@@ -22,10 +22,12 @@ export CTR_FLWS=(
                  "nghido_letkf_OIE60km_WarmStart_aro_01.02"
 		 "nghido_letkf_OIE60km_WarmStart_ctrl_01.01"
                 )
-
 # Generate ensemble indices to process
-MEM_IDS=( "mean" )
-
+ENS_PRFX="mem_"
+MEM_IDS=()
+for indx in {01..06..01}; do
+    MEM_IDS+=( ${ENS_PRFX}${indx} )
+done
 # export MEM_IDS as an array containing an empty string if no indices or use array
 # construction as above, this is passed to batch_wrf_preprocess
 export MEM_IDS

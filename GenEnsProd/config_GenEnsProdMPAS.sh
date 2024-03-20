@@ -22,14 +22,14 @@ export CTR_FLWS=(
                 )
 
 # Prefix for ensemble members directory names
-export ENS_PRFX="mem_"
+export ENS_PRFX="mem"
 
 # Min and max ensemble index to process (includes control index)
-export ENS_MIN=01
-export ENS_MAX=06
+export ENS_MIN=001
+export ENS_MAX=001
 
 # Number of digits to padd ensemble index to
-export ENS_PDD=2
+export ENS_PDD=3
 
 # Define control member index, not to be used in ensemble spread calculation,
 # defined as empty string if not necessary

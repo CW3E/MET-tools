@@ -22,18 +22,18 @@ export CTR_FLWS=(
                 )
 
 # Prefix for ensemble members directory names
-export ENS_PRFX="ens_"
+export ENS_PRFX="mem_"
 
 # Min and max ensemble index to process (includes control index)
-export ENS_MIN=00
-export ENS_MAX=05
+export ENS_MIN=01
+export ENS_MAX=06
 
 # Number of digits to padd ensemble index to
 export ENS_PDD=2
 
 # Define control member index, not to be used in ensemble spread calculation,
 # defined as empty string if not necessary
-export CTR_MEM=00
+export CTR_MEM=""
 
 # Neighborhood widths for neighborhood methods,
 # references model grid with 1-1 correspondence

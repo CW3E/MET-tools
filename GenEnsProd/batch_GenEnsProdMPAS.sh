@@ -141,8 +141,8 @@ done
 
 ##################################################################################
 # run the processing script looping parameter arrays
-jbid=${SLURM_ARRAY_JOB_ID}
-indx=${SLURM_ARRAY_TASK_ID}
+jbid=${PBS_JOBID}
+indx=${PBS_ARRAY_INDEX}
 
 printf "Processing data for job index ${indx}."
 printf "Loading configuration parameters ${cfgs[$indx]}:"

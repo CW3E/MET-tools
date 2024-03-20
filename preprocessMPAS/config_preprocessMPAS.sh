@@ -25,7 +25,7 @@ export CTR_FLWS=(
 # Generate ensemble indices to process
 ENS_PRFX="mem"
 MEM_IDS=()
-for indx in {001..006..001}; do
+for indx in {001..001..001}; do
     MEM_IDS+=( ${ENS_PRFX}${indx} )
 done
 # export MEM_IDS as an array containing an empty string if no indices or use array

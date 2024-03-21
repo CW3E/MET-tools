@@ -3,7 +3,7 @@
 #PBS -q main
 #PBS -A UCSD0047 
 #PBS -l select=1:ncpus=128:mpiprocs=32
-#PBS -l walltime=01:00:00
+#PBS -l walltime=03:00:00
 #PBS -N GridStatMPAS 
 #PBS -o ./logs/GridStatMPAS
 #PBS -j oe 

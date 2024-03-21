@@ -323,7 +323,7 @@ if [ ! ${MET_VER} ]; then
 fi
 
 if [ ! -x ${MET} ]; then
-  msg="MET singularity image\n ${MET}\n does not exist or is not executable.\n"
+  msg="MET apptainer image\n ${MET}\n does not exist or is not executable.\n"
   printf "${msg}"
   exit 1
 fi
@@ -381,8 +381,8 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
     line_count=$(( ${line_count} + 1 ))
   done <${MSK_LST}
 
-  # Define directory privileges for singularity exec
-  met="singularity exec -B ${wrk_dir}:/wrk_dir:rw,"
+  # Define directory privileges for apptainer exec
+  met="apptainer exec -B ${wrk_dir}:/wrk_dir:rw,"
   met+="${STC_ROOT}:/STC_ROOT:ro,${MSK_GRDS}:/MSK_GRDS:ro,"
   met+="${in_dir}:/in_dir:ro ${MET}"
 

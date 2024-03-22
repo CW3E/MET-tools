@@ -61,7 +61,7 @@ export ANL_MIN=0
 export ANL_MAX=168
 
 # Define the increment at which to process forecast outputs (HH)
-export ANL_INC=6
+export ANL_INC=12
 
 # Compute precipitation accumulation, TRUE or FALSE
 export CMP_ACC=TRUE
@@ -77,7 +77,7 @@ export ACC_INC=24
 export NBRHD_WDTH=9
 
 # Number of bootstrap resamplings, set 0 for off
-export BTSTRP=1000
+export BTSTRP=0
 
 # Rank correlation computation flag, TRUE or FALSE
 export RNK_CRR=TRUE

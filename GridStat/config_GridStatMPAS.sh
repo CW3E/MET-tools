@@ -80,4 +80,4 @@ export NBRHD_WDTH=9
 export BTSTRP=0
 
 # Rank correlation computation flag, TRUE or FALSE
-export RNK_CRR=TRUE
+export RNK_CRR=FALSE

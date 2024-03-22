@@ -14,7 +14,7 @@ INDT = os.environ['INDT']
 # DATAFRAME PARAMETERS
 ##################################################################################
 # Case study directory structure
-CSE = 'DeepDive/2022122800_valid_date'
+CSE = '2023021818_cycle_start'
 
 # MET-tool subdirectory name
 MET_TOOL = 'GridStat'
@@ -30,12 +30,8 @@ OUT_ROOT = '/out_root/' + CSE
 
 # define control flows to analyze for lineplots 
 CTR_FLWS = [
-            'WRF',
-            'MPAS_60-3_WWRF',
-            'MPAS_60-3_CA',
-            'GFS',
-            'GEFS',
-            'ECMWF',
+            "nghido_letkf_OIE60km_WarmStart_aro_01.02"
+	"nghido_letkf_OIE60km_WarmStart_ctrl_01.01"
            ]
 
 # ensemble member indices, used for ISO date sub-directory nesting, set based on
@@ -53,22 +49,22 @@ GRDS = [
        ]
 
 # starting date and zero hour of forecast cycles (string YYYYMMDDHH)
-STRT_DT = '2022122300'
+STRT_DT = '2023021818'
 
 # final date and zero hour of data of forecast cycles (string YYYYMMDDHH)
-STOP_DT = '2022122700'
+STOP_DT = '2023022000'
 
 # increment between zero hours for forecast data (string HH)
-CYC_INC = '24'
+CYC_INC = '6'
 
 # Min forecast lead time to proces in hours (string HH)
-ANL_MIN = '24'
+ANL_MIN = '0'
 
 # Max forecast lead time to plot in hours (string HH)
-ANL_MAX = '120'
+ANL_MAX = '168'
 
 # incrment between verification valid times (string HH)
-ANL_INC = '24'
+ANL_INC = '6'
 
 # Compute precipitation accumulation, True or False
 CMP_ACC=True

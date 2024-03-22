@@ -19,7 +19,7 @@ export MSK_ROOT=${USR_HME}/vxmask
 export MSK_LTLN=${MSK_ROOT}/lat-lon
 
 # Path to file with list of landmasks for verification regions
-export MSK_LST=${MSK_ROOT}/mask-lists/CA_ALL_MaskList.txt
+export MSK_LST=${MSK_ROOT}/mask-lists/CA_All_MaskList.txt
 
 # Root directory of regridded .nc landmasks on StageIV domain for verification
 export MSK_GRDS=${MSK_ROOT}/CA_All

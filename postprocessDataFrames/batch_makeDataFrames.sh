@@ -1,14 +1,17 @@
 #!/bin/bash
-#SBATCH --account=cwp157
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=64
-#SBATCH --mem=20G
-#SBATCH -p cw3e-shared
-#SBATCH -t 00:30:00
-#SBATCH -J makeDataFrames
-#SBATCH -o ./logs/makeDataFrames-%A_%a.out
-#SBATCH --export=ALL
+#PBS -q main
+#PBS -A UCSD0047 
+#PBS -l select=1:ncpus=128:mpiprocs=32
+#PBS -l walltime=00:30:00
+#PBS -N makeDataFrames 
+#PBS -o ./logs/makeDataFrames
+#PBS -j oe 
 ##################################################################################
+# RENAME LOG FILE
+##################################################################################
+mv ./logs/vxmask.out ./logs/makeDataFrames_${PBS_JOBID}.out
+##################################################################################
+
 # Description
 ##################################################################################
 ##################################################################################

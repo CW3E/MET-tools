@@ -36,8 +36,7 @@ CTR_FLWS = [
 
 # ensemble member indices, used for ISO date sub-directory nesting, set based on
 # directory structure for MET outputs
-MEM_IDS = ['']
-MEM_IDS += ['mean']
+MEM_IDS = ['mean']
 
 # verification domains to process, used for ensemble member sub-directory nesting
 GRDS = [

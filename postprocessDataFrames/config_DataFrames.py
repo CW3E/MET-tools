@@ -30,7 +30,7 @@ OUT_ROOT = '/out_root/' + CSE
 
 # define control flows to analyze for lineplots 
 CTR_FLWS = [
-            "nghido_letkf_OIE60km_WarmStart_aro_01.02"
+        "nghido_letkf_OIE60km_WarmStart_aro_01.02",
 	"nghido_letkf_OIE60km_WarmStart_ctrl_01.01"
            ]
 

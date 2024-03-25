@@ -38,33 +38,29 @@ CTR_FLWS = [
 # directory structure for MET outputs
 MEM_IDS = ['']
 MEM_IDS += ['mean']
-for i_m in range(0,6):
-    MEM_IDS += ['ens_' + str(i_m).zfill(2)]
 
 # verification domains to process, used for ensemble member sub-directory nesting
 GRDS = [
-        '',
-        'd01',
-        'd02',
+        ''
        ]
 
 # starting date and zero hour of forecast cycles (string YYYYMMDDHH)
-STRT_DT = '2023021818'
+STRT_DT = '2023021900'
 
 # final date and zero hour of data of forecast cycles (string YYYYMMDDHH)
 STOP_DT = '2023022000'
 
 # increment between zero hours for forecast data (string HH)
-CYC_INC = '6'
+CYC_INC = '12'
 
 # Min forecast lead time to proces in hours (string HH)
-ANL_MIN = '0'
+ANL_MIN = '24'
 
 # Max forecast lead time to plot in hours (string HH)
 ANL_MAX = '168'
 
 # incrment between verification valid times (string HH)
-ANL_INC = '6'
+ANL_INC = '24'
 
 # Compute precipitation accumulation, True or False
 CMP_ACC=True

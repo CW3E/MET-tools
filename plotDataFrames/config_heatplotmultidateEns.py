@@ -42,7 +42,7 @@ ANL_STRT = '2023022300'
 ANL_STOP = '2023022600'
 
 # increment between verification valid dates (string HH)
-ANL_INC = '24'
+ANL_INC = '12'
 
 # Max forecast lead hours
 MAX_LD = '168'

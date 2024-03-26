@@ -63,7 +63,7 @@ MSK = 'CA_All'
 ##################################################################################
 # List of indices for the underscore-separated components of control flow name
 # to use in the plot legend
-LAB_IDX = [1, 2,3,4]
+LAB_IDX = [1,2,3,4]
 
 # Include ensemble index in legend label True or False
 ENS_LAB = True
@@ -85,7 +85,7 @@ for split in lnd_msk_split:
 # I/O PARAMETERS
 ##################################################################################
 # Case study directory structure for input data
-CSE = 'DeepDive/2022122800_valid_date'
+CSE = '2023021818_cycle_start'
 
 # saved figure path case study subdirectory
 FIG_CSE = ''

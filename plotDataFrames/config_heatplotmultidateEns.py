@@ -36,10 +36,10 @@ MEM = 'mean'
 GRD = ''
 
 # starting valid date for verification (string YYYYMMDDHH)
-ANL_STRT = '2023022300'
+ANL_STRT = '2023022112'
 
 # end valid date for verification (string YYYYMMDDHH)
-ANL_STOP = '2023022600'
+ANL_STOP = '2023022412'
 
 # increment between verification valid dates (string HH)
 ANL_INC = '12'

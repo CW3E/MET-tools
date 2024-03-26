@@ -23,7 +23,7 @@ PRFX = 'grid_stat_QPF_24hr'
 TYPE = 'cnt'
 
 # MET stat column names to be made to heat plots / labels
-STATS = ['RMSE', 'FSS']
+STATS = ['RMSE']
 
 # define control flows to analyze for lineplots 
 CTR_FLWS = [

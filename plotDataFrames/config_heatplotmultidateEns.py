@@ -27,7 +27,7 @@ TYPE = 'cnt'
 STAT = 'RMSE'
 
 # define control flows to analyze for lineplots 
-CTR_FLW = 'MPAS_60-3_CA'
+CTR_FLW = 'nghido_letkf_OIE60km_WarmStart_aro_01.02'
 
 # ensemble member indices to plot
 MEM = 'mean'
@@ -36,19 +36,19 @@ MEM = 'mean'
 GRD = ''
 
 # starting valid date for verification (string YYYYMMDDHH)
-ANL_STRT = '2022122400'
+ANL_STRT = '2023022300'
 
 # end valid date for verification (string YYYYMMDDHH)
-ANL_STOP = '2022122800'
+ANL_STOP = '2023022600'
 
 # increment between verification valid dates (string HH)
 ANL_INC = '24'
 
 # Max forecast lead hours
-MAX_LD = '120'
+MAX_LD = '168'
 
 # increment between zero hours for forecast data (string HH)
-CYC_INC = '24'
+CYC_INC = '12'
 
 # Land mask for verification
 MSK = 'CA_All'
@@ -58,13 +58,13 @@ MSK = 'CA_All'
 ##################################################################################
 # List of indices for the underscore-separated components of control flow name
 # to use in the plot title
-LAB_IDX = [0, 2]
+LAB_IDX = [1, 2,3,4]
 
 # Include ensemble index in plot title True or False
-ENS_LAB = False
+ENS_LAB = True
 
 # Include model grid in plot title True or False
-GRD_LAB = True
+GRD_LAB = False
 
 # Plot title generated from above parameters
 TITLE = STAT + ' - '

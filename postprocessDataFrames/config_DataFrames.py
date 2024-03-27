@@ -44,13 +44,13 @@ GRDS = [
        ]
 
 # starting date and zero hour of forecast cycles (string YYYYMMDDHH)
-STRT_DT = '2023021900'
+STRT_DT = '2023021818'
 
 # final date and zero hour of data of forecast cycles (string YYYYMMDDHH)
 STOP_DT = '2023022000'
 
 # increment between zero hours for forecast data (string HH)
-CYC_INC = '12'
+CYC_INC = '6'
 
 # Min forecast lead time to proces in hours (string HH)
 ANL_MIN = '24'

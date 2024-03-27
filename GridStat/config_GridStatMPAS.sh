@@ -50,18 +50,18 @@ export VRF_FLD=QPF
 export CAT_THR="[ >0.0, >=10.0, >=25.0, >=50.0, >=100.0 ]"
 
 # Define first and last date time for forecast initialization (YYYYMMDDHH)
-export STRT_DT=2023021900
+export STRT_DT=2023021818
 export STOP_DT=2023022000
 
 # Define the increment between forecast initializations (HH)
-export CYC_INC=12
+export CYC_INC=6
 
 # Define min / max forecast hours for forecast outputs to be processed
 export ANL_MIN=24
 export ANL_MAX=168
 
 # Define the increment at which to process forecast outputs (HH)
-export ANL_INC=24
+export ANL_INC=6
 
 # Compute precipitation accumulation, TRUE or FALSE
 export CMP_ACC=TRUE

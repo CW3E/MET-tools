@@ -59,7 +59,7 @@ ANL_MIN = '24'
 ANL_MAX = '168'
 
 # incrment between verification valid times (string HH)
-ANL_INC = '12'
+ANL_INC = '6'
 
 # Compute precipitation accumulation, True or False
 CMP_ACC=True

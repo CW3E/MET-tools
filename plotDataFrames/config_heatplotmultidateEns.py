@@ -42,16 +42,16 @@ ANL_STRT = '2023022112'
 ANL_STOP = '2023022412'
 
 # increment between verification valid dates (string HH)
-ANL_INC = '12'
+ANL_INC = '24'
 
 # Max forecast lead hours
 MAX_LD = '168'
 
 # increment between zero hours for forecast data (string HH)
-CYC_INC = '12'
+CYC_INC = '6'
 
 # Land mask for verification
-MSK = 'CA_All'
+MSK = 'WA_All'
 
 ##################################################################################
 # PlOT RENDERING PARAMETERS

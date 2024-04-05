@@ -61,7 +61,7 @@ MSK = 'WA_All'
 LAB_IDX = [3]
 
 # Include ensemble index in plot title True or False
-ENS_LAB = True
+ENS_LAB = False
 
 # Include model grid in plot title True or False
 GRD_LAB = False

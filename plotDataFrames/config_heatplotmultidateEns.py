@@ -67,7 +67,7 @@ ENS_LAB = False
 GRD_LAB = False
 
 # Plot title generated from above parameters
-TITLE = STAT + ' - '
+TITLE = STAT + ' (mm)' + ' - '
 split_string = CTR_FLW.split('_')
 split_len = len(split_string)
 idx_len = len(LAB_IDX)

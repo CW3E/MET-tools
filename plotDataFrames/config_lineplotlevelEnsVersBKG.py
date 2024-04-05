@@ -28,15 +28,12 @@ TYPE = 'nbrcnt'
 STATS = ['FSS', 'AFSS']
 
 # threshold value for leveled data plot
-LEV = '>=100.0'
+LEV = '>=50.0'
 
 # define control flows to analyze for lineplots 
 CTR_FLWS = [
-            'WRF',
-            'MPAS_60-3_CA',
-            'GFS',
-            'GEFS',
-            'ECMWF',
+            'nghido_letkf_OIE60km_WarmStart_ctrl_01.01',
+            'nghido_letkf_OIE60km_WarmStart_aro_01.02'
            ]
 
 # ensemble member indices to plot, searches matching patterns
@@ -49,9 +46,7 @@ MEM_IDS += ['mean']
 # verification domains to plot, searches matching patterns, supply empty string
 # if not needed
 GRDS = [
-        '',
-        'd01',
-        'd02',
+        ''
        ]
 
 # starting date and zero hour of forecast cycles (string YYYYMMDDHH)

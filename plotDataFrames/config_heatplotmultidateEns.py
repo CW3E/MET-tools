@@ -27,7 +27,7 @@ TYPE = 'cnt'
 STAT = 'RMSE'
 
 # define control flows to analyze for lineplots 
-CTR_FLW = 'nghido_letkf_OIE60km_WarmStart_aro_01.02'
+CTR_FLW = 'nghido_letkf_OIE60km_WarmStart_ctrl_01.01'
 
 # ensemble member indices to plot
 MEM = 'mean'

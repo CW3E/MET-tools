@@ -55,10 +55,10 @@ STRT_DT = '2023021818'
 STOP_DT = '2023022000'
 
 # increment between zero hours for forecast data (string HH)
-CYC_INC = '24'
+CYC_INC = '6'
 
 # Verification valid date
-VALID_DT = '2022122800'
+VALID_DT = '2023022112'
 
 # Land mask for verification
 MSK = 'WA_All'

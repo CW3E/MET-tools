@@ -37,8 +37,7 @@ CTR_FLWS = [
            ]
 
 # ensemble member indices to plot, searches matching patterns
-MEM_IDS = ['']
-MEM_IDS += ['mean']
+MEM_IDS = ['mean']
 
 #for i_m in range(0,6):
 #    MEM_IDS += ['ens_' + str(i_m).zfill(2)]
@@ -62,20 +61,20 @@ CYC_INC = '24'
 VALID_DT = '2022122800'
 
 # Land mask for verification
-MSK = 'CA_All'
+MSK = 'WA_All'
 
 ##################################################################################
 # PlOT RENDERING PARAMETERS
 ##################################################################################
 # List of indices for the underscore-separated components of control flow name
 # to use in the plot legend
-LAB_IDX = [0, 2]
+LAB_IDX = [1, 4]
 
 # Include ensemble index in legend label True or False
 ENS_LAB = False
 
 # Include model grid in legend label True or False
-GRD_LAB = True
+GRD_LAB = False
 
 # Plot title generated from above parameters
 TITLE='24hr accumulated precip at ' + VALID_DT[:4] + '-' + VALID_DT[4:6] + '-' +\

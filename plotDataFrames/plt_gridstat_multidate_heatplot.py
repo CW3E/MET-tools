@@ -257,7 +257,7 @@ sns.heatmap(tmp[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale,
 
 # generate tic labels based on hour values
 for i in range(num_leads):
-    fcst_leads[i] = fcst_leads[i][:-4]
+    fcst_leads[i] = fcst_leads[i][:-2]
 #fcst_leads = [x for x in range(0, 169, 6)]
 
 ax0.set_yticklabels(ax0.get_yticklabels(), rotation=270, va='top')

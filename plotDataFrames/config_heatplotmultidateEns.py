@@ -36,13 +36,13 @@ MEM = 'mean'
 GRD = ''
 
 # starting valid date for verification (string YYYYMMDDHH)
-ANL_STRT = '2023022112'
+ANL_STRT = '2023022100'
 
 # end valid date for verification (string YYYYMMDDHH)
-ANL_STOP = '2023022412'
+ANL_STOP = '2023022400'
 
 # increment between verification valid dates (string HH)
-ANL_INC = '24'
+ANL_INC = '12'
 
 # Max forecast lead hours
 MAX_LD = '168'
@@ -58,7 +58,7 @@ MSK = 'WA_All'
 ##################################################################################
 # List of indices for the underscore-separated components of control flow name
 # to use in the plot title
-LAB_IDX = [1, 2,3,4]
+LAB_IDX = [3]
 
 # Include ensemble index in plot title True or False
 ENS_LAB = True

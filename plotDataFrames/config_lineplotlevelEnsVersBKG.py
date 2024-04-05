@@ -49,10 +49,10 @@ GRDS = [
        ]
 
 # starting date and zero hour of forecast cycles (string YYYYMMDDHH)
-STRT_DT = '2022122300'
+STRT_DT = '2023021818'
 
 # final date and zero hour of data of forecast cycles (string YYYYMMDDHH)
-STOP_DT = '2022122700'
+STOP_DT = '2023022000'
 
 # increment between zero hours for forecast data (string HH)
 CYC_INC = '24'

@@ -223,7 +223,7 @@ for i_nd in range(num_dates):
             # on the first lead-loop of each date pack the date tick labels
             if ( i_nd % 2 ) == 0 or num_dates < 10:
               # if 10 or more dates, only use every other as a label
-              fcst_dates.append(anl_dts[i_nd].strftime('%Y%m%d'))
+              fcst_dates.append(anl_dts[i_nd].strftime('%Y%m%d_%H'))
             else:
                 fcst_dates.append('')
 

@@ -92,7 +92,7 @@ SUBTITLE += ', Threshold ' + LEV + ' mm'
 # I/O PARAMETERS
 ##################################################################################
 # Case study directory structure for input data
-CSE = 'DeepDive/2022122800_valid_date'
+CSE = '2023021818_cycle_start'
 
 # saved figure path case study subdirectory
 FIG_CSE = ''

@@ -45,7 +45,7 @@ ANL_STOP = '2023022212'
 ANL_INC = '12'
 
 # Max forecast lead hours
-MAX_LD = '168'
+MAX_LD = '96'
 
 # increment between zero hours for forecast data (string HH)
 CYC_INC = '6'

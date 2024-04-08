@@ -305,7 +305,7 @@ ax0.tick_params(
 ax0.set_yticks(ax0.get_yticks(), ax0.get_yticklabels(), va='bottom')
 ax1.set_yticks(ax1.get_yticks(), ax1.get_yticklabels(), va='top')
 
-lab0=STATS[0]
+lab0=STATS[0] + ' (mm)'
 lab1=STATS[1]
 lab2='Forecast lead hrs'
 plt.figtext(.5, .98, TITLE, horizontalalignment='center',

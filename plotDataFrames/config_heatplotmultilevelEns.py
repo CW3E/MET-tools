@@ -27,7 +27,7 @@ TYPE = 'nbrcnt'
 STAT = 'FSS'
 
 # define control flows to analyze for lineplots 
-CTR_FLW = 'nghido_letkf_OIE60km_WarmStart_ctrl_01.01'
+CTR_FLW = 'nghido_letkf_OIE60km_WarmStart_aro_01.02'
 
 # ensemble member indices to plot
 MEM = 'mean'

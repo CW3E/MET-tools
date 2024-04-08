@@ -63,10 +63,10 @@ MSK = 'WA_All'
 ##################################################################################
 # List of indices for the underscore-separated components of control flow name
 # to use in the plot legend
-LAB_IDX = [1,2,3,4]
+LAB_IDX = [1,4]
 
 # Include ensemble index in legend label True or False
-ENS_LAB = True
+ENS_LAB = False
 
 # Include model grid in legend label True or False
 GRD_LAB = False

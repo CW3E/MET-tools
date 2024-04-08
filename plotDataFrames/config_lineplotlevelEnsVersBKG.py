@@ -28,7 +28,7 @@ TYPE = 'nbrcnt'
 STATS = ['FSS', 'AFSS']
 
 # threshold value for leveled data plot
-LEV = '>=50.0'
+LEV = '>=25.0'
 
 # define control flows to analyze for lineplots 
 CTR_FLWS = [

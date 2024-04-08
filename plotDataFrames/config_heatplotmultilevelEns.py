@@ -52,7 +52,7 @@ MSK = 'WA_All'
 ##################################################################################
 # List of indices for the underscore-separated components of control flow name
 # to use in the plot title
-LAB_IDX = [4]
+LAB_IDX = [1,4]
 
 # Include ensemble index in plot title True or False
 ENS_LAB = False

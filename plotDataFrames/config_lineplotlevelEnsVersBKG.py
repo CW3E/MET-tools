@@ -22,7 +22,7 @@ MET_TOOL = 'GridStat'
 PRFX = 'grid_stat_QPF_24hr'
 
 # MET stat file type - should be leveled data
-TYPE = 'nbrcnt'
+TYPE = 'nbrcts'
 
 # MET stat column names to be made to heat plots / labels
 STATS = ['CSI', 'GSS']

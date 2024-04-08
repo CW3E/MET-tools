@@ -25,7 +25,7 @@ PRFX = 'grid_stat_QPF_24hr'
 TYPE = 'nbrcnt'
 
 # MET stat column names to be made to heat plots / labels
-STATS = ['FSS', 'AFSS']
+STATS = ['CSI', 'GSS']
 
 # threshold value for leveled data plot
 LEV = '>=25.0'

@@ -208,7 +208,7 @@ for i_nv in range(num_levs):
               # if 10 or more dates, only use every other as a label
               lead_labs.append(fcst_leads[i_nl][:-4])
             else:
-                fcst_dates.append('')
+                lead_labs.append('')
 
         try:
             # try to load data for the date / lead combination

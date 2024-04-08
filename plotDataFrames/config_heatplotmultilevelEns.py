@@ -121,7 +121,7 @@ COLOR_MAP = sns.color_palette('flare', as_cmap=True)
 # I/O PARAMETERS
 ##################################################################################
 # Case study directory structure for input data
-CSE = 'DeepDive/2022122800_valid_date'
+CSE = '2023021818_cycle_start'
 
 # figure case study nesting
 FIG_CSE = ''

@@ -53,7 +53,7 @@ STOP_DT = '2023022000'
 CYC_INC = '6'
 
 # Verification valid date
-VALID_DT = '2023022100'
+VALID_DT = '2023022012'
 
 # Land mask for verification
 MSK = 'WA_All'

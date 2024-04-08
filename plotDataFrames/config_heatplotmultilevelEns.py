@@ -27,7 +27,7 @@ TYPE = 'nbrcnt'
 STAT = 'FSS'
 
 # define control flows to analyze for lineplots 
-CTR_FLW = 'MPAS_60-3_CA'
+CTR_FLW = 'nghido_letkf_OIE60km_WarmStart_ctrl_01.01'
 
 # ensemble member indices to plot
 MEM = 'mean'
@@ -36,29 +36,29 @@ MEM = 'mean'
 GRD = ''
 
 # valid date for verification (string YYYYMMDDHH)
-VLD_DT = '2022122800'
+VLD_DT = '2023022112'
 
 # increment between zero hours for forecast data (string HH)
-CYC_INC = '24'
+CYC_INC = '6'
 
 # Max forecast lead hours
-MAX_LD = '120'
+MAX_LD = '96'
 
 # Land mask for verification
-MSK = 'CA_All'
+MSK = 'WA_All'
 
 ##################################################################################
 # PlOT RENDERING PARAMETERS
 ##################################################################################
 # List of indices for the underscore-separated components of control flow name
 # to use in the plot title
-LAB_IDX = [0, 2]
+LAB_IDX = [4]
 
 # Include ensemble index in plot title True or False
 ENS_LAB = False
 
 # Include model grid in plot title True or False
-GRD_LAB = True
+GRD_LAB = False
 
 # Plot title generated from above parameters
 TITLE = STAT + ' - '

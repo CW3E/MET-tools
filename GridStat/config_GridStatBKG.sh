@@ -13,18 +13,16 @@ source ../config_MET-tools.sh
 
 # Define the case-wise sub-directory for path names with case-study nesting,
 # leave as empty string "" if not needed
-export CSE=DeepDive/2022122800_valid_date
+export CSE=2023021818_cycle_start
 
 # Array of control flow names to be processed
 export CTR_FLWS=( 
                  "ECMWF"
                  "GFS"
-                 "GEFS"
                 )
 
 # Define interpolation neighborhood size in 1-1 correspondence with control flows
 export INT_WDTHS=( 
-                  "3"
                   "3"
                   "3"
                  )
@@ -36,15 +34,15 @@ export VRF_FLD=QPF
 export CAT_THR="[ >0.0, >=10.0, >=25.0, >=50.0, >=100.0 ]"
 
 # Define first and last date time for forecast initialization (YYYYMMDDHH)
-export STRT_DT=2022122300
-export STOP_DT=2022122700
+export STRT_DT=2023021818
+export STOP_DT=2023022200
 
 # Define the increment between forecast initializations (HH)
-export CYC_INC=24
+export CYC_INC=6
 
 # Define min / max forecast hours for forecast outputs to be processed
 export ANL_MIN=24
-export ANL_MAX=120
+export ANL_MAX=168
 
 # Define the increment at which to process forecast outputs (HH)
 export ANL_INC=24
@@ -63,7 +61,7 @@ export ACC_INC=24
 export NBRHD_WDTH=9
 
 # Number of bootstrap resamplings, set 0 for off
-export BTSTRP=1000
+export BTSTRP=0
 
 # Rank correlation computation flag, TRUE or FALSE
-export RNK_CRR=TRUE
+export RNK_CRR=FALSE

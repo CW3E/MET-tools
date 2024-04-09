@@ -13,7 +13,7 @@ source ../config_MET-tools.sh
 
 # Define the case-wise sub-directory for path names with case-study nesting,
 # leave as empty string "" if not needed
-export CSE=2023021818_cycle_start
+export CSE=""
 
 # Array of control flow names to be processed
 export CTR_FLWS=( 

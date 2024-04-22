@@ -1,14 +1,12 @@
 #!/bin/bash
-#SBATCH --account=cwp157
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=16
-#SBATCH --mem=20G
-#SBATCH -p cw3e-shared
-#SBATCH -t 01:00:00
-#SBATCH -J GenEnsProdMPAS
-#SBATCH -o ./logs/GenEnsProdMPAS-%A_%a.out
-#SBATCH --export=ALL
-#SBATCH --array=0-9
+#PBS -q main
+#PBS -A UCSD0047 
+#PBS -l select=1:ncpus=128:mpiprocs=32
+#PBS -l walltime=01:00:00
+#PBS -N GenEnsProdMPAS 
+#PBS -o ./logs/GenEnsProdMPAS.out
+#PBS -j oe 
+#PBS -J 0-1
 ##################################################################################
 # Description
 ##################################################################################
@@ -162,8 +160,10 @@ done
 
 ##################################################################################
 # run the processing script looping parameter arrays
-jbid=${SLURM_ARRAY_JOB_ID}
-indx=${SLURM_ARRAY_TASK_ID}
+jbid=${PBS_JOBID}
+indx=${PBS_ARRAY_INDEX}
+
+mv ./logs/GenEnsProdMPAS.out ./logs/GenEnsProdMPAS_${jbid}_${indx}.out
 
 printf "Processing data for job index ${indx}."
 printf "Loading configuration parameters ${cfgs[$indx]}:"

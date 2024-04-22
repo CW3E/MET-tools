@@ -17,23 +17,23 @@ export CSE=DeepDive/2022122800_valid_date
 
 # Array of control flow names to be processed
 export CTR_FLWS=( 
-                 "MPAS_60-3_WWRF"
-                 "MPAS_60-3_CA"
+                 "nghido_letkf_OIE60km_WarmStart_aro_01.02"
+		             "nghido_letkf_OIE60km_WarmStart_ctrl_01.01"
                 )
 
 # Prefix for ensemble members directory names
-export ENS_PRFX="ens_"
+export ENS_PRFX="mem"
 
 # Min and max ensemble index to process (includes control index)
-export ENS_MIN=00
-export ENS_MAX=05
+export ENS_MIN=001
+export ENS_MAX=001
 
 # Number of digits to padd ensemble index to
-export ENS_PDD=2
+export ENS_PDD=3
 
 # Define control member index, not to be used in ensemble spread calculation,
 # defined as empty string if not necessary
-export CTR_MEM=00
+export CTR_MEM=""
 
 # Neighborhood widths for neighborhood methods,
 # references model grid with 1-1 correspondence
@@ -46,18 +46,18 @@ export CAT_THR="[ >0.0, >=10.0, >=25.0, >=50.0, >=100.0 ]"
 export VRF_FLD=QPF
 
 # Define first and last date time for forecast initialization (YYYYMMDDHH)
-export STRT_DT=2022122300
-export STOP_DT=2022122700
+export STRT_DT=2023021818
+export STOP_DT=2023022000
 
 # Define the increment between forecast initializations (HH)
-export CYC_INC=24
+export CYC_INC=6
 
 # Define min / max forecast hours for forecast outputs to be processed
-export ANL_MIN=24
-export ANL_MAX=120
+export ANL_MIN=0
+export ANL_MAX=168
 
 # Define the increment at which to process forecast outputs (HH)
-export ANL_INC=24
+export ANL_INC=6
 
 # Compute precipitation accumulation, TRUE or FALSE
 export CMP_ACC=TRUE
@@ -67,7 +67,7 @@ export FULL_ENS=FALSE
 
 # Defines the min / max accumulation interval for precip
 export ACC_MIN=24
-export ACC_MAX=72
+export ACC_MAX=24
 
 # Defines the steps between min / max to compute accumulation intervals
 export ACC_INC=24

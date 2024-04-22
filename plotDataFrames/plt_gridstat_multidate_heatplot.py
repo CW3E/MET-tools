@@ -242,7 +242,7 @@ for i_nd in range(num_dates):
             # on the first lead-loop of each date pack the date tick labels
             if ( i_nd % 2 ) == 0 or num_dates < 10:
               # if 10 or more dates, only use every other as a label
-              fcst_dates.append(anl_dts[i_nd].strftime('%Y%m%d'))
+              fcst_dates.append(anl_dts[i_nd].strftime('%Y%m%d_%H'))
             else:
                 fcst_dates.append('')
 
@@ -277,6 +277,7 @@ sns.heatmap(tmp[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale,
 # generate tic labels based on hour values
 for i in range(num_leads):
     fcst_leads[i] = fcst_leads[i][:-4]
+#fcst_leads = [x for x in range(0, 169, 6)]
 
 ax0.set_yticklabels(ax0.get_yticklabels(), rotation=270, va='top')
 ax1.set_xticklabels(fcst_dates, rotation=45, ha='right')

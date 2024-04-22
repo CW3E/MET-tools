@@ -27,16 +27,12 @@ STATS = ['RMSE', 'PR_CORR']
 
 # define control flows to analyze for lineplots 
 CTR_FLWS = [
-            'WRF',
-            'MPAS_60-3_CA',
-            'GFS',
-            'GEFS',
-            'ECMWF',
+            'nghido_letkf_OIE60km_WarmStart_aro_01.02',
+            'nghido_letkf_OIE60km_WarmStart_ctrl_01.01'
            ]
 
 # ensemble member indices to plot, searches matching patterns
-MEM_IDS = ['']
-MEM_IDS += ['mean']
+MEM_IDS = ['mean']
 
 #for i_m in range(0,6):
 #    MEM_IDS += ['ens_' + str(i_m).zfill(2)]
@@ -44,38 +40,36 @@ MEM_IDS += ['mean']
 # verification domains to plot, searches matching patterns, supply empty string
 # if not needed
 GRDS = [
-        '',
-        'd01',
-        'd02',
+        ''
        ]
 
 # starting date and zero hour of forecast cycles (string YYYYMMDDHH)
-STRT_DT = '2022122300'
+STRT_DT = '2023021818'
 
 # final date and zero hour of data of forecast cycles (string YYYYMMDDHH)
-STOP_DT = '2022122700'
+STOP_DT = '2023022000'
 
 # increment between zero hours for forecast data (string HH)
-CYC_INC = '24'
+CYC_INC = '6'
 
 # Verification valid date
-VALID_DT = '2022122800'
+VALID_DT = '2023022200'
 
 # Land mask for verification
-MSK = 'CA_All'
+MSK = 'WA_All'
 
 ##################################################################################
 # PlOT RENDERING PARAMETERS
 ##################################################################################
 # List of indices for the underscore-separated components of control flow name
 # to use in the plot legend
-LAB_IDX = [0, 2]
+LAB_IDX = [1,4]
 
 # Include ensemble index in legend label True or False
 ENS_LAB = False
 
 # Include model grid in legend label True or False
-GRD_LAB = True
+GRD_LAB = False
 
 # Plot title generated from above parameters
 TITLE='24hr accumulated precip at ' + VALID_DT[:4] + '-' + VALID_DT[4:6] + '-' +\
@@ -91,7 +85,7 @@ for split in lnd_msk_split:
 # I/O PARAMETERS
 ##################################################################################
 # Case study directory structure for input data
-CSE = 'DeepDive/2022122800_valid_date'
+CSE = '2023021818_cycle_start'
 
 # saved figure path case study subdirectory
 FIG_CSE = ''

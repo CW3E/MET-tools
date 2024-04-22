@@ -27,7 +27,7 @@ TYPE = 'cnt'
 STAT = 'RMSE'
 
 # define control flows to analyze for lineplots 
-CTR_FLW = 'MPAS_60-3_CA'
+CTR_FLW = 'nghido_letkf_OIE60km_WarmStart_ctrl_01.01'
 
 # ensemble member indices to plot
 MEM = 'mean'
@@ -36,38 +36,38 @@ MEM = 'mean'
 GRD = ''
 
 # starting valid date for verification (string YYYYMMDDHH)
-ANL_STRT = '2022122400'
+ANL_STRT = '2023022000'
 
 # end valid date for verification (string YYYYMMDDHH)
-ANL_STOP = '2022122800'
+ANL_STOP = '2023022212'
 
 # increment between verification valid dates (string HH)
-ANL_INC = '24'
+ANL_INC = '12'
 
 # Max forecast lead hours
-MAX_LD = '120'
+MAX_LD = '96'
 
 # increment between zero hours for forecast data (string HH)
-CYC_INC = '24'
+CYC_INC = '6'
 
 # Land mask for verification
-MSK = 'CA_All'
+MSK = 'WA_All'
 
 ##################################################################################
 # PlOT RENDERING PARAMETERS
 ##################################################################################
 # List of indices for the underscore-separated components of control flow name
 # to use in the plot title
-LAB_IDX = [0, 2]
+LAB_IDX = [1,4]
 
 # Include ensemble index in plot title True or False
 ENS_LAB = False
 
 # Include model grid in plot title True or False
-GRD_LAB = True
+GRD_LAB = False
 
 # Plot title generated from above parameters
-TITLE = STAT + ' - '
+TITLE = STAT + ' (mm)' + ' - '
 split_string = CTR_FLW.split('_')
 split_len = len(split_string)
 idx_len = len(LAB_IDX)
@@ -125,7 +125,7 @@ COLOR_MAP = sns.color_palette('viridis', as_cmap=True)
 # I/O PARAMETERS
 ##################################################################################
 # Case study directory structure for input data
-CSE = 'DeepDive/2022122800_valid_date'
+CSE = '2023021818_cycle_start'
 
 # figure case study nesting
 FIG_CSE = ''

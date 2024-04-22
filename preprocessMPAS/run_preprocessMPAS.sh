@@ -51,7 +51,12 @@
 #
 #################################################################################
 # Check for required fields
-#################################################################################
+#################################################################################i
+#these variables are hard coded for testing purposes. 
+#eventually these variables will be automatically constructed just like field_in_dir and f_in
+mesh_in_dir=/glade/derecho/scratch/nghido/sio-cw3e/GenerateGFSAnalyses/ExternalAnalyses/60km/2023021900/
+m_in=x1.163842.init.2023-02-19_00.00.00.nc
+
 # export all configurations supplied as an array of string definitions
 printf "Loading configuration parameters:\n"
 for cmd in "$@"; do
@@ -268,7 +273,7 @@ fcst_hrs=$(( (`date +%s -d "${stop_dt}"` - `date +%s -d "${strt_dt}"`) / 3600 ))
 for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
   # directory string for forecast analysis initialization time
   cyc_dt=`date +%Y%m%d%H -d "${strt_dt} ${cyc_hr} hours"`
-  in_dir=${IN_DT_ROOT}/${cyc_dt}${IN_DT_SUBDIR}
+  field_in_dir=${IN_DT_ROOT}/${cyc_dt}${IN_DT_SUBDIR}
 
   # set output path
   wrk_dir=${OUT_DT_ROOT}/${cyc_dt}${OUT_DT_SUBDIR}
@@ -284,7 +289,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
   fi
 
   # clean work directory from previous mpas regridded lat lon files
-  cmd="rm -f ${wrk_dir}/*.latlon.*"
+  cmd="rm -f ${wrk_dir}/*latlon*"
   printf "${cmd}\n"; eval "${cmd}"
 
   # clean work directory from previous mpascf files
@@ -296,30 +301,30 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
   printf "${cmd}\n"; eval "${cmd}"
 
   # set input paths
-  if [ ! -d ${in_dir} ]; then
-    msg="WARNING: data input path\n ${in_dir}\n does not exist,"
+  if [ ! -d ${field_in_dir} ]; then
+    msg="WARNING: data input path\n ${field_in_dir}\n does not exist,"
     msg+="skipping analysis for ${cyc_dt}.\n"
     printf "${msg}"
   else
-    printf "Processing forecasts in\n ${in_dir}\n directory.\n"
+    printf "Processing forecasts in\n ${field_in_dir}\n directory.\n"
   
     # Define directory privileges for singularity exec MET
-    met="singularity exec -B ${wrk_dir}:/wrk_dir:rw,${wrk_dir}:/in_dir:ro ${MET}"
+    met="apptainer exec -B ${wrk_dir}:/wrk_dir:rw,${wrk_dir}:/field_in_dir:ro ${MET}"
 
     # Define directory privileges for singularity exec MET_TOOLS_PY
-    met_tools_py="singularity exec -B "
-    met_tools_py+="${wrk_dir}:/wrk_dir:rw,${in_dir}:/in_dir:ro,${scrpt_dir}:/scrpt_dir:ro "
+    met_tools_py="apptainer exec -B "
+    met_tools_py+="${wrk_dir}:/wrk_dir:rw,${field_in_dir}:/field_in_dir:ro,${scrpt_dir}:/scrpt_dir:ro "
     met_tools_py+="${MET_TOOLS_PY} python"
 
     # loop lead hours for forecast valid time for each initialization time
     for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INC} )); do
       # define valid times for mpascf precip evenly spaced
       anl_hr=$(( ${lead_hr} + ${cyc_hr} ))
-      anl_dt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_hr} hours"`
+      anl_dt=`date +%Y-%m-%d_%H.%M.%S -d "${strt_dt} ${anl_hr} hours"`
 
       # set input file name
-      cd ${in_dir}
-      f_in=`ls ${in_dir}/*.history.*${anl_dt}.nc`
+      cd ${field_in_dir}
+      f_in=`ls ${field_in_dir}/diag.${anl_dt}.nc`
 
       if [[ -r ${f_in} ]]; then
         cmd="cd ${wrk_dir}"
@@ -329,9 +334,9 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
         f_in=`basename ${f_in}`
 
         # run script from work directory to hold temp outputs from convert_mpas
-        cmd="${scrpt_dir}/mpas_to_latlon.sh ${CONVERT_MPAS} ${wrk_dir} ${in_dir} ${f_in}"
+        cmd="${scrpt_dir}/mpas_to_latlon.sh ${CONVERT_MPAS} ${wrk_dir} ${mesh_in_dir} ${m_in} ${field_in_dir} ${f_in}"
         printf "${cmd}\n"
-        ${scrpt_dir}/mpas_to_latlon.sh ${CONVERT_MPAS} ${wrk_dir} ${in_dir} ${f_in}
+        ${scrpt_dir}/mpas_to_latlon.sh ${CONVERT_MPAS} ${wrk_dir} ${mesh_in_dir} ${m_in} ${field_in_dir} ${f_in}
         error=$?
 
         if [ ${error} -ne 0 ]; then
@@ -340,14 +345,14 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
         fi
 
         # set temporary lat-lon file name from work directory
-        f_tmp=`ls *.latlon.*${anl_dt}.nc`
+        f_tmp=`ls *latlon*${anl_dt}.nc`
         
         # set output cf file name, convert to cf from latlon tmp
         # NOTE: currently convert_mpas doesn't carry time coords from input
         # to regridded output, f_in is reused here to recover timing information
         f_out="mpascf_${anl_dt}.nc"
         cmd="${met_tools_py} /scrpt_dir/mpas_to_cf.py"
-        cmd+=" '/wrk_dir/${f_tmp}' '/wrk_dir/${f_out}' '/in_dir/${f_in}'"
+        cmd+=" '/wrk_dir/${f_tmp}' '/wrk_dir/${f_out}' '/field_in_dir/${f_in}'"
         printf "${cmd}\n"; eval "${cmd}"
 
       else
@@ -364,8 +369,8 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
             acc_stop=$(( ${lead_hr} + ${cyc_hr} ))
 
             # start / stop date strings
-            anl_strt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${acc_strt} hours"`
-            anl_stop=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${acc_stop} hours"`
+            anl_strt=`date +%Y-%m-%d_%H.%M.%S -d "${strt_dt} ${acc_strt} hours"`
+            anl_stop=`date +%Y-%m-%d_%H.%M.%S -d "${strt_dt} ${acc_stop} hours"`
 
             # define padded forecast hour for name strings
             pdd_hr=`printf %03d $(( 10#${lead_hr} ))`
@@ -375,7 +380,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
 
             # Combine precip to accumulation period 
             cmd="${met} pcp_combine \
-            -subtract /in_dir/mpascf_${anl_stop}.nc /in_dir/mpascf_${anl_strt}.nc\
+            -subtract /field_in_dir/mpascf_${anl_stop}.nc /field_in_dir/mpascf_${anl_strt}.nc\
             /wrk_dir/${mpas_acc} \
             -field 'name=\"precip\"; level=\"(0,*,*)\";'\
             -name \"QPF_${acc_hr}hr\" "

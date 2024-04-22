@@ -9,28 +9,31 @@
 ##################################################################################
 # MODULE LOADS
 ##################################################################################
-module load singularitypro/3.9
-module load cpu/0.17.3b
-module load gcc/10.2.0/npcyll4
-module load openmpi/4.1.1
+module load gcc/13.2.0
+module load ncarenv/23.06
+module load apptainer/1.1.7
+module load intel/2023.0.0
+module load openmpi/main
 
 ##################################################################################
 # HPC PARAMETERS
 ##################################################################################
+export MPAS_MESH=/glade/derecho/scratch/nghido/sio-cw3e/GenerateGFSAnalyses/ExternalAnalyses/60km/2023021900/x1.163842.init.2023-02-19_00.00.00.nc
+
 # Root directory for MET-tools git clone
-export USR_HME=/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/MET-tools
+export USR_HME=/glade/work/ersawyer/derecho/MET-tools
 
 # Root directory of simulation IO
-export SIM_ROOT=/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/SIMULATION_IO
+export SIM_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO
 
 # Root directory of simulation verification IO
-export VRF_ROOT=/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/VERIFICATION
+export VRF_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/VERIFICATION
 
 # Root directory for verification static data
-export STC_ROOT=/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/DATA/DeepDive/Verification
+export STC_ROOT=/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/Verification
 
 # Root directory for software environment singularity images
-export SOFT_ROOT=/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/SOFT_ROOT
+export SOFT_ROOT=/glade/work/ersawyer/derecho/SOFT_ROOT
 
 # MET version
 export MET_VER="11.0.1"

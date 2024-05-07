@@ -18,19 +18,22 @@ module load openmpi/4.1.1
 # HPC PARAMETERS
 ##################################################################################
 # Root directory for MET-tools git clone
-export USR_HME=/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/MET-tools
+export USR_HME=/expanse/nfs/cw3e/cwp168/MET-tools
 
 # Root directory of simulation IO
-export SIM_ROOT=/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/SIMULATION_IO
+export SIM_ROOT=/expanse/nfs/cw3e/cwp168/SIMULATION_IO
 
 # Root directory of simulation verification IO
-export VRF_ROOT=/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/VERIFICATION
+export VRF_ROOT=/expanse/nfs/cw3e/cwp168/VERIFICATION_IO
 
 # Root directory for verification static data
-export STC_ROOT=/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/DATA/DeepDive/Verification
+export STC_ROOT=/expanse/nfs/cw3e/cwp168/DATA/VERIFICATION_STATIC
+
+# Root directory for landmasks, lat-lon files, and reference grids
+export MSK_ROOT=${USR_HME}/vxmask
 
 # Root directory for software environment singularity images
-export SOFT_ROOT=/expanse/nfs/cw3e/cwp157/cgrudzien/JEDI-MPAS-Common-Case/SOFT_ROOT
+export SOFT_ROOT=/expanse/nfs/cw3e/cwp168/SOFT_ROOT
 
 # MET version
 export MET_VER="11.0.1"

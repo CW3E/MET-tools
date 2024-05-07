@@ -125,7 +125,7 @@ COLOR_MAP = sns.color_palette('viridis', as_cmap=True)
 # I/O PARAMETERS
 ##################################################################################
 # Case study directory structure for input data
-CSE = 'DeepDive/2022122800_valid_date'
+CSE = '2022122800_valid_date'
 
 # figure case study nesting
 FIG_CSE = ''

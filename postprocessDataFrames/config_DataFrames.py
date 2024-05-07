@@ -14,7 +14,7 @@ INDT = os.environ['INDT']
 # DATAFRAME PARAMETERS
 ##################################################################################
 # Case study directory structure
-CSE = 'DeepDive/2022122800_valid_date'
+CSE = '2022122800_valid_date'
 
 # MET-tool subdirectory name
 MET_TOOL = 'GridStat'

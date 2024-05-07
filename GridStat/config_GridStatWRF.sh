@@ -13,11 +13,17 @@ source ../config_MET-tools.sh
 
 # Define the case-wise sub-directory for path names with case-study nesting,
 # leave as empty string "" if not needed
-export CSE=DeepDive/2022122800_valid_date
+export CSE=2022122800_valid_date
+
+# Verification region group name
+export VRF_RGN=CA_Climate_Zone
+
+# Path to file with list of landmasks for verification regions
+export MSK_LST=${MSK_ROOT}/mask-lists/${VRF_RGN}_MaskList.txt
 
 # Array of control flow names to be processed
 export CTR_FLWS=( 
-                 "WRF"
+                 "WRF-9-3"
                 )
 
 # If computing ensemble mean verification

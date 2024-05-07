@@ -13,7 +13,7 @@ source ../config_MET-tools.sh
 
 # Define the case-wise sub-directory for path names with case-study nesting,
 # leave as empty string "" if not needed
-export CSE=DeepDive/2022122800_valid_date
+export CSE=2022122800_valid_date
 
 # Array of control flow names to be processed
 export CTR_FLWS=( 

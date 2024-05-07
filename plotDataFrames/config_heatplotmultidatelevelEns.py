@@ -129,7 +129,7 @@ COLOR_MAP = sns.cubehelix_palette(20, start=.75, rot=1.50, as_cmap=True,
 # I/O PARAMETERS
 ##################################################################################
 # Case study directory structure for input data
-CSE = 'DeepDive/2022122800_valid_date'
+CSE = '2022122800_valid_date'
 
 # figure case study nesting
 FIG_CSE = ''

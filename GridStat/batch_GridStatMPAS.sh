@@ -62,7 +62,6 @@
 
 # Source configuration for gridstat MPAS
 source ./config_GridStatMPAS.sh
-source ../vxmask/config_vxmask.sh
 
 # root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
 export IN_ROOT=${VRF_ROOT}/${CSE}

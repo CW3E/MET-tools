@@ -62,7 +62,6 @@
 
 # Source configuration for gridstat background global models
 source ./config_GridStatBKG.sh
-source ../vxmask/config_vxmask.sh
 
 # root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
 export IN_ROOT=${STC_ROOT}

@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --account=cwp157
+#SBATCH --account=cwp168
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=128
 #SBATCH --mem=20G
@@ -53,7 +53,6 @@
 # OBLIGATIONS TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
 # MODIFICATIONS.
 # 
-# 
 ##################################################################################
 # SET GLOBAL PARAMETERS
 ##################################################################################
@@ -63,13 +62,7 @@
 # Source configuration for gridstat background global models
 source ./config_GridStatBKG.sh
 
-# root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
-export IN_ROOT=${STC_ROOT}
-
-# root directory for cycle time (YYYYMMDDHH) directories of gridstat outputs
-export OUT_ROOT=${VRF_ROOT}/${CSE}
-
-# set number of openmpi threads
+# set number of openmpi threads, should match procs per node
 export OMP_NUM_THREADS=128
 
 ##################################################################################

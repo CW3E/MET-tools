@@ -15,6 +15,12 @@ source ../config_MET-tools.sh
 # leave as empty string "" if not needed
 export CSE=2022122800_valid_date
 
+# root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
+export IN_ROOT=${VRF_ROOT}/${CSE}
+
+# root directory for cycle time (YYYYMMDDHH) directories of gridstat outputs
+export OUT_ROOT=${VRF_ROOT}/${CSE}
+
 # Array of control flow names to be processed
 export CTR_FLWS=( 
                  "WRF"

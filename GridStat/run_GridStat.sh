@@ -366,10 +366,10 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
   cyc_dt=`date +%Y%m%d%H -d "${strt_dt} ${cyc_hr} hours"`
 
   # cycle date directory of cf-compliant input files
-  in_dir=${IN_DT_ROOT}/${cyc_dt}${IN_DT_SUBDIR}
+  in_dir=${IN_DT_ROOT}/${cyc_dt}/${IN_DT_SUBDIR}
 
   # set and clean working directory based on looped forecast start date
-  wrk_dir=${OUT_DT_ROOT}/${cyc_dt}${OUT_DT_SUBDIR}
+  wrk_dir=${OUT_DT_ROOT}/${cyc_dt}/${OUT_DT_SUBDIR}
   cmd="mkdir -p ${wrk_dir}"
   printf "${cmd}\n"; eval "${cmd}"
 

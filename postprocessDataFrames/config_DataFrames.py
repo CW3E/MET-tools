@@ -30,9 +30,8 @@ OUT_ROOT = '/out_root/' + CSE
 
 # define control flows to analyze for lineplots 
 CTR_FLWS = [
-            'WRF',
-            'MPAS_60-3_WWRF',
-            'MPAS_60-3_CA',
+            'WRF_9_WestCoast',
+            'MPAS_240-U',
             'GFS',
             'GEFS',
             'ECMWF',

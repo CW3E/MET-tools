@@ -15,15 +15,21 @@ source ../config_MET-tools.sh
 # leave as empty string "" if not needed
 export CSE=2022122800_valid_date
 
+# root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
+export IN_ROOT=${VRF_ROOT}/${CSE}
+
+# root directory for cycle time (YYYYMMDDHH) directories of gridstat outputs
+export OUT_ROOT=${VRF_ROOT}/${CSE}
+
 # Verification region group name
-export VRF_RGN=CA_Climate_Zone
+export VRF_RGNS=CA_Climate_Zone
 
 # Path to file with list of landmasks for verification regions
-export MSK_LST=${MSK_ROOT}/mask-lists/${VRF_RGN}_MaskList.txt
+export MSK_LST=${MSK_ROOT}/mask-lists/${VRF_RGNS}_MaskList.txt
 
 # Array of control flow names to be processed
 export CTR_FLWS=( 
-                 "WRF-9-3"
+                 "WRF-9"
                 )
 
 # If computing ensemble mean verification
@@ -94,7 +100,7 @@ export ACC_INC=24
 export NBRHD_WDTH=9
 
 # Number of bootstrap resamplings, set 0 for off
-export BTSTRP=1000
+export BTSTRP=0
 
 # Rank correlation computation flag, TRUE or FALSE
-export RNK_CRR=TRUE
+export RNK_CRR=FALSE

@@ -11,14 +11,19 @@
 # Source HPC parameters
 source ../config_MET-tools.sh
 
+# root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
+export IN_ROOT=${VRF_ROOT}/${CSE}
+
+# root directory for cycle time (YYYYMMDDHH) directories of gridstat outputs
+export OUT_ROOT=${VRF_ROOT}/${CSE}
+
 # Define the case-wise sub-directory for path names with case-study nesting,
 # leave as empty string "" if not needed
 export CSE=2022122800_valid_date
 
 # Array of control flow names to be processed
 export CTR_FLWS=( 
-                 "MPAS_60-3_WWRF"
-                 "MPAS_60-3_CA"
+                 "MPAS_240-U_LwrBnd"
                 )
 
 # Prefix for ensemble members directory names

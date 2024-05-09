@@ -63,12 +63,6 @@
 # Source tool configuration
 source ./config_preprocessWRF.sh
 
-# root directory for cycle time (YYYYMMDDHH) directories of WRF output files
-export IN_ROOT=${SIM_ROOT}/${CSE}
-
-# root directory for cycle time (YYYYMMDDHH) directories of cf-compliant outputs
-export OUT_ROOT=${VRF_ROOT}/${CSE}
-
 ##################################################################################
 # Contruct job array and environment for submission
 ##################################################################################
@@ -109,7 +103,7 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
       printf "${cmd}\n"; eval "${cmd}"
 
       # subdirectory of cycle-named directory containing data to be analyzed,
-      # includes leading '/', left as blank string if not needed
+      # left as blank string if not needed
       cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/wrf/${MEM}\")"
       printf "${cmd}\n"; eval "${cmd}"
       
@@ -118,6 +112,7 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
       printf "${cmd}\n"; eval "${cmd}"
 
       # subdirectory of cycle-named directory where output is to be saved
+      # left as blank string if not needed
       cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/${MEM}/${GRD}\")"
       printf "${cmd}\n"; eval "${cmd}"
 

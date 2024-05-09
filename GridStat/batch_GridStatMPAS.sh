@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --account=cwp157
+#SBATCH --account=cwp168
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=128
 #SBATCH --mem=20G
@@ -53,7 +53,6 @@
 # OBLIGATIONS TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
 # MODIFICATIONS.
 # 
-# 
 ##################################################################################
 # SET GLOBAL PARAMETERS
 ##################################################################################
@@ -63,13 +62,7 @@
 # Source configuration for gridstat MPAS
 source ./config_GridStatMPAS.sh
 
-# root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
-export IN_ROOT=${VRF_ROOT}/${CSE}
-
-# root directory for cycle time (YYYYMMDDHH) directories of gridstat outputs
-export OUT_ROOT=${VRF_ROOT}/${CSE}
-
-# set number of openmpi threads
+# set number of openmpi threads, should match procs per node
 export OMP_NUM_THREADS=128
 
 ##################################################################################
@@ -115,11 +108,12 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
     printf "${cmd}\n"; eval "${cmd}"
   
     # subdirectory of cycle-named directory containing data to be analyzed,
-    # includes leading '/', left as blank string if not needed
+    # left as blank string if not needed
     cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=\"\"\")"
     printf "${cmd}\n"; eval "${cmd}"
     
     # subdirectory of cycle-named directory where output is to be saved
+    # left as blank string if not needed
     cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/mean/\")"
     printf "${cmd}\n"; eval "${cmd}"
     
@@ -153,11 +147,12 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
       printf "${cmd}\n"; eval "${cmd}"
   
       # subdirectory of cycle-named directory containing data to be analyzed,
-      # includes leading '/', left as blank string if not needed
+      # left as blank string if not needed
       cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/${MEM}\")"
       printf "${cmd}\n"; eval "${cmd}"
       
       # subdirectory of cycle-named directory where output is to be saved
+      # left as blank string if not needed
       cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/${MEM}\")"
       printf "${cmd}\n"; eval "${cmd}"
       

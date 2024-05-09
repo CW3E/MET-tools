@@ -268,10 +268,10 @@ fcst_hrs=$(( (`date +%s -d "${stop_dt}"` - `date +%s -d "${strt_dt}"`) / 3600 ))
 for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
   # directory string for forecast analysis initialization time
   cyc_dt=`date +%Y%m%d%H -d "${strt_dt} ${cyc_hr} hours"`
-  in_dir=${IN_DT_ROOT}/${cyc_dt}${IN_DT_SUBDIR}
+  in_dir=${IN_DT_ROOT}/${cyc_dt}/${IN_DT_SUBDIR}
 
   # set output path
-  wrk_dir=${OUT_DT_ROOT}/${cyc_dt}${OUT_DT_SUBDIR}
+  wrk_dir=${OUT_DT_ROOT}/${cyc_dt}/${OUT_DT_SUBDIR}
   cmd="mkdir -p ${wrk_dir}"
   printf "${cmd}\n"; eval "${cmd}"
       

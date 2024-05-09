@@ -2,6 +2,8 @@
 ##################################################################################
 # Description
 ##################################################################################
+# Simple wrappers to create singularity binds and calls for conda singularity
+# environment. All workflow parameters are included in config_DataFrames.py
 #
 ##################################################################################
 # Parameters for ASCII DataFrame conversions

@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --account=cwp157
+#SBATCH --account=cwp168
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=16
 #SBATCH --mem=20G
@@ -61,13 +61,7 @@
 # Source GenEnsProd parameters for processing MPAS data
 source ./config_GenEnsProdMPAS.sh
 
-# root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
-export IN_ROOT=${VRF_ROOT}/${CSE}
-
-# root directory for cycle time (YYYYMMDDHH) directories of gridstat outputs
-export OUT_ROOT=${VRF_ROOT}/${CSE}
-
-# set number of openmpi threads
+# set number of openmpi threads, should match procs per node
 export OMP_NUM_THREADS=16
 
 ##################################################################################

@@ -159,8 +159,8 @@ done
 jbid=${SLURM_ARRAY_JOB_ID}
 indx=${SLURM_ARRAY_TASK_ID}
 
-printf "Processing data for job index ${indx}."
-printf "Loading configuration parameters ${cfgs[$indx]}:"
+printf "Processing data for job index ${indx}.\n"
+printf "Loading configuration parameters ${cfgs[$indx]}:\n"
 
 # extract the confiugration key name corresponding to the slurm index
 cfg=${cfgs[$indx]}

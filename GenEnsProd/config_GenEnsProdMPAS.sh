@@ -11,18 +11,19 @@
 # Source HPC parameters
 source ../config_MET-tools.sh
 
+# Define the case-wise sub-directory for path names with case-study nesting,
+# leave as empty string "" if not needed
+export CSE=2022122800_valid_date
+
 # root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
 export IN_ROOT=${VRF_ROOT}/${CSE}
 
 # root directory for cycle time (YYYYMMDDHH) directories of gridstat outputs
 export OUT_ROOT=${VRF_ROOT}/${CSE}
 
-# Define the case-wise sub-directory for path names with case-study nesting,
-# leave as empty string "" if not needed
-export CSE=2022122800_valid_date
-
 # Array of control flow names to be processed
 export CTR_FLWS=( 
+                 "MPAS_240-U"
                  "MPAS_240-U_LwrBnd"
                 )
 
@@ -31,7 +32,7 @@ export ENS_PRFX="ens_"
 
 # Min and max ensemble index to process (includes control index)
 export ENS_MIN=00
-export ENS_MAX=05
+export ENS_MAX=02
 
 # Number of digits to padd ensemble index to
 export ENS_PDD=2
@@ -68,7 +69,7 @@ export ANL_INC=24
 export CMP_ACC=TRUE
 
 # Require all ensemble members, no missing files, TRUE or FALSE
-export FULL_ENS=FALSE
+export FULL_ENS=TRUE
 
 # Defines the min / max accumulation interval for precip
 export ACC_MIN=24

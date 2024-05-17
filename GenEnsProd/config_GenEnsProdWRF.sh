@@ -23,7 +23,7 @@ export OUT_ROOT=${VRF_ROOT}/${CSE}
 
 # Array of control flow names to be processed
 export CTR_FLWS=( 
-                 "WRF"
+                 "WRF_9-3_WestCoast"
                 )
 
 # Prefix for ensemble members directory names
@@ -31,7 +31,7 @@ export ENS_PRFX="ens_"
 
 # Min and max ensemble index to process (includes control index)
 export ENS_MIN=00
-export ENS_MAX=05
+export ENS_MAX=02
 
 # Number of digits to padd ensemble index to
 export ENS_PDD=2

@@ -27,6 +27,9 @@ export VRF_RGNS=CA_Climate_Zone
 # Path to file with list of landmasks for verification regions
 export MSK_LST=${MSK_ROOT}/mask-lists/${VRF_RGNS}_MaskList.txt
 
+# Path to verification regions mask files
+export MSK_GRDS=${MSK_ROOT}/${VRF_RGNS}_Masks
+
 # Array of control flow names to be processed
 export CTR_FLWS=( 
                  "ECMWF"

@@ -8,7 +8,7 @@
 #SBATCH -J preprocessMPAS
 #SBATCH -o ./logs/preprocessMPAS-%A_%a.out
 #SBATCH --export=ALL
-#SBATCH --array=0-11
+#SBATCH --array=0-5
 ##################################################################################
 # Description
 ##################################################################################
@@ -85,7 +85,7 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
     CTR_FLW=${CTR_FLWS[$i_f]}
     MEM=${MEM_IDS[$i_m]}
 
-    cfg_indx="cfg_${i_f}${i_m}${i_g}"
+    cfg_indx="cfg_${i_f}${i_m}"
     cmd="${cfg_indx}=()"
     printf "${cmd}\n"; eval "${cmd}"
 

@@ -2,13 +2,12 @@
 #SBATCH --account=cwp168
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=128
-#SBATCH --mem=20G
 #SBATCH -p cw3e-compute
-#SBATCH -t 06:00:00
+#SBATCH -t 03:00:00
 #SBATCH -J GridStatMPAS
 #SBATCH -o ./logs/GridStatMPAS-%A_%a.out
 #SBATCH --export=ALL
-#SBATCH --array=0-13
+#SBATCH --array=0-3
 ##################################################################################
 # Description
 ##################################################################################
@@ -81,6 +80,7 @@ num_mems=${#MEM_IDS[@]}
 for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
   if [[ ${IF_ENS_MEAN} =~ ${TRUE} ]]; then
     CTR_FLW=${CTR_FLWS[$i_f]}
+    INT_WDTH=${INT_WDTHS[$i_f]}
   
     cfg_indx="cfg_${i_f}${i_g}_mean"
     cmd="${cfg_indx}=()"
@@ -125,6 +125,7 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
   if [[ ${IF_ENS_MEMS} =~ ${TRUE} ]]; then
     for (( i_m = 0; i_m < ${num_mems}; i_m++ )); do
       CTR_FLW=${CTR_FLWS[$i_f]}
+      INT_WDTH=${INT_WDTHS[$i_f]}
       MEM=${MEM_IDS[$i_m]}
   
       cfg_indx="cfg_${i_g}${i_f}${i_m}"

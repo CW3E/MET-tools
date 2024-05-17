@@ -24,13 +24,13 @@ export OUT_ROOT=${VRF_ROOT}/${CSE}
 
 # Array of control flow names to be processed
 export CTR_FLWS=( 
-                 "WRF"
+                 "WRF_9-3_WestCoast"
                 )
 
 # Generate ensemble indices to process
 ENS_PRFX="ens_"
 MEM_IDS=()
-for indx in {00..05..01}; do
+for indx in {00..02..01}; do
     MEM_IDS+=( ${ENS_PRFX}${indx} )
 done
 

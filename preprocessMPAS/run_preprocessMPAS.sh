@@ -46,6 +46,20 @@ done
 #################################################################################
 # CHECK WORKFLOW PARAMETERS
 #################################################################################
+# 
+if [ -z ${IN_MSH_DIR+x} ]; then
+  printf "${msg}"
+  exit 1                                                                                      
+elif [ ${#IN_MSH_DIR[@]} -gt 0 ]; then
+  if [ ! -d  ${IN_MSH_DIR} || ! -r ${IN_MSH_DIR} ]; then                                      
+    exit 1
+  else                                                                                        
+    take an action based on the correctly supplied path which is readable
+  fi
+else
+  take an action where the variable is assigned blank, and we can reuse the same file
+fi
+
 # define the working scripts directory
 if [ ! ${USR_HME} ]; then
   printf "ERROR: MET-tools clone directory \${USR_HME} is not defined.\n"

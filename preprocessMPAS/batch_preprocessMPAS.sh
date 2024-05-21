@@ -96,9 +96,11 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
     cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/${MEM}\")"
     printf "${cmd}\n"; eval "${cmd}"
 
+    # mesh directory for this control flow
     cmd="${cfg_indx}+=(\"IN_MSH_DIR=${MSH_ROOT}/${CTR_FLW}\")"
     printf "${cmd}\n"; eval "${cmd}"
-    
+
+    # mesh file for this control flow. initially set to empty
     cmd="${cfg_indx}+=(\"IN_MSH_F=\")"
     printf "${cmd}\n"; eval "${cmd}"
     

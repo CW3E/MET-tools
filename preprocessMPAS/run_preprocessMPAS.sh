@@ -46,22 +46,31 @@ done
 #################################################################################
 # CHECK WORKFLOW PARAMETERS
 #################################################################################
-# 
+# set input mesh file name
+# the idea is to have a flag variable that is defaulted to true
+# if IN_MSH_DIR is correctly supplied, then the flag is changed to false
+# then later on in this script, after field_in_dir and f_in have been defined,
+# if override_in_msh_dir is true,     in_msh_dir = field_in_dir and in_msh_f = f_in
+# if override_in_msh_dir is false, in_msh_dir = IN_MSH_DIR in_msh_f = m_in
+# question: how do I specificy where to find m_in? currently it is still hard coded at the top of this script
+# also you need to put the mesh data into IN_MSH_DIR
+override_in_msh_dir=true
 if [ -z ${IN_MSH_DIR+x} ]; then
-  msg="IN_MSH_DIR is empty"
-  printf "${msg}"
-  exit 1                                                                                      
+    msg="IN_MSH_DIR is empty"
+    printf "${msg}"
+    exit 1                                                                                      
 elif [ ${#IN_MSH_DIR[@]} -gt 0 ]; then
   if [ ! -d  ${IN_MSH_DIR} || ! -r ${IN_MSH_DIR} ]; then                                      
     exit 1
   else                                                                                        
     # take an action based on the correctly supplied path which is readable
     in_msh_dir = IN_MSH_DIR
+    in_msh_f = m_in
   fi
-else
-  # take an action where the variable is assigned blank, and we can reuse the same file
-  in_msh_dir = IN_ROOT_DIR
-  in_msh_f = 
+  else
+    # take an action where the variable is assigned blank, and we can reuse the same file
+    in_msh_dir = field_in_dir
+    in_msh_f = f_in
 fi
 
 # define the working scripts directory
@@ -323,13 +332,14 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
       # set input file name
       cd ${field_in_dir}
       f_in=`ls ${field_in_dir}/diag.${anl_dt}.nc`
-
+      
       if [[ -r ${f_in} ]]; then
         cmd="cd ${wrk_dir}"
         printf "${cmd}\n"; eval "${cmd}"
 
         # cut down to file name alone
         f_in=`basename ${f_in}`
+
 
         # run script from work directory to hold temp outputs from convert_mpas
         cmd="${scrpt_dir}/mpas_to_latlon.sh ${CONVERT_MPAS} ${wrk_dir} ${in_msh_dir} ${m_in} ${field_in_dir} ${f_in}"

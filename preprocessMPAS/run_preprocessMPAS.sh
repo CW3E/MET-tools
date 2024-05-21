@@ -34,7 +34,7 @@
 #################################################################################i
 #these variables are hard coded for testing purposes. 
 #eventually these variables will be automatically constructed just like field_in_dir and f_in
-mesh_in_dir=/glade/derecho/scratch/nghido/sio-cw3e/GenerateGFSAnalyses/ExternalAnalyses/60km/2023021900/
+in_msh_dir=/glade/derecho/scratch/nghido/sio-cw3e/GenerateGFSAnalyses/ExternalAnalyses/60km/2023021900/
 m_in=x1.163842.init.2023-02-19_00.00.00.nc
 
 # export all configurations supplied as an array of string definitions
@@ -48,13 +48,15 @@ done
 #################################################################################
 # 
 if [ -z ${IN_MSH_DIR+x} ]; then
+  msg="IN_MSH_DIR is empty"
   printf "${msg}"
   exit 1                                                                                      
 elif [ ${#IN_MSH_DIR[@]} -gt 0 ]; then
   if [ ! -d  ${IN_MSH_DIR} || ! -r ${IN_MSH_DIR} ]; then                                      
     exit 1
   else                                                                                        
-    take an action based on the correctly supplied path which is readable
+    # take an action based on the correctly supplied path which is readable
+    in_msh_dir = IN_MSH_DIR
   fi
 else
   take an action where the variable is assigned blank, and we can reuse the same file
@@ -328,9 +330,9 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
         f_in=`basename ${f_in}`
 
         # run script from work directory to hold temp outputs from convert_mpas
-        cmd="${scrpt_dir}/mpas_to_latlon.sh ${CONVERT_MPAS} ${wrk_dir} ${mesh_in_dir} ${m_in} ${field_in_dir} ${f_in}"
+        cmd="${scrpt_dir}/mpas_to_latlon.sh ${CONVERT_MPAS} ${wrk_dir} ${in_msh_dir} ${m_in} ${field_in_dir} ${f_in}"
         printf "${cmd}\n"
-        ${scrpt_dir}/mpas_to_latlon.sh ${CONVERT_MPAS} ${wrk_dir} ${mesh_in_dir} ${m_in} ${field_in_dir} ${f_in}
+        ${scrpt_dir}/mpas_to_latlon.sh ${CONVERT_MPAS} ${wrk_dir} ${in_msh_dir} ${m_in} ${field_in_dir} ${f_in}
         error=$?
 
         if [ ${error} -ne 0 ]; then

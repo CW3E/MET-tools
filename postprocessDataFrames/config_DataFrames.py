@@ -30,8 +30,9 @@ OUT_ROOT = '/out_root/' + CSE
 
 # define control flows to analyze for lineplots 
 CTR_FLWS = [
-            'WRF_9_WestCoast',
+            'WRF_9-3_WestCoast',
             'MPAS_240-U',
+            'MPAS_240-U_LwrBnd',
             'GFS',
             'GEFS',
             'ECMWF',
@@ -41,7 +42,7 @@ CTR_FLWS = [
 # directory structure for MET outputs
 MEM_IDS = ['']
 MEM_IDS += ['mean']
-for i_m in range(0,6):
+for i_m in range(0,3):
     MEM_IDS += ['ens_' + str(i_m).zfill(2)]
 
 # verification domains to process, used for ensemble member sub-directory nesting

@@ -12,6 +12,8 @@
 # Source HPC parameters
 source ../config_MET-tools.sh
 
+MESH_IN_DIR  = "/glade/derecho/scratch/ersawyer/sio-cw3e/JEDI-MPAS-Common-Case/SIMULATION_IO/2023021818_cycle_start"
+
 # Define the case-wise sub-directory for path names with case-study nesting,
 # leave as empty string "" if not needed
 export CSE=2023021818_cycle_start

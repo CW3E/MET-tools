@@ -59,7 +59,9 @@ elif [ ${#IN_MSH_DIR[@]} -gt 0 ]; then
     in_msh_dir = IN_MSH_DIR
   fi
 else
-  take an action where the variable is assigned blank, and we can reuse the same file
+  # take an action where the variable is assigned blank, and we can reuse the same file
+  in_msh_dir = IN_ROOT_DIR
+  in_msh_f = 
 fi
 
 # define the working scripts directory

@@ -34,7 +34,7 @@
 #################################################################################i
 #these variables are hard coded for testing purposes. 
 #eventually these variables will be automatically constructed just like field_in_dir and f_in
-in_msh_dir=/glade/derecho/scratch/nghido/sio-cw3e/GenerateGFSAnalyses/ExternalAnalyses/60km/2023021900/
+#in_msh_dir=/glade/derecho/scratch/nghido/sio-cw3e/GenerateGFSAnalyses/ExternalAnalyses/60km/2023021900/
 m_in=x1.163842.init.2023-02-19_00.00.00.nc
 
 # export all configurations supplied as an array of string definitions

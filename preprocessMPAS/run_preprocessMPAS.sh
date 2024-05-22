@@ -60,17 +60,19 @@ if [ -z ${IN_MSH_DIR+x} ]; then
     printf "${msg}"
     exit 1                                                                                      
 elif [ ${#IN_MSH_DIR[@]} -gt 0 ]; then
-  if [ ! -d  ${IN_MSH_DIR} || ! -r ${IN_MSH_DIR} ]; then                                      
+  if [ ! -d  ${IN_MSH_DIR} || ! -r ${IN_MSH_DIR} ]; then
+    msg="IN_MSH_DIR is either not a directory or not readable"
+    printf "${msg}\n"
     exit 1
   else                                                                                        
     # take an action based on the correctly supplied path which is readable
     override_in_msh_dir=false
-    in_msh_dir = IN_MSH_DIR
+    in_msh_dir = ${IN_MSH_DIR}
     in_msh_f = m_in
   fi
-  else
-    # take an action where the variable is assigned blank, and we can reuse the same file
-    # override_in_msh_dir is still set to true
+else
+  # take an action where the variable is assigned blank, and we can reuse the same file
+  # override_in_msh_dir is still set to true
 fi
 
 # define the working scripts directory
@@ -282,6 +284,11 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
   cyc_dt=`date +%Y%m%d%H -d "${strt_dt} ${cyc_hr} hours"`
   field_in_dir=${IN_DT_ROOT}/${cyc_dt}${IN_DT_SUBDIR}
 
+  # set in_msh_dir = field_in_dir if override_in_msh_dir=true
+  if [ "$override_in_msh_dir" = true ]; then
+    in_msh_dir=$field_in_dir
+  fi
+  
   # set output path
   wrk_dir=${OUT_DT_ROOT}/${cyc_dt}${OUT_DT_SUBDIR}
   cmd="mkdir -p ${wrk_dir}"
@@ -339,6 +346,11 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
 
         # cut down to file name alone
         f_in=`basename ${f_in}`
+
+        # set in_msh_dir = field_in_dir if override_in_msh_dir=true
+        if [ "$override_in_msh_dir" = true ]; then
+          in_msh_f=${f_in}
+        fi
 
 
         # run script from work directory to hold temp outputs from convert_mpas

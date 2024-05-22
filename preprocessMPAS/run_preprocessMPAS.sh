@@ -64,13 +64,13 @@ elif [ ${#IN_MSH_DIR[@]} -gt 0 ]; then
     exit 1
   else                                                                                        
     # take an action based on the correctly supplied path which is readable
+    override_in_msh_dir=false
     in_msh_dir = IN_MSH_DIR
     in_msh_f = m_in
   fi
   else
     # take an action where the variable is assigned blank, and we can reuse the same file
-    in_msh_dir = field_in_dir
-    in_msh_f = f_in
+    # override_in_msh_dir is still set to true
 fi
 
 # define the working scripts directory

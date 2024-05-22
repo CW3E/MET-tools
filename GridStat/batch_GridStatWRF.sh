@@ -8,7 +8,7 @@
 #SBATCH -J GridStatWRF
 #SBATCH -o ./logs/GridStatWRF-%A_%a.out
 #SBATCH --export=ALL
-#SBATCH --array=0-13
+#SBATCH --array=0-7
 ##################################################################################
 # Description
 ##################################################################################

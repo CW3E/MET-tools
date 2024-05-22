@@ -32,7 +32,7 @@ export MSK_GRDS=${MSK_ROOT}/${VRF_RGNS}_Masks
 
 # Array of control flow names to be processed
 export CTR_FLWS=( 
-                 "WRF-9"
+                 "WRF_9-3_WestCoast"
                 )
 
 # If computing ensemble mean verification
@@ -41,7 +41,7 @@ export IF_ENS_MEAN=TRUE
 # min / max ensemble indices used to compute ensemble product
 # used in ensemble product naming conventions
 export ENS_MIN=00
-export ENS_MAX=05
+export ENS_MAX=02
 
 # If computing individual ensemble member verification
 export IF_ENS_MEMS=TRUE
@@ -49,7 +49,7 @@ export IF_ENS_MEMS=TRUE
 # Generate ensemble indices to process, used for individual member verification
 ENS_PRFX="ens_"
 MEM_IDS=()
-for indx in {00..05..01}; do
+for indx in {00..02..01}; do
     MEM_IDS+=( ${ENS_PRFX}${indx} )
 done
 

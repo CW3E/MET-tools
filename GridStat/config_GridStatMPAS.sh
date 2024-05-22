@@ -61,6 +61,7 @@ export MEM_IDS
 # Define interpolation neighborhood size in 1-1 correspondence with CTR_FLWS
 export INT_WDTHS=(
                   3
+                  3
                  )
 
 # Define the verification field

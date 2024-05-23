@@ -67,8 +67,8 @@ elif [ ${#IN_MSH_DIR[@]} -gt 0 ]; then
   else                                                                                        
     # take an action based on the correctly supplied path which is readable
     override_in_msh_dir=false
-    in_msh_dir = ${IN_MSH_DIR}
-    in_msh_f = m_in
+    in_msh_dir="${IN_MSH_DIR}"
+    in_msh_f="${m_in}"
   fi
 else
   # take an action where the variable is assigned blank, and we can reuse the same file

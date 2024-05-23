@@ -60,7 +60,7 @@ if [ -z ${IN_MSH_DIR+x} ]; then
     printf "${msg}"
     exit 1                                                                                      
 elif [ ${#IN_MSH_DIR[@]} -gt 0 ]; then
-  if [ ! -d  ${IN_MSH_DIR} || ! -r ${IN_MSH_DIR} ]; then
+  if [ ! -d  ${IN_MSH_DIR} ] || [ ! -r ${IN_MSH_DIR} ]; then
     msg="IN_MSH_DIR is either not a directory or not readable"
     printf "${msg}\n"
     exit 1

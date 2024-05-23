@@ -13,7 +13,7 @@
 source ../config_MET-tools.sh
 
 # MSH_ROOT  = "/glade/derecho/scratch/nghido/sio-cw3e/GenerateGFSAnalyses/ExternalAnalyses/60km/2023021900/"
-MSH_ROOT  = "/glade/derecho/scratch/nghido/sio-cw3e/GenerateGFSAnalyses/ExternalAnalyses/60km/2023021900/"
+export MSH_ROOT  = "/glade/derecho/scratch/nghido/sio-cw3e/GenerateGFSAnalyses/ExternalAnalyses/60km/2023021900/"
 
 # Define the case-wise sub-directory for path names with case-study nesting,
 # leave as empty string "" if not needed

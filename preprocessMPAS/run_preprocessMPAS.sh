@@ -60,7 +60,7 @@ if [ -z ${IN_MSH_DIR+x} ]; then
     printf "${msg}"
     exit 1                                                                                      
 elif [ ${#IN_MSH_DIR[@]} -gt 0 ]; then
-  if [[ ! -d  ${IN_MSH_DIR} ] || [ ! -r ${IN_MSH_DIR} ]]; then
+  if [ ! -d  ${IN_MSH_DIR} ] || [ ! -r ${IN_MSH_DIR} ]; then
     msg="IN_MSH_DIR is either not a directory or not readable"
     printf "${msg}\n"
     exit 1
@@ -76,7 +76,7 @@ fi
 if [ ! ${USR_HME} ]; then
   printf "ERROR: MET-tools clone directory \${USR_HME} is not defined.\n"
   exit 1
-elif [[ ! -d ${USR_HME} ] || [ ! -r ${USR_HME} ]]; then
+elif [ ! -d ${USR_HME} ] || [ ! -r ${USR_HME} ]; then
   msg="ERROR: MET-tools clone directory\n ${USR_HME}\n does not exist or is"
   msg+=" not readable.\n"
   printf "${msg}"

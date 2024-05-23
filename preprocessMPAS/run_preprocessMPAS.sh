@@ -73,6 +73,7 @@ elif [ ${#IN_MSH_DIR[@]} -gt 0 ]; then
 else
   # take an action where the variable is assigned blank, and we can reuse the same file
   # override_in_msh_dir is still set to true
+  :
 fi
 
 # define the working scripts directory

@@ -80,7 +80,7 @@ fi
 if [ ! ${USR_HME} ]; then
   printf "ERROR: MET-tools clone directory \${USR_HME} is not defined.\n"
   exit 1
-elif [[ ! -d ${USR_HME} || ! -r ${USR_HME} ]]; then
+elif [[ ! -d ${USR_HME} ] || [ ! -r ${USR_HME} ]]; then
   msg="ERROR: MET-tools clone directory\n ${USR_HME}\n does not exist or is"
   msg+=" not readable.\n"
   printf "${msg}"

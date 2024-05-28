@@ -289,11 +289,6 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
   cyc_dt=`date +%Y%m%d%H -d "${strt_dt} ${cyc_hr} hours"`
   in_dir=${IN_DT_ROOT}/${cyc_dt}/${IN_DT_SUBDIR}
 
-  # set in_msh_dir = in_dir if override_in_msh_dir=true
-  if [ "$override_in_msh_dir" = true ]; then
-    in_msh_dir=$in_dir
-  fi
-
   # set output path
   wrk_dir=${OUT_DT_ROOT}/${cyc_dt}/${OUT_DT_SUBDIR}
   cmd="mkdir -p ${wrk_dir}"
@@ -352,10 +347,16 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
         # cut down to file name alone
         f_in=`basename ${f_in}`
 
+        # set in_msh_dir = in_dir and in_msh_f=f_in, if override_in_msh_dir=true
+        if [ "$override_in_msh_dir" = true ]; then
+          in_msh_dir=$in_dir
+          in_msh_f=${f_in}
+        fi
+
         # run script from work directory to hold temp outputs from convert_mpas
-        cmd="${scrpt_dir}/mpas_to_latlon.sh ${CONVERT_MPAS} ${wrk_dir} ${in_dir} ${f_in}"
+        cmd="${scrpt_dir}/mpas_to_latlon.sh ${CONVERT_MPAS} ${wrk_dir} ${in_msh_dir} ${in_msh_f} ${in_dir} ${f_in}"
         printf "${cmd}\n"
-        ${scrpt_dir}/mpas_to_latlon.sh ${CONVERT_MPAS} ${wrk_dir} ${in_dir} ${f_in}
+        ${scrpt_dir}/mpas_to_latlon.sh ${CONVERT_MPAS} ${wrk_dir} ${in_msh_dir} ${in_msh_f} ${in_dir} ${f_in}
         error=$?
 
         if [ ${error} -ne 0 ]; then

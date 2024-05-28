@@ -61,6 +61,25 @@ done
 #################################################################################
 # CHECK WORKFLOW PARAMETERS
 #################################################################################
+# check whether IN_MSH_DIR is defined
+override_in_msh_dir=true
+if [ -z ${IN_MSH_DIR+x} ]; then
+    msg="IN_MSH_DIR is empty"
+    printf "${msg}"
+    exit 1                                                                                      
+elif [ ${#IN_MSH_DIR[@]} -gt 0 ]; then
+  if [ ! -d  ${IN_MSH_DIR} ] || [ ! -r ${IN_MSH_DIR} ]; then
+    msg="IN_MSH_DIR is either not a directory or not readable"
+    printf "${msg}\n"
+    exit 1
+  else                                                                                        
+    # take an action based on the correctly supplied path which is readable
+    override_in_msh_dir=false
+    in_msh_dir="${IN_MSH_DIR}"
+    in_msh_f="${m_in}"
+  fi
+fi
+
 # define the working scripts directory
 if [ ! ${USR_HME} ]; then
   printf "ERROR: MET-tools clone directory \${USR_HME} is not defined.\n"

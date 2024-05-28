@@ -12,6 +12,9 @@
 # Source HPC parameters
 source ../config_MET-tools.sh
 
+#Define where the mesh data is stored. Set to '' if all output files contain mesh data.
+export MSH_ROOT=''
+
 # Define the case-wise sub-directory for path names with case-study nesting,
 # leave as empty string "" if not needed
 export CSE=2022122800_valid_date

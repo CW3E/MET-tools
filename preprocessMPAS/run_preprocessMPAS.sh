@@ -62,19 +62,19 @@ done
 # CHECK WORKFLOW PARAMETERS
 #################################################################################
 # check whether IN_MSH_DIR is defined
-override_msh_root=true
-if [ -z ${MSH_ROOT+x} ]; then
-    msg="MSH_ROOT is empty"
+override_in_msh_dir=true
+if [ -z ${MSH_ROOT} ]; then
+    msg="MSH_ROOT is undefined or empty"
     printf "${msg}"
     exit 1                                                                                      
-elif [ ${#IN_MSH_DIR[@]} -gt 0 ]; then
-  if [ ! -d  ${MSH_ROOT} ] || [ ! -r ${MSH_ROOT} ]; then
-    msg="MSH_ROOT is either not a directory or not readable"
+elif [ -n "${IN_MSH_DIR}" ]; then
+  if [ ! -d  ${IN_MSH_DIR} ] || [ ! -r ${IN_MSH_DIR} ]; then
+    msg="IN_MSH_DIR is either not a directory or not readable"
     printf "${msg}\n"
     exit 1
   else                                                                                        
     # take an action based on the correctly supplied path which is readable
-    override_msh_root=false
+    override_in_msh_dir=false
     in_msh_dir="${IN_MSH_DIR}"
     in_msh_f="${m_in}"
   fi

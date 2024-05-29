@@ -28,12 +28,13 @@ TYPE = 'nbrcnt'
 STATS = ['FSS', 'AFSS']
 
 # threshold value for leveled data plot
-LEV = '>=100.0'
+LEV = '>=50.0'
 
 # define control flows to analyze for lineplots 
 CTR_FLWS = [
-            'WRF',
-            'MPAS_60-3_CA',
+            'MPAS_240-U',
+            'MPAS_240-U_LwrBnd',
+            'WRF_9-3_WestCoast',
             'GFS',
             'GEFS',
             'ECMWF',

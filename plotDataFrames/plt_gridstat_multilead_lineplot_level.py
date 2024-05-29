@@ -135,16 +135,22 @@ for ctr_flw in CTR_FLWS:
             idx_len = len(LAB_IDX)
             line_lab = ''
             lab_len = min(idx_len, split_len)
-            if lab_len > 1:
-                for i_ll in range(lab_len, 1, -1):
-                    i_li = LAB_IDX[-i_ll]
-                    line_lab += split_string[i_li] + '_'
-    
-                i_li = LAB_IDX[-1]
-                line_lab += split_string[i_li]
-    
-            else:
+            if split_len == 1:
                 line_lab += split_string[0]
+
+            elif idx_len == 1:
+                i_li = LAB_IDX[0]
+                line_lab += split_string[i_li]
+
+            else:
+                for i_ll in range(0, lab_len):
+                    i_li = LAB_IDX[i_ll]
+                    try:
+                        line_lab += split_string[i_li] + '_'
+                    except:
+                        pass
+    
+                line_lab = line_lab[:-1]
 
             if ENS_LAB:
                 line_lab += ens

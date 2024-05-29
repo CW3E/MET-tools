@@ -27,13 +27,13 @@ TYPE = 'cnt'
 STAT = 'RMSE'
 
 # define control flows to analyze for lineplots 
-CTR_FLW = 'MPAS_60-3_CA'
+CTR_FLW = 'WRF_9-3_WestCoast'
 
 # ensemble member indices to plot
 MEM = 'mean'
 
 # verification domains to plot - defined as empty string if not needed
-GRD = ''
+GRD = 'd02'
 
 # starting valid date for verification (string YYYYMMDDHH)
 ANL_STRT = '2022122400'

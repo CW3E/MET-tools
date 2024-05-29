@@ -27,8 +27,9 @@ STATS = ['RMSE', 'PR_CORR']
 
 # define control flows to analyze for lineplots 
 CTR_FLWS = [
-            'WRF',
-            'MPAS_60-3_CA',
+            'MPAS_240-U',
+            'MPAS_240-U_LwrBnd',
+            'WRF_9-3_WestCoast',
             'GFS',
             'GEFS',
             'ECMWF',

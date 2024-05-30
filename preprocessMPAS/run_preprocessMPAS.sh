@@ -63,9 +63,9 @@ done
 #################################################################################
 # check whether IN_MSH_DIR is defined
 override_in_msh_dir=true
-if [ -z ${MSH_ROOT} ]; then
+if [ -z ${MSH_ROOT+x} ]; then
     msg="MSH_ROOT is undefined or empty"
-    printf "${msg}"
+    printf "${msg}"\n
     exit 1                                                                                      
 elif [ -n "${IN_MSH_DIR}" ]; then
   if [ ! -d  ${IN_MSH_DIR} ] || [ ! -r ${IN_MSH_DIR} ]; then
@@ -78,6 +78,10 @@ elif [ -n "${IN_MSH_DIR}" ]; then
     in_msh_dir="${IN_MSH_DIR}"
     in_msh_f="${m_in}"
   fi
+else
+   # Continue the script when IN_MSH_DIR is undefined or empty
+    msg="IN_MSH_DIR is undefined or empty, continuing with override_in_msh_dir=true"
+    printf "${msg}"\n
 fi
 
 # define the working scripts directory

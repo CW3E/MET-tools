@@ -17,12 +17,13 @@ Patrick Mulrooney, Minghua Zheng, Ivette Hernandez Ba&ntilde;os, and others.
 The tools for batch processing NWP data and MET outputs are designed to be
 largely system agnostic, though examples will utilize SLURM scheduling commands
 which can be modified to other environments. Currently this workflow is SLURM
-job array driven for naive parallism using shared resources to distribute tasks.
+job array driven for naive parallelism using shared resources to distribute tasks.
 This workflow is pending a re-write to be 
 [Cylc](https://cylc.github.io/) driven to automate the sequence
 of tasks and to simplify the configuration / job array creation and submission.
-This work is also pending adoption of more conventions from METplus wrappers
-to utilize the functionality from the parallel developments.  Documentation will
+This work is also pending adoption of more conventions from
+[METplus](https://metplus.readthedocs.io/en/latest/Users_Guide/index.html) wrappers
+to utilize their functionality while maintining a focus on NRT-HPC.  Documentation will
 be updated when major re-writes are completed for Cylc and METplus integration.
 
 The installation of software dependencies outlined below can be performed 

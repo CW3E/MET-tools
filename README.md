@@ -40,7 +40,7 @@ on large-scale, shared computing resources.  This is performed as with the
 for building an Apptainer / Singularity container from a DockerHub image, using a tagged image
 from [MET Dockerhub](https://hub.docker.com/r/dtcenter/met). 
 This workflow has been tested with MET version 11.0.1, installing the tagged version
-11.0.1 from DockerHub can be performed as
+11.0.1 from DockerHub can be performed with either Apptainer (or legacy Singularity) as
 ```
 apptainer build met-11.0.1.sif docker://dtcenter/met:11.0.1
 singularity build met-11.0.1.sif docker://dtcenter/met:11.0.1

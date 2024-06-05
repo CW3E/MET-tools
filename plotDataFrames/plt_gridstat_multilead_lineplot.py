@@ -136,7 +136,15 @@ for ctr_flw in CTR_FLWS:
 
             elif idx_len == 1:
                 i_li = LAB_IDX[0]
-                line_lab += split_string[i_li]
+                try:
+                    line_lab += split_string[i_li]
+                except:
+                    msg = 'WARNING: label index ' + str(i_li) + ' is out out' +\
+                          ' of bounds for ' + ctr_flw + ' underscore components.'
+
+                    print(msg)
+                    print('Using the full control flow name for plot label.')
+                    line_lab += ctr_flw
 
             else:
                 for i_ll in range(0, lab_len):

@@ -14,12 +14,12 @@ Laurel Dehaan, Matthew Simpson, Brian Kawzenuck, Nora Mascioli,
 Patrick Mulrooney, Minghua Zheng, Ivette Hernandez Ba&ntilde;os, and others.
 
 ## Installing software
-The tools for batch processing NWP data and MET outputs are designed to be
+These workflow tools for batch processing NWP data and MET outputs are designed to be
 largely system agnostic, though examples will utilize SLURM scheduling commands
-which can be modified to other environments. Currently this workflow is SLURM
-job array driven for naive parallelism using shared resources to distribute tasks.
+which can be modified to other environments. Currently this workflow is SLURM-job-array-driven
+for naive parallelism using shared resources to distribute tasks.
 This workflow is pending a re-write to be 
-[Cylc](https://cylc.github.io/) driven to automate the sequence
+[Cylc](https://cylc.github.io/)-driven to automate the sequence
 of tasks and to simplify the configuration / job array creation and submission.
 This work is also pending adoption of more conventions from
 [METplus](https://metplus.readthedocs.io/en/latest/Users_Guide/index.html) wrappers
@@ -28,8 +28,9 @@ be updated when major re-writes are completed for Cylc and METplus integration.
 
 The installation of software dependencies outlined below can be performed 
 on a shared system with the
-[Apptainer](https://apptainer.org/docs/user/latest/) software container
-system already installed.
+[Apptainer](https://apptainer.org/docs/user/latest/) 
+([Singularity](https://docs.sylabs.io/guides/latest/user-guide/index.html))
+software container system already installed.
 
 ### Installing MET
 MET can be installed as an [Apptainer](https://apptainer.org/docs/user/latest/index.html)

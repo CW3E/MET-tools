@@ -27,12 +27,13 @@ STATS = ['RMSE', 'PR_CORR']
 
 # define control flows to analyze for lineplots 
 CTR_FLWS = [
-            'WRF',
-            'MPAS_60-3_CA',
+            'MPAS_240-U',
+            'WRF_9-3_WestCoast',
             'GFS',
             'GEFS',
             'ECMWF',
            ]
+
 
 # ensemble member indices to plot, searches matching patterns
 MEM_IDS = ['']
@@ -45,8 +46,7 @@ MEM_IDS += ['mean']
 # if not needed
 GRDS = [
         '',
-        'd01',
-        'd02',
+        'd01'
        ]
 
 # starting date and zero hour of forecast cycles (string YYYYMMDDHH)
@@ -75,7 +75,7 @@ LAB_IDX = [0, 2]
 ENS_LAB = False
 
 # Include model grid in legend label True or False
-GRD_LAB = True
+GRD_LAB = False
 
 # Plot title generated from above parameters
 TITLE='24hr accumulated precip at ' + VALID_DT[:4] + '-' + VALID_DT[4:6] + '-' +\

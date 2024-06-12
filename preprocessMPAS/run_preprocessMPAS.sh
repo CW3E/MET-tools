@@ -55,11 +55,11 @@ done
 # question: how do I specificy where to find m_in? currently it is still hard coded at the top of this script
 # also you need to put the mesh data into IN_MSH_DIR
 override_in_msh_dir=true
-if [ -z ${IN_MSH_DIR+x} ]; then
-    msg="IN_MSH_DIR is empty"
-    printf "${msg}"
+if [ -z ${MSH_ROOT+x} ]; then
+    msg="MSH_ROOT is undefined or empty"
+    printf "${msg}"\n
     exit 1                                                                                      
-elif [ ${#IN_MSH_DIR[@]} -gt 0 ]; then
+elif [ -n "${IN_MSH_DIR}" ]; then
   if [ ! -d  ${IN_MSH_DIR} ] || [ ! -r ${IN_MSH_DIR} ]; then
     msg="IN_MSH_DIR is either not a directory or not readable"
     printf "${msg}\n"
@@ -70,7 +70,12 @@ elif [ ${#IN_MSH_DIR[@]} -gt 0 ]; then
     in_msh_dir="${IN_MSH_DIR}"
     in_msh_f="${m_in}"
   fi
+else
+   # Continue the script when IN_MSH_DIR is undefined or empty
+    msg="IN_MSH_DIR is undefined or empty, continuing with override_in_msh_dir=true"
+    printf "${msg}"\n
 fi
+
 
 # define the working scripts directory
 if [ ! ${USR_HME} ]; then

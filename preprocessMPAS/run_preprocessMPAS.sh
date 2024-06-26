@@ -353,7 +353,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
         # cut down to file name alone
         f_in=`basename ${f_in}`
 
-        # set in_msh_dir = in_dir and in_msh_f=f_in, if override_in_msh_dir=true
+        # set in_msh_dir = in_dir and in_msh_f=f_in, if msh_flag=true
         if [ "$msh_flag" = "true" ]; then
           in_msh_dir=${in_dir}
           in_msh_f=${f_in}

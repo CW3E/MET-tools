@@ -82,7 +82,7 @@ elif [ -n "${MSH_ROOT}" ]; then
   fi
 else
    # Continue the script when IN_MSH_DIR is undefined or empty
-    msg="MSH_ROOT is undefined or empty, continuing with override_in_msh_dir=true"
+    msg="MSH_ROOT is undefined or empty, continuing with msh_flag=true"
     printf "${msg}\n"
 fi
 

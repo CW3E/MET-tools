@@ -61,8 +61,8 @@ done
 #################################################################################
 # CHECK WORKFLOW PARAMETERS
 #################################################################################
-# check whether IN_MSH_DIR is defined
-override_in_msh_dir=true
+# check whether MSH_ROOT is defined
+msh_flag=true
 if [ -z ${MSH_ROOT+x} ]; then
     msg="MSH_ROOT is undefined"
     printf "${msg}\n"
@@ -76,7 +76,7 @@ elif [ -n "${MSH_ROOT}" ]; then
     exit 1
   else                                                                                        
     # take an action based on the correctly supplied path which is readable
-    override_in_msh_dir=false
+    msh_flag=false
     in_msh_dir="${IN_MSH_DIR}"
     in_msh_f="${IN_MSH_F}"
   fi
@@ -354,7 +354,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
         f_in=`basename ${f_in}`
 
         # set in_msh_dir = in_dir and in_msh_f=f_in, if override_in_msh_dir=true
-        if [ "$override_in_msh_dir" = "true" ]; then
+        if [ "$msh_flag" = "true" ]; then
           in_msh_dir=${in_dir}
           in_msh_f=${f_in}
         fi

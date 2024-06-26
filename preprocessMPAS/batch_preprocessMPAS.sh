@@ -8,7 +8,7 @@
 #SBATCH -J preprocessMPAS
 #SBATCH -o ./logs/preprocessMPAS-%A_%a.out
 #SBATCH --export=ALL
-#SBATCH --array=0-5
+#SBATCH --array=0-0
 ##################################################################################
 # Description
 ##################################################################################
@@ -114,12 +114,12 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
     printf "${cmd}\n"; eval "${cmd}"
 
     # mesh directory for this control flow
-    # cmd="${cfg_indx}+=(\"IN_MSH_DIR=${MSH_ROOT}/${CTR_FLW}\")"
-    cmd="${cfg_indx}+=(\"IN_MSH_DIR=${MSH_ROOT}\")"
+    cmd="${cfg_indx}+=(\"IN_MSH_DIR=${MSH_ROOT}/${CSE}/${CTR_FLW}/static/\")"
+    # cmd="${cfg_indx}+=(\"IN_MSH_DIR=${MSH_ROOT}\")"
     printf "${cmd}\n"; eval "${cmd}"
 
     # mesh file for this control flow. initially set to empty
-    cmd="${cfg_indx}+=(\"IN_MSH_F=${m_in}\")"
+    cmd="${cfg_indx}+=(\"IN_MSH_F=${MSH_NMES[$i_f]}\")"
     printf "${cmd}\n"; eval "${cmd}"
   done
 done

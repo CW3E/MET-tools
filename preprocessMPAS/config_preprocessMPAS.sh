@@ -12,8 +12,12 @@
 # Source HPC parameters
 source ../config_MET-tools.sh
 
-#Define where the mesh data is stored. Set to '' if all output files contain mesh data.
-export MSH_ROOT=''
+# Define where the mesh data is stored. Set to '' if all output files contain mesh data.
+export MSH_ROOT=/expanse/nfs/cw3e/cwp168/Ensemble-DA-Cycling-Template/simulation_settings/
+
+export MSH_NMES=( "MPAS_240-U.static.nc" 
+		  "MPAS_240-U_LwrBnd.static.nc"
+		)
 
 # Define the case-wise sub-directory for path names with case-study nesting,
 # leave as empty string "" if not needed
@@ -44,7 +48,7 @@ export MEM_IDS
 
 # Define first and last date time for forecast initialization (YYYYMMDDHH)
 export STRT_DT=2022122300
-export STOP_DT=2022122700
+export STOP_DT=2022122800
 
 # Define the increment between forecast initializations (HH)
 export CYC_INC=24

@@ -64,11 +64,13 @@ done
 # check whether IN_MSH_DIR is defined
 override_in_msh_dir=true
 if [ -z ${MSH_ROOT+x} ]; then
-    msg="MSH_ROOT is undefined or empty"
-    printf "${msg}"\n
+    msg="MSH_ROOT is undefined"
+    printf "${msg}\n"
     exit 1                                                                                      
-elif [ -n "${IN_MSH_DIR}" ]; then
-  if [ ! -d  ${IN_MSH_DIR} ] || [ ! -r ${IN_MSH_DIR} ]; then
+elif [ -n "${MSH_ROOT}" ]; then
+  msg="MSH_ROOT is defined and has nonzero length"
+  printf "${msg}\n"
+  if [[ ! -d  ${IN_MSH_DIR} || ! -r ${IN_MSH_DIR} ]]; then
     msg="IN_MSH_DIR is either not a directory or not readable"
     printf "${msg}\n"
     exit 1
@@ -76,12 +78,12 @@ elif [ -n "${IN_MSH_DIR}" ]; then
     # take an action based on the correctly supplied path which is readable
     override_in_msh_dir=false
     in_msh_dir="${IN_MSH_DIR}"
-    in_msh_f="${m_in}"
+    in_msh_f="${IN_MSH_F}"
   fi
 else
    # Continue the script when IN_MSH_DIR is undefined or empty
-    msg="IN_MSH_DIR is undefined or empty, continuing with override_in_msh_dir=true"
-    printf "${msg}"\n
+    msg="MSH_ROOT is undefined or empty, continuing with override_in_msh_dir=true"
+    printf "${msg}\n"
 fi
 
 # define the working scripts directory

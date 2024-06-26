@@ -47,11 +47,17 @@ CONVERT_MPAS=$1
 # take the work directory from script argument
 WORK_DIR=$2
 
+# take the mesh directory from script argument
+IN_MSH_DIR=$3
+
+# take the mesh file from script argument
+IN_MSH_F=$4
+
 # take the inputs directory from script argument
-IN_DIR=$3
+IN_DIR=$5
 
 # take the input file from script argument
-F_IN=$4
+F_IN=$6
 
 # Regrid to generic lat-lon grid for MET, passed to convert_mpas tool
 # NOTE: need to revise to regrid directly to verification grid

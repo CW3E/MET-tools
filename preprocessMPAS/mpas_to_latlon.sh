@@ -88,7 +88,6 @@ printf "rainc\n" >> ./include_fields
 printf "rainnc\n" >> ./include_fields
 
 # run convert mpas from singularity exec command
-#singularity exec --home ${WORK_DIR} -B ${IN_DIR}:/in_dir:ro ${CONVERT_MPAS} convert_mpas /in_dir/${F_IN}
 singularity exec --home ${WORK_DIR} -B ${IN_MSH_DIR}:/in_msh_dir:ro,${IN_DIR}:/in_dir:ro ${CONVERT_MPAS} convert_mpas /in_msh_dir/${IN_MSH_F} /in_dir/${F_IN}
 error=$?
 

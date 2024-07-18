@@ -28,16 +28,15 @@ TYPE = 'nbrcnt'
 STATS = ['FSS', 'AFSS']
 
 # threshold value for leveled data plot
-LEV = '>=50.0'
+LEV = '>=25.0'
 
 # define control flows to analyze for lineplots 
 CTR_FLWS = [
-            'MPAS_240-U',
-            'MPAS_240-U_LwrBnd',
-            'WRF_9-3_WestCoast',
-            'GFS',
-            'GEFS',
+            'NRT_ECMWF',
+            'NRT_GFS',
             'ECMWF',
+            'GEFS',
+            'GFS',
            ]
 
 # ensemble member indices to plot, searches matching patterns
@@ -53,19 +52,20 @@ GRDS = [
         '',
         'd01',
         'd02',
+        'd03',
        ]
 
 # starting date and zero hour of forecast cycles (string YYYYMMDDHH)
-STRT_DT = '2022122300'
+STRT_DT = '2024010300'
 
 # final date and zero hour of data of forecast cycles (string YYYYMMDDHH)
-STOP_DT = '2022122700'
+STOP_DT = '2024012400'
 
 # increment between zero hours for forecast data (string HH)
 CYC_INC = '24'
 
 # Verification valid date
-VALID_DT = '2022122800'
+VALID_DT = '2024011400'
 
 # Land mask for verification
 MSK = 'CA_All'
@@ -75,7 +75,7 @@ MSK = 'CA_All'
 ##################################################################################
 # List of indices for the underscore-separated components of control flow name
 # to use in the plot legend
-LAB_IDX = [0, 2]
+LAB_IDX = [0, 1]
 
 # Include ensemble index in legend label True or False
 ENS_LAB = False
@@ -99,7 +99,7 @@ SUBTITLE += ', Threshold ' + LEV + ' mm'
 # I/O PARAMETERS
 ##################################################################################
 # Case study directory structure for input data
-CSE = '2022122800_valid_date'
+CSE = '2024010300_valid_date'
 
 # saved figure path case study subdirectory
 FIG_CSE = ''

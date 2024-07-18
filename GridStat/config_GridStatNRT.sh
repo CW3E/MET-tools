@@ -16,7 +16,7 @@ source ../config_MET-tools.sh
 export CSE=2024010300_valid_date
 
 # root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
-export IN_ROOT=${STC_ROOT}
+export IN_ROOT=${VRF_ROOT}/${CSE}
 
 # root directory for cycle time (YYYYMMDDHH) directories of gridstat outputs
 export OUT_ROOT=${VRF_ROOT}/${CSE}
@@ -32,16 +32,44 @@ export MSK_GRDS=${MSK_ROOT}/${VRF_RGNS}_Masks
 
 # Array of control flow names to be processed
 export CTR_FLWS=( 
-                 "ECMWF"
-                 "GFS"
-                 "GEFS"
+                 "NRT_ECMWF"
+		 "NRT_GFS"
                 )
 
-# Define interpolation neighborhood size in 1-1 correspondence with control flows
+# If computing ensemble mean verification
+export IF_ENS_MEAN=TRUE
+
+# min / max ensemble indices used to compute ensemble product
+# used in ensemble product naming conventions
+export ENS_MIN=00
+export ENS_MAX=02
+
+# If computing individual ensemble member verification
+export IF_ENS_MEMS=TRUE
+
+# Generate ensemble indices to process, used for individual member verification
+ENS_PRFX="ens_"
+MEM_IDS=()
+for indx in {00..02..01}; do
+    MEM_IDS+=( ${ENS_PRFX}${indx} )
+done
+
+# export MEM_IDS as an array containing an empty string if no indices or use array
+# construction as above, this is passed to batch_gridstat
+export MEM_IDS
+
+# Model grid / domain to be processed
+export GRDS=( 
+             "d01"
+             "d02"
+	     "d03"
+            )
+
+# Define interpolation neighborhood size in 1-1 correspondence with model grids
 export INT_WDTHS=( 
                   "3"
                   "3"
-                  "3"
+		  "3"
                  )
 
 # Define the verification field

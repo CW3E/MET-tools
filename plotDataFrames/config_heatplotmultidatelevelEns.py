@@ -27,7 +27,7 @@ TYPE = 'nbrcnt'
 STAT = 'FSS'
 
 # define control flows to analyze for lineplots 
-CTR_FLW = 'WRF_9-3_WestCoast'
+CTR_FLW = 'NRT_ECMWF'
 
 # ensemble member indices to plot
 MEM = 'mean'
@@ -36,10 +36,10 @@ MEM = 'mean'
 GRD = 'd02'
 
 # starting valid date for verification (string YYYYMMDDHH)
-ANL_STRT = '2022122400'
+ANL_STRT = '2024010300'
 
 # end valid date for verification (string YYYYMMDDHH)
-ANL_STOP = '2022122800'
+ANL_STOP = '2024012400'
 
 # increment between verification valid dates (string HH)
 ANL_INC = '24'
@@ -54,14 +54,14 @@ CYC_INC = '24'
 MSK = 'CA_All'
 
 # accumulation threshold
-LEV = '>=25.0'
+LEV = '>=10.0'
 
 ##################################################################################
 # PlOT RENDERING PARAMETERS
 ##################################################################################
 # List of indices for the underscore-separated components of control flow name
 # to use in the plot title
-LAB_IDX = [0, 2]
+LAB_IDX = [0, 1]
 
 # Include ensemble index in plot title True or False
 ENS_LAB = False
@@ -129,7 +129,7 @@ COLOR_MAP = sns.cubehelix_palette(20, start=.75, rot=1.50, as_cmap=True,
 # I/O PARAMETERS
 ##################################################################################
 # Case study directory structure for input data
-CSE = '2022122800_valid_date'
+CSE = '2024010300_valid_date'
 
 # figure case study nesting
 FIG_CSE = ''

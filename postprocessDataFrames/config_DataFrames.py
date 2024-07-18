@@ -14,7 +14,7 @@ INDT = os.environ['INDT']
 # DATAFRAME PARAMETERS
 ##################################################################################
 # Case study directory structure
-CSE = '2022122800_valid_date'
+CSE = '2024010300_valid_date'
 
 # MET-tool subdirectory name
 MET_TOOL = 'GridStat'
@@ -30,12 +30,11 @@ OUT_ROOT = '/out_root/' + CSE
 
 # define control flows to analyze for lineplots 
 CTR_FLWS = [
-            'WRF_9-3_WestCoast',
-            'MPAS_240-U',
-            'MPAS_240-U_LwrBnd',
-            'GFS',
-            'GEFS',
+            'NRT_ECMWF',
+            'NRT_GFS',
             'ECMWF',
+            'GEFS',
+            'GFS',
            ]
 
 # ensemble member indices, used for ISO date sub-directory nesting, set based on
@@ -50,13 +49,14 @@ GRDS = [
         '',
         'd01',
         'd02',
+        'd03',
        ]
 
 # starting date and zero hour of forecast cycles (string YYYYMMDDHH)
-STRT_DT = '2022122300'
+STRT_DT = '2024010300'
 
 # final date and zero hour of data of forecast cycles (string YYYYMMDDHH)
-STOP_DT = '2022122700'
+STOP_DT = '2024012400'
 
 # increment between zero hours for forecast data (string HH)
 CYC_INC = '24'

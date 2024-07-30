@@ -9,7 +9,7 @@
 source ../config_MET-tools.sh
 
 export SCRPT_DIR=${USR_HME}/plotDataFrames
-export IF_SING=TRUE
+export IF_SING=FALSE
 
 # Define MET-tools-py Python execution with directory binds
 MTPY="singularity exec -B "

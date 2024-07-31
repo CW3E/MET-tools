@@ -20,7 +20,7 @@ MET_TOOL = 'GridStat'
 # Prefix for MET product outputs
 PRFX = 'grid_stat_QPF_24hr'
 
-# MET stat file type - should be non-leveled data
+# MET stat file type -- should be leveled data
 TYPE = 'nbrcnt'
 
 # MET stat column names to be made to heat plots / labels
@@ -44,14 +44,17 @@ ANL_GRD = 'd02'
 # reference config verification domain - defined as empty string if not needed
 REF_GRD = ''
 
-# valid date for verification (string YYYYMMDDHH)
-VLD_DT = '2022122800'
+# starting valid date for verification (string YYYYMMDDHH)
+ANL_STRT = '2022122400'
 
-# increment between zero hours for forecast data (string HH)
-CYC_INC = '24'
+# end valid date for verification (string YYYYMMDDHH)
+ANL_STOP = '2022122800'
 
-# Max forecast lead hours
-MAX_LD = '120'
+# increment between verification valid dates (string HH)
+ANL_INC = '24'
+
+# Fixed forecast lead hour
+FIX_LD = '24'
 
 # Land mask for verification
 MSK = 'CA_All'
@@ -61,7 +64,7 @@ MSK = 'CA_All'
 ##################################################################################
 # List of indices for the underscore-separated components of control flow name
 # to use in the plot title
-ANL_LAB_IDX = [0]
+ANL_LAB_IDX = [0, 2]
 REF_LAB_IDX = [0]
 
 # Include ensemble index in plot title True or False
@@ -102,7 +105,7 @@ else:
     anl_grd = ''
 
 if ANL_ENS_LAB:
-    TITLE += anl_ens
+    TITLE += ANL_MEM
 
 if ANL_GRD_LAB:
     TITLE += anl_grd
@@ -142,10 +145,8 @@ if REF_ENS_LAB:
 if REF_GRD_LAB:
     TITLE += ref_grd
 
-SUBTITLE = 'Valid date ' + VLD_DT[:4] + '-' + VLD_DT[4:6] +\
-        '-' + VLD_DT[6:8] + '_' + VLD_DT[8:10]
 lnd_msk_split = MSK.split('_')
-SUBTITLE += ', Verification Region -'
+SUBTITLE = 'Verification Region -'
 for split in lnd_msk_split:
     SUBTITLE += ' ' + split
 
@@ -158,7 +159,7 @@ ALPHA = 1
 
 # If DYN_SCL is False:
 #    set the heat map scale dynamically based on MIN_SCALE / MAX_SCALE below
-MIN_SCALE = -1
+MIN_SCALE = 0
 MAX_SCALE = 1
 
 # define color map to be used for heat plot color bar
@@ -195,9 +196,9 @@ if len(FIG_LAB) > 0:
 else:
     fig_lab = ''
 
-OUT_PATH = OUT_ROOT + '/' + VLD_DT + '_FCST-' + MAX_LD +\
-           '_' + MSK + '_' + STAT + '_' + ANL_CFG + anl_grd + anl_ens +\
+OUT_PATH = OUT_ROOT + '/' + ANL_STRT + '-to-' + ANL_STOP + '_FCST-' + MAX_LD +\
+           '_' + MSK + '_' + STAT + '_all-levels_' + ANL_CFG + anl_grd + fig_lab +\
            '_relative_difference_' + REF_CFG + ref_grd + ref_ens + fig_lab +\
-	       '_all-level_heatplot.png'
+	       '_heatplot.png'
 
 ##################################################################################

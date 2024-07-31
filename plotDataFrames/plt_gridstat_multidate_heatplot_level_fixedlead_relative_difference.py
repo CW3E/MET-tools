@@ -57,9 +57,9 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize as nrm
 from matplotlib.cm import get_cmap
 from matplotlib.colorbar import Colorbar as cb
+import pandas as pd
 import seaborn as sns
 import numpy as np
-import pandas as pd
 import pickle
 import os
 import sys
@@ -95,11 +95,11 @@ if not ANL_INC.isdigit():
 else:
     anl_inc = ANL_INC + 'h'
 
-if not MAX_LD.isdigit():
-    print('ERROR: MAX_LD, ' + MAX_LD + ', is not HH format.')
+if not FIX_LD.isdigit():
+    print('ERROR: FIX_LD, ' + MAX_LD + ', is not HH format.')
     sys.exit(1)
 else:
-    max_ld = int(MAX_LD)
+    fix_ld = int(MAX_LD)
 
 if not CYC_INC.isdigit():
     print('ERROR: CYC_INC\n' + CYC_INC + '\n is not in HH format.')
@@ -123,22 +123,24 @@ except:
     print('If True supply ALPHA value or if False supply min / max scale.')
     sys.exit(1)
 
+if not MAX_LD.isdigit():
+    print('ERROR: MAX_LD, ' + MAX_LD + ', is not HH format.')
+    sys.exit(1)
+else:
+    max_ld = int(MAX_LD)
+
 if not MSK:
     print('ERROR: Landmask variable MSK is not defined.')
     sys.exit(1)
+
 
 # generate valid date range
 anl_dts = pd.date_range(start=anl_strt, end=anl_stop, freq=anl_inc).to_pydatetime()
 total_dts = len(anl_dts)
 
-fcst_strt = anl_dts[0] - td(hours=max_ld)
-fcst_stop = anl_dts[0] - td(hours=int(CYC_INC))
-fcst_zhs = pd.date_range(start=fcst_strt, end=fcst_stop, freq=cyc_inc)
-for i_d in range(1, total_dts):
-    fcst_strt = anl_dts[i_d] - td(hours=max_ld)
-    fcst_stop = anl_dts[i_d] - td(hours=int(CYC_INC))
-    fcst_zhs = fcst_zhs.union(pd.date_range(start=fcst_strt,
-        end=fcst_stop, freq=cyc_inc))
+fcst_zhs = []
+for i_d in range(total_dts):
+    fcst_zhs.append(anl_dts[i_d] - td(hours=fix_ld))
 
 # generate the date range and forecast leads for the analysis, parse binary files
 # for relevant fields
@@ -146,14 +148,12 @@ fcst_zhs = fcst_zhs.to_pydatetime()
 plt_data = {}
 
 for cfg in ['ANL', 'REF']:
-    # define storage for the forecast leads per cfg, will be trimmed to match
-    exec('%s_fcst_leads = []'%(cfg))
-
     # define derived data paths 
     exec('data_root = IN_ROOT + \'/\' + %s_CFG + \'/\' + MET_TOOL'%(cfg))
     
     exec('MEM = %s_MEM'%(cfg))
     exec('GRD = %s_GRD'%(cfg))
+    
     if len(MEM) > 0:
         ens = '_' + MEM
     else:
@@ -187,12 +187,15 @@ for cfg in ['ANL', 'REF']:
                 'VX_MASK',
                 'FCST_LEAD',
                 'FCST_VALID_END',
+                'FCST_THRESH',
                 STAT,
                ]
     
         # cut down df to specified valid date / region / relevant stat
         stat_data = data[vals]
         stat_data = stat_data.loc[(stat_data['VX_MASK'] == MSK)]
+        ### FILL IN THE LEAD IN FORMAT HERE ###
+        stat_data = stat_data.loc[(stat_data['FCST_LEAD'] == )]
     
         # check if there is data for this configuration and these fields
         if not stat_data.empty:
@@ -234,10 +237,10 @@ fig = plt.figure(figsize=(12,9.6))
 ax0 = fig.add_axes([.86, .26, .05, .56])
 ax1 = fig.add_axes([.07, .18, .78, .72])
 
-# create array storage for stats
 num_leads = len(fcst_leads)
 num_dates = len(anl_dts)
 
+# create array storage for stats
 plt_vals = np.full([num_leads, num_dates], np.nan)
 scl_vals = np.full([num_leads, num_dates], np.nan)
 fcst_dates = []
@@ -272,13 +275,8 @@ for i_nd in range(num_dates):
                     pass
 
                 else:
-                    if STAT == 'RMSE':
-                        plt_vals[i_nl, i_nd] = 100 * (ref_val - anl_val) / ref_val
-                        scl_vals[i_nl, i_nd] = 100 * (ref_val - anl_val) / ref_val
-
-                    elif STAT == 'PR_CORR':
-                        plt_vals[i_nl, i_nd] = 100 * (anl_val - ref_val) / ref_val
-                        scl_vals[i_nl, i_nd] = 100 * (anl_val - ref_val) / ref_val
+                    plt_vals[i_nl, i_nd] = 100 * (anl_val - ref_val) / ref_val
+                    scl_vals[i_nl, i_nd] = 100 * (anl_val - ref_val) / ref_val
 
         except:
             continue
@@ -295,7 +293,7 @@ else:
     min_scale = MIN_SCALE
     max_scale = MAX_SCALE
 
-sns.heatmap(plt_vals[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale,
+sns.heatmap(plt_vals, linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale,
             vmax=max_scale, cmap=COLOR_MAP)
 
 ##################################################################################

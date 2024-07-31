@@ -63,8 +63,6 @@ import pandas as pd
 import pickle
 import os
 import sys
-import ipdb
-import copy
 
 # Execute configuration file supplied as command line argument
 CFG = sys.argv[1].split('.')[0]
@@ -217,8 +215,8 @@ while i_fl < len(fcst_leads):
 fig = plt.figure(figsize=(12,9.6))
 
 # Set the axes
-ax0 = fig.add_axes([.91, .20, .03, .60])
-ax1 = fig.add_axes([.12, .10, .78, .80])
+ax0 = fig.add_axes([.86, .18, .05, .64])
+ax1 = fig.add_axes([.12, .10, .73, .80])
 
 # create array storage for stats
 num_leads = len(fcst_leads)
@@ -313,21 +311,21 @@ plt.figtext(.5, .98, TITLE, horizontalalignment='center',
 plt.figtext(.5, .94, SUBTITLE, horizontalalignment='center',
             verticalalignment='center', fontsize=20)
 
-plt.figtext(.93, .14, 'Skill', horizontalalignment='left',
+plt.figtext(.86, .14, 'Skill', horizontalalignment='left',
             verticalalignment='bottom', fontsize=20)
 
-plt.figtext(.93, .11, 'Loss', horizontalalignment='left',
+plt.figtext(.86, .10, 'Loss', horizontalalignment='left',
             verticalalignment='bottom', fontsize=20)
 
-plt.figtext(.93, .89, 'Skill', horizontalalignment='left',
+plt.figtext(.86, .90, 'Skill', horizontalalignment='left',
             verticalalignment='top', fontsize=20)
 
-plt.figtext(.93, .86, 'Gain', horizontalalignment='left',
+plt.figtext(.86, .86, 'Gain', horizontalalignment='left',
             verticalalignment='top', fontsize=20)
+
 # save figure and display
 plt.savefig(OUT_PATH)
 plt.show()
 
 ##################################################################################
 # end
-

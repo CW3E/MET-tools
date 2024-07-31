@@ -96,16 +96,10 @@ else:
     anl_inc = ANL_INC + 'h'
 
 if not FIX_LD.isdigit():
-    print('ERROR: FIX_LD, ' + MAX_LD + ', is not HH format.')
+    print('ERROR: FIX_LD, ' + FIX_LD + ', is not HH format.')
     sys.exit(1)
 else:
-    fix_ld = int(MAX_LD)
-
-if not CYC_INC.isdigit():
-    print('ERROR: CYC_INC\n' + CYC_INC + '\n is not in HH format.')
-    sys.exit(1)
-else:
-    cyc_inc = CYC_INC + 'h'
+    fix_ld = int(FIX_LD)
 
 try:
     if DYN_SCL:
@@ -123,16 +117,9 @@ except:
     print('If True supply ALPHA value or if False supply min / max scale.')
     sys.exit(1)
 
-if not MAX_LD.isdigit():
-    print('ERROR: MAX_LD, ' + MAX_LD + ', is not HH format.')
-    sys.exit(1)
-else:
-    max_ld = int(MAX_LD)
-
 if not MSK:
     print('ERROR: Landmask variable MSK is not defined.')
     sys.exit(1)
-
 
 # generate valid date range
 anl_dts = pd.date_range(start=anl_strt, end=anl_stop, freq=anl_inc).to_pydatetime()
@@ -142,12 +129,14 @@ fcst_zhs = []
 for i_d in range(total_dts):
     fcst_zhs.append(anl_dts[i_d] - td(hours=fix_ld))
 
-# generate the date range and forecast leads for the analysis, parse binary files
+# generate the date range and forecast levels for the analysis, parse binary files
 # for relevant fields
-fcst_zhs = fcst_zhs.to_pydatetime()
 plt_data = {}
 
 for cfg in ['ANL', 'REF']:
+    # define storage for the forecast levels per cfg
+    exec('%s_fcst_levs = []'%(cfg))
+
     # define derived data paths 
     exec('data_root = IN_ROOT + \'/\' + %s_CFG + \'/\' + MET_TOOL'%(cfg))
     
@@ -194,13 +183,13 @@ for cfg in ['ANL', 'REF']:
         # cut down df to specified valid date / region / relevant stat
         stat_data = data[vals]
         stat_data = stat_data.loc[(stat_data['VX_MASK'] == MSK)]
-        ### FILL IN THE LEAD IN FORMAT HERE ###
-        stat_data = stat_data.loc[(stat_data['FCST_LEAD'] == )]
+        stat_data = stat_data.loc[(stat_data['FCST_LEAD'] == FIX_LD + '0000')]
     
         # check if there is data for this configuration and these fields
         if not stat_data.empty:
-            leads = sorted(list(set(stat_data['FCST_LEAD'].values)),
-                           key=lambda x:(len(x), x))
+
+            levs = sorted(list(set(stat_data['FCST_THRESH'].values)),
+                    key=lambda x:(len(x.split('.')[0]), x), reverse=True)
     
             if key in plt_data.keys():
                 # if there is existing data, concatenate dataframes
@@ -209,24 +198,15 @@ for cfg in ['ANL', 'REF']:
             else:
                 # if this is a first instance, create fields
                 plt_data[key] = {'data': stat_data}
+
+            # obtain levels of data 
+            exec('%s_fcst_levs += levs'%(cfg))
     
-            # obtain leads of data 
-            exec('%s_fcst_leads += leads'%(cfg))
 
-# find all unique values for forecast leads, sorted for plotting, less than max lead
-# matching across the analyzed and reference configurations
-fcst_leads = set(ANL_fcst_leads).intersection(set(REF_fcst_leads))
-fcst_leads = sorted(list(fcst_leads), key=lambda x:(len(x), x))
-
-i_fl = 0
-while i_fl < len(fcst_leads):
-    ld = fcst_leads[i_fl][:-4]
-    if int(ld) <= max_ld:
-        i_fl += 1
-
-    else:
-        del fcst_leads[i_fl]
-
+# find all unique values for forecast levels matching across configurations
+fcst_levs = set(ANL_fcst_levs).intersection(set(REF_fcst_levs))
+fcst_levs = sorted(list(fcst_levs), key=lambda x:(len(x.split('.')[0]), x),
+        reverse=True)
 ##################################################################################
 # Begin plotting
 ##################################################################################
@@ -235,22 +215,19 @@ fig = plt.figure(figsize=(12,9.6))
 
 # Set the axes
 ax0 = fig.add_axes([.86, .26, .05, .56])
-ax1 = fig.add_axes([.07, .18, .78, .72])
+ax1 = fig.add_axes([.12, .18, .73, .72])
 
-num_leads = len(fcst_leads)
 num_dates = len(anl_dts)
+num_levs = len(fcst_levs)
 
 # create array storage for stats
-plt_vals = np.full([num_leads, num_dates], np.nan)
-scl_vals = np.full([num_leads, num_dates], np.nan)
+plt_vals = np.full([num_levs, num_dates], np.nan)
+scl_vals = np.full([num_levs, num_dates], np.nan)
 fcst_dates = []
 
-# reverse order for plotting
-fcst_leads = fcst_leads[::-1]
-
-for i_nd in range(num_dates):
-    for i_nl in range(num_leads):
-        if i_nl == 0:
+for i_nv in range(num_levs):
+    for i_nd in range(num_dates):
+        if i_nv == 0:
             # on the first lead-loop of each date pack the date tick labels
             if ( i_nd % 2 ) == 0 or num_dates < 10:
               # if 10 or more dates, only use every other as a label
@@ -259,13 +236,13 @@ for i_nd in range(num_dates):
                 fcst_dates.append('')
 
         try:
-            # try to load data for the date / lead combination
-            anl_val = plt_data[ANL_key]['data'].loc[(plt_data[ANL_key]['data']['FCST_LEAD'] ==\
-                    fcst_leads[i_nl]) & (plt_data[ANL_key]['data']['FCST_VALID_END'] ==\
+            # try to load data for the date / level combination
+            anl_val = plt_data[ANL_key]['data'].loc[(plt_data[ANL_key]['data']['FCST_THRESH'] ==\
+                    fcst_levs[i_nv]) & (plt_data[ANL_key]['data']['FCST_VALID_END'] ==\
                     anl_dts[i_nd].strftime('%Y%m%d_%H%M%S'))]
             
-            ref_val = plt_data[REF_key]['data'].loc[(plt_data[REF_key]['data']['FCST_LEAD'] ==\
-                    fcst_leads[i_nl]) & (plt_data[REF_key]['data']['FCST_VALID_END'] ==\
+            ref_val = plt_data[REF_key]['data'].loc[(plt_data[REF_key]['data']['FCST_THRESH'] ==\
+                    fcst_levs[i_nv]) & (plt_data[REF_key]['data']['FCST_VALID_END'] ==\
                     anl_dts[i_nd].strftime('%Y%m%d_%H%M%S'))]
             
             if not anl_val.empty and not ref_val.empty:
@@ -275,8 +252,8 @@ for i_nd in range(num_dates):
                     pass
 
                 else:
-                    plt_vals[i_nl, i_nd] = 100 * (anl_val - ref_val) / ref_val
-                    scl_vals[i_nl, i_nd] = 100 * (anl_val - ref_val) / ref_val
+                    plt_vals[i_nv, i_nd] = 100 * (anl_val - ref_val) / ref_val
+                    scl_vals[i_nv, i_nd] = 100 * (anl_val - ref_val) / ref_val
 
         except:
             continue
@@ -300,16 +277,13 @@ sns.heatmap(plt_vals, linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale,
 # define display parameters
 
 # generate tic labels based on hour values
-for i in range(num_leads):
-    fcst_leads[i] = fcst_leads[i][:-4]
-
 pct_ticks = np.around(np.linspace(min_scale, max_scale, 9), 0)
 pct_labs = [str(int(tick)) + '%' for tick in pct_ticks]
 
 ax0.set_yticks(pct_ticks)
 ax0.set_yticklabels(pct_labs, rotation=45, va='center')
+ax1.set_yticklabels(fcst_levs, rotation=45, ha='right')
 ax1.set_xticklabels(fcst_dates, rotation=45, ha='right')
-ax1.set_yticklabels(fcst_leads)
 
 # tick parameters
 ax0.tick_params(
@@ -321,7 +295,7 @@ ax1.tick_params(
         )
 
 lab1='Verification Valid Date'
-lab2='Forecast Lead Hrs'
+lab2='Accumulation threshold - mm'
 plt.figtext(.5, .02, lab1, horizontalalignment='center',
             verticalalignment='center', fontsize=20)
 

@@ -122,7 +122,7 @@ fcst_zhs = fcst_zhs.to_pydatetime()
 plt_data = {}
 
 for cfg in ['ANL', 'REF']:
-    # define storage for the forecast leads per cfg, will be trimmed to match
+    # define storage for the forecast leads/ levels per cfg
     exec('%s_fcst_leads = []'%(cfg))
     exec('%s_fcst_levs = []'%(cfg))
 
@@ -188,12 +188,12 @@ for cfg in ['ANL', 'REF']:
                 # if this is a first instance, create fields
                 plt_data[key] = {'data': stat_data}
     
-            # obtain leads of data 
+            # obtain leads / levels of data 
             exec('%s_fcst_leads += leads'%(cfg))
             exec('%s_fcst_levs += levs'%(cfg))
     
-# find all unique values for forecast leads, sorted for plotting, less than max lead
-# matching across the analyzed and reference configurations
+# find all unique values for forecast leads / levels sorted for plotting,
+# less than max lead matching across the analyzed and reference configurations
 fcst_leads = set(ANL_fcst_leads).intersection(set(REF_fcst_leads))
 fcst_levs = set(ANL_fcst_levs).intersection(set(REF_fcst_levs))
 fcst_leads = sorted(list(fcst_leads), key=lambda x:(len(x), x))
@@ -233,7 +233,7 @@ for i_nv in range(num_levs):
         if i_nv == 0:
             # on the first level-loop of each date pack the lead tick labels
             if ( i_nl % 2 ) == 0 or num_leads < 10:
-              # if 10 or more dates, only use every other as a label
+              # if 10 or more leads only use every other as a label
               lead_labs.append(fcst_leads[i_nl][:-4])
             else:
                 fcst_dates.append('')

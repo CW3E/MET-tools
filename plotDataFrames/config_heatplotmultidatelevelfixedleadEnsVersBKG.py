@@ -150,6 +150,8 @@ SUBTITLE = 'Verification Region -'
 for split in lnd_msk_split:
     SUBTITLE += ' ' + split
 
+SUBTITLE  += ', Fixed forecast lead ' + FIX_LD + ' Hrs'
+
 # Bool switch for choosing color bar scale
 DYN_SCL = True
 
@@ -196,7 +198,7 @@ if len(FIG_LAB) > 0:
 else:
     fig_lab = ''
 
-OUT_PATH = OUT_ROOT + '/' + ANL_STRT + '-to-' + ANL_STOP + '_FCST-' + MAX_LD +\
+OUT_PATH = OUT_ROOT + '/' + ANL_STRT + '-to-' + ANL_STOP + '_FIXED-LD-' + FIX_LD +\
            '_' + MSK + '_' + STAT + '_all-levels_' + ANL_CFG + anl_grd + fig_lab +\
            '_relative_difference_' + REF_CFG + ref_grd + ref_ens + fig_lab +\
 	       '_heatplot.png'

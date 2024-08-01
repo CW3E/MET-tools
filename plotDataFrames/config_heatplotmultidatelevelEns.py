@@ -20,6 +20,8 @@ MET_TOOL = 'GridStat'
 # Prefix for MET product outputs
 PRFX = 'grid_stat_QPF_24hr'
 
+QPE_SOURCE = 'Stage-IV' # source, for plot title
+
 # MET stat file type -- should be leveled data
 TYPE = 'nbrcnt'
 
@@ -52,6 +54,7 @@ CYC_INC = '24'
 
 # Land mask for verification
 MSK = 'CA_All'
+DMN_TITLE = 'California' # title for domain/landmask for plot
 
 # accumulation threshold
 LEV = '>=10.0'
@@ -70,13 +73,24 @@ ENS_LAB = False
 GRD_LAB = True
 
 # Plot title generated from above parameters
-TITLE = STAT + ' - ' + ' Precip Thresh ' + LEV + ' mm - '
+if STAT == 'FSS':
+    stat_title = 'Fractions Skill Score'
+elif STAT == 'AFSS':
+    stat_title = 'Asymptotic Fractions Skill Score'
+else:
+    stat_title = ''
+
+TITLE = stat_title + ' ('  +  LEV + ' mm)\n'
 split_string = CTR_FLW.split('_')
 split_len = len(split_string)
 idx_len = len(LAB_IDX)
 line_lab = ''
 lab_len = min(idx_len, split_len)
-if lab_len > 1:
+
+if lab_len == 2:
+    TITLE += 'West-WRF/' + split_string[1]
+
+elif lab_len > 1:
     for i_ll in range(lab_len, 1, -1):
         i_li = LAB_IDX[-i_ll]
         TITLE += split_string[i_li] + '_'
@@ -88,26 +102,28 @@ else:
     TITLE += split_string[0]
 
 if len(MEM) > 0:
-    ens = '_' + MEM
+    ens = MEM
 else:
     ens = ''
 
-if len(GRD) > 0:
-    grd = '_' + GRD
-
+if GRD == 'd01':
+    grd = '9km'
+elif GRD == 'd02':
+    grd = '3km'
+elif GRD == 'd03':
+    grd = '1km'
 else:
     grd = ''
 
 if ENS_LAB:
-    TITLE += MEM
+    TITLE += ' ' + MEM
 
 if GRD_LAB:
-    TITLE += grd
+    TITLE += ' ' +  grd
 
-lnd_msk_split = MSK.split('_')
-SUBTITLE = 'Verification Region -'
-for split in lnd_msk_split:
-    SUBTITLE += ' ' + split
+# plot subtitles
+DMN_SUBTITLE = 'Domain: ' + DMN_TITLE
+QPE_SUBTITLE = 'QPE Source: ' + QPE_SOURCE
 
 # Bool switch for choosing color bar scale
 DYN_SCL = False
@@ -123,7 +139,7 @@ MAX_SCALE = 1
 
 # define color map to be used for heat plot color bar
 COLOR_MAP = sns.cubehelix_palette(20, start=.75, rot=1.50, as_cmap=True,
-                                          reverse=True, dark=0.25)
+                                          reverse=False, dark=0.25)
 
 ##################################################################################
 # I/O PARAMETERS
@@ -156,7 +172,7 @@ else:
     fig_lab = ''
 
 OUT_PATH = OUT_ROOT + '/' + ANL_STRT + '-to-' + ANL_STOP + '_FCST-' + MAX_LD +\
-           '_' + MSK + '_' + STAT + '_' + LEV + '_' + CTR_FLW + grd + fig_lab +\
-	       '_heatplot.png'
+           '_' + MSK + '_' + STAT + '_' + LEV + '_' + CTR_FLW + '_' + GRD + fig_lab +\
+	       '_heatplot_REVISED.png'
 
 ##################################################################################

@@ -21,6 +21,8 @@ MET_TOOL = 'GridStat'
 # Prefix for MET product outputs
 PRFX = 'grid_stat_QPF_24hr'
 
+QPE_TITLE = 'Stage-IV' # source, for plot subtitle
+
 # MET stat file type - should be leveled data
 TYPE = 'nbrcnt'
 
@@ -69,6 +71,7 @@ VALID_DT = '2024011400'
 
 # Land mask for verification
 MSK = 'CA_All'
+DMN_TITLE = 'California' # domain/landmask name for plot subtitle
 
 ##################################################################################
 # PlOT RENDERING PARAMETERS
@@ -84,16 +87,12 @@ ENS_LAB = False
 GRD_LAB = True
 
 # Plot title generated from above parameters
-TITLE='24hr accumulated precip at ' + VALID_DT[:4] + '-' + VALID_DT[4:6] + '-' +\
-        VALID_DT[6:8] + '_' + VALID_DT[8:]
+TITLE='24hr Accumulated Precipitation (' + LEV + ' mm)\n' + 'Valid: ' +\
+        VALID_DT[8:] + 'Z ' + VALID_DT[4:6] + '/' + VALID_DT[6:8] + '/' + VALID_DT[:4]
 
-# Plot sub-title title generated from the land mask file name
-SUBTITLE='Verification region -'
-lnd_msk_split = MSK.split('_')
-for split in lnd_msk_split:
-    SUBTITLE += ' ' + split
-
-SUBTITLE += ', Threshold ' + LEV + ' mm'
+# Plot subtitles
+DMN_SUBTITLE = 'Domain: ' + DMN_TITLE
+QPE_SUBTITLE = 'QPE Source: ' + QPE_TITLE
 
 ##################################################################################
 # I/O PARAMETERS
@@ -127,6 +126,6 @@ else:
 
 # path of saved figure
 OUT_PATH = OUT_ROOT + '/' + VALID_DT + '_' + MSK + '_' + STATS[0] + '_' +\
-           STATS[1] + '_lev_' + LEV + fig_lab + '_lineplot.png'
+           STATS[1] + '_lev_' + LEV + fig_lab + '_lineplot_REVISED.png'
 
 ##################################################################################

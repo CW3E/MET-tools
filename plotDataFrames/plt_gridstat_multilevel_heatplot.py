@@ -276,14 +276,20 @@ lab2='Accumulation threshold - mm'
 plt.figtext(.5, .02, lab1, horizontalalignment='center',
             verticalalignment='center', fontsize=20)
 
-plt.figtext(.02, .565, lab2, horizontalalignment='center',
+plt.figtext(.02, .5, lab2, horizontalalignment='center',
             verticalalignment='center', fontsize=20, rotation=90)
 
-plt.figtext(.5, .98, TITLE, horizontalalignment='center',
-            verticalalignment='center', fontsize=20)
+#plt.figtext(.5, .98, TITLE, horizontalalignment='center',
+#            verticalalignment='center', fontsize=20)
 
-plt.figtext(.5, .94, SUBTITLE, horizontalalignment='center',
-            verticalalignment='center', fontsize=20)
+#plt.figtext(.5, .94, SUBTITLE, horizontalalignment='center',
+#            verticalalignment='center', fontsize=20)
+
+plt.title(TITLE, x = 0.5, y = 1.06, fontsize = 20)
+plt.title(VDT_SUBTITLE, fontsize = 16, loc = "left")
+plt.suptitle(DMN_SUBTITLE, x = 0.5, y = .927, fontsize = 16)
+plt.title(QPE_SUBTITLE, fontsize = 16, loc = "right")
+
 
 # save figure and display
 plt.savefig(OUT_PATH)

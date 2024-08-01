@@ -57,9 +57,9 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize as nrm
 from matplotlib.cm import get_cmap
 from matplotlib.colorbar import Colorbar as cb
+import pandas as pd
 import seaborn as sns
 import numpy as np
-import pandas as pd
 import pickle
 import os
 import sys
@@ -81,7 +81,7 @@ else:
             ANL_STRT[8:]
     anl_strt = dt.fromisoformat(iso)
 
-if not ANL_STRT.isdigit() or len(ANL_STOP) != 10:
+if not ANL_STOP.isdigit() or len(ANL_STOP) != 10:
     print('ERROR: ANL_STOP\n' + ANL_STOP + '\n is not in YYYYMMDDHH format.')
     sys.exit(1)
 else:
@@ -146,63 +146,66 @@ fcst_zhs = fcst_zhs.to_pydatetime()
 plt_data = {}
 
 fcst_leads = []
-# define derived data paths 
-data_root = IN_ROOT + '/' + CTR_FLW + '/' + MET_TOOL
+for ctr_flw in CTR_FLWS:
+    # define derived data paths 
+    data_root = IN_ROOT + '/' + ctr_flw + '/' + MET_TOOL
 
-if len(MEM) > 0:
-    ens = '_' + MEM
-else:
-    ens = ''
+    for grid in GRDS:
+        for mem in MEM_IDS:
+            if len(mem) > 0:
+                ens = '_' + mem
+            else:
+                ens = ''
 
-if len(GRD) > 0:
-    grd = '_' + GRD
-else:
-    grd = ''
+            if len(grid) > 0:
+                grd = '_' + grid
+            else:
+                grd = ''
 
-key = CTR_FLW + ens + grd
-for fcst_zh in fcst_zhs:
-    # define the input name
-    zh_str = fcst_zh.strftime('%Y%m%d%H')
-    in_path = data_root + '/' + zh_str + '/' + PRFX + ens + grd +\
-              '_' + zh_str + '.bin'
-    
-    try:
-        with open(in_path, 'rb') as f:
-            data = pickle.load(f)
-            data = data[TYPE]
+            key = ctr_flw + ens + grd
+            for fcst_zh in fcst_zhs:
+                # define the input name
+                zh_str = fcst_zh.strftime('%Y%m%d%H')
+                in_path = data_root + '/' + zh_str + '/' + PRFX + ens + grd +\
+                        '_' + zh_str + '.bin'
+                
+                try:
+                    with open(in_path, 'rb') as f:
+                        data = pickle.load(f)
+                        data = data[TYPE]
 
-    except:
-        print('WARNING: input data ' + in_path + ' statistics ' + TYPE +\
-                ' does not exist, skipping this configuration.')
-        continue
+                except:
+                    print('WARNING: input data ' + in_path + ' statistics ' + TYPE +\
+                            ' does not exist, skipping this configuration.')
+                    continue
 
-    # load the values to be plotted along with landmask and lead
-    vals = [
-            'VX_MASK',
-            'FCST_LEAD',
-            'FCST_VALID_END',
-            STAT,
-           ]
+                # load the values to be plotted along with landmask and lead
+                vals = [
+                        'VX_MASK',
+                        'FCST_LEAD',
+                        'FCST_VALID_END',
+                        STAT,
+                       ]
 
-    # cut down df to specified valid date / region / relevant stat
-    stat_data = data[vals]
-    stat_data = stat_data.loc[(stat_data['VX_MASK'] == MSK)]
+                # cut down df to specified valid date / region / relevant stat
+                stat_data = data[vals]
+                stat_data = stat_data.loc[(stat_data['VX_MASK'] == MSK)]
 
-    # check if there is data for this configuration and these fields
-    if not stat_data.empty:
-        leads = sorted(list(set(stat_data['FCST_LEAD'].values)),
-                       key=lambda x:(len(x), x))
+                # check if there is data for this configuration and these fields
+                if not stat_data.empty:
+                    leads = sorted(list(set(stat_data['FCST_LEAD'].values)),
+                            key=lambda x:(len(x), x))
 
-        if key in plt_data.keys():
-            # if there is existing data, concatenate dataframes
-            plt_data[key]['data'] = pd.concat([plt_data[key]['data'],
-                stat_data], axis=0)
-        else:
-            # if this is a first instance, create fields
-            plt_data[key] = {'data': stat_data}
+                    if key in plt_data.keys():
+                        # if there is existing data, concatenate dataframes
+                        plt_data[key]['data'] = pd.concat([plt_data[key]['data'],
+                            stat_data], axis=0)
+                    else:
+                        # if this is a first instance, create fields
+                        plt_data[key] = {'data': stat_data}
 
-        # obtain leads of data 
-        fcst_leads += leads
+                    # obtain leads of data
+                    fcst_leads += leads
 
 # find all unique values for forecast leads, sorted for plotting, less than max lead
 fcst_leads = sorted(list(set(fcst_leads)), key=lambda x:(len(x), x))
@@ -233,6 +236,9 @@ tmp = np.empty([num_leads, num_dates])
 tmp[:] = np.nan
 fcst_dates = []
 
+keys = list(plt_data.keys())
+key1, key2 = keys[0], keys[1]
+
 # reverse order for plotting
 fcst_leads = fcst_leads[::-1]
 
@@ -248,12 +254,19 @@ for i_nd in range(num_dates):
 
         try:
             # try to load data for the date / lead combination
-            val = plt_data[key]['data'].loc[(plt_data[key]['data']['FCST_LEAD'] ==\
-                    fcst_leads[i_nl]) & (plt_data[key]['data']['FCST_VALID_END'] ==\
+            val1 = plt_data[key1]['data'].loc[(plt_data[key1]['data']['FCST_LEAD'] ==\
+                    fcst_leads[i_nl]) & (plt_data[key1]['data']['FCST_VALID_END'] ==\
                     anl_dts[i_nd].strftime('%Y%m%d_%H%M%S'))]
-            
+
+            val2 = plt_data[key2]['data'].loc[(plt_data[key2]['data']['FCST_LEAD'] ==\
+                    fcst_leads[i_nl]) & (plt_data[key2]['data']['FCST_VALID_END'] ==\
+                    anl_dts[i_nd].strftime('%Y%m%d_%H%M%S'))]
+
+
+            val = (val2[STAT] - val1[STAT]) / val2[STAT]
+
             if not val.empty:
-                tmp[i_nl, i_nd] = val[STAT]
+                tmp[i_nl, i_nd] = val
 
         except:
             continue
@@ -296,19 +309,14 @@ lab2='Forecast Lead Hrs'
 plt.figtext(.5, .02, lab1, horizontalalignment='center',
             verticalalignment='center', fontsize=20)
 
-plt.figtext(.02, .5, lab2, horizontalalignment='center',
+plt.figtext(.02, .565, lab2, horizontalalignment='center',
             verticalalignment='center', fontsize=20, rotation=90)
 
-#plt.figtext(.5, .98, TITLE, horizontalalignment='center',
-#            verticalalignment='center', fontsize=20)
+plt.figtext(.5, .98, TITLE, horizontalalignment='center',
+            verticalalignment='center', fontsize=20)
 
-#plt.figtext(.5, .94, SUBTITLE, horizontalalignment='center',
-#            verticalalignment='center', fontsize=20)
-
-
-plt.title(TITLE, x = 0.5, y = 1.06, fontsize = 20)
-plt.title(DMN_SUBTITLE, fontsize = 16, loc = 'left')
-plt.title(QPE_SUBTITLE, fontsize = 16, loc = 'right')
+plt.figtext(.5, .94, SUBTITLE, horizontalalignment='center',
+            verticalalignment='center', fontsize=20)
 
 # save figure and display
 plt.savefig(OUT_PATH)

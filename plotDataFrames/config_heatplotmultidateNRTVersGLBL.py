@@ -20,22 +20,27 @@ MET_TOOL = 'GridStat'
 # Prefix for MET product outputs
 PRFX = 'grid_stat_QPF_24hr'
 
-QPE_SOURCE = 'Stage-IV' # source, for plot title
-
 # MET stat file type - should be non-leveled data
 TYPE = 'cnt'
 
 # MET stat column names to be made to heat plots / labels
 STAT = 'RMSE'
 
-# define control flows to analyze for lineplots 
-CTR_FLW = 'NRT_ECMWF'
+# define control flows to analyze for lineplots
+CTR_FLWS = [
+            'NRT_GFS',
+            'GFS',
+           ]
 
 # ensemble member indices to plot
-MEM = 'mean'
+MEM_IDS = ['']
+MEM_IDS += ['mean']
 
 # verification domains to plot - defined as empty string if not needed
-GRD = 'd02'
+GRDS = [
+        '',
+        'd02',
+       ]
 
 # starting valid date for verification (string YYYYMMDDHH)
 ANL_STRT = '2024010300'
@@ -54,7 +59,6 @@ CYC_INC = '24'
 
 # Land mask for verification
 MSK = 'CA_All'
-DMN_TITLE = 'California' # title for domain/landmask for plot
 
 ##################################################################################
 # PlOT RENDERING PARAMETERS
@@ -70,25 +74,13 @@ ENS_LAB = False
 GRD_LAB = True
 
 # Plot title generated from above parameters
-if STAT == 'RMSE':
-    stat_title = 'Root-Mean-Squared Error'
-elif STAT == 'PR_CORR':
-    stat_title = 'Pearson Correlation Coefficient'
-else:
-    stat_title = ''
-
-TITLE = stat_title + ' - '
-
-split_string = CTR_FLW.split('_')
+TITLE = STAT + ' - '
+split_string = CTR_FLWS[0].split('_')
 split_len = len(split_string)
 idx_len = len(LAB_IDX)
 line_lab = ''
 lab_len = min(idx_len, split_len)
-
-if lab_len == 2:
-    TITLE += 'West-WRF/' + split_string[1]
-
-elif lab_len > 1:
+if lab_len > 1:
     for i_ll in range(lab_len, 1, -1):
         i_li = LAB_IDX[-i_ll]
         TITLE += split_string[i_li] + '_'
@@ -99,29 +91,27 @@ elif lab_len > 1:
 else:
     TITLE += split_string[0]
 
-if len(MEM) > 0:
-    ens = MEM
-else:
-    ens = ''
+#if len(MEM_IDS) > 0:
+ #   ens = '_' + MEM_IDS
+#else:
+ #   ens = ''
 
-if GRD == 'd01':
-    grd = '9km'
-elif GRD == 'd02':
-    grd = '3km'
-elif GRD == 'd03':
-    grd = '1km'
-else:
-    grd = ''
+#if len(GRDS) > 0:
+#    grd = '_' + GRDS
 
-if ENS_LAB:
-    TITLE += ' ' + ens
+#else:
+ #   grd = ''
 
-if GRD_LAB:
-    TITLE += ' ' + grd
+#if ENS_LAB:
+ #   TITLE += ens
 
-# plot subtitles
-DMN_SUBTITLE = 'Domain: ' + DMN_TITLE
-QPE_SUBTITLE = 'QPE Source: ' + QPE_SOURCE
+#if GRD_LAB:
+ #   TITLE += grd
+
+lnd_msk_split = MSK.split('_')
+SUBTITLE = 'Verification Region -'
+for split in lnd_msk_split:
+    SUBTITLE += ' ' + split
 
 # Bool switch for choosing color bar scale
 DYN_SCL = True
@@ -136,7 +126,7 @@ MIN_SCALE = 0
 MAX_SCALE = 1
 
 # define color map to be used for heat plot color bar
-COLOR_MAP = sns.cubehelix_palette(start=2.5, rot=-1.5, light=0.8, dark=0.25, as_cmap=True)
+COLOR_MAP = sns.color_palette('viridis', as_cmap=True)
 
 ##################################################################################
 # I/O PARAMETERS
@@ -169,7 +159,7 @@ else:
     fig_lab = ''
 
 OUT_PATH = OUT_ROOT + '/' + ANL_STRT + '-to-' + ANL_STOP + '_FCST-' + MAX_LD +\
-           '_' + MSK + '_' + STAT + '_' + CTR_FLW + '_' + GRD + fig_lab +\
-	       '_heatplot_REVISED.png'
+           '_' + MSK + '_' + STAT + '_' + fig_lab +\
+	       '_heatplot.png'
 
 ##################################################################################

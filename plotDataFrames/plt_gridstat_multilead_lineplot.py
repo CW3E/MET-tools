@@ -336,25 +336,35 @@ ax0.tick_params(
         )
 
 ax0.set_yticks(ax0.get_yticks(), ax0.get_yticklabels(), va='bottom')
-ax1.set_yticks(ax1.get_yticks(), ax1.get_yticklabels(), va='top')
+tick_labs = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+ax1.set_yticks(np.linspace(0, 1, 6), tick_labs, va='top')
 
-lab0=STATS[0]
-lab1=STATS[1]
+# have correlation be on dynamic scale of 0 to 1
+#ax1.set_ylim([0, 1])
+
+labels = []
+labels = [None] * len(STATS)
+for i in range(len(STATS)):
+    if STATS[i] == 'RMSE':
+        labels[i] = 'Root-Mean\nSquared Error'
+    elif STATS[i] == 'PR_CORR':
+        labels[i] = 'Pearson\nCorrelation'
+    else:
+        labels[i] = ''
+
 lab2='Forecast lead hrs'
-plt.figtext(.5, .98, TITLE, horizontalalignment='center',
-            verticalalignment='center', fontsize=22)
+plt.title(TITLE, y = 2.55, fontsize = 22)
+plt.title(DMN_SUBTITLE, y = 2.465, fontsize = 18, loc = 'left')
+plt.title(QPE_SUBTITLE, y = 2.465, fontsize = 18, loc = 'right')
 
-plt.figtext(.5, .93, SUBTITLE, horizontalalignment='center',
-            verticalalignment='center', fontsize=22)
+plt.figtext(.035, .5625, labels[0], horizontalalignment='center', rotation=90,
+            verticalalignment='center', fontsize=20)
 
-plt.figtext(.03, .595, lab0, horizontalalignment='right', rotation=90,
-            verticalalignment='center', fontsize=22)
+plt.figtext(.035, .2125, labels[1], horizontalalignment='center', rotation=90,
+            verticalalignment='center', fontsize=20)
 
-plt.figtext(.03, .265, lab1, horizontalalignment='right', rotation=90,
-            verticalalignment='center', fontsize=22)
-
-plt.figtext(.5, .01, lab2, horizontalalignment='center',
-            verticalalignment='center', fontsize=22)
+plt.figtext(.525, .0125, lab2, horizontalalignment='center',
+            verticalalignment='center', fontsize=20)
 
 if line_count <= 3:
     ncols = line_count
@@ -367,7 +377,7 @@ else:
         ncols = 4
 
 fig.legend(line_list, line_labs, fontsize=18, ncol=ncols, loc='center',
-           bbox_to_anchor=[0.5, 0.83])
+           bbox_to_anchor=[0.525, 0.83])
 
 # save figure and display
 os.system('mkdir -p ' + OUT_ROOT)

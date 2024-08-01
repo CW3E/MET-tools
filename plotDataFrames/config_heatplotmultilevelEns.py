@@ -20,6 +20,8 @@ MET_TOOL = 'GridStat'
 # Prefix for MET product outputs
 PRFX = 'grid_stat_QPF_24hr'
 
+QPE_SOURCE = 'Stage-IV' # source, for plot title
+
 # MET stat file type - should be non-leveled data
 TYPE = 'nbrcnt'
 
@@ -46,6 +48,7 @@ MAX_LD = '120'
 
 # Land mask for verification
 MSK = 'CA_All'
+DMN_TITLE = 'California' # title for domain/landmask for plot
 
 ##################################################################################
 # PlOT RENDERING PARAMETERS
@@ -61,13 +64,25 @@ ENS_LAB = False
 GRD_LAB = True
 
 # Plot title generated from above parameters
-TITLE = STAT + ' - '
+if STAT == 'FSS':
+    stat_title = 'Fraction Skill Score'
+elif STAT == 'AFSS':
+    stat_title = 'Asymptotic Fractions Skill Score'
+else:
+    stat_title = STAT
+
+TITLE = stat_title + ' - '
+
 split_string = CTR_FLW.split('_')
 split_len = len(split_string)
 idx_len = len(LAB_IDX)
 line_lab = ''
 lab_len = min(idx_len, split_len)
-if lab_len > 1:
+
+if lab_len == 2:
+    TITLE += 'West-WRF/' + split_string[1]
+
+elif lab_len > 1:
     for i_ll in range(lab_len, 1, -1):
         i_li = LAB_IDX[-i_ll]
         TITLE += split_string[i_li] + '_'
@@ -79,28 +94,31 @@ else:
     TITLE += split_string[0]
 
 if len(MEM) > 0:
-    ens = '_' + MEM
+    ens = MEM
 else:
     ens = ''
 
-if len(GRD) > 0:
-    grd = '_' + GRD
-
+if GRD == 'd01':
+    grd = '9km'
+elif GRD == 'd02':
+    grd = '3km'
+elif GRD == 'd03':
+    grd = '1km'
 else:
     grd = ''
 
 if ENS_LAB:
-    TITLE += ens
+    TITLE += ' ' + ens
 
 if GRD_LAB:
-    TITLE += grd
+    TITLE += ' ' + grd
 
-SUBTITLE = 'Valid date ' + VLD_DT[:4] + '-' + VLD_DT[4:6] +\
-        '-' + VLD_DT[6:8] + '_' + VLD_DT[8:10]
-lnd_msk_split = MSK.split('_')
-SUBTITLE += ', Verification Region -'
-for split in lnd_msk_split:
-    SUBTITLE += ' ' + split
+# plot subtitles
+DMN_SUBTITLE = 'Domain: ' + DMN_TITLE
+QPE_SUBTITLE = 'QPE Source: ' + QPE_SOURCE
+VDT_SUBTITLE = 'Valid: ' + VLD_DT[8:10] + 'Z ' + VLD_DT[4:6] +\
+        '/' + VLD_DT[6:8] + '/' + VLD_DT[:4]
+
 
 # Bool switch for choosing color bar scale
 DYN_SCL = False
@@ -148,7 +166,7 @@ else:
     fig_lab = ''
 
 OUT_PATH = OUT_ROOT + '/' + VLD_DT + '_FCST-' + MAX_LD +\
-           '_' + MSK + '_' + STAT + '_' + CTR_FLW + grd + fig_lab +\
-	       '_all-level_heatplot.png'
+           '_' + MSK + '_' + STAT + '_' + CTR_FLW + '_' + GRD + fig_lab +\
+	       '_all-level_heatplot_REVISED.png'
 
 ##################################################################################

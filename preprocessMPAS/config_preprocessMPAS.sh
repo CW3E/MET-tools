@@ -19,14 +19,27 @@ export CSE=2022122800_valid_date
 # root directory for cycle time (YYYYMMDDHH) directories of MPAS output files
 export IN_ROOT=${SIM_ROOT}/${CSE}
 
+# Define where the mesh data is stored. Set to '' if all output files contain mesh data.
+export MSH_ROOT=/expanse/nfs/cw3e/cwp168/Ensemble-DA-Cycling-Template/simulation_settings/
+
 # root directory for cycle time (YYYYMMDDHH) directories of cf-compliant outputs
 export OUT_ROOT=${VRF_ROOT}/${CSE}
 
 # Array of control flow names to be processed
-export CTR_FLWS=( 
+export CTR_FLWS=(
                  "MPAS_240-U"
                  "MPAS_240-U_LwrBnd"
                 )
+
+# Mesh information file names, must be in 1-1 correspondence with control flow names
+# if static information comes from separate stream
+export MSH_NMES=(
+                 "MPAS_240-U.static.nc"
+                 "MPAS_240-U_LwrBnd.static.nc"
+		)
+
+# MPAS output file prefix to source model outputs from, e.g., hist / diag
+export MPAS_PRFX="diag"
 
 # Generate ensemble indices to process
 ENS_PRFX="ens_"

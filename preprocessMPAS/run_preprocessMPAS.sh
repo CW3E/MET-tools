@@ -84,6 +84,45 @@ if [ ! ${CTR_FLW} ]; then
   exit 1
 fi
 
+# flag is set to source mesh information from the same stream as the MPAS outputs
+# unless a mesh root directory and file name is supplied
+in_msh_strm=FALSE
+if [ ! ${MSH_ROOT} ]; then
+  printf "ERROR: Static information directory \${MSH_ROOT} is undefined.\n"
+  msg="Supply a blank string for this variable if static information is derived"
+  msg+=" from the same data stream as MPAS output files.\n"
+  exit 1
+elif [ -n "${MSH_ROOT}" ]; then
+  if [[ ! -d  ${IN_MSH_DIR} || ! -r ${IN_MSH_DIR} ]]; then
+    msg="ERROR: static information directory IN_MSH_DIR\n ${IN_MSH_DIR}\n"
+    msg+=" is not a directory or is not readable.\n"
+    printf "${msg}"
+    exit 1
+  elif [[ ! -r ${IN_MSH_DIR}/${IN_MSH_F} ]]; then
+    msg="ERROR: static information file\n ${IN_MSH_DIR}/${IN_MSH_F}\n"
+    msg+=" is not readable or does not exist.\n"
+  else
+    in_msh_strm=TRUE
+    in_msh_dir="${IN_MSH_DIR}"
+    in_msh_f="${IN_MSH_F}"
+    printf "MPAS static fields are sourced from\n ${IN_MSH_DIR}/${IN_MSH_F}\n"
+  fi
+else
+   # When MSH_ROOT is defined as an empty sting, static info sourced from input
+    msg="MSH_ROOT is an empty string, static information is derived from the"
+    msg+=" same data stream as MPAS outputs.\n"
+    printf "${msg}"
+fi
+
+if [ ! ${MPAS_PRFX} ]; then
+  msg="ERROR: MPAS file prefix \${MPAS_PRFX} is not defined. Supply a file"
+  msg+=" prefix value, e.g., hist / diag, for the source of model outputs.\n"
+  printf "${msg}"
+  exit 1
+else
+  printf "MPAS model outputs are sourced from file prefix\n ${MPAS_PRFX}\n"
+fi
+
 # Convert STRT_DT from 'YYYYMMDDHH' format to strt_dt Unix date format
 if [[ ! ${STRT_DT} =~ ${ISO_RE} ]]; then
   msg="ERROR: start date \${STRT_DT}\n ${STRT_DT}\n"
@@ -315,11 +354,11 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
     for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INC} )); do
       # define valid times for mpascf precip evenly spaced
       anl_hr=$(( ${lead_hr} + ${cyc_hr} ))
-      anl_dt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_hr} hours"`
+      anl_dt=`date +%Y-%m-%d_%H?%M?%S -d "${strt_dt} ${anl_hr} hours"`
 
       # set input file name
       cd ${in_dir}
-      f_in=`ls ${in_dir}/*.history.*${anl_dt}.nc`
+      f_in=`ls ${in_dir}/*${MPAS_PRFX}.${anl_dt}.nc`
 
       if [[ -r ${f_in} ]]; then
         cmd="cd ${wrk_dir}"
@@ -328,10 +367,16 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
         # cut down to file name alone
         f_in=`basename ${f_in}`
 
+        # if there is no separate mesh IO stream, source from the input file
+        if [ "${in_msh_strm}" = "FALSE" ]; then
+          in_msh_dir=${in_dir}
+          in_msh_f=${f_in}
+        fi
+
         # run script from work directory to hold temp outputs from convert_mpas
-        cmd="${scrpt_dir}/mpas_to_latlon.sh ${CONVERT_MPAS} ${wrk_dir} ${in_dir} ${f_in}"
+        cmd="${scrpt_dir}/mpas_to_latlon.sh ${CONVERT_MPAS} ${wrk_dir} ${in_msh_dir} ${in_msh_f} ${in_dir} ${f_in}"
         printf "${cmd}\n"
-        ${scrpt_dir}/mpas_to_latlon.sh ${CONVERT_MPAS} ${wrk_dir} ${in_dir} ${f_in}
+        ${scrpt_dir}/mpas_to_latlon.sh ${CONVERT_MPAS} ${wrk_dir} ${in_msh_dir} ${in_msh_f} ${in_dir} ${f_in}
         error=$?
 
         if [ ${error} -ne 0 ]; then
@@ -340,11 +385,12 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
         fi
 
         # set temporary lat-lon file name from work directory
-        f_tmp=`ls *.latlon.*${anl_dt}.nc`
+        f_tmp=`ls *latlon.*${anl_dt}.nc`
         
         # set output cf file name, convert to cf from latlon tmp
         # NOTE: currently convert_mpas doesn't carry time coords from input
         # to regridded output, f_in is reused here to recover timing information
+        anl_dt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_hr} hours"`
         f_out="mpascf_${anl_dt}.nc"
         cmd="${met_tools_py} /scrpt_dir/mpas_to_cf.py"
         cmd+=" '/wrk_dir/${f_tmp}' '/wrk_dir/${f_out}' '/in_dir/${f_in}'"

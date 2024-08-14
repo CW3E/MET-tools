@@ -92,6 +92,14 @@ for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
     cmd="${cfg_indx}+=(\"CTR_FLW=${CTR_FLW}\")"
     printf "${cmd}\n"; eval "${cmd}"
 
+    # mesh directory for this control flow
+    cmd="${cfg_indx}+=(\"IN_MSH_DIR=${MSH_ROOT}/${CSE}/${CTR_FLW}/static/\")"
+    printf "${cmd}\n"; eval "${cmd}"
+
+    # mesh / static information file for this control flow
+    cmd="${cfg_indx}+=(\"IN_MSH_F=${MSH_NMES[$i_f]}\")"
+    printf "${cmd}\n"; eval "${cmd}"
+
     # This path defines the location of each cycle directory relative to IN_ROOT
     cmd="${cfg_indx}+=(\"IN_DT_ROOT=${IN_ROOT}/${CTR_FLW}\")"
     printf "${cmd}\n"; eval "${cmd}"

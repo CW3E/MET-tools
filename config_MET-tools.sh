@@ -18,13 +18,13 @@ module load openmpi/4.1.1
 # HPC PARAMETERS
 ##################################################################################
 # Root directory for MET-tools git clone
-export USR_HME=/expanse/lustre/scratch/esawyer/temp_project/MET-tools
+export USR_HME=/expanse/nfs/cw3e/cwp168/MET-tools
 
 # Root directory of simulation IO
 export SIM_ROOT=/expanse/nfs/cw3e/cwp168/SIMULATION_IO
 
 # Root directory of simulation verification IO
-export VRF_ROOT=/expanse/lustre/scratch/esawyer/temp_project/JEDI-MPAS-Common-Case/VERIFICATION_IO
+export VRF_ROOT=/expanse/nfs/cw3e/cwp168/VERIFICATION_IO
 
 # Root directory for verification static data
 export STC_ROOT=/expanse/nfs/cw3e/cwp168/DATA/VERIFICATION_STATIC

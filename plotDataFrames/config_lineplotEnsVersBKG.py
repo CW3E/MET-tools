@@ -28,10 +28,7 @@ STATS = ['RMSE', 'PR_CORR']
 # define control flows to analyze for lineplots 
 CTR_FLWS = [
             'MPAS_240-U',
-<<<<<<< HEAD
-=======
             'MPAS_240-U_LwrBnd',
->>>>>>> 02d7370552e9e8e4db7517b2369ed482cf870165
             'WRF_9-3_WestCoast',
             'GFS',
             'GEFS',
@@ -51,6 +48,7 @@ MEM_IDS += ['mean']
 GRDS = [
         '',
         'd01'
+        'd02'
        ]
 
 # starting date and zero hour of forecast cycles (string YYYYMMDDHH)
@@ -79,7 +77,7 @@ LAB_IDX = [0, 2]
 ENS_LAB = False
 
 # Include model grid in legend label True or False
-GRD_LAB = False
+GRD_LAB = True
 
 # Plot title generated from above parameters
 TITLE='24hr accumulated precip at ' + VALID_DT[:4] + '-' + VALID_DT[4:6] + '-' +\

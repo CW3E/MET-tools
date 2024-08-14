@@ -47,8 +47,8 @@ MEM_IDS += ['mean']
 # if not needed
 GRDS = [
         '',
-        'd01'
-        'd02'
+        'd01',
+        'd02',
        ]
 
 # starting date and zero hour of forecast cycles (string YYYYMMDDHH)

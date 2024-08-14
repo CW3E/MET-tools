@@ -59,6 +59,11 @@ IN_DIR=$5
 # take the input file from script argument
 F_IN=$6
 
+printf "Running convert_mpas from singularity image:\n ${CONVERT_MPAS}\n"
+printf "Work directory is:\n ${WORK_DIR}\n"
+printf "Mesh input file path is:\n ${IN_MSH_DIR}/${IN_MSH_F}\n"
+printf "Input file path is:\n ${IN_DIR}/${F_IN}\n"
+
 # Regrid to generic lat-lon grid for MET, passed to convert_mpas tool
 # NOTE: need to revise to regrid directly to verification grid
 nlat=750
@@ -108,7 +113,7 @@ str_len=$(( ${#tmp_array[@]} - 1 ))
 rename=""
 for (( i = 0 ; i < ${str_len} ; i ++ )); do
   tmp_str=${tmp_array[i]}
-  if [[ ${tmp_str} = "history" || ${tmp_str} = "diag" ]]; then
+  if [[ "${tmp_str}" = "${MPAS_PRFX}" ]]; then
     rename="${rename}latlon."
   else
     rename="${rename}${tmp_array[i]}."

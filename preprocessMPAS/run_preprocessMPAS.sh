@@ -108,7 +108,7 @@ elif [ -n "${MSH_ROOT}" ]; then
     printf "MPAS static fields are sourced from\n ${IN_MSH_DIR}/${IN_MSH_F}\n"
   fi
 else
-   # Continue the script when IN_MSH_DIR is undefined or empty
+   # When MSH_ROOT is defined as an empty sting, static info sourced from input
     msg="MSH_ROOT is an empty string, static information is derived from the"
     msg+=" same data stream as MPAS outputs.\n"
     printf "${msg}"

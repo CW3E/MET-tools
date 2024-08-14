@@ -35,7 +35,6 @@ CTR_FLWS = [
             'ECMWF',
            ]
 
-
 # ensemble member indices to plot, searches matching patterns
 MEM_IDS = ['']
 MEM_IDS += ['mean']

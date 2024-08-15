@@ -63,20 +63,29 @@ f_in = sys.argv[1]
 f_out = sys.argv[2]
 
 try:
-    # check for optional regridding argument (1/0), convert to bool
+    # check for regridding (1/0), convert to bool
     rgrd = bool(int(sys.argv[3]))
 
 except:
     # no regridding unless specified
-    print('Regridding option not specified or not integer, must be 1 or 0.')
-    print('Defaulting to regridding - False.')
-    rgrd = False
+    print('ERROR: Regridding option not specified or not integer, must be 1 or 0.')
+    sys.exit(1)
+
+try:
+    # check for initialization offset value, e.g., for restart
+    init_offset = int(sys.argv[4])
+    print('Initialization times will be computed with an offset of minus ' +\
+            str(init_offset) + ' hours.')
+
+except:
+    init_offset=0
+    pass
 
 # load dataset in xarray
 ds_in = xr.open_dataset(f_in)
 
 # extract cf precip
-ds_out = cf_precip(ds_in)
+ds_out = cf_precip(ds_in, init_offset=init_offset)
 ds_out.to_netcdf(path=f_out)
 
 if rgrd:

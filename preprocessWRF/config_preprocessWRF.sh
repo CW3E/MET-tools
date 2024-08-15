@@ -70,3 +70,7 @@ export ACC_MAX=72
 
 # Defines the increment between min / max to compute accumulation intervals
 export ACC_INC=24
+
+# Defines the offset to the initialization time in HH
+# Use to correct for the offset due to a restart run
+export INIT_OFFSET=6

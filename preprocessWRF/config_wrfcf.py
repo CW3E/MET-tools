@@ -19,6 +19,7 @@ import xarray as xr
 import numpy as np
 import pandas as pd
 from datetime import datetime as dt
+from datetime import timedelta as td
 
 ##################################################################################
 # Utility definitions
@@ -35,12 +36,16 @@ LON2=272.
 # Utility Methods
 ##################################################################################
 
-def cf_precip(ds_in):
+def cf_precip(ds_in, init_offset=0):
     """Computes total precip from the dataset in and returns a dataset out.
 
     Total precip is computed from rainc + rainnc, with attributes copied from
     file, with new description and standard / long name added as attributes.
     Returns dataset with dimensions and coordinates from the original.
+
+    For simulations that are run from a restart, the init time will differ from
+    the original initialization.  There is an optional parameter used to
+    offset the init time by the restart interval.
     """
 
     # unpack grid- / convective-scale precip
@@ -58,6 +63,7 @@ def cf_precip(ds_in):
     valid_nx = int((valid_dt - unix_dt).total_seconds())
 
     start_dt = dt.fromisoformat(start_dt)
+    start_dt = start_dt - td(hours=init_offset)
     start_is = start_dt.strftime('%Y%m%d_%H%M%S')
     start_nx = int((start_dt - unix_dt).total_seconds())
 

@@ -55,6 +55,7 @@ from datetime import datetime as dt
 from datetime import timedelta as td
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize as nrm
+from matplotlib.colors import BoundaryNorm, ListedColormap
 from matplotlib.cm import get_cmap
 from matplotlib.colorbar import Colorbar as cb
 import seaborn as sns
@@ -121,75 +122,84 @@ fcst_zhs = pd.date_range(start=fcst_strt, end=fcst_stop, freq=cyc_inc)
 fcst_zhs = fcst_zhs.to_pydatetime()
 plt_data = {}
 
-fcst_leads = []
-fcst_levs = []
-# define derived data paths 
-data_root = IN_ROOT + '/' + CTR_FLW + '/' + MET_TOOL
+for cfg in ['ANL', 'REF']:
+    # define storage for the forecast leads/ levels per cfg
+    exec('%s_fcst_leads = []'%(cfg))
+    exec('%s_fcst_levs = []'%(cfg))
 
-if len(MEM) > 0:
-    ens = '_' + MEM
-else:
-    ens = ''
-
-if len(GRD) > 0:
-    grd = '_' + GRD
-else:
-    grd = ''
-
-key = CTR_FLW + ens + grd
-for fcst_zh in fcst_zhs:
-    # define the input name
-    zh_str = fcst_zh.strftime('%Y%m%d%H')
-    in_path = data_root + '/' + zh_str + '/' + PRFX + ens + grd +\
-              '_' + zh_str + '.bin'
+    # define derived data paths 
+    exec('data_root = IN_ROOT + \'/\' + %s_CFG + \'/\' + MET_TOOL'%(cfg))
     
-    try:
-        with open(in_path, 'rb') as f:
-            data = pickle.load(f)
-            data = data[TYPE]
-
-    except:
-        print('WARNING: input data ' + in_path + ' statistics ' + TYPE +\
-                ' does not exist, skipping this configuration.')
-        continue
-
-    # load the values to be plotted along with landmask and lead
-    vals = [
-            'VX_MASK',
-            'FCST_LEAD',
-            'FCST_VALID_END',
-            'FCST_THRESH',
-            STAT,
-           ]
-
-    # cut down df to specified valid date / region / relevant stat
-    stat_data = data[vals]
-    stat_data = stat_data.loc[(stat_data['VX_MASK'] == MSK)]
-
-    # check if there is data for this configuration and these fields
-    if not stat_data.empty:
-        leads = sorted(list(set(stat_data['FCST_LEAD'].values)),
-                       key=lambda x:(len(x), x))
-
-        levs = sorted(list(set(stat_data['FCST_THRESH'].values)),
-                key=lambda x:(len(x.split('.')[0]), x), reverse=True)
-
-        if key in plt_data.keys():
-            # if there is existing data, concatenate dataframes
-            plt_data[key]['data'] = pd.concat([plt_data[key]['data'],
-                stat_data], axis=0)
-        else:
-            # if this is a first instance, create fields
-            plt_data[key] = {'data': stat_data}
-
-        # obtain leads of data 
-        fcst_leads += leads
-        fcst_levs += levs
-
-# find all unique values for forecast leads, sorted for plotting, less than max lead
-fcst_leads = sorted(list(set(fcst_leads)), key=lambda x:(len(x), x))
-fcst_levs = sorted(list(set(fcst_levs)),
-        key=lambda x:(len(x.split('.')[0]), x), reverse=True)
+    exec('MEM = %s_MEM'%(cfg))
+    exec('GRD = %s_GRD'%(cfg))
+    if len(MEM) > 0:
+        ens = '_' + MEM
+    else:
+        ens = ''
+    
+    if len(GRD) > 0:
+        grd = '_' + GRD
+    else:
+        grd = ''
+    
+    exec('key = %s_CFG + ens + grd'%(cfg))
+    exec('%s_key = %s_CFG + ens + grd'%(cfg, cfg))
+    for fcst_zh in fcst_zhs:
+        # define the input name
+        zh_str = fcst_zh.strftime('%Y%m%d%H')
+        in_path = data_root + '/' + zh_str + '/' + PRFX + ens + grd +\
+                  '_' + zh_str + '.bin'
+        
+        try:
+            with open(in_path, 'rb') as f:
+                data = pickle.load(f)
+                data = data[TYPE]
+    
+        except:
+            print('WARNING: input data ' + in_path + ' statistics ' + TYPE +\
+                    ' does not exist, skipping this configuration.')
+            continue
+    
+        # load the values to be plotted along with landmask and lead
+        vals = [
+                'VX_MASK',
+                'FCST_LEAD',
+                'FCST_VALID_END',
+                'FCST_THRESH',
+                STAT,
+               ]
+    
+        # cut down df to specified valid date / region / relevant stat
+        stat_data = data[vals]
+        stat_data = stat_data.loc[(stat_data['VX_MASK'] == MSK)]
+    
+        # check if there is data for this configuration and these fields
+        if not stat_data.empty:
+            leads = sorted(list(set(stat_data['FCST_LEAD'].values)),
+                           key=lambda x:(len(x), x))
+    
+            levs = sorted(list(set(stat_data['FCST_THRESH'].values)),
+                    key=lambda x:(len(x.split('.')[0]), x), reverse=True)
+    
+            if key in plt_data.keys():
+                # if there is existing data, concatenate dataframes
+                plt_data[key]['data'] = pd.concat([plt_data[key]['data'],
+                    stat_data], axis=0)
+            else:
+                # if this is a first instance, create fields
+                plt_data[key] = {'data': stat_data}
+    
+            # obtain leads / levels of data 
+            exec('%s_fcst_leads += leads'%(cfg))
+            exec('%s_fcst_levs += levs'%(cfg))
+    
+# find all unique values for forecast leads / levels sorted for plotting,
+# less than max lead matching across the analyzed and reference configurations
+fcst_leads = set(ANL_fcst_leads).intersection(set(REF_fcst_leads))
+fcst_levs = set(ANL_fcst_levs).intersection(set(REF_fcst_levs))
+fcst_leads = sorted(list(fcst_leads), key=lambda x:(len(x), x))
+fcst_levs = sorted(list(fcst_levs), key=lambda x:(len(x.split('.')[0]), x),
+        reverse=True)
 i_fl = 0
 while i_fl < len(fcst_leads):
     ld = fcst_leads[i_fl][:-4]
@@ -206,59 +216,118 @@ while i_fl < len(fcst_leads):
 fig = plt.figure(figsize=(12,9.6))
 
 # Set the axes
-ax0 = fig.add_axes([.91, .10, .03, .80])
-ax1 = fig.add_axes([.12, .10, .78, .80])
+ax0 = fig.add_axes([.86, .16, .05, .64])
+ax1 = fig.add_axes([.12, .08, .73, .80])
 
 # create array storage for stats
 num_leads = len(fcst_leads)
 num_levs = len(fcst_levs)
 
-tmp = np.empty([num_levs, num_leads])
-tmp[:] = np.nan
+plt_vals = np.full([num_levs, num_leads], np.nan)
+scl_vals = np.full([num_levs, num_leads], np.nan)
 
 # reverse order for plotting
 lead_labs = []
+
+ref_array = np.zeros((num_levs, num_leads)) 
 
 for i_nv in range(num_levs):
     for i_nl in range(num_leads):
         if i_nv == 0:
             # on the first level-loop of each date pack the lead tick labels
             if ( i_nl % 2 ) == 0 or num_leads < 10:
-              # if 10 or more dates, only use every other as a label
+              # if 10 or more leads only use every other as a label
               lead_labs.append(fcst_leads[i_nl][:-4])
             else:
                 fcst_dates.append('')
 
         try:
             # try to load data for the date / lead combination
-            val = plt_data[key]['data'].loc[(plt_data[key]['data']['FCST_LEAD'] ==\
-                    fcst_leads[i_nl]) & (plt_data[key]['data']['FCST_VALID_END'] ==\
+            anl_val = plt_data[ANL_key]['data'].loc[(plt_data[ANL_key]['data']['FCST_LEAD'] ==\
+                    fcst_leads[i_nl]) & (plt_data[ANL_key]['data']['FCST_VALID_END'] ==\
                     vld_dt.strftime('%Y%m%d_%H%M%S')) &\
-                    (plt_data[key]['data']['FCST_THRESH'] == fcst_levs[i_nv]) ]
+                    (plt_data[ANL_key]['data']['FCST_THRESH'] == fcst_levs[i_nv]) ]
             
-            if not val.empty:
-                tmp[i_nv, i_nl] = val[STAT]
+            ref_val = plt_data[REF_key]['data'].loc[(plt_data[REF_key]['data']['FCST_LEAD'] ==\
+                    fcst_leads[i_nl]) & (plt_data[REF_key]['data']['FCST_VALID_END'] ==\
+                    vld_dt.strftime('%Y%m%d_%H%M%S')) &\
+                    (plt_data[REF_key]['data']['FCST_THRESH'] == fcst_levs[i_nv]) ]
+            
+            if not anl_val.empty and not ref_val.empty:
+                anl_val = float(anl_val[STAT].values[0])
+                ref_val = float(ref_val[STAT].values[0])
+
+                ref_array[i_nv, i_nl] = ref_val
+
+                if np.abs(ref_val) <= 0.3 or np.abs(anl_val) <= 0.3:
+                    pass
+
+                else:
+                    plt_vals[i_nv, i_nl] = 100 * (anl_val - ref_val) / ref_val
+                    scl_vals[i_nv, i_nl] = 100 * (anl_val - ref_val) / ref_val
 
         except:
             continue
 
 if DYN_SCL:
     # find the max / min value over the inner 100 - ALPHA range of the data
-    scale = tmp[~np.isnan(tmp)]
+    scale = scl_vals[~np.isnan(scl_vals)]
     max_scale, min_scale = np.percentile(scale, [100 - ALPHA / 2, ALPHA / 2])
+    max_scale = max(np.abs(min_scale), np.abs(max_scale))
+    min_scale = -max_scale
 
 else:
     # min scale and max scale are set in the above
     min_scale = MIN_SCALE
     max_scale = MAX_SCALE
 
-sns.heatmap(tmp[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale,
-            vmax=max_scale, cmap=COLOR_MAP)
+if max_scale < 100 and min_scale > -100:
+    THRESHOLDS = [-100, -50, -25, -15, -0.1, 0.1, 15, 25, 50, 100]
+    COLORS = ['#762a83', # -50 to -100%
+              '#9970ab', # -25 to -50%
+              '#c2a5cf', # -15 to -25%
+              '#e7d4e8', # -0.1 to -15%
+              '#f7f7f7', # for zero values
+              '#d9f0d3', # 0.1 to 15%
+              '#a6dba0', # 15 to 25%
+              '#5aae61', # 25 to 50%
+              '#1b7837', # 50 to 100%
+              ]
+    labels = ['-100%', '-50%', '-25%', '-15%',
+              '-0.1%', '0.1%', '15%', '25%', '50%', '100%']
+else:
+    THRESHOLDS = [min_scale, -100, -50, -25, -15, -0.1, 0.1, 15, 25, 50, 100, max_scale]
+    COLORS = ['#40004b', # < -100%
+              '#762a83', # -50 to -100%
+              '#9970ab', # -25 to -50%
+              '#c2a5cf', # -15 to -25%
+              '#e7d4e8', # -0.1 to -15%
+              '#f7f7f7', # for zero values
+              '#d9f0d3', # 0.1 to 15%
+              '#a6dba0', # 15 to 25%
+              '#5aae61', # 25 to 50%
+              '#1b7837', # 50 to 100%
+              '#00441b'  # >100%
+              ]
+    labels = ['<-100%', '-100%', '-50%', '-25%', '-15%',
+              '-0.1%', '0.1%', '15%', '25%', '50%', '100%', '>100%']
+
+COLOR_MAP = ListedColormap(COLORS)
+
+COLOR_MAP.set_bad('darkgrey')
+
+norm = BoundaryNorm(THRESHOLDS, ncolors=len(COLORS))
+
+sns.heatmap(plt_vals[:,:], linewidth=0.5, norm=norm, ax=ax1, cbar_ax=ax0, vmin=min_scale,
+            vmax=max_scale, cmap=COLOR_MAP, annot=ref_array, annot_kws={"size": 14})
 
 ##################################################################################
 # define display parameters
+pct_ticks = np.around(np.linspace(min_scale, max_scale, 9), 0)
+pct_labs = [str(int(tick)) + '%' for tick in pct_ticks]
 
-ax0.set_xticklabels(ax0.get_xticklabels(), rotation=270, va='top')
+ax0.set_yticks(THRESHOLDS)
+ax0.set_yticklabels(labels, va='center')
 ax1.set_yticklabels(fcst_levs, rotation=45, ha='right')
 ax1.set_xticklabels(lead_labs)
 
@@ -272,23 +341,26 @@ ax1.tick_params(
         )
 
 lab1='Forecast Lead Hrs'
-lab2='Accumulation threshold - mm'
+lab2='Accumulation threshold (mm)'
 plt.figtext(.5, .02, lab1, horizontalalignment='center',
             verticalalignment='center', fontsize=20)
 
 plt.figtext(.02, .5, lab2, horizontalalignment='center',
             verticalalignment='center', fontsize=20, rotation=90)
 
-#plt.figtext(.5, .98, TITLE, horizontalalignment='center',
-#            verticalalignment='center', fontsize=20)
-
-#plt.figtext(.5, .94, SUBTITLE, horizontalalignment='center',
-#            verticalalignment='center', fontsize=20)
-
-plt.title(TITLE, x = 0.5, y = 1.06, fontsize = 20)
+plt.title(TITLE, x = 0.5, y = 1.05, fontsize = 20)
 plt.title(VDT_SUBTITLE, fontsize = 16, loc = "left")
-plt.suptitle(DMN_SUBTITLE, x = 0.5, y = .927, fontsize = 16)
+plt.suptitle(DMN_SUBTITLE, x = 0.5, y = .907, fontsize = 16)
 plt.title(QPE_SUBTITLE, fontsize = 16, loc = "right")
+
+plt.figtext(.86, .94, '* Reference \n   Score in Cell', horizontalalignment='left',
+            verticalalignment='bottom', fontsize=14)
+
+plt.figtext(.86, .084, 'Skill\nLoss', horizontalalignment='left',
+            verticalalignment='bottom', fontsize=20)
+
+plt.figtext(.86, .87, 'Skill\nGain', horizontalalignment='left',
+            verticalalignment='top', fontsize=20)
 
 # save figure and display
 plt.savefig(OUT_PATH)
@@ -296,4 +368,3 @@ plt.show()
 
 ##################################################################################
 # end
-

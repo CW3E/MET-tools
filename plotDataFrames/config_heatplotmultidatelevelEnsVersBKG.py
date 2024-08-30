@@ -20,27 +20,31 @@ MET_TOOL = 'GridStat'
 # Prefix for MET product outputs
 PRFX = 'grid_stat_QPF_24hr'
 
-# MET stat file type - should be non-leveled data
-TYPE = 'cnt'
+QPE_SOURCE = 'Stage-IV'
+
+# MET stat file type -- should be leveled data
+TYPE = 'nbrcnt'
 
 # MET stat column names to be made to heat plots / labels
-STAT = 'RMSE'
+STAT = 'FSS'
 
-# define control flows to analyze for lineplots
-CTR_FLWS = [
-            'NRT_GFS',
-            'GFS',
-           ]
+# define configuration to analyze
+ANL_CFG = 'NRT_ECMWF'
 
-# ensemble member indices to plot
-MEM_IDS = ['']
-MEM_IDS += ['mean']
+# define the refence configuration to produce the relative difference statistic
+REF_CFG = 'ECMWF'
 
-# verification domains to plot - defined as empty string if not needed
-GRDS = [
-        '',
-        'd02',
-       ]
+# analyzed ensemble member indices to plot
+ANL_MEM = 'mean'
+
+# reference ensemble member indices to plot
+REF_MEM = ''
+
+# analyzed config verification domain - defined as empty string if not needed
+ANL_GRD = 'd02'
+
+# reference config verification domain - defined as empty string if not needed
+REF_GRD = ''
 
 # starting valid date for verification (string YYYYMMDDHH)
 ANL_STRT = '2024010300'
@@ -60,58 +64,121 @@ CYC_INC = '24'
 # Land mask for verification
 MSK = 'CA_All'
 
+DMN_TITLE = 'California'
+
+# accumulation threshold
+LEV = '>=10.0'
+
 ##################################################################################
 # PlOT RENDERING PARAMETERS
 ##################################################################################
 # List of indices for the underscore-separated components of control flow name
 # to use in the plot title
-LAB_IDX = [0, 1]
+ANL_LAB_IDX = [0, 1]
+REF_LAB_IDX = [0]
 
 # Include ensemble index in plot title True or False
-ENS_LAB = False
+ANL_ENS_LAB = False
+REF_ENS_LAB = False
 
 # Include model grid in plot title True or False
-GRD_LAB = True
+ANL_GRD_LAB = True
+REF_GRD_LAB = False
 
 # Plot title generated from above parameters
-TITLE = STAT + ' - '
-split_string = CTR_FLWS[0].split('_')
+if STAT == 'FSS':
+    stat_title = 'Fractions Skill Score'
+elif STAT == 'AFSS':
+    stat_title = 'Asymptotic Fractions Skill Score'
+else:
+    stat_title = ''
+
+TITLE = stat_title  + ' ('  +  LEV + ' mm)'
+
+split_string = ANL_CFG.split('_')
 split_len = len(split_string)
-idx_len = len(LAB_IDX)
+idx_len = len(ANL_LAB_IDX)
 line_lab = ''
 lab_len = min(idx_len, split_len)
-if lab_len > 1:
+
+if lab_len == 2:
+    TITLE += '\nWest-WRF/' + split_string[1]
+
+elif lab_len > 1:
     for i_ll in range(lab_len, 1, -1):
-        i_li = LAB_IDX[-i_ll]
+        i_li = ANL_LAB_IDX[-i_ll]
         TITLE += split_string[i_li] + '_'
 
-    i_li = LAB_IDX[-1]
+    i_li = ANL_LAB_IDX[-1]
     TITLE += split_string[i_li]
 
 else:
     TITLE += split_string[0]
 
-#if len(MEM_IDS) > 0:
- #   ens = '_' + MEM_IDS
-#else:
- #   ens = ''
+if len(ANL_MEM) > 0:
+    anl_ens = ANL_MEM
+else:
+    anl_ens = ''
 
-#if len(GRDS) > 0:
-#    grd = '_' + GRDS
+if ANL_GRD == 'd01':
+    anl_grd = '9km'
+elif ANL_GRD == 'd02':
+    anl_grd = '3km'
+elif ANL_GRD == 'd01':
+    anl_grd = '1km'
+else:
+    anl_grd = ''
 
-#else:
- #   grd = ''
+if ANL_ENS_LAB:
+    TITLE += ' ' + anl_ens
 
-#if ENS_LAB:
- #   TITLE += ens
+if ANL_GRD_LAB:
+    TITLE += ' ' + anl_grd
 
-#if GRD_LAB:
- #   TITLE += grd
+TITLE += ' Relative Difference From '
 
-lnd_msk_split = MSK.split('_')
-SUBTITLE = 'Verification Region -'
-for split in lnd_msk_split:
-    SUBTITLE += ' ' + split
+split_string = REF_CFG.split('_')
+split_len = len(split_string)
+idx_len = len(REF_LAB_IDX)
+line_lab = ''
+lab_len = min(idx_len, split_len)
+
+if lab_len == 2:
+    TITLE += '\nWest-WRF/' + split_string[1]
+
+elif lab_len > 1:
+    for i_ll in range(lab_len, 1, -1):
+        i_li = REF_LAB_IDX[-i_ll]
+        TITLE += split_string[i_li] + '_'
+
+    i_li = REF_LAB_IDX[-1]
+    TITLE += split_string[i_li]
+
+else:
+    TITLE += split_string[0]
+
+if len(REF_MEM) > 0:
+    ref_ens = REF_MEM
+else:
+    ref_ens = ''
+
+if REF_GRD == 'd01':
+    ref_grd = '9km'
+elif REF_GRD == 'd02':
+    ref_grd = '3km'
+elif REF_GRD == 'd03':
+    ref_grd = '1km'
+else:
+    ref_grd = ''
+
+if REF_ENS_LAB:
+    TITLE += ' ' + ref_ens
+
+if REF_GRD_LAB:
+    TITLE += ' ' + ref_grd
+
+DMN_SUBTITLE = 'Domain: ' + DMN_TITLE
+QPE_SUBTITLE = 'QPE Source: ' + QPE_SOURCE
 
 # Bool switch for choosing color bar scale
 DYN_SCL = True
@@ -126,7 +193,8 @@ MIN_SCALE = 0
 MAX_SCALE = 1
 
 # define color map to be used for heat plot color bar
-COLOR_MAP = sns.color_palette('viridis', as_cmap=True)
+#COLOR_MAP = sns.diverging_palette(145, 300, s=60, as_cmap=True)
+#COLOR_MAP.set_bad('darkgrey')
 
 ##################################################################################
 # I/O PARAMETERS
@@ -159,7 +227,8 @@ else:
     fig_lab = ''
 
 OUT_PATH = OUT_ROOT + '/' + ANL_STRT + '-to-' + ANL_STOP + '_FCST-' + MAX_LD +\
-           '_' + MSK + '_' + STAT + '_' + fig_lab +\
+           '_' + MSK + '_' + STAT + '_' + LEV + '_' + ANL_CFG + '_' + anl_grd + fig_lab +\
+           '_relative_difference_' + REF_CFG + '_' + ref_grd + ref_ens + fig_lab +\
 	       '_heatplot.png'
 
 ##################################################################################

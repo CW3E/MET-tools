@@ -20,109 +20,165 @@ MET_TOOL = 'GridStat'
 # Prefix for MET product outputs
 PRFX = 'grid_stat_QPF_24hr'
 
-QPE_SOURCE = 'Stage-IV' # source, for plot title
+QPE_SOURCE = 'Stage-IV'
 
 # MET stat file type - should be non-leveled data
-TYPE = 'nbrcnt'
+TYPE = 'cnt'
 
 # MET stat column names to be made to heat plots / labels
-STAT = 'FSS'
+STAT = 'RMSE'
 
-# define control flows to analyze for lineplots 
-CTR_FLW = 'NRT_ECMWF'
+# define configuration to analyze
+ANL_CFG = 'NRT_ECMWF'
 
-# ensemble member indices to plot
-MEM = 'mean'
+# define the refence configuration to produce the relative difference statistic
+REF_CFG = 'ECMWF'
 
-# verification domains to plot - defined as empty string if not needed
-GRD = 'd02'
+# analyzed ensemble member indices to plot
+ANL_MEM = 'mean'
 
-# valid date for verification (string YYYYMMDDHH)
-VLD_DT = '2024011400'
+# reference ensemble member indices to plot
+REF_MEM = ''
 
-# increment between zero hours for forecast data (string HH)
-CYC_INC = '24'
+# analyzed config verification domain - defined as empty string if not needed
+ANL_GRD = 'd02'
+
+# reference config verification domain - defined as empty string if not needed
+REF_GRD = ''
+
+# starting valid date for verification (string YYYYMMDDHH)
+ANL_STRT = '2024010300'
+
+# end valid date for verification (string YYYYMMDDHH)
+ANL_STOP = '2024012400'
+
+# increment between verification valid dates (string HH)
+ANL_INC = '24'
 
 # Max forecast lead hours
 MAX_LD = '120'
 
+# increment between zero hours for forecast data (string HH)
+CYC_INC = '24'
+
 # Land mask for verification
 MSK = 'CA_All'
 
-DMN_TITLE = 'California' # title for domain/landmask for plot
+DMN_TITLE = 'California'
 
 ##################################################################################
 # PlOT RENDERING PARAMETERS
 ##################################################################################
 # List of indices for the underscore-separated components of control flow name
 # to use in the plot title
-LAB_IDX = [0, 1]
+ANL_LAB_IDX = [0, 1]
+REF_LAB_IDX = [0]
 
 # Include ensemble index in plot title True or False
-ENS_LAB = False
+ANL_ENS_LAB = False
+REF_ENS_LAB = False
 
 # Include model grid in plot title True or False
-GRD_LAB = True
+ANL_GRD_LAB = True
+REF_GRD_LAB = False
 
 # Plot title generated from above parameters
-if STAT == 'FSS':
-    stat_title = 'Fraction Skill Score'
-elif STAT == 'AFSS':
-    stat_title = 'Asymptotic Fractions Skill Score'
+if STAT == 'RMSE':
+    stat_title = 'Root-Mean-Squared Error (mm)'
+elif STAT == 'PR_CORR':
+    stat_title = 'Pearson Correlation Coefficient'
 else:
-    stat_title = STAT
+    stat_title = ''
 
-TITLE = stat_title + ' - '
+TITLE = stat_title
 
-split_string = CTR_FLW.split('_')
+split_string = ANL_CFG.split('_')
 split_len = len(split_string)
-idx_len = len(LAB_IDX)
+idx_len = len(ANL_LAB_IDX)
 line_lab = ''
 lab_len = min(idx_len, split_len)
 
 if lab_len == 2:
-    TITLE += 'West-WRF/' + split_string[1]
+    TITLE += '\nWest-WRF/' + split_string[1]
 
 elif lab_len > 1:
     for i_ll in range(lab_len, 1, -1):
-        i_li = LAB_IDX[-i_ll]
+        i_li = ANL_LAB_IDX[-i_ll]
         TITLE += split_string[i_li] + '_'
 
-    i_li = LAB_IDX[-1]
+    i_li = ANL_LAB_IDX[-1]
     TITLE += split_string[i_li]
 
 else:
     TITLE += split_string[0]
 
-if len(MEM) > 0:
-    ens = MEM
+if len(ANL_MEM) > 0:
+    anl_ens = ANL_MEM
 else:
-    ens = ''
+    anl_ens = ''
 
-if GRD == 'd01':
-    grd = '9km'
-elif GRD == 'd02':
-    grd = '3km'
-elif GRD == 'd03':
-    grd = '1km'
+if ANL_GRD == 'd01':
+    anl_grd = '9km'
+elif ANL_GRD == 'd02':
+    anl_grd = '3km'
+elif ANL_GRD == 'd03':
+    anl_grd = '1km'
 else:
-    grd = ''
+    anl_grd = ''
 
-if ENS_LAB:
-    TITLE += ' ' + ens
+if ANL_ENS_LAB:
+    TITLE += ' ' + anl_ens
 
-if GRD_LAB:
-    TITLE += ' ' + grd
+if ANL_GRD_LAB:
+    TITLE += ' ' + anl_grd
 
-# plot subtitles
+TITLE += ' Relative Difference From '
+
+split_string = REF_CFG.split('_')
+split_len = len(split_string)
+idx_len = len(REF_LAB_IDX)
+line_lab = ''
+lab_len = min(idx_len, split_len)
+
+if lab_len ==2:
+    TITLE += '\nWest-WRF/' + split_string[1]
+
+elif lab_len > 1:
+    for i_ll in range(lab_len, 1, -1):
+        i_li = REF_LAB_IDX[-i_ll]
+        TITLE += split_string[i_li] + '_'
+
+    i_li = REF_LAB_IDX[-1]
+    TITLE += split_string[i_li]
+
+else:
+    TITLE += split_string[0]
+
+if len(REF_MEM) > 0:
+    ref_ens = REF_MEM
+else:
+    ref_ens = ''
+
+if REF_GRD == 'd01':
+    ref_grd = '9km'
+elif REF_GRD == 'd02':
+    ref_grd = '3km'
+elif REF_GRD == 'd03':
+    ref_grd = '1km'
+else:
+    ref_grd = ''
+
+if REF_ENS_LAB:
+    TITLE += ' ' + ref_ens
+
+if REF_GRD_LAB:
+    TITLE += ' ' + ref_grd
+
 DMN_SUBTITLE = 'Domain: ' + DMN_TITLE
 QPE_SUBTITLE = 'QPE Source: ' + QPE_SOURCE
-VDT_SUBTITLE = 'Valid: ' + VLD_DT[8:10] + 'Z ' + VLD_DT[4:6] +\
-        '/' + VLD_DT[6:8] + '/' + VLD_DT[:4]
-
 
 # Bool switch for choosing color bar scale
-DYN_SCL = False
+DYN_SCL = True
 
 # If DYN_SCL is True:
 #    set the heat map scale dynamically based on inner 100 - ALPHA range of data
@@ -130,11 +186,11 @@ ALPHA = 1
 
 # If DYN_SCL is False:
 #    set the heat map scale dynamically based on MIN_SCALE / MAX_SCALE below
-MIN_SCALE = 0
+MIN_SCALE = -1
 MAX_SCALE = 1
 
 # define color map to be used for heat plot color bar
-COLOR_MAP = sns.color_palette('flare', as_cmap=True)
+#COLOR_MAP = sns.diverging_palette(220, 20, as_cmap=True)
 
 ##################################################################################
 # I/O PARAMETERS
@@ -166,8 +222,9 @@ if len(FIG_LAB) > 0:
 else:
     fig_lab = ''
 
-OUT_PATH = OUT_ROOT + '/' + VLD_DT + '_FCST-' + MAX_LD +\
-           '_' + MSK + '_' + STAT + '_' + CTR_FLW + '_' + GRD + fig_lab +\
-	       '_all-level_heatplot.png'
+OUT_PATH = OUT_ROOT + '/' + ANL_STRT + '-to-' + ANL_STOP + '_FCST-' + MAX_LD +\
+           '_' + MSK + '_' + STAT + '_' + ANL_CFG + '_' + anl_grd + anl_ens +\
+           '_relative_difference_' + REF_CFG + '_' + ref_grd + ref_ens +\
+           fig_lab + '_heatplot.png'
 
 ##################################################################################

@@ -71,13 +71,13 @@ GRD_LAB = True
 
 # Plot title generated from above parameters
 if STAT == 'RMSE':
-    stat_title = 'Root-Mean-Squared Error'
+    stat_title = 'Root-Mean-Squared Error (mm)'
 elif STAT == 'PR_CORR':
     stat_title = 'Pearson Correlation Coefficient'
 else:
     stat_title = ''
 
-TITLE = stat_title + ' - '
+TITLE = stat_title
 
 split_string = CTR_FLW.split('_')
 split_len = len(split_string)
@@ -86,7 +86,7 @@ line_lab = ''
 lab_len = min(idx_len, split_len)
 
 if lab_len == 2:
-    TITLE += 'West-WRF/' + split_string[1]
+    TITLE += '\nWest-WRF/' + split_string[1]
 
 elif lab_len > 1:
     for i_ll in range(lab_len, 1, -1):
@@ -170,6 +170,6 @@ else:
 
 OUT_PATH = OUT_ROOT + '/' + ANL_STRT + '-to-' + ANL_STOP + '_FCST-' + MAX_LD +\
            '_' + MSK + '_' + STAT + '_' + CTR_FLW + '_' + GRD + fig_lab +\
-	       '_heatplot_REVISED.png'
+	       '_heatplot.png'
 
 ##################################################################################

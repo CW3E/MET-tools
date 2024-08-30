@@ -126,6 +126,6 @@ else:
 
 # path of saved figure
 OUT_PATH = OUT_ROOT + '/' + VALID_DT + '_' + MSK + '_' + STATS[0] + '_' +\
-           STATS[1] + '_lev_' + LEV + fig_lab + '_lineplot_REVISED.png'
+           STATS[1] + '_lev_' + LEV + fig_lab + '_lineplot.png'
 
 ##################################################################################

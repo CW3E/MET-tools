@@ -26,7 +26,7 @@ QPE_SOURCE = 'Stage-IV' # source, for plot title
 TYPE = 'nbrcnt'
 
 # MET stat column names to be made to heat plots / labels
-STAT = 'FSS'
+STAT = 'AFSS'
 
 # define control flows to analyze for lineplots 
 CTR_FLW = 'NRT_ECMWF'
@@ -173,6 +173,6 @@ else:
 
 OUT_PATH = OUT_ROOT + '/' + ANL_STRT + '-to-' + ANL_STOP + '_FCST-' + MAX_LD +\
            '_' + MSK + '_' + STAT + '_' + LEV + '_' + CTR_FLW + '_' + GRD + fig_lab +\
-	       '_heatplot_REVISED.png'
+	       '_heatplot.png'
 
 ##################################################################################

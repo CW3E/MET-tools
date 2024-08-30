@@ -87,10 +87,8 @@ TITLE='24hr Accumulated Precipitation\n' + 'Valid: ' +\
         VALID_DT[8:] + 'Z ' + VALID_DT[4:6] + '/' + VALID_DT[6:8] + '/' + VALID_DT[:4]
 
 # Plot subtitles
-
 DMN_SUBTITLE = 'Domain: ' + DMN_TITLE
 QPE_SUBTITLE = 'QPE Source: ' + QPE_TITLE
-
 
 ##################################################################################
 # I/O PARAMETERS
@@ -124,6 +122,6 @@ else:
 
 # path of saved figure
 OUT_PATH = OUT_ROOT + '/' + VALID_DT + '_' + MSK + '_' + STATS[0] + '_' +\
-           STATS[1] + fig_lab + '_lineplot_REVISED.png'
+           STATS[1] + fig_lab + '_lineplot.png'
 
 ##################################################################################

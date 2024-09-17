@@ -1,13 +1,4 @@
 #!/bin/bash
-#SBATCH --account=cwp168
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --mem=12G
-#SBATCH -p cw3e-shared
-#SBATCH -t 01:00:00
-#SBATCH -J vxmask
-#SBATCH -o ./logs/vxmask-%j.out
-#SBATCH --export=ALL
 #################################################################################
 # Description
 #################################################################################
@@ -56,41 +47,30 @@
 # MODIFICATIONS.
 # 
 #
-##################################################################################
-# SET GLOBAL PARAMETERS
-##################################################################################
-# uncoment to make verbose for debugging
-#set -x
-
-# Source tool configuration
-source ./config_vxmask.sh
-          
 #################################################################################
 # CHECK WORKFLOW PARAMETERS
 #################################################################################
-# make checks for workflow parameters, should be defined in the above section
-
-# define the working scripts directory
-if [ ! ${USR_HME} ]; then
-  printf "ERROR: MET-tools clone directory \${USR_HME} is not defined.\n"
-  exit 1
-elif [ ! -d ${USR_HME} ]; then
-  printf $"ERROR: MET-tools clone directory\n ${USR_HME}\n does not exist.\n"
+# Full path to BASH constants used in driver scripts
+if [ ! -x ${CNST} ]; then
+  printf "ERROR: constants file\n ${CNST}\n does not exist or is not executable.\n"
   exit 1
 else
-  script_dir=${USR_HME}/vxmask
-  if [ ! -d ${script_dir} ]; then
-    printf "ERROR: Grid-Stat script directory\n ${script_dir}\n does not exist.\n"
-    exit 1
-  fi
+  # Read constants into the current shell
+  cmd=". ${CNST}"
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 # List of landmasks for verification region, file name with extension
-if [ ! -r ${MSK_LST} ]; then
-  printf "ERROR: landmask list file \${MSK_LST} does not exist or is not readable.\n"
+if [ ! ${MSK_LST} ]; then
+  printf "ERROR: landmask list \${MSK_LIST} is not defined.\n"
+  exit 1
+elif [ ! -r ${MSK_LST} ]; then
+  msg="ERROR: landmask list\n ${MSK_LST}\n does not exist or is not readable.\n"
+  printf "${msg}"
   exit 1
 fi
 
+# Root dir for text files with lat-lon coordinates for region polygons
 if [ ! ${MSK_LTLN} ]; then
   printf "ERROR: landmask lat-lon file root directory \${MSK_LTLN} is not defined.\n"
   exit 1
@@ -105,7 +85,7 @@ fi
 estat=0
 while read msk; do
   in_path=${MSK_LTLN}/${msk}.txt
-  # check for watershed lat-lon files
+  # check for lat-lon files
   if [ -r "${in_path}" ]; then
     printf "Found\n ${in_path}\n lat-lon file.\n"
   else
@@ -133,11 +113,37 @@ else
   printf "${cmd}\n"; eval "${cmd}"
 fi
 
+# Postfix to add to generated mask files identifying the underlying grid
+if [ ! ${GRD_NME} ]; then
+  printf "ERROR: grid name \${GRD_NME} is not defined.\n"
+  exit 1
+fi
+
+if [ ! ${STC_ROOT} ]; then
+  msg="ERROR: verification static file root directory \${STC_ROOT}"
+  msg+=" is not defined\n"
+  printf "${msg}"
+  exit 1
+elif [ ! -d ${STC_ROOT} ]; then
+  msg="ERROR: verification static files root\n ${STC_ROOT}\n does not exist"
+  msg+=" or is not readable.\n"
+  printf "${msg}"
+  exit 1
+elif [ ! ${GRD_IN} ]; then
+  printf "ERROR: grid reference file \${GRD_IN} is not defined.\n"
+  exit 1
+elif [ ! -r ${STC_ROOT}/${GRD_IN} ]; then
+  msg="ERROR: reference file\n ${STC_ROOT}/${GRD_IN}\n does not exist"
+  msg+=" or is not readable.\n"
+  printf "${msg}"
+  exit 1
+fi
+
 #################################################################################
 # Process data
 #################################################################################
 # Set up singularity container with specific directory privileges
-cmd="singularity instance start -B ${MSK_ROOT}:/MSK_ROOT:ro,"
+cmd="singularity instance start -B ${STC_ROOT}:/STC_ROOT:ro,"
 cmd+="${MSK_LTLN}:/MSK_LTLN:ro,${MSK_GRDS}:/MSK_GRDS:rw ${MET} MET"
 printf "${cmd}\n"; eval "${cmd}"
 
@@ -147,9 +153,9 @@ while read msk; do
   if [ ! -r "${out_path}" ]; then
     # regridded mask does not exist in mask out, create from scratch
     cmd="singularity exec instance://MET gen_vx_mask -v 10 \
-    /MSK_ROOT/${OBS_F_IN} \
+    /STC_ROOT/${GRD_IN} \
     -type poly /MSK_LTLN/${msk}.txt \
-    /MSK_GRDS/${msk}_StageIVGrid.nc"
+    /MSK_GRDS/${msk}_${GRD_NME}.nc"
     printf "${cmd}\n"; eval "${cmd}"
   else
     # mask exists and is readable, skip this step

@@ -77,8 +77,8 @@ export MET_TOOLS_PY="${SOFT_ROOT}/MET-tools-py.sif"
 # convert_mpas singularity image path
 export CONVERT_MPAS="${SOFT_ROOT}/convert_mpas.sif"
 
-# Root directory for landmasks, lat-lon files, and reference grids
-export MSK_ROOT="${STC_ROOT}/vxmask"
+# Root directory for landmask gridded files outputs
+export MSK_GRDS="${STC_ROOT}/vxmask"
 
 ##################################################################################
 # HPC SYSTEM WORKLOAD MANAGER PARAMETERS

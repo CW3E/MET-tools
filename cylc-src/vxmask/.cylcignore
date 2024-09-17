@@ -1,0 +1,3 @@
+# keep out vim backups if actively editing
+*.swp
+*.swo

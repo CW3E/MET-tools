@@ -24,6 +24,12 @@ export SITE="expanse-cwp168"
 # Source the site-specific settings from the configuration file
 source ${HOME}/settings/sites/${SITE}/config.sh
 
+# Root directory of task driver scripts
+export DRIVERS="${HOME}/src/drivers"
+
+# Root directory for landmasks
+export MSK_ROOT="${HOME}/settings/mask-root"
+
 ##################################################################################
 # EMBEDDED CYLC CONFIGURATION SETTINGS (DO NOT CHANGE)
 ##################################################################################

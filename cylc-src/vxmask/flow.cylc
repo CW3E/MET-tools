@@ -1,0 +1,69 @@
+#!jinja2
+##################################################################################
+# Description
+##################################################################################
+# This cylc worklfow is for generating verification region masks used throughout
+# the verification steps.
+#
+##################################################################################
+# Mask Parameters
+##################################################################################
+# Verification region group name
+{% set VRF_RGN = 'CA_Climate_Zones' %}
+
+# Set the verification product grid name
+{% set GRD_NME = 'StageIV' %}
+
+# Full path to generic data product for reference verfication grid relative to
+# STC_ROOT (must be set as a bind path from this location for singularity)
+{% set GRD_IN = [GRD_NME, 'StageIV_QPE_2022122800.nc'] | join('/') %}
+
+##################################################################################
+# JOB SETTINGS
+##################################################################################
+# ungrib mem argument
+{% set VXMASK_MEM = '2000M' %}
+
+# Wallclock limit for ungrib jobs
+{% set VXMASK_WC = 'PT30M' %}
+
+##################################################################################
+# CYLC SETTINGS
+##################################################################################
+[scheduling]
+    [[graph]]
+        R1 = """
+        run_vxmask
+        """
+
+[runtime]
+   [[run_vxmask]]
+       platform = {{environ['SCHED']}}
+       execution time limit = {{VXMASK_WC}}
+       script = {{environ['DRIVERS']}}/run_vxmask.sh
+       execution retry delays = 3*PT5M
+       [[[environment]]]
+           CNST = {{environ['DRIVERS']}}/CONSTANTS.sh
+           MSK_LST = {{environ['MSK_ROOT']}}/mask-lists/{{VRF_RGN}}.txt
+           MSK_LTLN = {{environ['MSK_ROOT']}}/lat-lon
+           MSK_GRDS = {{environ['MSK_GRDS']}}
+           GRD_NME = {{GRD_NME}}
+           GRD_IN = {{GRD_IN}}
+
+       [[[directives]]]
+           {% if environ['SCHED'] == 'slurm' %}
+               {% if environ['SYS_TYPE' ] == 'penguin' %}
+                   --partition = general
+                   --qos = {{environ['PART_SRL']}}
+                   --nodes = 1
+                   --ntasks-per-node = 1
+               {% else %}
+                   --partition = {{environ['PART_SRL']}}
+                   --nodes = 1
+                   --ntasks-per-node = 1
+                   --mem = {{VXMASK_MEM}}
+               {% endif %}
+           {% elif environ['SCHED'] == 'pbs' %}
+               -q = {{environ['PART_SRL']}}
+               -l select=1:mpiprocs=1:ncpus=1
+           {% endif %}

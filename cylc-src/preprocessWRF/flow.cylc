@@ -1,0 +1,270 @@
+#!jinja2
+##################################################################################
+# WRF SIMULATION CONFIGURATIONS
+##################################################################################
+# Define the name of case study
+{% set CSE_NME = 'valid_date_2022-12-28T00' %}
+
+# Configuration name including tunable parameters
+{% set CTR_FLWS = 'WRF_9-3_WestCoast', 'WRF_9_WestCoast' %}
+
+# Model grid / domain to be processed
+{% set GRDS = 'd01', 'd02' %}
+
+##################################################################################
+# CYCLING SETTINGS
+##################################################################################
+# First initial time for a forecast YYYY-MM-DDTHH
+{% set CYC_STRT = '2022-12-23T00' %}
+
+# Last initial time for a forecast YYYY-MM-DDTHH
+{% set CYC_STOP = '2022-12-27T00' %}
+
+# Interval between cycle start times PTXXH
+{% set CYC_INC = 'PT24H' %}
+
+# Define min / max forecast hours for cf outputs to be generated
+{% set ANL_MIN = '0' %}
+{% set ANL_MAX = '120' %}
+
+# Define the increment at which to generate cf outputs (HH)
+{% set ANL_INC = '24' %}
+
+# Regrid to generic lat-lon for MET if native grid errors (TRUE or FALSE)
+{% set RGRD = 'TRUE' %}
+
+# Compute precipitation accumulations from cf files, TRUE or FALSE
+{% set CMP_ACC = 'TRUE' %}
+
+# Defines the min / max accumulation interval for precip
+{% set ACC_MIN = '24' %}
+{% set ACC_MAX = '72' %}
+
+# Defines the increment between min / max to compute accumulation intervals
+{% set ACC_INC = '24' %}
+
+# Defines the offset to the initialization time in HH
+# Use to correct for the offset in start time / forecast hour due to a restart run
+{% set INIT_OFFSET = '0' %}
+
+##################################################################################
+##################################################################################
+# Define the ensemble size
+{% set ENS_MAX = 1 %}
+
+# Generate ensemble indices to process
+ENS_PRFX="ens_"
+MEM_IDS=()
+for indx in {00..02..01}; do
+    MEM_IDS+=( ${ENS_PRFX}${indx} )
+done
+
+# Output interval for history files in HH, suppressed = 00
+{% set HIST_INT = '03' %}
+
+# root directory for cycle time (YYYYMMDDHH) directories of WRF output files
+export IN_ROOT=${SIM_ROOT}/${CSE}
+
+# root directory for cycle time (YYYYMMDDHH) directories of cf-compliant outputs
+export OUT_ROOT=${VRF_ROOT}/${CSE}
+
+##################################################################################
+# JOB SETTINGS
+##################################################################################
+# ungrib mem argument
+{% set GRIB_MEM = '20000M' %}
+
+# Wallclock limit for ungrib jobs
+{% set GRIB_WC = 'PT30M' %}
+
+##################################################################################
+# CYLC SETTINGS
+##################################################################################
+[scheduler]
+    UTC mode = True
+    allow implicit tasks = True
+[scheduling]
+    initial cycle point = {{CYC_STRT}}
+    final cycle point = {{CYC_STOP}}
+    [[graph]]
+        {{CYC_INC}} = """
+        {% for mem in range(0,ENS_MAX) %}
+            {% set idx = mem | pad(2, '0') %}
+            ungrib_ens_{{idx}}  => mpas_ic_ens_{{idx}}
+            mpas_ic_ens_{{idx}} => mpas_model_ens_{{idx}}
+        {% endfor %}
+        """
+[runtime]
+    [[root]]
+        [[[environment]]]
+            CNST = {{environ['DRIVERS']}}/MODEL_CONSTANTS.sh
+            MOD_ENV = {{environ['MOD_ENV']}}
+            CFG_SHRD = {{environ['CFG_SHRD']}}
+            EXP_NME = {{EXP_NME}}
+            EXP_VRF = $(isodatetime {{EXP_VRF}} --f '%Y%m%d%H')
+            CYC_DT = $(isodatetime ${CYLC_TASK_CYCLE_POINT} --f '%Y%m%d%H')
+            CYC_HME = {{environ['WORK_ROOT']}}/{{EXP_NME}}/$CYC_DT
+            STRT_DT = $CYC_DT
+            IF_DYN_LEN = {{IF_DYN_LEN}}
+            IF_SST_UPDT = {{IF_SST_UPDT}}
+            IF_RGNL = {{IF_RGNL}}
+            MPIRUN = {{environ['MPIRUN']}}
+            IF_DBG_SCRPT = {{IF_DBG}}
+            SCHED = {{environ['SCHED']}}
+
+    [[WPS]]
+        [[[environment]]]
+            WPS_ROOT = {{environ['WPS_ROOT']}}
+
+    [[MPAS]]
+        [[[environment]]]
+            MPAS_ROOT = {{environ['MPAS_ROOT']}}
+            MSH_NME = {{MSH_NME}}
+
+    {% for mem in range(0,ENS_MAX) %}
+        {% set idx = mem | pad(2, '0') %}
+        [[ungrib_ens_{{idx}}]]
+            inherit = WPS
+            platform = {{environ['SCHED']}}
+            execution time limit = {{GRIB_WC}}
+            script = {{environ['DRIVERS']}}/ungrib.sh
+            execution retry delays = 3*PT5M
+            [[[environment]]]
+                MEMID = {{idx}}
+                GRIB_ROOT = {{environ['GRIB_ROOT']}}
+                BKG_STRT_DT = $CYC_DT
+                IF_SST_UPDT = {{IF_SST_UPDT}}
+                BKG_DATA = {{ENS_BKG_DATA}}
+                BKG_INT = {{ENS_BKG_INT}}
+                IF_ECMWF_ML = 'No'
+            [[[directives]]]
+                {% if environ['SCHED'] == 'slurm' %}
+                    {% if environ['SYS_TYPE' ] == 'penguin' %}
+                        --partition = general
+                        --qos = {{environ['PART_SRL']}}
+                        --nodes = 1
+                        --ntasks-per-node = 1
+                    {% else %}
+                        --partition = {{environ['PART_SRL']}}
+                        --nodes = 1
+                        --ntasks-per-node = 1
+                        --mem = {{GRIB_MEM}}
+                    {% endif %}
+                {% elif environ['SCHED'] == 'pbs' %}
+                    -q = {{environ['PART_SRL']}}
+                    -l select=1:mpiprocs=1:ncpus=1
+                {% endif %}
+
+        [[mpas_ic_ens_{{idx}}]]
+            inherit = MPAS
+            platform = {{environ['SCHED']}}
+            execution time limit = {{INIT_WC}}
+            script = {{environ['DRIVERS']}}/mpas_ic.sh
+            execution retry delays = 3*PT5M
+            [[[environment]]]
+                MEMID = {{idx}}
+                IF_ZETA_LIST = {{IF_ZETA_LIST}}
+                BKG_DATA = {{ENS_BKG_DATA}}
+                N_NDES = {{INIT_NDES}}
+                N_PROC = {{INIT_PROC}}
+                PIO_NUM = {{PIO_NUM}}
+                PIO_STRD = {{PIO_STRD}}
+            [[[directives]]]
+                {% if environ['SCHED'] == 'slurm' %}
+                    {% if environ['SYS_TYPE' ] == 'penguin' %}
+                        --partition = general
+                        --qos = {{environ['PART_DBG']}}
+                        --nodes = {{INIT_NDES}}
+                        --ntasks-per-node = {{INIT_PROC}}
+                    {% else %}
+                        --partition = {{environ['PART_DBG']}}
+                        --nodes = {{INIT_NDES}}
+                        --ntasks-per-node = {{INIT_PROC}}
+                        --mem = {{INIT_MEM}}
+                    {% endif %}
+                {% elif environ['SCHED'] == 'pbs' %}
+                    -q = {{environ['PART_DBG']}}
+                    -l select={{INIT_NDES}}:mpiprocs={{INIT_PROC}}:ncpus={{INIT_PROC}}
+                {% endif %}
+
+        [[mpas_model_ens_{{idx}}]]
+            inherit = MPAS
+            platform = {{environ['SCHED']}}
+            execution time limit = {{MPAS_WC}}
+            script = {{environ['DRIVERS']}}/mpas_model.sh
+            execution retry delays = 3*PT5M
+            [[[environment]]]
+                MEMID = {{idx}}
+                DIAG_INT = {{DIAG_INT}}
+                HIST_INT = {{HIST_INT}}
+                SND_INT = {{SND_INT}}
+                RSTRT_INT = {{RSTRT_INT}}
+                BKG_INT = {{ENS_BKG_INT}}
+                IF_RSTRT = 'No'
+                IF_DA = 'No'
+                IF_SST_UPDT = {{IF_SST_UPDT}}
+                IF_SST_DIURN = {{IF_SST_DIURN}}
+                IF_DEEPSOIL = {{IF_DEEPSOIL}}
+                N_NDES = {{MPAS_NDES}}
+                N_PROC = {{MPAS_PROC}}
+                PIO_NUM = {{PIO_NUM}}
+                PIO_STRD = {{PIO_STRD}}
+            [[[directives]]]
+                {% if environ['SCHED'] == 'slurm' %}
+                    {% if environ['SYS_TYPE' ] == 'penguin' %}
+                        --partition = general
+                        --qos = {{environ['PART_CMP']}}
+                        --nodes = {{MPAS_NDES}}
+                        --ntasks-per-node = {{MPAS_PROC}}
+                    {% else %}
+                        --partition = {{environ['PART_CMP']}}
+                        --nodes = {{MPAS_NDES}}
+                        --ntasks-per-node = {{MPAS_PROC}}
+                        --mem = {{MPAS_MEM}}
+                    {% endif %}
+                {% elif environ['SCHED'] == 'pbs' %}
+                    -q = {{environ['PART_CMP']}}
+                    -l select={{MPAS_NDES}}:mpiprocs={{MPAS_PROC}}:ncpus={{MPAS_PROC}}
+                {% endif %}
+
+    {% endfor %}
+for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
+  for (( i_m = 0; i_m < ${num_mems}; i_m++ )); do
+    for (( i_g = 0; i_g < ${num_grds}; i_g++ )); do
+      CTR_FLW=${CTR_FLWS[$i_f]}
+      GRD=${GRDS[$i_g]}
+      MEM=${MEM_IDS[$i_m]}
+
+      cfg_indx="cfg_${i_f}${i_m}${i_g}"
+      cmd="${cfg_indx}=()"
+      printf "${cmd}\n"; eval "${cmd}"
+
+      cmd="${cfg_indx}+=(\"CTR_FLW=${CTR_FLW}\")"
+      printf "${cmd}\n"; eval "${cmd}"
+
+      cmd="${cfg_indx}+=(\"GRD=${GRD}\")"
+      printf "${cmd}\n"; eval "${cmd}"
+
+      # This path defines the location of each cycle directory relative to IN_ROOT
+      cmd="${cfg_indx}+=(\"IN_DT_ROOT=${IN_ROOT}/${CTR_FLW}\")"
+      printf "${cmd}\n"; eval "${cmd}"
+
+      # subdirectory of cycle-named directory containing data to be analyzed,
+      # left as blank string if not needed
+      cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/wrf/${MEM}\")"
+      printf "${cmd}\n"; eval "${cmd}"
+      
+      # This path defines the location of each cycle directory relative to OUT_ROOT
+      cmd="${cfg_indx}+=(\"OUT_DT_ROOT=${OUT_ROOT}/${CTR_FLW}/Preprocess\")"
+      printf "${cmd}\n"; eval "${cmd}"
+
+      # subdirectory of cycle-named directory where output is to be saved
+      # left as blank string if not needed
+      cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/${MEM}/${GRD}\")"
+      printf "${cmd}\n"; eval "${cmd}"
+
+      cmd="cfgs+=( \"${cfg_indx}\" )"
+      printf "${cmd}\n"; eval "${cmd}"
+    done
+  done
+done

@@ -12,7 +12,10 @@
 {% set MAX_DOMS = '2', '1' %}
 
 # Define the ensemble size
-{% set ENS_MAX = 1 %}
+{% set ENS_MAX = 6 %}
+
+# Define ensemble index prefix
+{% set ENS_PFX = 'ens_' %}
 
 ##################################################################################
 # CYCLING SETTINGS
@@ -26,16 +29,16 @@
 # Interval between cycle start times PTXXH
 {% set CYC_INC = 'PT24H' %}
 
-# OPTIONAL ARGUMENT to set a verification termination date -- preprocessing will
-# stop automatically at this valid date, comment out this expression if not needed
-{% set EXP_VRF = '2022-12-28T00' %}
-
 # Define min / max forecast hours for cf outputs to be generated
 {% set ANL_MIN = '0' %}
 {% set ANL_MAX = '120' %}
 
 # Define the increment at which to generate cf outputs (HH)
 {% set ANL_INC = '24' %}
+
+# OPTIONAL ARGUMENT to set a verification termination date -- preprocessing will
+# stop automatically at this valid date, comment out this expression if not needed
+{% set EXP_VRF = '2022-12-28T00' %}
 
 # Regrid to generic lat-lon for MET if native grid errors (TRUE or FALSE)
 {% set RGRD = 'TRUE' %}
@@ -56,29 +59,13 @@
 {% set INIT_OFFSET = '0' %}
 
 ##################################################################################
-##################################################################################
-# Output interval for history files in HH, suppressed = 00
-{% set HIST_INT = '03' %}
-
-# root directory for cycle time (YYYYMMDDHH) directories of WRF output files
-export IN_ROOT=${SIM_ROOT}/${CSE}
-
-# root directory for cycle time (YYYYMMDDHH) directories of cf-compliant outputs
-export OUT_ROOT=${VRF_ROOT}/${CSE}
-
-# WE NEED TO REDFINE THIS ENTIRELY TO HANDLE THE I/O DIRECTLY WITH CYLC
-in_dir=${IN_DT_ROOT}/${CYC_DT}/${IN_DT_SUBDIR}
-wrk_dir=${OUT_DT_ROOT}/${CYC_DT}/${OUT_DT_SUBDIR}
-scrpt_dir=${HOME}/src/utilities
-
-##################################################################################
 # JOB SETTINGS
 ##################################################################################
 # ungrib mem argument
-{% set GRIB_MEM = '20000M' %}
+{% set PRE_MEM = '20000M' %}
 
 # Wallclock limit for ungrib jobs
-{% set GRIB_WC = 'PT30M' %}
+{% set PRE_WC = 'PT30M' %}
 
 ##################################################################################
 # CYLC SETTINGS
@@ -101,7 +88,7 @@ scrpt_dir=${HOME}/src/utilities
                 # loop sub-domains to process
                 {% for dom in range(0,max_dom) %}
                     {% set grd = ['d', loop.index] | join %}
-                    preprocess_{{ctr_flw}}_ens_{{idx}}_{{grd}}
+                    preprocess{{ctr_flw}}_ens_{{idx}}_{{grd}}
                 {% endfor %}
             {% endfor %}
         {% endfor %}
@@ -111,59 +98,55 @@ scrpt_dir=${HOME}/src/utilities
     [[root]]
         [[[environment]]]
             CNST = {{environ['DRIVERS']}}/CONSTANTS.sh
-            EXP_NME = {{EXP_NME}}
-            EXP_VRF = $(isodatetime {{EXP_VRF}} --f '%Y%m%d%H')
             CYC_DT = $(isodatetime ${CYLC_TASK_CYCLE_POINT} --f '%Y%m%d%H')
             STRT_DT = $CYC_DT
+            ANL_MIN = {{ANL_MIN}}
+            ANL_MAX = {{ANL_MAX}}
+            ANL_INC = {{ANL_INC}}
+            EXP_VRF = $(isodatetime {{EXP_VRF}} --f '%Y%m%d%H')
+            RGRD = {{RGRD}}
+            CMP_ACC = {{CMP_ACC}}
+            MET = {{environ['MET']}}
+            MET_TOOLS_PY = {{envron['MET_TOOLS_PY']}}
+            UTLTY = {{environ['UTLTY']}}
 
+    # Loop model control flows
     {% for ctr_flw in CTR_FLWS %}
+        # inherit the max domain to process from 1-1 correspondence
+        {% set max_dom = MAX_DOMS[loop.index0] %}
+        # loop ensemble members to process
         {% for mem in range(0,ENS_MAX) %}
             {% set idx = mem | pad(2, '0') %}
-            [[preprocessWRF_ens_{{idx}}]]
-                platform = {{environ['SCHED']}}
-                execution time limit = {{GRIB_WC}}
-                script = {{environ['DRIVERS']}}/run_preprocessWRF.sh
-                execution retry delays = 3*PT5M
-                [[[environment]]]
-                    MEMID = {{idx}}
-                    GRIB_ROOT = {{environ['GRIB_ROOT']}}
-                    BKG_STRT_DT = $CYC_DT
-                    IF_SST_UPDT = {{IF_SST_UPDT}}
-                    BKG_DATA = {{ENS_BKG_DATA}}
-                    BKG_INT = {{ENS_BKG_INT}}
-                    IF_ECMWF_ML = 'No'
-                [[[directives]]]
-                    {% if environ['SCHED'] == 'slurm' %}
-                        {% if environ['SYS_TYPE' ] == 'penguin' %}
-                            --partition = general
-                            --qos = {{environ['PART_SRL']}}
-                            --nodes = 1
-                            --ntasks-per-node = 1
-                        {% else %}
-                            --partition = {{environ['PART_SRL']}}
-                            --nodes = 1
-                            --ntasks-per-node = 1
-                            --mem = {{GRIB_MEM}}
+            # loop sub-domains to process
+            {% for dom in range(0,max_dom) %}
+                {% set grd = ['d', loop.index] | join %}
+                [[preprocessWRF_ens_{{idx}}]]
+                    platform = {{environ['SCHED']}}
+                    execution time limit = {{PRE_WC}}
+                    script = {{environ['DRIVERS']}}/run_preprocessWRF.sh
+                    execution retry delays = 3*PT5M
+                    [[[environment]]]
+                        CTR_FLW = {{ctr_flw}}
+                        GRD = {{grd}}
+                        IN_DIR = {{environ['SIM_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/$CYC_DT/{{IN_DT_SUBDIR}}/{{ENS_PFX}}{{idx}}
+                        WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/$CYC_DT/Preprocess/{{ENS_PFX}}{{idx}}/{{grd}}
+                    [[[directives]]]
+                        {% if environ['SCHED'] == 'slurm' %}
+                            {% if environ['SYS_TYPE' ] == 'penguin' %}
+                                --partition = general
+                                --qos = {{environ['PART_SRL']}}
+                                --nodes = 1
+                                --ntasks-per-node = 1
+                            {% else %}
+                                --partition = {{environ['PART_SRL']}}
+                                --nodes = 1
+                                --ntasks-per-node = 1
+                                --mem = {{PRE_MEM}}
+                            {% endif %}
+                        {% elif environ['SCHED'] == 'pbs' %}
+                            -q = {{environ['PART_SRL']}}
+                            -l select=1:mpiprocs=1:ncpus=1
                         {% endif %}
-                    {% elif environ['SCHED'] == 'pbs' %}
-                        -q = {{environ['PART_SRL']}}
-                        -l select=1:mpiprocs=1:ncpus=1
-                    {% endif %}
+            {% endfor %}
         {% endfor %}
     {% endfor %}
-for (( i_f = 0; i_f < ${num_flws}; i_f++ )); do
-  for (( i_m = 0; i_m < ${num_mems}; i_m++ )); do
-    for (( i_g = 0; i_g < ${num_grds}; i_g++ )); do
-      CTR_FLW=${CTR_FLWS[$i_f]}
-      GRD=${GRDS[$i_g]}
-      MEM=${MEM_IDS[$i_m]}
-
-      cmd="${cfg_indx}+=(\"CTR_FLW=${CTR_FLW}\")"
-
-      cmd="${cfg_indx}+=(\"GRD=${GRD}\")"
-
-      cmd="${cfg_indx}+=(\"IN_DT_ROOT=${IN_ROOT}/${CTR_FLW}\")"
-      cmd="${cfg_indx}+=(\"IN_DT_SUBDIR=/wrf/${MEM}\")"
-
-      cmd="${cfg_indx}+=(\"OUT_DT_ROOT=${OUT_ROOT}/${CTR_FLW}/Preprocess\")"
-      cmd="${cfg_indx}+=(\"OUT_DT_SUBDIR=/${MEM}/${GRD}\")"

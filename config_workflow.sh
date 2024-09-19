@@ -27,6 +27,9 @@ source ${HOME}/settings/sites/${SITE}/config.sh
 # Root directory of task driver scripts
 export DRIVERS="${HOME}/src/drivers"
 
+# Root directory of task driver scripts
+export UTLTY="${HOME}/src/utilities"
+
 # Root directory for landmasks
 export MSK_ROOT="${HOME}/settings/mask-root"
 

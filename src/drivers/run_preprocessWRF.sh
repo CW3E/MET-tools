@@ -131,14 +131,6 @@ else
   printf "Preprocessing stops automatically for forecasts at this time.\n"
 fi
 
-# check for output data root created successfully
-if [[ ! -d ${WRK_DIR} || ! -w ${WRK_DIR} ]]; then
-  msg="ERROR: work directory\n ${WRK_DIR}\n does not"
-  msg+=" exist or is not writable.\n"
-  printf "${msg}"
-  exit 1
-fi
-
 if [[ ${RGRD} =~ ${TRUE} ]]; then
   # standard coordinates that can be used to regrid West-WRF
   printf "WRF outputs will be regridded for MET compatibility.\n"
@@ -227,6 +219,24 @@ if [ ! -x ${MET_TOOLS_PY} ]; then
   exit 1
 fi
 
+if [[ ! -d ${UTLTY} || ! -x ${UTLTY} ]]; then
+  msg="ERROR: utility script directory\n ${UTLTY}\n does not exist"
+  msg+=" or is not executable.\n"
+  exit 1
+fi
+
+if [ ! -r ${UTLTY}/config_wrfcf.py ]; then
+  msg="ERROR: Utility module\n ${UTLTY}/config_wrfcf.py\n does not exist.\n"
+  printf "${msg}"
+  exit 1
+fi
+
+if [ ! -r ${UTLTY}/wrfout_to_cf.py ]; then
+  msg="ERROR: Utility script\n ${UTLTY}/wrfout_to_cf.py\n does not exist.\n"
+  printf "${msg}"
+  exit 1
+fi
+
 # check for input data root
 if [ ! ${IN_DIR} ]; then
   printf "ERROR: input data directory \${IN_DIR} is not defined.\n"
@@ -246,20 +256,9 @@ else
   printf "${cmd}\n"; eval "${cmd}"
 fi
 
-if [[ ! -d ${UTLTY} || ! -x ${UTLTY} ]]; then
-  msg="ERROR: utility script directory\n ${UTLTY}\n does not exist"
-  msg+=" or is not executable.\n"
-  exit 1
-fi
-
-if [ ! -r ${UTLTY}/config_wrfcf.py ]; then
-  msg="ERROR: Utility module\n ${UTLTY}/config_wrfcf.py\n does not exist.\n"
-  printf "${msg}"
-  exit 1
-fi
-
-if [ ! -r ${UTLTY}/wrfout_to_cf.py ]; then
-  msg="ERROR: Utility script\n ${UTLTY}/wrfout_to_cf.py\n does not exist.\n"
+if [[ ! -d ${WRK_DIR} || ! -w ${WRK_DIR} ]]; then
+  msg="ERROR: work directory\n ${WRK_DIR}\n does not"
+  msg+=" exist or is not writable.\n"
   printf "${msg}"
   exit 1
 fi

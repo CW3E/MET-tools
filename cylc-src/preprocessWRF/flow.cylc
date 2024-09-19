@@ -68,6 +68,11 @@ export IN_ROOT=${SIM_ROOT}/${CSE}
 # root directory for cycle time (YYYYMMDDHH) directories of cf-compliant outputs
 export OUT_ROOT=${VRF_ROOT}/${CSE}
 
+# WE NEED TO REDFINE THIS ENTIRELY TO HANDLE THE I/O DIRECTLY WITH CYLC
+in_dir=${IN_DT_ROOT}/${CYC_DT}/${IN_DT_SUBDIR}
+wrk_dir=${OUT_DT_ROOT}/${CYC_DT}/${OUT_DT_SUBDIR}
+scrpt_dir=${HOME}/src/utilities
+
 ##################################################################################
 # JOB SETTINGS
 ##################################################################################

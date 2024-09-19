@@ -354,7 +354,7 @@ for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
     for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INC} )); do
       # define valid times for mpascf precip evenly spaced
       anl_hr=$(( ${lead_hr} + ${cyc_hr} ))
-      anl_dt=`date +%Y-%m-%d_%H?%M?%S -d "${strt_dt} ${anl_hr} hours"`
+      anl_dt=`date +%Y?%m?%d?%H?%M?%S -d "${strt_dt} ${anl_hr} hours"`
 
       # set input file name
       cd ${in_dir}

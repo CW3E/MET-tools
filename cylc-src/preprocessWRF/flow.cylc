@@ -58,6 +58,9 @@
 # Needed for ingesting NetCDF meta-data in MET correctly
 {% set INIT_OFFSET = '0' %}
 
+# Define the directory to find wrf outputs relative to ISO cycle directories
+{% set IN_DT_SUBDIR = 'wrf_model' %}
+
 ##################################################################################
 # JOB SETTINGS
 ##################################################################################
@@ -77,17 +80,18 @@
     initial cycle point = {{CYC_STRT}}
     final cycle point = {{CYC_STOP}}
     [[graph]]
-        # Loop model control flows
+        {{CYC_INC}} = """
+        {# Loop model control flows #}
         {% for ctr_flw in CTR_FLWS %}
-            # inherit the max domain to process from 1-1 correspondence
-            {% set max_dom = MAX_DOMS[loop.index0] %}
-            {{CYC_INC}} = """
-            # loop ensemble members to process
+            {# inherit the max domain to process from 1-1 correspondence #}
+            {% set max_dom = MAX_DOMS[loop.index0] | int %}
+            {# loop ensemble members to process #}
             {% for mem in range(0,ENS_MAX) %}
                 {% set idx = mem | pad(2, '0') %}
-                # loop sub-domains to process
+                {# loop sub-domains to process #}
                 {% for dom in range(0,max_dom) %}
-                    {% set grd = ['d', loop.index] | join %}
+                    {% set grd = loop.index | pad(2, '0') %}
+                    {% set grd = ['d', grd] | join %}
                     preprocess{{ctr_flw}}_ens_{{idx}}_{{grd}}
                 {% endfor %}
             {% endfor %}
@@ -106,21 +110,25 @@
             EXP_VRF = $(isodatetime {{EXP_VRF}} --f '%Y%m%d%H')
             RGRD = {{RGRD}}
             CMP_ACC = {{CMP_ACC}}
+            ACC_MIN = {{ACC_MIN}}
+            ACC_MAX = {{ACC_MIN}}
+            ACC_INC = {{ACC_MIN}}
             MET = {{environ['MET']}}
-            MET_TOOLS_PY = {{envron['MET_TOOLS_PY']}}
+            MET_TOOLS_PY = {{environ['MET_TOOLS_PY']}}
             UTLTY = {{environ['UTLTY']}}
 
-    # Loop model control flows
+    {# Loop model control flows #}
     {% for ctr_flw in CTR_FLWS %}
-        # inherit the max domain to process from 1-1 correspondence
-        {% set max_dom = MAX_DOMS[loop.index0] %}
-        # loop ensemble members to process
+        {# inherit the max domain to process from 1-1 correspondence #}
+        {% set max_dom = MAX_DOMS[loop.index0] | int %}
+        {# loop ensemble members to process #}
         {% for mem in range(0,ENS_MAX) %}
             {% set idx = mem | pad(2, '0') %}
-            # loop sub-domains to process
+            {# loop sub-domains to process #}
             {% for dom in range(0,max_dom) %}
-                {% set grd = ['d', loop.index] | join %}
-                [[preprocessWRF_ens_{{idx}}]]
+                {% set grd = loop.index | pad(2, '0') %}
+                {% set grd = ['d', grd] | join %}
+                [[preprocess{{ctr_flw}}_ens_{{idx}}_{{grd}}]]
                     platform = {{environ['SCHED']}}
                     execution time limit = {{PRE_WC}}
                     script = {{environ['DRIVERS']}}/run_preprocessWRF.sh

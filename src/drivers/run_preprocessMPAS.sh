@@ -50,34 +50,8 @@
 # 
 #
 #################################################################################
-# Check for required fields
-#################################################################################
-# export all configurations supplied as an array of string definitions
-printf "Loading configuration parameters:\n"
-for cmd in "$@"; do
-  printf " ${cmd}\n"; eval "${cmd}"
-done
-
-#################################################################################
 # CHECK WORKFLOW PARAMETERS
 #################################################################################
-# define the working scripts directory
-if [ ! ${USR_HME} ]; then
-  printf "ERROR: MET-tools clone directory \${USR_HME} is not defined.\n"
-  exit 1
-elif [[ ! -d ${USR_HME} || ! -r ${USR_HME} ]]; then
-  msg="ERROR: MET-tools clone directory\n ${USR_HME}\n does not exist or is"
-  msg+=" not readable.\n"
-  printf "${msg}"
-  exit 1
-else
-  scrpt_dir=${USR_HME}/preprocessMPAS
-  if [ ! -d ${scrpt_dir} ]; then
-    printf "ERROR: preprocessingMPAS directory\n ${scrpt_dir}\n does not exist.\n"
-    exit 1
-  fi
-fi
-
 # control flow to be processed
 if [ ! ${CTR_FLW} ]; then
   printf "ERROR: control flow name \${CTR_FLW} is not defined.\n"
@@ -301,137 +275,116 @@ fi
 #################################################################################
 # Process data
 #################################################################################
-# define the number of dates to loop
-fcst_hrs=$(( (`date +%s -d "${stop_dt}"` - `date +%s -d "${strt_dt}"`) / 3600 ))
 
-for (( cyc_hr = 0; cyc_hr <= ${fcst_hrs}; cyc_hr += ${CYC_INC} )); do
-  # directory string for forecast analysis initialization time
-  cyc_dt=`date +%Y%m%d%H -d "${strt_dt} ${cyc_hr} hours"`
-  in_dir=${IN_DT_ROOT}/${cyc_dt}/${IN_DT_SUBDIR}
+# clean work directory from previous mpas regridded lat lon files
+cmd="rm -f ${wrk_dir}/*.latlon.*"
+printf "${cmd}\n"; eval "${cmd}"
 
-  # set output path
-  wrk_dir=${OUT_DT_ROOT}/${cyc_dt}/${OUT_DT_SUBDIR}
-  cmd="mkdir -p ${wrk_dir}"
-  printf "${cmd}\n"; eval "${cmd}"
+# clean work directory from previous mpascf files
+cmd="rm -f ${wrk_dir}/mpascf*"
+printf "${cmd}\n"; eval "${cmd}"
+
+# clean work directory from previous accumulation files
+cmd="rm -f ${wrk_dir}/${CTR_FLW}_*QPF*"
+printf "${cmd}\n"; eval "${cmd}"
+
+# set input paths
+if [ ! -d ${in_dir} ]; then
+  msg="WARNING: data input path\n ${in_dir}\n does not exist,"
+  msg+="skipping analysis for ${cyc_dt}.\n"
+  printf "${msg}"
+else
+  printf "Processing forecasts in\n ${in_dir}\n directory.\n"
+
+  # Define directory privileges for singularity exec MET
+  met="singularity exec -B ${wrk_dir}:/wrk_dir:rw,${wrk_dir}:/in_dir:ro ${MET}"
+
+  # Define directory privileges for singularity exec MET_TOOLS_PY
+  met_tools_py="singularity exec -B "
+  met_tools_py+="${wrk_dir}:/wrk_dir:rw,${in_dir}:/in_dir:ro,${scrpt_dir}:/scrpt_dir:ro "
+  met_tools_py+="${MET_TOOLS_PY} python"
+
+  # loop lead hours for forecast valid time for each initialization time
+  for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INC} )); do
+    # define valid times for mpascf precip evenly spaced
+    anl_hr=$(( ${lead_hr} + ${cyc_hr} ))
+    anl_dt=`date +%Y?%m?%d?%H?%M?%S -d "${strt_dt} ${anl_hr} hours"`
+
+    # set input file name
+    cd ${in_dir}
+    f_in=`ls ${in_dir}/*${MPAS_PRFX}.${anl_dt}.nc`
+
+    if [[ -r ${f_in} ]]; then
+      cmd="cd ${wrk_dir}"
+      printf "${cmd}\n"; eval "${cmd}"
+
+      # cut down to file name alone
+      f_in=`basename ${f_in}`
+
+      # if there is no separate mesh IO stream, source from the input file
+      if [ "${in_msh_strm}" = "FALSE" ]; then
+        in_msh_dir=${in_dir}
+        in_msh_f=${f_in}
+      fi
+
+      # run script from work directory to hold temp outputs from convert_mpas
+      cmd="${scrpt_dir}/mpas_to_latlon.sh ${CONVERT_MPAS} ${wrk_dir} ${in_msh_dir} ${in_msh_f} ${in_dir} ${f_in}"
+      printf "${cmd}\n"
+      ${scrpt_dir}/mpas_to_latlon.sh ${CONVERT_MPAS} ${wrk_dir} ${in_msh_dir} ${in_msh_f} ${in_dir} ${f_in}
+      error=$?
+
+      if [ ${error} -ne 0 ]; then
+        printf "ERROR: mpas_to_latlon.sh did not complete successfully.\n"
+        exit 1
+      fi
+
+      # set temporary lat-lon file name from work directory
+      f_tmp=`ls *latlon.*${anl_dt}.nc`
       
-  # check for work directory created successfully
-  if [[ ! -d ${wrk_dir} || ! -w ${wrk_dir} ]]; then
-    msg="ERROR: work directory\n ${wrk_dir}\n does not"
-    msg+=" exist or is not writable.\n"
-    printf "${msg}"
-    exit 1
-  fi
+      # set output cf file name, convert to cf from latlon tmp
+      # NOTE: currently convert_mpas doesn't carry time coords from input
+      # to regridded output, f_in is reused here to recover timing information
+      anl_dt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_hr} hours"`
+      f_out="mpascf_${anl_dt}.nc"
+      cmd="${met_tools_py} /scrpt_dir/mpas_to_cf.py"
+      cmd+=" '/wrk_dir/${f_tmp}' '/wrk_dir/${f_out}' '/in_dir/${f_in}'"
+      printf "${cmd}\n"; eval "${cmd}"
 
-  # clean work directory from previous mpas regridded lat lon files
-  cmd="rm -f ${wrk_dir}/*.latlon.*"
-  printf "${cmd}\n"; eval "${cmd}"
+    else
+      msg="Input file\n ${f_in}\n is not readable or "
+      msg+="does not exist, skipping forecast initialization ${cyc_dt}, "
+      msg+="forecast hour ${lead_hr}.\n"
+      printf "${msg}"
+    fi
+    if [[ ${CMP_ACC} = ${TRUE} ]]; then
+      for acc_hr in ${acc_hrs[@]}; do
+        if [ ${lead_hr} -ge ${acc_hr} ]; then
+          # define accumulation start / stop hours
+          acc_strt=$(( ${lead_hr} + ${cyc_hr}  - ${acc_hr} ))
+          acc_stop=$(( ${lead_hr} + ${cyc_hr} ))
 
-  # clean work directory from previous mpascf files
-  cmd="rm -f ${wrk_dir}/mpascf*"
-  printf "${cmd}\n"; eval "${cmd}"
+          # start / stop date strings
+          anl_strt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${acc_strt} hours"`
+          anl_stop=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${acc_stop} hours"`
 
-  # clean work directory from previous accumulation files
-  cmd="rm -f ${wrk_dir}/${CTR_FLW}_*QPF*"
-  printf "${cmd}\n"; eval "${cmd}"
+          # define padded forecast hour for name strings
+          pdd_hr=`printf %03d $(( 10#${lead_hr} ))`
 
-  # set input paths
-  if [ ! -d ${in_dir} ]; then
-    msg="WARNING: data input path\n ${in_dir}\n does not exist,"
-    msg+="skipping analysis for ${cyc_dt}.\n"
-    printf "${msg}"
-  else
-    printf "Processing forecasts in\n ${in_dir}\n directory.\n"
-  
-    # Define directory privileges for singularity exec MET
-    met="singularity exec -B ${wrk_dir}:/wrk_dir:rw,${wrk_dir}:/in_dir:ro ${MET}"
+          # CTR_FLW QPF file name convention following similar products
+          mpas_acc=${CTR_FLW}_${acc_hr}QPF_${cyc_dt}_F${pdd_hr}.nc
 
-    # Define directory privileges for singularity exec MET_TOOLS_PY
-    met_tools_py="singularity exec -B "
-    met_tools_py+="${wrk_dir}:/wrk_dir:rw,${in_dir}:/in_dir:ro,${scrpt_dir}:/scrpt_dir:ro "
-    met_tools_py+="${MET_TOOLS_PY} python"
-
-    # loop lead hours for forecast valid time for each initialization time
-    for (( lead_hr = ${ANL_MIN}; lead_hr <= ${ANL_MAX}; lead_hr += ${ANL_INC} )); do
-      # define valid times for mpascf precip evenly spaced
-      anl_hr=$(( ${lead_hr} + ${cyc_hr} ))
-      anl_dt=`date +%Y?%m?%d?%H?%M?%S -d "${strt_dt} ${anl_hr} hours"`
-
-      # set input file name
-      cd ${in_dir}
-      f_in=`ls ${in_dir}/*${MPAS_PRFX}.${anl_dt}.nc`
-
-      if [[ -r ${f_in} ]]; then
-        cmd="cd ${wrk_dir}"
-        printf "${cmd}\n"; eval "${cmd}"
-
-        # cut down to file name alone
-        f_in=`basename ${f_in}`
-
-        # if there is no separate mesh IO stream, source from the input file
-        if [ "${in_msh_strm}" = "FALSE" ]; then
-          in_msh_dir=${in_dir}
-          in_msh_f=${f_in}
+          # Combine precip to accumulation period 
+          cmd="${met} pcp_combine \
+          -subtract /in_dir/mpascf_${anl_stop}.nc /in_dir/mpascf_${anl_strt}.nc\
+          /wrk_dir/${mpas_acc} \
+          -field 'name=\"precip\"; level=\"(0,*,*)\";'\
+          -name \"QPF_${acc_hr}hr\" "
+          printf "${cmd}\n"; eval "${cmd}"
         fi
-
-        # run script from work directory to hold temp outputs from convert_mpas
-        cmd="${scrpt_dir}/mpas_to_latlon.sh ${CONVERT_MPAS} ${wrk_dir} ${in_msh_dir} ${in_msh_f} ${in_dir} ${f_in}"
-        printf "${cmd}\n"
-        ${scrpt_dir}/mpas_to_latlon.sh ${CONVERT_MPAS} ${wrk_dir} ${in_msh_dir} ${in_msh_f} ${in_dir} ${f_in}
-        error=$?
-
-        if [ ${error} -ne 0 ]; then
-          printf "ERROR: mpas_to_latlon.sh did not complete successfully.\n"
-          exit 1
-        fi
-
-        # set temporary lat-lon file name from work directory
-        f_tmp=`ls *latlon.*${anl_dt}.nc`
-        
-        # set output cf file name, convert to cf from latlon tmp
-        # NOTE: currently convert_mpas doesn't carry time coords from input
-        # to regridded output, f_in is reused here to recover timing information
-        anl_dt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_hr} hours"`
-        f_out="mpascf_${anl_dt}.nc"
-        cmd="${met_tools_py} /scrpt_dir/mpas_to_cf.py"
-        cmd+=" '/wrk_dir/${f_tmp}' '/wrk_dir/${f_out}' '/in_dir/${f_in}'"
-        printf "${cmd}\n"; eval "${cmd}"
-
-      else
-        msg="Input file\n ${f_in}\n is not readable or "
-        msg+="does not exist, skipping forecast initialization ${cyc_dt}, "
-        msg+="forecast hour ${lead_hr}.\n"
-        printf "${msg}"
-      fi
-      if [[ ${CMP_ACC} = ${TRUE} ]]; then
-        for acc_hr in ${acc_hrs[@]}; do
-          if [ ${lead_hr} -ge ${acc_hr} ]; then
-            # define accumulation start / stop hours
-            acc_strt=$(( ${lead_hr} + ${cyc_hr}  - ${acc_hr} ))
-            acc_stop=$(( ${lead_hr} + ${cyc_hr} ))
-
-            # start / stop date strings
-            anl_strt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${acc_strt} hours"`
-            anl_stop=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${acc_stop} hours"`
-
-            # define padded forecast hour for name strings
-            pdd_hr=`printf %03d $(( 10#${lead_hr} ))`
-
-            # CTR_FLW QPF file name convention following similar products
-            mpas_acc=${CTR_FLW}_${acc_hr}QPF_${cyc_dt}_F${pdd_hr}.nc
-
-            # Combine precip to accumulation period 
-            cmd="${met} pcp_combine \
-            -subtract /in_dir/mpascf_${anl_stop}.nc /in_dir/mpascf_${anl_strt}.nc\
-            /wrk_dir/${mpas_acc} \
-            -field 'name=\"precip\"; level=\"(0,*,*)\";'\
-            -name \"QPF_${acc_hr}hr\" "
-            printf "${cmd}\n"; eval "${cmd}"
-          fi
-        done
-      fi
-    done
-  fi
-done
+      done
+    fi
+  done
+fi
 
 msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`,"
 msg+="verify outputs at \${OUT_DT_ROOT}:\n ${OUT_DT_ROOT}\n"

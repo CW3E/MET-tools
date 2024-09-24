@@ -1,78 +1,78 @@
 #!jinja2
-##################################################################################
-# WRF CONFIGURATIONS
-##################################################################################
-# Define the name of case study
+{################################################################################}
+{# WRF CONFIGURATIONS #}
+{################################################################################}
+{# Define the name of case study #}
 {% set CSE_NME = 'valid_date_2022-12-28T00' %}
 
-# Configuration name including tunable parameters
+{# Configuration name including tunable parameters #}
 {% set CTR_FLWS = 'WRF_9-3_WestCoast', 'WRF_9_WestCoast' %}
 
-# Max number of sub-domain to be processed, 1-1 correspondence with CTR_FLWS
+{# Max number of sub-domain to be processed, 1-1 correspondence with CTR_FLWS #}
 {% set MAX_DOMS = '2', '1' %}
 
-# Define the ensemble size
+{# Define the ensemble size #}
 {% set ENS_MAX = 6 %}
 
-# Define ensemble index prefix
+{# Define ensemble index prefix #}
 {% set ENS_PFX = 'ens_' %}
 
-##################################################################################
-# CYCLING SETTINGS
-##################################################################################
-# First initial time for a forecast YYYY-MM-DDTHH
+{################################################################################}
+{# CYCLING SETTINGS #}
+{################################################################################}
+{# First initial time for a forecast YYYY-MM-DDTHH #}
 {% set CYC_STRT = '2022-12-23T00' %}
 
-# Last initial time for a forecast YYYY-MM-DDTHH
+{# Last initial time for a forecast YYYY-MM-DDTHH #}
 {% set CYC_STOP = '2022-12-27T00' %}
 
-# Interval between cycle start times PTXXH
+{# Interval between cycle start times PTXXH #}
 {% set CYC_INC = 'PT24H' %}
 
-# Define min / max forecast hours for cf outputs to be generated
+{# Define min / max forecast hours for cf outputs to be generated #}
 {% set ANL_MIN = '0' %}
 {% set ANL_MAX = '120' %}
 
-# Define the increment at which to generate cf outputs (HH)
+{# Define the increment at which to generate cf outputs (HH) #}
 {% set ANL_INC = '24' %}
 
-# OPTIONAL ARGUMENT to set a verification termination date -- preprocessing will
-# stop automatically at this valid date, comment out this expression if not needed
+{# OPTIONAL ARGUMENT to set a verification termination date -- preprocessing will #}
+{# stop automatically at this valid date, comment out this expression if not needed #}
 {% set EXP_VRF = '2022-12-28T00' %}
 
-# Regrid to generic lat-lon for MET if native grid errors (TRUE or FALSE)
+{# Regrid to generic lat-lon for MET if native grid errors (TRUE or FALSE) #}
 {% set RGRD = 'TRUE' %}
 
-# Compute precipitation accumulations from cf files, TRUE or FALSE
+{# Compute precipitation accumulations from cf files, TRUE or FALSE #}
 {% set CMP_ACC = 'TRUE' %}
 
-# Defines the min / max accumulation interval for precip
+{# Defines the min / max accumulation interval for precip #}
 {% set ACC_MIN = '24' %}
 {% set ACC_MAX = '72' %}
 
-# Defines the increment between min / max to compute accumulation intervals
+{# Defines the increment between min / max to compute accumulation intervals #}
 {% set ACC_INC = '24' %}
 
-# Defines the offset to the initialization time in HH
-# Use to correct for the offset in start time / forecast hour due to a restart run
-# Needed for ingesting NetCDF meta-data in MET correctly
+{# Defines the offset to the initialization time in HH #}
+{# Use to correct for the offset in start time / forecast hour due to a restart run #}
+{# Needed for ingesting NetCDF meta-data in MET correctly #}
 {% set INIT_OFFSET = '0' %}
 
-# Define the directory to find wrf outputs relative to ISO cycle directories
+{# Define the directory to find wrf outputs relative to ISO cycle directories #}
 {% set IN_DT_SUBDIR = 'wrf_model' %}
 
-##################################################################################
-# JOB SETTINGS
-##################################################################################
-# ungrib mem argument
+{################################################################################}
+{# JOB SETTINGS #}
+{################################################################################}
+{# ungrib mem argument #}
 {% set PRE_MEM = '20000M' %}
 
-# Wallclock limit for ungrib jobs
+{# Wallclock limit for ungrib jobs #}
 {% set PRE_WC = 'PT30M' %}
 
-##################################################################################
-# CYLC SETTINGS
-##################################################################################
+{################################################################################}
+{# CYLC SETTINGS #}
+{################################################################################}
 [scheduler]
     UTC mode = True
     allow implicit tasks = True

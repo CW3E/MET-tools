@@ -117,6 +117,7 @@ fi
 if [ -z ${EXP_VRF} ]; then
   msg="No stop date is set - preprocessWRF runs until max forecast"
   msg+=" hour ${ANL_MAX}.\n"
+  anl_max="${ANL_MAX}"
   printf "${msg}"
 elif [[ ! ${EXP_VRF} =~ ${ISO_RE} ]]; then
   msg="ERROR: stop date \${EXP_VRF}\n ${EXP_VRF}\n"
@@ -124,10 +125,13 @@ elif [[ ! ${EXP_VRF} =~ ${ISO_RE} ]]; then
   printf "${msg}"
   exit 1
 else
-  # Convert EXP_VRF from 'YYYYMMDDHH' format to exp_vrf Unix date format 
+  # Convert EXP_VRF from 'YYYYMMDDHH' format to exp_vrf Unix date format
   exp_vrf="${EXP_VRF:0:8} ${EXP_VRF:8:2}"
-  exp_vrf=`date -d "${exp_vrf}"`
-  printf "Stop date is set at `date +%Y-%m-%d_%H_%M_%S -d ${exp_vrf}`.\n"
+  exp_vrf=`date +%s -d "${exp_vrf}"`
+  # Recompute the max forecast hour with respect to exp_vrf
+  anl_max=$(( ${exp_vrf} - `date +%s -d "${strt_dt}"` ))
+  anl_max=$(( ${anl_max} / 3600 ))
+  printf "Stop date is set at `date +%Y-%m-%d_%H_%M_%S -d "${exp_vrf}"`.\n"
   printf "Preprocessing stops automatically for forecasts at this time.\n"
 fi
 
@@ -173,7 +177,7 @@ if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
     exit 1
   elif [ ! $(( (${ACC_MAX} - ${ACC_MIN}) % ${ACC_INC} )) = 0 ]; then
     msg="ERROR: the interval [\${ACC_MIN}, \${ACC_MAX}]\n"
-    msg+=" [${ACC_MIN}, ${ACC_MAX}] must be evenly divisible into\n" 
+    msg+=" [${ACC_MIN}, ${ACC_MAX}] must be evenly divisible into\n"
     msg+=" increments of \${ACC_INC}, ${ACC_INC}.\n"
     printf "${msg}"
     exit 1
@@ -238,7 +242,7 @@ if [ ! -r ${UTLTY}/wrfout_to_cf.py ]; then
 fi
 
 # check for input data root
-if [ ! ${IN_DIR} ]; then
+if [ -z ${IN_DIR} ]; then
   printf "ERROR: input data directory \${IN_DIR} is not defined.\n"
   exit 1
 elif [[ ! -d ${IN_DIR} || ! -x ${IN_DIR} ]]; then
@@ -282,7 +286,7 @@ printf "${cmd}\n"; eval "${cmd}"
 cmd="rm -f ${WRK_DIR}/${CTR_FLW}_*"
 printf "${cmd}\n"; eval "${cmd}"
 
-for (( anl_hr = ${ANL_MIN}; anl_hr <= ${ANL_MAX}; anl_hr += ${ANL_INC} )); do
+for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
   # define valid times for wrfcf precip evenly spaced
   anl_dt=`date +%Y?%m?%d?%H?%M?%S -d "${strt_dt} ${anl_hr} hours"`
 

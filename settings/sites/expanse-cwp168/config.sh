@@ -63,7 +63,7 @@ export VRF_ROOT="/expanse/nfs/cw3e/cwp168/VERIFICATION_IO"
 export STC_ROOT="/expanse/nfs/cw3e/cwp168/DATA/VERIFICATION_STATIC"
 
 # Root directory for MPAS static files for sourcing static IO streams
-export MSH_ROOT="/expanse/nfs/cw3e/cwp168/Ensemble-DA-Cycling-Template/simulation_settings/"
+export MSH_ROOT="/expanse/nfs/cw3e/cwp168/Ensemble-DA-Cycling-Template/cylc-src"
 
 ##################################################################################
 # MET EXECUTABLE AND DEPENDENCIES PATHS

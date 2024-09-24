@@ -69,15 +69,15 @@ if [[ ! ${GRD} =~ ^d[0-9]{2}$ ]]; then
   exit 1
 fi
 
-if [[ ! ${STRT_DT} =~ ${ISO_RE} ]]; then
-  msg="ERROR: start date \${STRT_DT}\n ${STRT_DT}\n"
+if [[ ! ${CYC_DT} =~ ${ISO_RE} ]]; then
+  msg="ERROR: cycle date \${CYC_DT}\n ${CYC_DT}\n"
   msg+=" is not in YYYYMMDDHH format.\n"
   printf "${msg}"
   exit 1
 else
-  # Convert STRT_DT from 'YYYYMMDDHH' format to strt_dt Unix date format
-  strt_dt="${STRT_DT:0:8} ${STRT_DT:8:2}"
-  strt_dt=`date -d "${strt_dt}"`
+  # Convert CYC_DT from 'YYYYMMDDHH' format to cyc_dt Unix date format
+  cyc_dt="${CYC_DT:0:8} ${CYC_DT:8:2}"
+  cyc_dt=`date -d "${cyc_dt}"`
 fi
 
 # define min / max forecast hours for forecast outputs to be processed
@@ -129,7 +129,7 @@ else
   exp_vrf="${EXP_VRF:0:8} ${EXP_VRF:8:2}"
   exp_vrf=`date +%s -d "${exp_vrf}"`
   # Recompute the max forecast hour with respect to exp_vrf
-  anl_max=$(( ${exp_vrf} - `date +%s -d "${strt_dt}"` ))
+  anl_max=$(( ${exp_vrf} - `date +%s -d "${cyc_dt}"` ))
   anl_max=$(( ${anl_max} / 3600 ))
   printf "Stop date is set at `date +%Y-%m-%d_%H_%M_%S -d "${exp_vrf}"`.\n"
   printf "Preprocessing stops automatically for forecasts at this time.\n"
@@ -288,7 +288,7 @@ printf "${cmd}\n"; eval "${cmd}"
 
 for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
   # define valid times for wrfcf precip evenly spaced
-  anl_dt=`date +%Y?%m?%d?%H?%M?%S -d "${strt_dt} ${anl_hr} hours"`
+  anl_dt=`date +%Y?%m?%d?%H?%M?%S -d "${cyc_dt} ${anl_hr} hours"`
 
   # set input file names
   f_in=`ls ${IN_DIR}/wrfout_${GRD}_${anl_dt}`
@@ -298,7 +298,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
     f_in=`basename ${f_in}`
 
     # Reset date string with underscore formatting
-    anl_dt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_hr} hours"`
+    anl_dt=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${anl_hr} hours"`
 
     # set output file name with underscore formatting
     f_out="wrfcf_${anl_dt}.nc"
@@ -321,8 +321,8 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
         acc_stop=${anl_hr}
 
         # start / stop date strings
-        anl_strt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${acc_strt} hours"`
-        anl_stop=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${acc_stop} hours"`
+        anl_strt=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${acc_strt} hours"`
+        anl_stop=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${acc_stop} hours"`
 
         # define padded forecast hour for name strings
         pdd_hr=`printf %03d $(( 10#${anl_hr} ))`

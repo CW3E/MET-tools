@@ -11,14 +11,32 @@
 {# Max number of sub-domain to be processed, 1-1 correspondence with CTR_FLWS #}
 {% set MAX_DOMS = 2, 1 %}
 
-{# Define the ensemble size #}
-{% set ENS_MAX = 6 %}
+{# Neighborhood widths for neighborhood methods, references model domains #}
+{# with 1-1 correspondence looping in nesting order (d01, d02, d03...) #}
+{% set NBRHD_WDTHS = 3, 9 %}
+
+{# Define the min / max ensemble indices #}
+{% set ENS_MAX = '00' %}
+{% set ENS_MAX = '05' %}
 
 {# Define ensemble index prefix #}
 {% set ENS_PRFX = 'ens_' %}
 
 {# Define the number of digits to pad ensemble indices #}
 {% set ENS_PAD = 2 %}
+
+{# Define control member index, not to be used in ensemble spread calculation, #}
+{# defined as empty string if not necessary #}
+{% set CTR_MEM = '00' %}
+
+{# Require all ensemble members, no missing files, TRUE or FALSE #}
+{% set FULL_ENS = 'TRUE' %}
+
+{# Define the verification field #}
+{% set VRF_FLD = 'QPF' %}
+
+{# Specify thresholds levels for verification #}
+{% set CAT_THR='[ >0.0, >=10.0, >=25.0, >=50.0, > = 100.0 ]' %}
 
 {################################################################################}
 {# CYCLING SETTINGS #}
@@ -43,9 +61,6 @@
 {# stop automatically at this valid date, comment out this expression if not needed #}
 {% set EXP_VRF = '2022-12-28T00' %}
 
-{# Regrid to generic lat-lon for MET if native grid errors (TRUE or FALSE) #}
-{% set RGRD = 'TRUE' %}
-
 {# Compute precipitation accumulations from cf files, TRUE or FALSE #}
 {% set CMP_ACC = 'TRUE' %}
 
@@ -56,22 +71,14 @@
 {# Defines the increment between min / max to compute accumulation intervals #}
 {% set ACC_INC = 24 %}
 
-{# Defines the offset to the initialization time in HH #}
-{# Use to correct for the offset in start time / forecast hour due to a restart run #}
-{# Needed for ingesting NetCDF meta-data in MET correctly #}
-{% set INIT_OFFSET = 0 %}
-
-{# Define the directory to find wrf outputs relative to ISO cycle directories #}
-{% set IN_DT_SUBDIR = 'wrf_model' %}
-
 {################################################################################}
 {# JOB SETTINGS #}
 {################################################################################}
 {# Job mem argument #}
-{% set PRE_MEM = '20000M' %}
+{% set ENS_MEM = '20000M' %}
 
 {# Wallclock limit for ungrib jobs #}
-{% set PRE_WC = 'PT30M' %}
+{% set ENS_WC = 'PT1H' %}
 
 {################################################################################}
 {# CYLC SETTINGS #}
@@ -88,15 +95,11 @@
         {% for ctr_flw in CTR_FLWS %}
             {# inherit the max domain to process from 1-1 correspondence #}
             {% set max_dom = MAX_DOMS[loop.index0] %}
-            {# loop ensemble members to process #}
-            {% for mem in range(0,ENS_MAX) %}
-                {% set idx = mem | pad(ENS_PAD, '0') %}
-                {# loop sub-domains to process #}
-                {% for dom in range(0,max_dom) %}
-                    {% set grd = loop.index | pad(2, '0') %}
-                    {% set grd = ['d', grd] | join %}
-                    preprocess{{ctr_flw}}_ens_{{idx}}_{{grd}}
-                {% endfor %}
+            {# loop sub-domains to process #}
+            {% for dom in range(0,max_dom) %}
+                {% set grd = loop.index | pad(2, '0') %}
+                {% set grd = ['d', grd] | join %}
+                GenEnsProd_{{ctr_flw}}_{{grd}}
             {% endfor %}
         {% endfor %}
         """
@@ -114,8 +117,14 @@
             RGRD = {{RGRD}}
             CMP_ACC = {{CMP_ACC}}
             ACC_MIN = {{ACC_MIN}}
-            ACC_MAX = {{ACC_MAX}}
-            ACC_INC = {{ACC_INT}}
+            ACC_MAX = {{ACC_MIN}}
+            ACC_INC = {{ACC_MIN}}
+            ENS_PRFX = {{ENS_PRFX}}
+            ENS_MIN = {{ENS_MIN}}
+            ENS_MAX = {{ENS_MIN}}
+            CTR_MEM = {{CTR_MEM}}
+            VRF_FLD = {{VRF_FLD}}
+            CAT_THR = {{CAT_THR}}
             MET = {{environ['MET']}}
             MET_TOOLS_PY = {{environ['MET_TOOLS_PY']}}
             UTLTY = {{environ['UTLTY']}}
@@ -124,40 +133,40 @@
     {% for ctr_flw in CTR_FLWS %}
         {# inherit the max domain to process from 1-1 correspondence #}
         {% set max_dom = MAX_DOMS[loop.index0] %}
-        {# loop ensemble members to process #}
-        {% for mem in range(0,ENS_MAX) %}
-            {% set idx = mem | pad(ENS_PAD, '0') %}
-            {# loop sub-domains to process #}
-            {% for dom in range(0,max_dom) %}
-                {% set grd = loop.index | pad(2, '0') %}
-                {% set grd = ['d', grd] | join %}
-                [[preprocess{{ctr_flw}}_ens_{{idx}}_{{grd}}]]
-                    platform = {{environ['SCHED']}}
-                    execution time limit = {{PRE_WC}}
-                    script = {{environ['DRIVERS']}}/run_preprocessWRF.sh
-                    execution retry delays = 3*PT5M
-                    [[[environment]]]
-                        CTR_FLW = {{ctr_flw}}
-                        GRD = {{grd}}
-                        IN_DIR = {{environ['SIM_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/$CYC_DT/{{IN_DT_SUBDIR}}/{{ENS_PRFX}}{{idx}}
-                        WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT/{{ENS_PRFX}}{{idx}}/{{grd}}
-                    [[[directives]]]
-                        {% if environ['SCHED'] == 'slurm' %}
-                            {% if environ['SYS_TYPE' ] == 'penguin' %}
-                                --partition = general
-                                --qos = {{environ['PART_SRL']}}
-                                --nodes = 1
-                                --ntasks-per-node = 1
-                            {% else %}
-                                --partition = {{environ['PART_SRL']}}
-                                --nodes = 1
-                                --ntasks-per-node = 1
-                                --mem = {{PRE_MEM}}
-                            {% endif %}
-                        {% elif environ['SCHED'] == 'pbs' %}
-                            -q = {{environ['PART_SRL']}}
-                            -l select=1:mpiprocs=1:ncpus=1
+        {# loop sub-domains to process #}
+        {% for dom in range(0,max_dom) %}
+            {% set grd = loop.index | pad(2, '0') %}
+            {% set grd = ['d', grd] | join %}
+            {# Neighborhood width is in 1-1 correspondence with model grd #}
+            {% set nbrhd_wdth = NBRHD_WDTHS[loop.index0] %}
+            [[GenEnsProd_{{ctr_flw}}_{{grd}}]]
+                platform = {{environ['SCHED']}}
+                execution time limit = {{ENS_WC}}
+                script = {{environ['DRIVERS']}}/run_GenEnsProd.sh
+                execution retry delays = 3*PT5M
+                [[[environment]]]
+                    CTR_FLW = {{ctr_flw}}
+                    NBRHD_WDTH = {{nbrhd_wdth}}
+                    IN_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT
+                    {# WRF preprocessed outputs are nested relative to ISO/mem_id by domain #}
+                    IN_DT_SUBDIR = {{grd}}
+                    WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GenEnsProd/$CYC_DT
+                [[[directives]]]
+                    {% if environ['SCHED'] == 'slurm' %}
+                        {% if environ['SYS_TYPE' ] == 'penguin' %}
+                            --partition = general
+                            --qos = {{environ['PART_SRL']}}
+                            --nodes = 1
+                            --ntasks-per-node = 1
+                        {% else %}
+                            --partition = {{environ['PART_SRL']}}
+                            --nodes = 1
+                            --ntasks-per-node = 1
+                            --mem = {{ENS_MEM}}
                         {% endif %}
-            {% endfor %}
+                    {% elif environ['SCHED'] == 'pbs' %}
+                        -q = {{environ['PART_SRL']}}
+                        -l select=1:mpiprocs=1:ncpus=1
+                    {% endif %}
         {% endfor %}
     {% endfor %}

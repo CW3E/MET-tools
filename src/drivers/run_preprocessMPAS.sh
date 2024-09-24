@@ -110,15 +110,15 @@ else
   printf "MPAS model outputs are sourced from file prefix\n ${MPAS_PRFX}\n"
 fi
 
-# Convert STRT_DT from 'YYYYMMDDHH' format to strt_dt Unix date format
-if [[ ! ${STRT_DT} =~ ${ISO_RE} ]]; then
-  msg="ERROR: start date \${STRT_DT}\n ${STRT_DT}\n"
+# Convert CYC_DT from 'YYYYMMDDHH' format to cyc_dt Unix date format
+if [[ ! ${CYC_DT} =~ ${ISO_RE} ]]; then
+  msg="ERROR: cycle date \${CYC_DT}\n ${CYC_DT}\n"
   msg+=" is not in YYYYMMDDHH format.\n"
   printf "${msg}"
   exit 1
 else
-  strt_dt="${STRT_DT:0:8} ${STRT_DT:8:2}"
-  strt_dt=`date -d "${strt_dt}"`
+  cyc_dt="${CYC_DT:0:8} ${CYC_DT:8:2}"
+  cyc_dt=`date -d "${cyc_dt}"`
 fi
 
 # define min / max forecast hours for forecast outputs to be processed
@@ -149,7 +149,7 @@ elif [ ! $(( (${ANL_MAX} - ${ANL_MIN}) % ${ANL_INC} )) = 0 ]; then
 fi
 
 if [ -z ${EXP_VRF} ]; then
-  msg="No stop date is set - preprocessWRF runs until max forecast"
+  msg="No stop date is set - preprocessMPAS runs until max forecast"
   msg+=" hour ${ANL_MAX}.\n"
   anl_max="${ANL_MAX}"
   printf "${msg}"
@@ -163,7 +163,7 @@ else
   exp_vrf="${EXP_VRF:0:8} ${EXP_VRF:8:2}"
   exp_vrf=`date +%s -d "${exp_vrf}"`
   # Recompute the max forecast hour with respect to exp_vrf
-  anl_max=$(( ${exp_vrf} - `date +%s -d "${strt_dt}"` ))
+  anl_max=$(( ${exp_vrf} - `date +%s -d "${cyc_dt}"` ))
   anl_max=$(( ${anl_max} / 3600 ))
   printf "Stop date is set at `date +%Y-%m-%d_%H_%M_%S -d "${exp_vrf}"`.\n"
   printf "Preprocessing stops automatically for forecasts at this time.\n"
@@ -321,7 +321,7 @@ printf "${cmd}\n"; eval "${cmd}"
 
 for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
   # define valid times for mpascf precip evenly spaced
-  anl_dt=`date +%Y?%m?%d?%H?%M?%S -d "${strt_dt} ${anl_hr} hours"`
+  anl_dt=`date +%Y?%m?%d?%H?%M?%S -d "${cyc_dt} ${anl_hr} hours"`
 
   # set input file name
   f_in=`ls ${IN_DIR}/*${MPAS_PRFX}.${anl_dt}.nc`
@@ -357,7 +357,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
     # set output cf file name, convert to cf from latlon tmp
     # NOTE: currently convert_mpas doesn't carry time coords from input
     # to regridded output, f_in is reused here to recover timing information
-    anl_dt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_hr} hours"`
+    anl_dt=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${anl_hr} hours"`
     f_out="mpascf_${anl_dt}.nc"
     cmd="${met_tools_py} /utlty/mpas_to_cf.py"
     cmd+=" '/wrk_dir/${f_tmp}' '/wrk_dir/${f_out}' '/in_dir/${f_in}'"
@@ -377,8 +377,8 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
         acc_stop=${anl_hr}
 
         # start / stop date strings
-        anl_strt=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${acc_strt} hours"`
-        anl_stop=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${acc_stop} hours"`
+        anl_strt=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${acc_strt} hours"`
+        anl_stop=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${acc_stop} hours"`
 
         # define padded forecast hour for name strings
         pdd_hr=`printf %03d $(( 10#${anl_hr} ))`

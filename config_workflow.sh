@@ -30,6 +30,9 @@ export DRIVERS="${HOME}/src/drivers"
 # Root directory of task driver scripts
 export UTLTY="${HOME}/src/utilities"
 
+# Root directory of shared task settings
+export SHARED="${HOME}/settings/shared"
+
 # Root directory for landmasks
 export MSK_ROOT="${HOME}/settings/mask-root"
 

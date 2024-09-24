@@ -19,10 +19,7 @@
 {% set ENS_MAX = 6 %}
 
 {# Define ensemble index prefix #}
-{% set ENS_PRFX = 'ens_' %}
-
-{# Define the number of digits to pad ensemble indices #}
-{% set ENS_PAD = 2 %}
+{% set ENS_PFX = 'ens_' %}
 
 {################################################################################}
 {# CYCLING SETTINGS #}
@@ -37,11 +34,11 @@
 {% set CYC_INC = 'PT24H' %}
 
 {# Define min / max forecast hours for cf outputs to be generated #}
-{% set ANL_MIN = 0 %}
-{% set ANL_MAX = 120 %}
+{% set ANL_MIN = '0' %}
+{% set ANL_MAX = '120' %}
 
 {# Define the increment at which to generate cf outputs (HH) #}
-{% set ANL_INC = 24 %}
+{% set ANL_INC = '24' %}
 
 {# OPTIONAL ARGUMENT to set a verification termination date -- preprocessing will #}
 {# stop automatically at this valid date, comment out this expression if not needed #}
@@ -54,19 +51,24 @@
 {% set CMP_ACC = 'TRUE' %}
 
 {# Defines the min / max accumulation interval for precip #}
-{% set ACC_MIN = 24 %}
-{% set ACC_MAX = 72 %}
+{% set ACC_MIN = '24' %}
+{% set ACC_MAX = '72' %}
 
 {# Defines the increment between min / max to compute accumulation intervals #}
-{% set ACC_INC = 24 %}
+{% set ACC_INC = '24' %}
 
-{# Define the directory to find mpas outputs relative to ISO cycle directories #}
+{# Defines the offset to the initialization time in HH #}
+{# Use to correct for the offset in start time / forecast hour due to a restart run #}
+{# Needed for ingesting NetCDF meta-data in MET correctly #}
+{% set INIT_OFFSET = '0' %}
+
+{# Define the directory to find wrf outputs relative to ISO cycle directories #}
 {% set IN_DT_SUBDIR = 'mpas_model' %}
 
 {################################################################################}
 {# JOB SETTINGS #}
 {################################################################################}
-{# Job mem argument #}
+{# ungrib mem argument #}
 {% set PRE_MEM = '20000M' %}
 
 {# Wallclock limit for ungrib jobs #}
@@ -87,7 +89,7 @@
         {% for ctr_flw in CTR_FLWS %}
             {# loop ensemble members to process #}
             {% for mem in range(0,ENS_MAX) %}
-                {% set idx = mem | pad(ENS_PAD, '0') %}
+                {% set idx = mem | pad(2, '0') %}
                 preprocess{{ctr_flw}}_ens_{{idx}}
             {% endfor %}
         {% endfor %}
@@ -98,16 +100,16 @@
         [[[environment]]]
             CNST = {{environ['DRIVERS']}}/CONSTANTS.sh
             CYC_DT = $(isodatetime ${CYLC_TASK_CYCLE_POINT} --f '%Y%m%d%H')
+            STRT_DT = $CYC_DT
             ANL_MIN = {{ANL_MIN}}
             ANL_MAX = {{ANL_MAX}}
             ANL_INC = {{ANL_INC}}
-            {# EXP_VRF should be assigned as a blank string below if not used #}
             EXP_VRF = $(isodatetime {{EXP_VRF}} --f '%Y%m%d%H')
             RGRD = {{RGRD}}
             CMP_ACC = {{CMP_ACC}}
             ACC_MIN = {{ACC_MIN}}
-            ACC_MAX = {{ACC_MAX}}
-            ACC_INC = {{ACC_INC}}
+            ACC_MAX = {{ACC_MIN}}
+            ACC_INC = {{ACC_MIN}}
             MET = {{environ['MET']}}
             MET_TOOLS_PY = {{environ['MET_TOOLS_PY']}}
             UTLTY = {{environ['UTLTY']}}
@@ -119,7 +121,7 @@
         {% set msh_nme = MSH_NMES[loop.index0] %}
         {# loop ensemble members to process #}
         {% for mem in range(0,ENS_MAX) %}
-            {% set idx = mem | pad(ENS_PAD, '0') %}
+            {% set idx = mem | pad(2, '0') %}
             [[preprocess{{ctr_flw}}_ens_{{idx}}]]
                platform = {{environ['SCHED']}}
                execution time limit = {{PRE_WC}}
@@ -127,8 +129,8 @@
                execution retry delays = 3*PT5M
                [[[environment]]]
                    CTR_FLW = {{ctr_flw}}
-                   IN_DIR = {{environ['SIM_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/$CYC_DT/{{IN_DT_SUBDIR}}/{{ENS_PRFX}}{{idx}}
-                   WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT/{{ENS_PRFX}}{{idx}}
+                   IN_DIR = {{environ['SIM_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/$CYC_DT/{{IN_DT_SUBDIR}}/{{ENS_PFX}}{{idx}}
+                   WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/$CYC_DT/Preprocess/{{ENS_PFX}}{{idx}}
                    IN_MSH_DIR = {{environ['MSH_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/static
                    IN_MSH_F = {{msh_nme}}
                [[[directives]]]

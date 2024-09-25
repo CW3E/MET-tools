@@ -116,12 +116,12 @@ elif [[ ! ${EXP_VRF} =~ ${ISO_RE} ]]; then
 else
   # Convert EXP_VRF from 'YYYYMMDDHH' format to exp_vrf Unix date format
   exp_vrf="${EXP_VRF:0:8} ${EXP_VRF:8:2}"
-  exp_vrf=`date +%s -d "${exp_vrf}"`
-  # Recompute the max forecast hour with respect to exp_vrf
-  anl_max=$(( ${exp_vrf} - `date +%s -d "${cyc_dt}"` ))
-  anl_max=$(( ${anl_max} / 3600 ))
   printf "Stop date is set at `date +%Y-%m-%d_%H_%M_%S -d "${exp_vrf}"`.\n"
   printf "Preprocessing stops automatically for forecasts at this time.\n"
+  # Recompute the max forecast hour with respect to exp_vrf
+  exp_vrf=`date +%s -d "${exp_vrf}"`
+  anl_max=$(( ${exp_vrf} - `date +%s -d "${cyc_dt}"` ))
+  anl_max=$(( ${anl_max} / 3600 ))
 fi
 
 # compute accumulation from cf file, TRUE or FALSE
@@ -195,7 +195,9 @@ if [ -z ${ENS_PRFX+x} ]; then
 fi
 
 if [[ ! ${ENS_MIN} =~ ${INT_RE} ]]; then
-  printf "ERROR: min ensemble index \${ENS_MIN} is not an integer.\n"
+  msg="ERROR: min ensemble index \${ENS_MIN}\n ${ENS_MIN}\n is not"
+  msg+=" an integer.\n"
+  printf "${msg}"
   exit 1
 else
   # ensure base 10 for looping
@@ -203,11 +205,32 @@ else
 fi
 
 if [[ ! ${ENS_MAX} =~ ${INT_RE} ]]; then
-  printf "ERROR: max ensemble index \${ENS_MAX} is not an integer.\n"
+  msg="ERROR: max ensemble index \${ENS_MAX}\n ${ENS_MAX}\n is not"
+  msg+="an integer.\n"
+  printf "${msg}"
   exit 1
 else
   # ensure base 10 for looping
   ens_max=`printf $(( 10#${ENS_MAX} ))`
+fi
+
+if [ -z ${ENS_PRFX+x} ]; then
+  msg="ERROR: ensemble index prefix \${ENS_PRFX} is undeclared, set to empty"
+  msg+=" string if not used.\n"
+  printf "${msg}"
+  exit 1
+fi
+
+if [ -z ${ENS_PAD+x} ]; then
+  msg="ERROR: ensemble index padding \${ENS_PAD} is undeclared, set to empty"
+  msg+=" string if not used.\n"
+  printf "${msg}"
+  exit 1
+elif [[ ! ${ENS_PAD} =~ ${INT_RE} ]]; then
+  msg="ERROR: ensemble index padding \${ENS_PAD}\n ${ENS_PAD}\n is not"
+  msg+=" an integer.\n"
+  printf "${msg}"
+  exit 1
 fi
 
 if [ -z ${CTR_MEM+x} ]; then
@@ -400,10 +423,10 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${ANL_MAX}; anl_hr += ${ANL_INC} )); do
         # this remains unchanged on accumulation intervals
         if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
           fld=${VRF_FLD}_${acc_hr}hr
-          printf "Computing verification field ${fld}\n."
+          printf "Computing verification field ${fld}.\n"
         else
           fld=${VRF_FLD}
-          printf "Computing verification field ${fld}\n."
+          printf "Computing verification field ${fld}.\n"
         fi
         if [ ! -r ${WRK_DIR}/GenEnsProdConfig${acc_hr} ]; then
           cat ${SHARED}/GenEnsProdConfigTemplate \
@@ -421,7 +444,8 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${ANL_MAX}; anl_hr += ${ANL_INC} )); do
         -out /wrk_dir/${f_out} \
         -config /wrk_dir/GenEnsProdConfig${acc_hr} \
         ${ctr_mem}"
-        printf "${cmd}\n"; eval "${cmd}"
+        printf "${cmd}\n"
+        ${cmd}
       fi
     fi
     for mem_id in ${mem_ids[@]}; do

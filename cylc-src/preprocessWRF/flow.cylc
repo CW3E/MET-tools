@@ -115,7 +115,7 @@
             CMP_ACC = {{CMP_ACC}}
             ACC_MIN = {{ACC_MIN}}
             ACC_MAX = {{ACC_MAX}}
-            ACC_INC = {{ACC_INT}}
+            ACC_INC = {{ACC_INC}}
             MET = {{environ['MET']}}
             MET_TOOLS_PY = {{environ['MET_TOOLS_PY']}}
             UTLTY = {{environ['UTLTY']}}

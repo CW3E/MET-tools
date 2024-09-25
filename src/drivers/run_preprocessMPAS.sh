@@ -161,12 +161,12 @@ elif [[ ! ${EXP_VRF} =~ ${ISO_RE} ]]; then
 else
   # Convert EXP_VRF from 'YYYYMMDDHH' format to exp_vrf Unix date format
   exp_vrf="${EXP_VRF:0:8} ${EXP_VRF:8:2}"
-  exp_vrf=`date +%s -d "${exp_vrf}"`
-  # Recompute the max forecast hour with respect to exp_vrf
-  anl_max=$(( ${exp_vrf} - `date +%s -d "${cyc_dt}"` ))
-  anl_max=$(( ${anl_max} / 3600 ))
   printf "Stop date is set at `date +%Y-%m-%d_%H_%M_%S -d "${exp_vrf}"`.\n"
   printf "Preprocessing stops automatically for forecasts at this time.\n"
+  # Recompute the max forecast hour with respect to exp_vrf
+  exp_vrf=`date +%s -d "${exp_vrf}"`
+  anl_max=$(( ${exp_vrf} - `date +%s -d "${cyc_dt}"` ))
+  anl_max=$(( ${anl_max} / 3600 ))
 fi
 
 # compute accumulation from cf file, TRUE or FALSE

@@ -59,7 +59,7 @@ if [ ! -x ${CNST} ]; then
 else
   # Read constants into the current shell
   cmd=". ${CNST}"
-  printf "${cmd}\n"; eval "${cmd}"
+  printf "${cmd}\n"; ${cmd}
 fi
 
 # control flow to be processed
@@ -286,7 +286,7 @@ if [ -z ${WRK_DIR} ]; then
   printf "ERROR: work directory \${WRK_DIR} is not defined.\n"
 else
   cmd="mkdir -p ${WRK_DIR}"
-  printf "${cmd}\n"; eval "${cmd}"
+  printf "${cmd}\n"; ${cmd}
 fi
 
 if [[ ! -d ${WRK_DIR} || ! -w ${WRK_DIR} ]]; then
@@ -309,15 +309,15 @@ met_tools_py+="${MET_TOOLS_PY} python"
 
 # clean work directory from previous mpas regridded lat lon files
 cmd="rm -f ${WRK_DIR}/*.latlon.*"
-printf "${cmd}\n"; eval "${cmd}"
+printf "${cmd}\n"; ${cmd}
 
 # clean work directory from previous mpascf files
 cmd="rm -f ${WRK_DIR}/mpascf*"
-printf "${cmd}\n"; eval "${cmd}"
+printf "${cmd}\n"; ${cmd}
 
 # clean work directory from previous accumulation files
 cmd="rm -f ${WRK_DIR}/${CTR_FLW}_*QPF*"
-printf "${cmd}\n"; eval "${cmd}"
+printf "${cmd}\n"; ${cmd}
 
 for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
   # define valid times for mpascf precip evenly spaced
@@ -329,7 +329,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
   if [[ -r ${f_in} ]]; then
     # NOTE: convert_mpas always writes outputs to working directory, need to cd
     cmd="cd ${WRK_DIR}"
-    printf "${cmd}\n"; eval "${cmd}"
+    printf "${cmd}\n"; ${cmd}
 
     # cut down to file name alone
     f_in=`basename ${f_in}`
@@ -361,7 +361,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
     f_out="mpascf_${anl_dt}.nc"
     cmd="${met_tools_py} /utlty/mpas_to_cf.py"
     cmd+=" '/wrk_dir/${f_tmp}' '/wrk_dir/${f_out}' '/in_dir/${f_in}'"
-    printf "${cmd}\n"; eval "${cmd}"
+    printf "${cmd}\n"; ${cmd}
 
   else
     msg="Input file\n ${f_in}\n is not readable or "
@@ -392,7 +392,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
         /wrk_dir/${mpas_acc} \
         -field 'name=\"precip\"; level=\"(0,*,*)\";'\
         -name \"QPF_${acc_hr}hr\" "
-        printf "${cmd}\n"; eval "${cmd}"
+        printf "${cmd}\n"; ${cmd}
       fi
     done
   fi

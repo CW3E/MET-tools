@@ -47,9 +47,6 @@
 {# stop automatically at this valid date, comment out this expression if not needed #}
 {% set EXP_VRF = '2022-12-28T00' %}
 
-{# Regrid to generic lat-lon for MET if native grid errors (TRUE or FALSE) #}
-{% set RGRD = 'TRUE' %}
-
 {# Compute precipitation accumulations from cf files, TRUE or FALSE #}
 {% set CMP_ACC = 'TRUE' %}
 
@@ -103,7 +100,6 @@
             ANL_INC = {{ANL_INC}}
             {# EXP_VRF should be assigned as a blank string below if not used #}
             EXP_VRF = $(isodatetime {{EXP_VRF}} --f '%Y%m%d%H')
-            RGRD = {{RGRD}}
             CMP_ACC = {{CMP_ACC}}
             ACC_MIN = {{ACC_MIN}}
             ACC_MAX = {{ACC_MAX}}
@@ -121,32 +117,32 @@
         {% for mem in range(0,ENS_MAX) %}
             {% set idx = mem | pad(ENS_PAD, '0') %}
             [[preprocess{{ctr_flw}}_ens_{{idx}}]]
-               platform = {{environ['SCHED']}}
-               execution time limit = {{PRE_WC}}
-               script = {{environ['DRIVERS']}}/run_preprocessMPAS.sh
-               execution retry delays = 3*PT5M
-               [[[environment]]]
-                   CTR_FLW = {{ctr_flw}}
-                   IN_DIR = {{environ['SIM_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/$CYC_DT/{{IN_DT_SUBDIR}}/{{ENS_PRFX}}{{idx}}
-                   WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT/{{ENS_PRFX}}{{idx}}
-                   IN_MSH_DIR = {{environ['MSH_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/static
-                   IN_MSH_F = {{msh_nme}}
-               [[[directives]]]
-                   {% if environ['SCHED'] == 'slurm' %}
-                       {% if environ['SYS_TYPE' ] == 'penguin' %}
-                           --partition = general
-                           --qos = {{environ['PART_SRL']}}
-                           --nodes = 1
-                           --ntasks-per-node = 1
-                       {% else %}
-                           --partition = {{environ['PART_SRL']}}
-                           --nodes = 1
-                           --ntasks-per-node = 1
-                           --mem = {{PRE_MEM}}
-                       {% endif %}
-                   {% elif environ['SCHED'] == 'pbs' %}
-                       -q = {{environ['PART_SRL']}}
-                       -l select=1:mpiprocs=1:ncpus=1
-                   {% endif %}
+                platform = {{environ['SCHED']}}
+                execution time limit = {{PRE_WC}}
+                script = {{environ['DRIVERS']}}/run_preprocessMPAS.sh
+                execution retry delays = 3*PT5M
+                [[[environment]]]
+                    CTR_FLW = {{ctr_flw}}
+                    IN_DIR = {{environ['SIM_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/$CYC_DT/{{IN_DT_SUBDIR}}/{{ENS_PRFX}}{{idx}}
+                    WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT/{{ENS_PRFX}}{{idx}}
+                    IN_MSH_DIR = {{environ['MSH_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/static
+                    IN_MSH_F = {{msh_nme}}
+                [[[directives]]]
+                    {% if environ['SCHED'] == 'slurm' %}
+                        {% if environ['SYS_TYPE' ] == 'penguin' %}
+                            --partition = general
+                            --qos = {{environ['PART_SRL']}}
+                            --nodes = 1
+                            --ntasks-per-node = 1
+                        {% else %}
+                            --partition = {{environ['PART_SRL']}}
+                            --nodes = 1
+                            --ntasks-per-node = 1
+                            --mem = {{PRE_MEM}}
+                        {% endif %}
+                    {% elif environ['SCHED'] == 'pbs' %}
+                        -q = {{environ['PART_SRL']}}
+                        -l select=1:mpiprocs=1:ncpus=1
+                    {% endif %}
         {% endfor %}
     {% endfor %}

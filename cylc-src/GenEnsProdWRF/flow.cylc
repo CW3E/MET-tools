@@ -36,8 +36,8 @@
 {# Define the verification field #}
 {% set VRF_FLD = 'QPF' %}
 
-{# Specify thresholds levels for verification #}
-{% set CAT_THR='[ >0.0, >=10.0, >=25.0, >=50.0, > = 100.0 ]' %}
+{# Specify thresholds levels for verification (NEEDS INTERNAL QUOTES "")#}
+{% set CAT_THR='"[ >0.0, >=10.0, >=25.0, >=50.0, >= 100.0 ]"' %}
 
 {################################################################################}
 {# CYCLING SETTINGS #}
@@ -51,8 +51,8 @@
 {# Interval between cycle start times PTXXH #}
 {% set CYC_INC = 'PT24H' %}
 
-{# Define min / max forecast hours for cf outputs to be generated #}
-{% set ANL_MIN = 0 %}
+{# Define min / max forecast hours for ensemble products to be generated #}
+{% set ANL_MIN = 24 %}
 {% set ANL_MAX = 120 %}
 
 {# Define the increment at which to generate cf outputs (HH) #}
@@ -131,7 +131,6 @@
             VRF_FLD = {{VRF_FLD}}
             CAT_THR = {{CAT_THR}}
             MET = {{environ['MET']}}
-            MET_TOOLS_PY = {{environ['MET_TOOLS_PY']}}
             UTLTY = {{environ['UTLTY']}}
 
     {# Loop model control flows #}
@@ -153,9 +152,10 @@
                     CTR_FLW = {{ctr_flw}}
                     NBRHD_WDTH = {{nbrhd_wdth}}
                     IN_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT
-                    {# WRF preprocessed outputs are nested relative to ISO/mem_id by domain #}
+                    {# WRF workflow outputs are nested relative to ISO/mem_id by domain #}
                     IN_DT_SUBDIR = {{grd}}
                     WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GenEnsProd/$CYC_DT
+                    OUT_DT_SUBDIR = {{grd}}
                 [[[directives]]]
                     {% if environ['SCHED'] == 'slurm' %}
                         {% if environ['SYS_TYPE' ] == 'penguin' %}
@@ -170,8 +170,8 @@
                             --mem = {{ENS_MEM}}
                         {% endif %}
                     {% elif environ['SCHED'] == 'pbs' %}
-                        -q = {{environ['PART_SRL']}}
-                        -l select=1:mpiprocs=1:ncpus=1
+                        -q = {{environ['PART_DBG']}}
+                        -l select=1:mpiprocs={{ENS_PROC}}:ncpus=1
                     {% endif %}
         {% endfor %}
     {% endfor %}

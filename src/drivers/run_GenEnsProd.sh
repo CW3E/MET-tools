@@ -51,7 +51,7 @@ if [ ! -x ${CNST} ]; then
 else
   # Read constants into the current shell
   cmd=". ${CNST}"
-  printf "${cmd}\n"; eval "${cmd}"
+  printf "${cmd}\n"; ${cmd}
 fi
 
 # control flow to be processed
@@ -321,7 +321,7 @@ elif [[ ! -d ${IN_DIR} || ! -x ${IN_DIR} ]]; then
   exit 1
 fi
 
-# Define the
+# Define the subdirectory to source data from relative to ISO date
 if [ -z ${IN_DT_SUBDIR+x} ]; then
   msg="ERROR: input data directory subdirectory \${IN_DT_SUBDIR} is not"
   msg+=" declared, define as an empty string if unused.\n"
@@ -333,38 +333,48 @@ fi
 if [ -z ${WRK_DIR} ]; then
   printf "ERROR: work directory \${WRK_DIR} is not defined.\n"
 else
-  cmd="mkdir -p ${WRK_DIR}"
-  printf "${cmd}\n"; eval "${cmd}"
+  if [ -z ${OUT_DT_SUBDIR+x} ]; then
+    msg="ERROR: output data directory subdirectory \${OUT_DT_SUBDIR} is not"
+    msg+=" declared, define as an empty string if unused.\n"
+    printf "${msg}"
+    exit 1
+  else
+    wrk_dir="${WRK_DIR}/${OUT_DT_SUBDIR}"
+  fi
+  cmd="mkdir -p ${wrk_dir}"
+  printf "${cmd}\n"; ${cmd}
 fi
 
-if [[ ! -d ${WRK_DIR} || ! -w ${WRK_DIR} ]]; then
-  msg="ERROR: work directory\n ${WRK_DIR}\n does not"
+if [[ ! -d ${wrk_dir} || ! -w ${wrk_dir} ]]; then
+  msg="ERROR: work directory\n ${wrk_dir}\n does not"
   msg+=" exist or is not writable.\n"
   printf "${msg}"
   exit 1
 fi
+
+# Define the subdirectory to source data from relative to ISO date
 
 #################################################################################
 # Process data
 #################################################################################
 
 # prepare the work directory, cleaning old data
-cmd="rm -f ${WRK_DIR}/${ENS_PRFX}*"
-printf "${cmd}\n"; eval "${cmd}"
+cmd="rm -f ${wrk_dir}/${ENS_PRFX}*"
+printf "${cmd}\n"; ${cmd}
 
 fname="*${CTR_FLW}_*"
-cmd="rm -f ${WRK_DIR}/${fname}"
-printf "${cmd}\n"; eval "${cmd}"
+cmd="rm -f ${wrk_dir}/${fname}"
+printf "${cmd}\n"; ${cmd}
 
 fname="GenEnsProdConfig*"
-cmd="rm -f ${WRK_DIR}/${fname}"
-printf "${cmd}\n"; eval "${cmd}"
+cmd="rm -f ${wrk_dir}/${fname}"
+printf "${cmd}\n"; ${cmd}
 
 # Define directory privileges for singularity exec
-met="singularity exec -B ${WRK_DIR}:/wrk_dir:rw ${MET}"
+met="singularity exec -B ${wrk_dir}:/wrk_dir:rw ${MET}"
 
 # loop lead hours for forecast valid time for each initialization time
-for (( anl_hr = ${ANL_MIN}; anl_hr <= ${ANL_MAX}; anl_hr += ${ANL_INC} )); do
+for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
   # define valid times for accumulation    
   vld_dt=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${anl_hr} hours"`
 
@@ -379,7 +389,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${ANL_MAX}; anl_hr += ${ANL_INC} )); do
     if [[ ${CMP_ACC} =~ ${TRUE} && ${acc_hr} -le ${anl_hr} ]] ||\
       [[ ${CMP_ACC} =~ ${FALSE} ]]; then
       # create switch to break loop on if missing files
-      error=0
+      check=0
 
       # define output file name depending on parameters
       f_out="${CTR_FLW}_${acc_hr}${VRF_FLD}_${CYC_DT}_F${pdd_hr}"
@@ -389,8 +399,8 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${ANL_MAX}; anl_hr += ${ANL_INC} )); do
       mem_lst="ens_list_${CTR_FLW}_${acc_hr}${VRF_FLD}_${CYC_DT}_F${pdd_hr}"
       mem_lst+="_ens-${ens_min}-${ens_max}_prd.txt"
 
-      cmd="rm -f ${WRK_DIR}/${mem_lst}"
-      printf "${cmd}\n"; eval "${cmd}"
+      cmd="rm -f ${wrk_dir}/${mem_lst}"
+      printf "${cmd}\n"; ${cmd}
 
       for mem_id in ${mem_ids[@]}; do
         in_path=${IN_DIR}/${mem_id}/${IN_DT_SUBDIR}
@@ -398,21 +408,21 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${ANL_MAX}; anl_hr += ${ANL_INC} )); do
          if [ -r ${f_in} ]; then
            if [ ${mem_id} != ${ctr_id} ]; then
              # generate list of ensemble members used on the fly
-             printf "/wrk_dir/${mem_id} " >> ${WRK_DIR}/${mem_lst}
+             printf "/wrk_dir/${mem_id} " >> ${wrk_dir}/${mem_lst}
            fi
            # copy the ensemble file to the work directory
-           cmd="cp -L ${f_in} ${WRK_DIR}/${mem_id}"
-           printf "${cmd}\n"; eval "${cmd}"
+           cmd="cp -L ${f_in} ${wrk_dir}/${mem_id}"
+           printf "${cmd}\n"; ${cmd}
          else
            msg="WARNING: ensemble member\n ${f_in}\n does not exist or is not"
            msg+=" readable.\n"
            printf "${msg}"
            if [[ ${FULL_ENS} =~ ${TRUE} ]]; then
-             error=1
+             check=1
            fi
          fi
       done
-      if [ ${error} = 1 ]; then
+      if [ ${check} = 1 ]; then
         msg="run_GenEnsProd is exiting with errors due to missing ensemble"
         msg+=" members, see above messages to diagnose or run with"
         msg+=" FULL_ENS=FALSE.\n"
@@ -428,35 +438,42 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${ANL_MAX}; anl_hr += ${ANL_INC} )); do
           fld=${VRF_FLD}
           printf "Computing verification field ${fld}.\n"
         fi
-        if [ ! -r ${WRK_DIR}/GenEnsProdConfig${acc_hr} ]; then
+        if [ ! -r ${wrk_dir}/GenEnsProdConfig${acc_hr} ]; then
           cat ${SHARED}/GenEnsProdConfigTemplate \
             | sed "s/CTR_FLW/model = \"${CTR_FLW}\"/" \
             | sed "s/VRF_FLD/name       = \"${fld}\"/" \
             | sed "s/CAT_THR/cat_thresh = ${CAT_THR}/" \
             | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
             | sed "s/MET_VER/version           = \"V${MET_VER}\"/" \
-            > ${WRK_DIR}/GenEnsProdConfig${acc_hr}
+            > ${wrk_dir}/GenEnsProdConfig${acc_hr}
         fi
 
         # Run gen_ens_prod
         cmd="${met} gen_ens_prod -v 10 \
-        -ens `cat ${WRK_DIR}/${mem_lst}` \
+        -ens `cat ${wrk_dir}/${mem_lst}` \
         -out /wrk_dir/${f_out} \
         -config /wrk_dir/GenEnsProdConfig${acc_hr} \
         ${ctr_mem}"
-        printf "${cmd}\n"
-        ${cmd}
+        printf "${cmd}\n"; ${cmd}
+        error="$?"
+        cmd="rm -f ${wrk_dir}/${ENS_PRFX}*"
+        printf "${cmd}\n"; ${cmd}
+        if [ ${error} -ne 0 ]; then
+          printf "ERROR: gen_ens_prod exited with code ${error}.\n"
+          check=1
+        fi
       fi
     fi
-    for mem_id in ${mem_ids[@]}; do
-      cmd="rm -f ${WRK_DIR}/${mem_id}"
-      printf "${cmd}\n"; eval "${cmd}"
-    done
   done 
 done
+if [ ${check} = 1 ]; then
+  printf "ERROR: run_GenEnsProd failed on one or more analyses.\n"
+  printf "Check above error messages to diagnose issues.\n"
+  exit 1
+fi
 
 msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "
-msg+="outputs at WRK_DIR:\n ${WRK_DIR}\n"
+msg+="outputs at:\n ${wrk_dir}\n"
 printf "${msg}"
 
 #################################################################################

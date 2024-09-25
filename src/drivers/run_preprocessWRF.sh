@@ -54,7 +54,7 @@ if [ ! -x ${CNST} ]; then
 else
   # Read constants into the current shell
   cmd=". ${CNST}"
-  printf "${cmd}\n"; eval "${cmd}"
+  printf "${cmd}\n"; ${cmd}
 fi
 
 # control flow to be processed
@@ -257,7 +257,7 @@ if [ -z ${WRK_DIR} ]; then
   printf "ERROR: work directory \${WRK_DIR} is not defined.\n"
 else
   cmd="mkdir -p ${WRK_DIR}"
-  printf "${cmd}\n"; eval "${cmd}"
+  printf "${cmd}\n"; ${cmd}
 fi
 
 if [[ ! -d ${WRK_DIR} || ! -w ${WRK_DIR} ]]; then
@@ -280,11 +280,11 @@ met_tools_py+="${MET_TOOLS_PY} python"
 
 # clean work directory from previous wrfcf files
 cmd="rm -f ${WRK_DIR}/wrfcf*"
-printf "${cmd}\n"; eval "${cmd}"
+printf "${cmd}\n"; ${cmd}
 
 # clean work directory from previous accumulation files
 cmd="rm -f ${WRK_DIR}/${CTR_FLW}_*"
-printf "${cmd}\n"; eval "${cmd}"
+printf "${cmd}\n"; ${cmd}
 
 for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
   # define valid times for wrfcf precip evenly spaced
@@ -305,7 +305,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
 
     cmd="${met_tools_py} /utlty/wrfout_to_cf.py"
     cmd+=" '/in_dir/${f_in}' '/wrk_dir/${f_out}' '${rgrd}'"
-    printf "${cmd}\n"; eval "${cmd}"
+    printf "${cmd}\n"; ${cmd}
 
   else
     msg="Input file\n ${f_in}\n is not readable or "
@@ -336,7 +336,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
         /wrk_dir/${wrf_acc} \
         -field 'name=\"precip\"; level=\"(0,*,*)\";'\
         -name \"QPF_${acc_hr}hr\" "
-        printf "${cmd}\n"; eval "${cmd}"
+        printf "${cmd}\n"; ${cmd}
       fi
     done
   fi

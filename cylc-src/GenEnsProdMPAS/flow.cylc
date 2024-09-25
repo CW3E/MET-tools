@@ -8,18 +8,33 @@
 {# Configuration name including tunable parameters #}
 {% set CTR_FLWS = 'MPAS_240-U', 'MPAS_240-U_LwrBnd' %}
 
-{# Mesh information file names, must be in 1-1 correspondence with control flow names #}
-{# if static information comes from separate stream #}
-{% set MSH_NMES = 'MPAS_240-U.static.nc', 'MPAS_240-U_LwrBnd.static.nc' %}
+{# Neighborhood widths for neighborhood methods, references model domains #}
+{# with 1-1 correspondence looping CTR_FLWS $}
+{# NOTE: this is impacted by choice of convert_mpas intermediate grid #}
+{% set NBRHD_WDTHS = 3, 3 %}
 
-{# MPAS output file prefix to source model outputs from, e.g., hist / diag #}
-{% set MPAS_PRFX = 'history' %}
-
-{# Define the ensemble size #}
-{% set ENS_MAX = 6 %}
+{# Define the min / max ensemble indices #}
+{% set ENS_MIN = '00' %}
+{% set ENS_MAX = '05' %}
 
 {# Define ensemble index prefix #}
-{% set ENS_PFX = 'ens_' %}
+{% set ENS_PRFX = 'ens_' %}
+
+{# Define the number of digits to pad ensemble indices #}
+{% set ENS_PAD = 2 %}
+
+{# Define control member index, not to be used in ensemble spread calculation, #}
+{# defined as empty string if not necessary #}
+{% set CTR_MEM = '00' %}
+
+{# Require all ensemble members, no missing files, TRUE or FALSE #}
+{% set FULL_ENS = 'TRUE' %}
+
+{# Define the verification field #}
+{% set VRF_FLD = 'QPF' %}
+
+{# Specify thresholds levels for verification (NEEDS INTERNAL QUOTES "")#}
+{% set CAT_THR='"[ >0.0, >=10.0, >=25.0, >=50.0, >= 100.0 ]"' %}
 
 {################################################################################}
 {# CYCLING SETTINGS #}
@@ -34,7 +49,7 @@
 {% set CYC_INC = 'PT24H' %}
 
 {# Define min / max forecast hours for cf outputs to be generated #}
-{% set ANL_MIN = '0' %}
+{% set ANL_MIN = '24' %}
 {% set ANL_MAX = '120' %}
 
 {# Define the increment at which to generate cf outputs (HH) #}
@@ -43,9 +58,6 @@
 {# OPTIONAL ARGUMENT to set a verification termination date -- preprocessing will #}
 {# stop automatically at this valid date, comment out this expression if not needed #}
 {% set EXP_VRF = '2022-12-28T00' %}
-
-{# Regrid to generic lat-lon for MET if native grid errors (TRUE or FALSE) #}
-{% set RGRD = 'TRUE' %}
 
 {# Compute precipitation accumulations from cf files, TRUE or FALSE #}
 {% set CMP_ACC = 'TRUE' %}
@@ -57,22 +69,17 @@
 {# Defines the increment between min / max to compute accumulation intervals #}
 {% set ACC_INC = '24' %}
 
-{# Defines the offset to the initialization time in HH #}
-{# Use to correct for the offset in start time / forecast hour due to a restart run #}
-{# Needed for ingesting NetCDF meta-data in MET correctly #}
-{% set INIT_OFFSET = '0' %}
-
-{# Define the directory to find wrf outputs relative to ISO cycle directories #}
-{% set IN_DT_SUBDIR = 'mpas_model' %}
-
 {################################################################################}
 {# JOB SETTINGS #}
 {################################################################################}
-{# ungrib mem argument #}
-{% set PRE_MEM = '20000M' %}
+{# Job mem argument #}
+{% set ENS_PROC = 124 %}
+
+{# Job mem argument #}
+{% set ENS_MEM = '249208M' %}
 
 {# Wallclock limit for ungrib jobs #}
-{% set PRE_WC = 'PT30M' %}
+{% set ENS_WC = 'PT1H' %}
 
 {################################################################################}
 {# CYLC SETTINGS #}
@@ -87,68 +94,67 @@
         {{CYC_INC}} = """
         {# Loop model control flows #}
         {% for ctr_flw in CTR_FLWS %}
-            {# loop ensemble members to process #}
-            {% for mem in range(0,ENS_MAX) %}
-                {% set idx = mem | pad(2, '0') %}
-                preprocess{{ctr_flw}}_ens_{{idx}}
-            {% endfor %}
+          GenEnsProd_{{ctr_flw}}
         {% endfor %}
         """
 
 [runtime]
     [[root]]
         [[[environment]]]
+            OMP_NUM_THREADS = {{ENS_PROC}}
             CNST = {{environ['DRIVERS']}}/CONSTANTS.sh
             CYC_DT = $(isodatetime ${CYLC_TASK_CYCLE_POINT} --f '%Y%m%d%H')
-            STRT_DT = $CYC_DT
             ANL_MIN = {{ANL_MIN}}
             ANL_MAX = {{ANL_MAX}}
             ANL_INC = {{ANL_INC}}
+            {# EXP_VRF should be assigned as a blank string below if not used #}
             EXP_VRF = $(isodatetime {{EXP_VRF}} --f '%Y%m%d%H')
-            RGRD = {{RGRD}}
             CMP_ACC = {{CMP_ACC}}
             ACC_MIN = {{ACC_MIN}}
-            ACC_MAX = {{ACC_MIN}}
-            ACC_INC = {{ACC_MIN}}
+            ACC_MAX = {{ACC_MAX}}
+            ACC_INC = {{ACC_INC}}
+            ENS_MIN = {{ENS_MIN}}
+            ENS_MAX = {{ENS_MAX}}
+            ENS_PRFX = {{ENS_PRFX}}
+            ENS_PAD = {{ENS_PAD}}
+            CTR_MEM = {{CTR_MEM}}
+            VRF_FLD = {{VRF_FLD}}
+            CAT_THR = {{CAT_THR}}
             MET = {{environ['MET']}}
-            MET_TOOLS_PY = {{environ['MET_TOOLS_PY']}}
             UTLTY = {{environ['UTLTY']}}
-            MPAS_PRFX = {{MPAS_PRFX}}
 
     {# Loop model control flows #}
     {% for ctr_flw in CTR_FLWS %}
-        {# inherit the mesh name to process from 1-1 correspondence #}
-        {% set msh_nme = MSH_NMES[loop.index0] %}
-        {# loop ensemble members to process #}
-        {% for mem in range(0,ENS_MAX) %}
-            {% set idx = mem | pad(2, '0') %}
-            [[preprocess{{ctr_flw}}_ens_{{idx}}]]
-               platform = {{environ['SCHED']}}
-               execution time limit = {{PRE_WC}}
-               script = {{environ['DRIVERS']}}/run_preprocessMPAS.sh
-               execution retry delays = 3*PT5M
-               [[[environment]]]
-                   CTR_FLW = {{ctr_flw}}
-                   IN_DIR = {{environ['SIM_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/$CYC_DT/{{IN_DT_SUBDIR}}/{{ENS_PFX}}{{idx}}
-                   WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/$CYC_DT/Preprocess/{{ENS_PFX}}{{idx}}
-                   IN_MSH_DIR = {{environ['MSH_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/static
-                   IN_MSH_F = {{msh_nme}}
-               [[[directives]]]
-                   {% if environ['SCHED'] == 'slurm' %}
-                       {% if environ['SYS_TYPE' ] == 'penguin' %}
-                           --partition = general
-                           --qos = {{environ['PART_SRL']}}
-                           --nodes = 1
-                           --ntasks-per-node = 1
-                       {% else %}
-                           --partition = {{environ['PART_SRL']}}
-                           --nodes = 1
-                           --ntasks-per-node = 1
-                           --mem = {{PRE_MEM}}
-                       {% endif %}
-                   {% elif environ['SCHED'] == 'pbs' %}
-                       -q = {{environ['PART_SRL']}}
-                       -l select=1:mpiprocs=1:ncpus=1
-                   {% endif %}
-        {% endfor %}
+        {# Neighborhood width is in 1-1 correspondence with model grd #}
+        {% set nbrhd_wdth = NBRHD_WDTHS[loop.index0] %}
+        [[GenEnsProd_{{ctr_flw}}]]
+            platform = {{environ['SCHED']}}
+            execution time limit = {{ENS_WC}}
+            script = {{environ['DRIVERS']}}/run_GenEnsProd.sh
+            execution retry delays = 3*PT5M
+            [[[environment]]]
+                CTR_FLW = {{ctr_flw}}
+                NBRHD_WDTH = {{nbrhd_wdth}}
+                IN_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT
+                {# MPAS workflow outpus have no directory nesting structure #}
+                IN_DT_SUBDIR = ""
+                WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GenEnsProd/$CYC_DT
+                OUT_DT_SUBDIR = ""
+            [[[directives]]]
+                {% if environ['SCHED'] == 'slurm' %}
+                    {% if environ['SYS_TYPE' ] == 'penguin' %}
+                        --partition = general
+                        --qos = {{environ['PART_DBG']}}
+                        --nodes = 1
+                        --ntasks-per-node = {{ENS_PROC}}
+                    {% else %}
+                        --partition = {{environ['PART_DBG']}}
+                        --nodes = 1
+                        --ntasks-per-node = {{ENS_PROC}}
+                        --mem = {{ENS_MEM}}
+                    {% endif %}
+                {% elif environ['SCHED'] == 'pbs' %}
+                    -q = {{environ['PART_DBG']}}
+                    -l select=1:mpiprocs={{ENS_PROC}}:ncpus=1
+                {% endif %}
     {% endfor %}

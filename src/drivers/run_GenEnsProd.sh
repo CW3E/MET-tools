@@ -352,8 +352,6 @@ if [[ ! -d ${wrk_dir} || ! -w ${wrk_dir} ]]; then
   exit 1
 fi
 
-# Define the subdirectory to source data from relative to ISO date
-
 #################################################################################
 # Process data
 #################################################################################

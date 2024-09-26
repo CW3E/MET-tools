@@ -11,8 +11,8 @@
 {# Max number of sub-domain to be processed, 1-1 correspondence with CTR_FLWS #}
 {% set MAX_DOMS = 2, 1 %}
 
-{# Define the ensemble size #}
-{% set ENS_MAX = 6 %}
+{# Define the ensemble size, index starts at zero #}
+{% set ENS_SIZE = 6 %}
 
 {# Define ensemble index prefix #}
 {% set ENS_PRFX = 'ens_' %}
@@ -40,7 +40,7 @@
 {% set ANL_INC = 24 %}
 
 {# OPTIONAL ARGUMENT to set a verification termination date -- preprocessing will #}
-{# stop automatically at this valid date, comment out this expression if not needed #}
+{# stop automatically at this valid date, define as blank string if unused #}
 {% set EXP_VRF = '2022-12-28T00' %}
 
 {# Regrid to generic lat-lon for MET if native grid errors (TRUE or FALSE) #}
@@ -70,7 +70,7 @@
 {# Job mem argument #}
 {% set PRE_MEM = '20000M' %}
 
-{# Wallclock limit for ungrib jobs #}
+{# Wallclock limit for preprocessing #}
 {% set PRE_WC = 'PT30M' %}
 
 {################################################################################}
@@ -89,13 +89,13 @@
             {# inherit the max domain to process from 1-1 correspondence #}
             {% set max_dom = MAX_DOMS[loop.index0] %}
             {# loop ensemble members to process #}
-            {% for mem in range(0,ENS_MAX) %}
+            {% for mem in range(0,ENS_SIZE) %}
                 {% set idx = mem | pad(ENS_PAD, '0') %}
                 {# loop sub-domains to process #}
                 {% for dom in range(0,max_dom) %}
                     {% set grd = loop.index | pad(2, '0') %}
                     {% set grd = ['d', grd] | join %}
-                    preprocess{{ctr_flw}}_ens_{{idx}}_{{grd}}
+                    preprocess_{{ctr_flw}}_ens_{{idx}}_{{grd}}
                 {% endfor %}
             {% endfor %}
         {% endfor %}
@@ -109,8 +109,11 @@
             ANL_MIN = {{ANL_MIN}}
             ANL_MAX = {{ANL_MAX}}
             ANL_INC = {{ANL_INC}}
-            {# EXP_VRF should be assigned as a blank string below if not used #}
-            EXP_VRF = $(isodatetime {{EXP_VRF}} --f '%Y%m%d%H')
+            {% if EXP_VRF == '' %}
+                EXP_VRF = {{EXP_VRF}}
+            {% else %}
+                EXP_VRF = $(isodatetime {{EXP_VRF}} --f '%Y%m%d%H')
+            {% endif %}
             RGRD = {{RGRD}}
             CMP_ACC = {{CMP_ACC}}
             ACC_MIN = {{ACC_MIN}}
@@ -125,7 +128,7 @@
         {# inherit the max domain to process from 1-1 correspondence #}
         {% set max_dom = MAX_DOMS[loop.index0] %}
         {# loop ensemble members to process #}
-        {% for mem in range(0,ENS_MAX) %}
+        {% for mem in range(0,ENS_SIZE) %}
             {% set idx = mem | pad(ENS_PAD, '0') %}
             {# loop sub-domains to process #}
             {% for dom in range(0,max_dom) %}

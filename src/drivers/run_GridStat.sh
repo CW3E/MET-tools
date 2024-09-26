@@ -46,7 +46,8 @@
 #################################################################################
 
 if [ ! -x ${CNST} ]; then
-  printf "ERROR: constants file\n ${CNST}\n does not exist or is not executable.\n"
+  msg="ERROR: constants file\n ${CNST}\n does not exist or is not executable.\n"
+  printf "${msg}"
   exit 1
 else
   # Read constants into the current shell
@@ -87,6 +88,7 @@ elif [ ${ANL_MAX} -lt ${ANL_MIN} ]; then
   msg="ERROR: max forecast hour ${ANL_MAX} must be greater than or equal to"
   msg+="min forecast hour ${ANL_MIN}.\n"
   printf "${msg}"
+  exit 1
 fi
 
 # define the increment at which to process forecast outputs (HH)
@@ -104,9 +106,9 @@ elif [ ! $(( (${ANL_MAX} - ${ANL_MIN}) % ${ANL_INC} )) = 0 ]; then
 fi
 
 if [ -z ${EXP_VRF} ]; then
+  anl_max="${ANL_MAX}"
   msg="No stop date is set - GenEnsProd runs until max forecast"
   msg+=" hour ${ANL_MAX}.\n"
-  anl_max="${ANL_MAX}"
   printf "${msg}"
 elif [[ ! ${EXP_VRF} =~ ${ISO_RE} ]]; then
   msg="ERROR: stop date \${EXP_VRF}\n ${EXP_VRF}\n"

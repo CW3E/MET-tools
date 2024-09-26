@@ -17,14 +17,14 @@
 {% set NBRHD_WDTHS = 3, 3 %}
 
 {# Define the min / max ensemble indices #}
-{% set ENS_MIN = '00' %}
-{% set ENS_MAX = '05' %}
-
-{# Define ensemble index prefix #}
-{% set ENS_PRFX = 'ens_' %}
+{% set ENS_MIN = 0 %}
+{% set ENS_MAX = 5 %}
 
 {# Define the number of digits to pad ensemble indices #}
 {% set ENS_PAD = 2 %}
+
+{# Define ensemble index prefix #}
+{% set ENS_PRFX = 'ens_' %}
 
 {# Define control member index, not to be used in ensemble spread calculation, #}
 {# defined as empty string if not necessary #}
@@ -37,7 +37,7 @@
 {% set VRF_FLD = 'QPF' %}
 
 {# Specify thresholds levels for verification (NEEDS INTERNAL QUOTES "")#}
-{% set CAT_THR='"[ >0.0, >=10.0, >=25.0, >=50.0, >= 100.0 ]"' %}
+{% set CAT_THR='"[ >0.0, >=10.0, >=25.0, >=50.0, >=100.0 ]"' %}
 
 {################################################################################}
 {# CYCLING SETTINGS #}
@@ -59,7 +59,7 @@
 {% set ANL_INC = 24 %}
 
 {# OPTIONAL ARGUMENT to set a verification termination date -- preprocessing will #}
-{# stop automatically at this valid date, comment out this expression if not needed #}
+{# stop automatically at this valid date, define as blank string if unused #}
 {% set EXP_VRF = '2022-12-28T00' %}
 
 {# Compute precipitation accumulations from cf files, TRUE or FALSE #}
@@ -117,8 +117,11 @@
             ANL_MIN = {{ANL_MIN}}
             ANL_MAX = {{ANL_MAX}}
             ANL_INC = {{ANL_INC}}
-            {# EXP_VRF should be assigned as a blank string below if not used #}
-            EXP_VRF = $(isodatetime {{EXP_VRF}} --f '%Y%m%d%H')
+            {% if EXP_VRF == '' %}
+                EXP_VRF = {{EXP_VRF}}
+            {% else %}
+                EXP_VRF = $(isodatetime {{EXP_VRF}} --f '%Y%m%d%H')
+            {% endif %}
             CMP_ACC = {{CMP_ACC}}
             ACC_MIN = {{ACC_MIN}}
             ACC_MAX = {{ACC_MAX}}

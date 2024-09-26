@@ -17,24 +17,17 @@
 {% set INT_WDTHS = 3, 3 %}
 
 {# Define the min / max ensemble indices #}
-{% set ENS_MIN = '00' %}
-{% set ENS_MAX = '05' %}
-
-{# Define ensemble index prefix #}
-{% set ENS_PRFX = 'ens_' %}
+{% set ENS_MIN = 0 %}
+{% set ENS_MAX = 5 %}
 
 {# Define the number of digits to pad ensemble indices #}
 {% set ENS_PAD = 2 %}
 
-{# Define control member index, not to be used in ensemble spread calculation, #}
-{# defined as empty string if not necessary #}
-{% set CTR_MEM = '00' %}
+{# If computing ensemble mean verification #}
+{% set IF_ENS_MEAN = 'TRUE' %}
 
-# If computing ensemble mean verification
-export IF_ENS_MEAN=TRUE
-
-# If computing individual ensemble member verification
-export IF_ENS_MEMS=TRUE
+{# If computing individual ensemble member verification #}
+{% set IF_ENS_MEMS = 'TRUE' %}
 
 {################################################################################}
 {# GRIDSTAT SETTINGS #}
@@ -43,22 +36,19 @@ export IF_ENS_MEMS=TRUE
 {% set VRF_FLD = 'QPF' %}
 
 {# Specify thresholds levels for verification (NEEDS INTERNAL QUOTES "")#}
-{% set CAT_THR='"[ >0.0, >=10.0, >=25.0, >=50.0, >= 100.0 ]"' %}
+{% set CAT_THR='"[ >0.0, >=10.0, >=25.0, >=50.0, >=100.0 ]"' %}
 
-# Define interpolation neighborhood size in 1-1 correspondence with model grids
-export NBRHD_WDTHS=( 
-                  "3"
-                  "3"
-                 )
+{# Neighborhood size for stats computation on observation grid #}
+{% set NBRHD_WDTH = 9 %}
 
-# Verification region group name
-export VRF_RGNS=CA_Climate_Zone
+{# Verification region group name - used for mask list file name #}
+{% set VRF_RGNS = 'CA_Climate_Zone' %}
 
-# Path to file with list of landmasks for verification regions
-export MSK_LST=${MSK_ROOT}/mask-lists/${VRF_RGNS}_MaskList.txt
+{# Number of bootstrap resamplings, set 0 for off #}
+{% set BTSTRP = 0 %}
 
-# Path to verification regions mask files
-export MSK_GRDS=${MSK_ROOT}/${VRF_RGNS}_Masks
+{# Rank correlation computation flag, TRUE or FALSE #}
+{% set RNK_CRR = 'FALSE' %}
 
 {################################################################################}
 {# CYCLING SETTINGS #}
@@ -80,7 +70,7 @@ export MSK_GRDS=${MSK_ROOT}/${VRF_RGNS}_Masks
 {% set ANL_INC = 24 %}
 
 {# OPTIONAL ARGUMENT to set a verification termination date -- preprocessing will #}
-{# stop automatically at this valid date, comment out this expression if not needed #}
+{# stop automatically at this valid date, define as blank string if unused #}
 {% set EXP_VRF = '2022-12-28T00' %}
 
 {# Compute precipitation accumulations from cf files, TRUE or FALSE #}
@@ -93,25 +83,17 @@ export MSK_GRDS=${MSK_ROOT}/${VRF_RGNS}_Masks
 {# Defines the increment between min / max to compute accumulation intervals #}
 {% set ACC_INC = 24 %}
 
-# Neighborhood width for neighborhood methods (references StageIV grid)
-export NBRHD_WDTH=9
-
-# Number of bootstrap resamplings, set 0 for off
-export BTSTRP=0
-
-# Rank correlation computation flag, TRUE or FALSE
-export RNK_CRR=FALSE
 {################################################################################}
 {# JOB SETTINGS #}
 {################################################################################}
 {# Job mem argument #}
-{% set ENS_PROC = 124 %}
+{% set GRD_PROC = 124 %}
 
 {# Job mem argument #}
-{% set ENS_MEM = '249208M' %}
+{% set GRD_MEM = '249208M' %}
 
 {# Wallclock limit for ungrib jobs #}
-{% set ENS_WC = 'PT1H' %}
+{% set GRD_WC = 'PT1H' %}
 
 {################################################################################}
 {# CYLC SETTINGS #}
@@ -132,7 +114,7 @@ export RNK_CRR=FALSE
             {% for dom in range(0,max_dom) %}
                 {% set grd = loop.index | pad(2, '0') %}
                 {% set grd = ['d', grd] | join %}
-                GenEnsProd_{{ctr_flw}}_{{grd}}
+                GridStat_{{ctr_flw}}_{{grd}}
             {% endfor %}
         {% endfor %}
         """
@@ -140,14 +122,17 @@ export RNK_CRR=FALSE
 [runtime]
     [[root]]
         [[[environment]]]
-            OMP_NUM_THREADS = {{ENS_PROC}}
+            OMP_NUM_THREADS = {{GRD_PROC}}
             CNST = {{environ['DRIVERS']}}/CONSTANTS.sh
             CYC_DT = $(isodatetime ${CYLC_TASK_CYCLE_POINT} --f '%Y%m%d%H')
             ANL_MIN = {{ANL_MIN}}
             ANL_MAX = {{ANL_MAX}}
             ANL_INC = {{ANL_INC}}
-            {# EXP_VRF should be assigned as a blank string below if not used #}
-            EXP_VRF = $(isodatetime {{EXP_VRF}} --f '%Y%m%d%H')
+            {% if EXP_VRF == '' %}
+                EXP_VRF = {{EXP_VRF}}
+            {% else %}
+                EXP_VRF = $(isodatetime {{EXP_VRF}} --f '%Y%m%d%H')
+            {% endif %}
             CMP_ACC = {{CMP_ACC}}
             ACC_MIN = {{ACC_MIN}}
             ACC_MAX = {{ACC_MAX}}
@@ -161,6 +146,12 @@ export RNK_CRR=FALSE
             CAT_THR = {{CAT_THR}}
             MET = {{environ['MET']}}
             UTLTY = {{environ['UTLTY']}}
+            # Path to file with list of landmasks for verification regions
+            {% set MSK_LST = environ['MSK_ROOT']/mask-lists/${VRF_RGNS}_MaskList.txt %}
+            
+            # Path to verification regions mask files
+            {% set MSK_GRDS = ${MSK_ROOT}/${VRF_RGNS}_Masks %}
+
 
     {# Loop model control flows #}
     {% for ctr_flw in CTR_FLWS %}
@@ -174,7 +165,7 @@ export RNK_CRR=FALSE
             {% set nbrhd_wdth = NBRHD_WDTHS[loop.index0] %}
             [[GenEnsProd_{{ctr_flw}}_{{grd}}]]
                 platform = {{environ['SCHED']}}
-                execution time limit = {{ENS_WC}}
+                execution time limit = {{GRD_WC}}
                 script = {{environ['DRIVERS']}}/run_GenEnsProd.sh
                 execution retry delays = 3*PT5M
                 [[[environment]]]
@@ -191,16 +182,16 @@ export RNK_CRR=FALSE
                             --partition = general
                             --qos = {{environ['PART_DBG']}}
                             --nodes = 1
-                            --ntasks-per-node = {{ENS_PROC}}
+                            --ntasks-per-node = {{GRD_PROC}}
                         {% else %}
                             --partition = {{environ['PART_DBG']}}
                             --nodes = 1
-                            --ntasks-per-node = {{ENS_PROC}}
-                            --mem = {{ENS_MEM}}
+                            --ntasks-per-node = {{GRD_PROC}}
+                            --mem = {{GRD_MEM}}
                         {% endif %}
                     {% elif environ['SCHED'] == 'pbs' %}
                         -q = {{environ['PART_DBG']}}
-                        -l select=1:mpiprocs={{ENS_PROC}}:ncpus=1
+                        -l select=1:mpiprocs={{GRD_PROC}}:ncpus=1
                     {% endif %}
         {% endfor %}
     {% endfor %}

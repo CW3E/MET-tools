@@ -15,8 +15,8 @@
 {# MPAS output file prefix to source model outputs from, e.g., hist / diag #}
 {% set MPAS_PRFX = 'history' %}
 
-{# Define the ensemble size #}
-{% set ENS_MAX = 6 %}
+{# Define the ensemble size, index starts at zero #}
+{% set ENS_SIZE = 6 %}
 
 {# Define ensemble index prefix #}
 {% set ENS_PRFX = 'ens_' %}
@@ -44,7 +44,7 @@
 {% set ANL_INC = 24 %}
 
 {# OPTIONAL ARGUMENT to set a verification termination date -- preprocessing will #}
-{# stop automatically at this valid date, comment out this expression if not needed #}
+{# stop automatically at this valid date, define as blank string if unused #}
 {% set EXP_VRF = '2022-12-28T00' %}
 
 {# Compute precipitation accumulations from cf files, TRUE or FALSE #}
@@ -83,9 +83,9 @@
         {# Loop model control flows #}
         {% for ctr_flw in CTR_FLWS %}
             {# loop ensemble members to process #}
-            {% for mem in range(0,ENS_MAX) %}
+            {% for mem in range(0,ENS_SIZE) %}
                 {% set idx = mem | pad(ENS_PAD, '0') %}
-                preprocess{{ctr_flw}}_ens_{{idx}}
+                preprocess_{{ctr_flw}}_ens_{{idx}}
             {% endfor %}
         {% endfor %}
         """
@@ -98,8 +98,11 @@
             ANL_MIN = {{ANL_MIN}}
             ANL_MAX = {{ANL_MAX}}
             ANL_INC = {{ANL_INC}}
-            {# EXP_VRF should be assigned as a blank string below if not used #}
-            EXP_VRF = $(isodatetime {{EXP_VRF}} --f '%Y%m%d%H')
+            {% if EXP_VRF == '' %}
+                EXP_VRF = {{EXP_VRF}}
+            {% else %}
+                EXP_VRF = $(isodatetime {{EXP_VRF}} --f '%Y%m%d%H')
+            {% endif %}
             CMP_ACC = {{CMP_ACC}}
             ACC_MIN = {{ACC_MIN}}
             ACC_MAX = {{ACC_MAX}}
@@ -114,7 +117,7 @@
         {# inherit the mesh name to process from 1-1 correspondence #}
         {% set msh_nme = MSH_NMES[loop.index0] %}
         {# loop ensemble members to process #}
-        {% for mem in range(0,ENS_MAX) %}
+        {% for mem in range(0,ENS_SIZE) %}
             {% set idx = mem | pad(ENS_PAD, '0') %}
             [[preprocess{{ctr_flw}}_ens_{{idx}}]]
                 platform = {{environ['SCHED']}}

@@ -64,7 +64,7 @@
 {% set IN_DT_SUBDIR = 'mpas_model' %}
 
 {# Preprocessing fails on missing data TRUE / FALSE #}
-{% set FULL_DATA = 'FALSE' %}
+{% set FULL_DATA = 'TRUE' %}
 
 {################################################################################}
 {# JOB SETTINGS #}

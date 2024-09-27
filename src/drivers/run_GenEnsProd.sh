@@ -51,7 +51,7 @@ if [ ! -x ${CNST} ]; then
 else
   # Read constants into the current shell
   cmd=". ${CNST}"
-  printf "${cmd}\n"; ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 # control flow to be processed
@@ -162,7 +162,7 @@ if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
     # define array of accumulation interval computation hours
     acc_hrs=()
     for (( acc_hr=${ACC_MIN}; acc_hr <= ${ACC_MAX}; acc_hr += ${ACC_INC} )); do
-      # check that the precip accumulations are summable from wrfcf files
+      # check that the precip accumulations are summable from forecasts
       if [ ! $(( ${acc_hr} % ${ANL_INC} )) = 0 ]; then
         msg="ERROR: precip accumulation ${acc_hr} is not a multiple"
         msg+=" of ${ANL_INC}.\n"
@@ -180,7 +180,18 @@ elif [[ ${CMP_ACC} =~ ${FALSE} ]]; then
   printf "run_preprocessWRF does not compute accumulations.\n"
 else
   msg="ERROR: \${CMP_ACC} must be set to 'TRUE' or 'FALSE' to decide if "
-  msg+="computing accumulations from wrfcf files."
+  msg+="computing ensemble accumulation fields."
+  printf "${msg}"
+  exit 1
+fi
+
+if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
+  printf "Preprocessing breaks on missing data.\n"
+elif [[ ${FULL_DATA} =~ ${FALSE} ]]; then
+  printf "Preprocessing allows missing data.\n"
+else
+  msg="ERROR: \${FULL_DATA} must be set to 'TRUE' or 'FALSE' to decide if "
+  msg+="missing input data is allowed."
   printf "${msg}"
   exit 1
 fi
@@ -214,13 +225,6 @@ else
   ens_max=`printf $(( 10#${ENS_MAX} ))`
 fi
 
-if [ -z ${ENS_PRFX+x} ]; then
-  msg="ERROR: ensemble index prefix \${ENS_PRFX} is undeclared, set to empty"
-  msg+=" string if not used.\n"
-  printf "${msg}"
-  exit 1
-fi
-
 if [ -z ${ENS_PAD+x} ]; then
   msg="ERROR: ensemble index padding \${ENS_PAD} is undeclared, set to empty"
   msg+=" string if not used.\n"
@@ -244,7 +248,9 @@ elif [ -z ${CTR_MEM} ]; then
   ctr_mem=""
 elif [[ ${CTR_MEM} =~ ${INT_RE} ]]; then
   ctr_id="${ENS_PRFX}`printf %0${ENS_PAD}d $(( 10#${CTR_MEM} ))`"
-  printf "Ensemble id ${ctr_id} is used as control for ensemble product computation.\n"
+  msg="Ensemble id ${ctr_id} is used as control for ensemble product"
+  msg+=" computation.\n"
+  printf "${msg}"
   ctr_mem="-ctrl /wrk_dir/${ctr_id}"
 else 
   msg="ERROR: \${CTR_MEM}\n ${CTR_MEM}\n should be set to a numerical index"
@@ -342,7 +348,7 @@ else
     wrk_dir="${WRK_DIR}/${OUT_DT_SUBDIR}"
   fi
   cmd="mkdir -p ${wrk_dir}"
-  printf "${cmd}\n"; ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 if [[ ! -d ${wrk_dir} || ! -w ${wrk_dir} ]]; then
@@ -355,23 +361,19 @@ fi
 #################################################################################
 # Process data
 #################################################################################
-
-# prepare the work directory, cleaning old data
-cmd="rm -f ${wrk_dir}/${ENS_PRFX}*"
-printf "${cmd}\n"; ${cmd}
-
-fname="*${CTR_FLW}_*"
-cmd="rm -f ${wrk_dir}/${fname}"
-printf "${cmd}\n"; ${cmd}
-
-fname="GenEnsProdConfig*"
-cmd="rm -f ${wrk_dir}/${fname}"
-printf "${cmd}\n"; ${cmd}
-
 # Define directory privileges for singularity exec
 met="singularity exec -B ${wrk_dir}:/wrk_dir:rw ${MET}"
 
-# loop lead hours for forecast valid time for each initialization time
+# prepare the work directory, cleaning old data
+cmd="cd ${wrk_dir}"
+printf "${cmd}\n"; eval "${cmd}"
+
+cmd="rm -f ${ENS_PRFX}*; rm -f *${CTR_FLW}_*; rm -f GenEnsProdConfig*"
+printf "${cmd}\n"; eval "${cmd}"
+
+# create trigger for handling errors
+error_check=0
+
 for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
   # define valid times for accumulation    
   vld_dt=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${anl_hr} hours"`
@@ -384,10 +386,9 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
   # forecast file name based on forecast initialization, accumulation and lead
   pdd_hr=`printf %03d $(( 10#${anl_hr} ))`
   for acc_hr in ${acc_hrs[@]}; do
+    member_error_check=0
     if [[ ${CMP_ACC} =~ ${TRUE} && ${acc_hr} -le ${anl_hr} ]] ||\
       [[ ${CMP_ACC} =~ ${FALSE} ]]; then
-      # create switch to break loop on if missing files
-      check=0
 
       # define output file name depending on parameters
       f_out="${CTR_FLW}_${acc_hr}${VRF_FLD}_${CYC_DT}_F${pdd_hr}"
@@ -397,12 +398,12 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
       mem_lst="ens_list_${CTR_FLW}_${acc_hr}${VRF_FLD}_${CYC_DT}_F${pdd_hr}"
       mem_lst+="_ens-${ens_min}-${ens_max}_prd.txt"
 
-      cmd="rm -f ${wrk_dir}/${mem_lst}"
-      printf "${cmd}\n"; ${cmd}
+      cmd="rm -f ${mem_lst}"
+      printf "${cmd}\n"; eval "${cmd}"
 
       for mem_id in ${mem_ids[@]}; do
-        in_path=${IN_DIR}/${mem_id}/${IN_DT_SUBDIR}
-        f_in=${in_path}/${CTR_FLW}_${acc_hr}${VRF_FLD}_${CYC_DT}_F${pdd_hr}.nc
+        in_path="${IN_DIR}/${mem_id}/${IN_DT_SUBDIR}"
+        f_in="${in_path}/${CTR_FLW}_${acc_hr}${VRF_FLD}_${CYC_DT}_F${pdd_hr}.nc"
          if [ -r ${f_in} ]; then
            if [ ${mem_id} != ${ctr_id} ]; then
              # generate list of ensemble members used on the fly
@@ -410,22 +411,24 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
            fi
            # copy the ensemble file to the work directory
            cmd="cp -L ${f_in} ${wrk_dir}/${mem_id}"
-           printf "${cmd}\n"; ${cmd}
+           printf "${cmd}\n"; eval "${cmd}"
          else
-           msg="WARNING: ensemble member\n ${f_in}\n does not exist or is not"
-           msg+=" readable.\n"
-           printf "${msg}"
-           if [[ ${FULL_ENS} =~ ${TRUE} ]]; then
-             check=1
+           if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
+             msg="ERROR: ensemble member\n ${f_in}\n does not exist or is not"
+             msg+=" readable.\n"
+             printf "${msg}"
+             member_error_check=1
+             error_check=1
+           else
+             msg="WARNING: ensemble member\n ${f_in}\n does not exist or is not"
+             msg+=" readable. GenEnsProd will be run without this member.\n"
+             printf "${msg}"
            fi
          fi
       done
-      if [ ${check} = 1 ]; then
-        msg="run_GenEnsProd is exiting with errors due to missing ensemble"
-        msg+=" members, see above messages to diagnose or run with"
-        msg+=" FULL_ENS=FALSE.\n"
+      if [ ${member_error_check} = 1 ]; then
+        msg="Skipping GenEnsProd due to above errors.\n"
         printf "${msg}"
-        break
       else
         # update GenEnsProdConfigTemplate archiving file in working directory
         # this remains unchanged on accumulation intervals
@@ -436,14 +439,14 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
           fld=${VRF_FLD}
           printf "Computing verification field ${fld}.\n"
         fi
-        if [ ! -r ${wrk_dir}/GenEnsProdConfig${acc_hr} ]; then
+        if [ ! -r GenEnsProdConfig${acc_hr} ]; then
           cat ${SHARED}/GenEnsProdConfigTemplate \
             | sed "s/CTR_FLW/model = \"${CTR_FLW}\"/" \
             | sed "s/VRF_FLD/name       = \"${fld}\"/" \
             | sed "s/CAT_THR/cat_thresh = ${CAT_THR}/" \
             | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
             | sed "s/MET_VER/version           = \"V${MET_VER}\"/" \
-            > ${wrk_dir}/GenEnsProdConfig${acc_hr}
+            > GenEnsProdConfig${acc_hr}
         fi
 
         # Run gen_ens_prod
@@ -451,20 +454,19 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
         -ens `cat ${wrk_dir}/${mem_lst}` \
         -out /wrk_dir/${f_out} \
         -config /wrk_dir/GenEnsProdConfig${acc_hr} \
-        ${ctr_mem}"
-        printf "${cmd}\n"; ${cmd}
-        error="$?"
-        cmd="rm -f ${wrk_dir}/${ENS_PRFX}*"
-        printf "${cmd}\n"; ${cmd}
+        ${ctr_mem}; error=\$?"
+        printf "${cmd}\n"; eval "${cmd}"
+        cmd="rm -f ${ENS_PRFX}*"
+        printf "${cmd}\n"; eval "${cmd}"
         if [ ${error} -ne 0 ]; then
           printf "ERROR: gen_ens_prod exited with code ${error}.\n"
-          check=1
+          error_check=1
         fi
       fi
     fi
   done 
 done
-if [ ${check} = 1 ]; then
+if [ ${error_check} = 1 ]; then
   printf "ERROR: run_GenEnsProd failed on one or more analyses.\n"
   printf "Check above error messages to diagnose issues.\n"
   exit 1

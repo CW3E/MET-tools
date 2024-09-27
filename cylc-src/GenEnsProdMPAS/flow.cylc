@@ -28,7 +28,7 @@
 {% set CTR_MEM = '00' %}
 
 {# Require all ensemble members, no missing files, TRUE or FALSE #}
-{% set FULL_ENS = 'TRUE' %}
+{% set FULL_DATA = 'TRUE' %}
 
 {# Define the verification field #}
 {% set VRF_FLD = 'QPF' %}
@@ -116,6 +116,7 @@
             ACC_MIN = {{ACC_MIN}}
             ACC_MAX = {{ACC_MAX}}
             ACC_INC = {{ACC_INC}}
+            FULL_DATA = {{FULL_DATA}}
             ENS_MIN = {{ENS_MIN}}
             ENS_MAX = {{ENS_MAX}}
             ENS_PRFX = {{ENS_PRFX}}

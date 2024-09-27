@@ -309,16 +309,12 @@ met_tools_py="singularity exec -B "
 met_tools_py+="${WRK_DIR}:/wrk_dir:rw,${IN_DIR}:/in_dir:ro,${UTLTY}:/utlty:ro "
 met_tools_py+="${MET_TOOLS_PY} python"
 
-# clean work directory from previous mpas regridded lat lon files
-cmd="rm -f ${WRK_DIR}/*.latlon.*"
+# NOTE: convert_mpas always writes outputs to working directory
+cmd="cd ${WRK_DIR}"
 printf "${cmd}\n"; ${cmd}
 
-# clean work directory from previous mpascf files
-cmd="rm -f ${WRK_DIR}/mpascf*"
-printf "${cmd}\n"; ${cmd}
-
-# clean work directory from previous accumulation files
-cmd="rm -f ${WRK_DIR}/${CTR_FLW}_*QPF*"
+# clean work directory from previous data
+cmd="rm -f *.latlon.*; rm -f mpascf*; rm -f ${CTR_FLW}_*QPF*"
 printf "${cmd}\n"; ${cmd}
 
 for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
@@ -329,10 +325,6 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
   f_in=`ls ${IN_DIR}/*${MPAS_PRFX}.${anl_dt}.nc`
 
   if [[ -r ${f_in} ]]; then
-    # NOTE: convert_mpas always writes outputs to working directory, need to cd
-    cmd="cd ${WRK_DIR}"
-    printf "${cmd}\n"; ${cmd}
-
     # cut down to file name alone
     f_in=`basename ${f_in}`
 
@@ -343,9 +335,9 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
     fi
 
     # run script from work directory to hold temp outputs from convert_mpas
-    cmd="${UTLTY}/mpas_to_latlon.sh ${CONVERT_MPAS} ${WRK_DIR} ${in_msh_dir} ${in_msh_f} ${IN_DIR} ${f_in}"
-    printf "${cmd}\n"
-    ${UTLTY}/mpas_to_latlon.sh ${CONVERT_MPAS} ${WRK_DIR} ${in_msh_dir} ${in_msh_f} ${IN_DIR} ${f_in}
+    cmd="${UTLTY}/mpas_to_latlon.sh ${CONVERT_MPAS}"
+    cmd+=" ${WRK_DIR} ${in_msh_dir} ${in_msh_f} ${IN_DIR} ${f_in}"
+    printf "${cmd}\n"; ${cmd}
     error=$?
 
     if [ ${error} -ne 0 ]; then
@@ -366,9 +358,9 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
     printf "${cmd}\n"; ${cmd}
 
   else
-    msg="Input file\n ${f_in}\n is not readable or "
-    msg+="does not exist, skipping forecast initialization ${CYC_DT}, "
-    msg+="forecast hour ${anl_hr}.\n"
+    f_in="${IN_DIR}/*${MPAS_PRFX}.${anl_dt}.nc"
+    msg="WARNING: no input file matching pattern\n ${f_in}\n is readable,"
+    msg+=" skipping forecast hour ${anl_hr}.\n"
     printf "${msg}"
   fi
   if [[ ${CMP_ACC} = ${TRUE} ]]; then
@@ -381,20 +373,34 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
         # start / stop date strings
         anl_strt=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${acc_strt} hours"`
         anl_stop=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${acc_stop} hours"`
+        cf_strt="mpascf_${anl_strt}.nc"
+        cf_stop="mpascf_${anl_stop}.nc"
 
-        # define padded forecast hour for name strings
-        pdd_hr=`printf %03d $(( 10#${anl_hr} ))`
+        if [ ! -r "${WRK_DIR}/${cf_strt}" ]; then
+          msg="WARNING: cf file\n ${WRK_DIR}/${cf_strt}\n does not exist" 
+          msg+=" or is not readable, skipping forecast hour ${anl_hr} /"
+          msg+=" accumulation hour ${acc_hr}.\n"
+          printf "${msg}"
+        elif [ ! -r "${WRK_DIR}/${cf_stop}" ]; then
+          msg="WARNING: cf file\n ${WRK_DIR}/${cf_stop}\n does not exist" 
+          msg+=" or is not readable, skipping forecast hour ${anl_hr} /"
+          msg+=" accumulation hour ${acc_hr}.\n"
+          printf "${msg}"
+        else
+          # define padded forecast hour for name strings
+          pdd_hr=`printf %03d $(( 10#${anl_hr} ))`
 
-        # CTR_FLW QPF file name convention following similar products
-        mpas_acc=${CTR_FLW}_${acc_hr}QPF_${CYC_DT}_F${pdd_hr}.nc
+          # CTR_FLW QPF file name convention following similar products
+          cf_acc=${CTR_FLW}_${acc_hr}QPF_${CYC_DT}_F${pdd_hr}.nc
 
-        # Combine precip to accumulation period
-        cmd="${met} pcp_combine \
-        -subtract /in_dir/mpascf_${anl_stop}.nc /in_dir/mpascf_${anl_strt}.nc\
-        /wrk_dir/${mpas_acc} \
-        -field 'name=\"precip\"; level=\"(0,*,*)\";'\
-        -name \"QPF_${acc_hr}hr\" "
-        printf "${cmd}\n"; ${cmd}
+          # Combine precip to accumulation period
+          cmd="${met} pcp_combine \
+          -subtract /in_dir/${cf_stop} /in_dir/${cf_start}\
+          /wrk_dir/${cf_acc} \
+          -field 'name=\"precip\"; level=\"(0,*,*)\";'\
+          -name \"QPF_${acc_hr}hr\" "
+          printf "${cmd}\n"; ${cmd}
+        fi
       fi
     done
   fi

@@ -45,7 +45,7 @@
 
 {# OPTIONAL ARGUMENT to set a verification termination date -- preprocessing will #}
 {# stop automatically at this valid date, define as blank string if unused #}
-{% set EXP_VRF = '2022-12-28T00' %}
+{% set EXP_VRF = '' %}
 
 {# Compute precipitation accumulations from cf files, TRUE or FALSE #}
 {% set CMP_ACC = 'TRUE' %}
@@ -119,7 +119,7 @@
         {# loop ensemble members to process #}
         {% for mem in range(0,ENS_SIZE) %}
             {% set idx = mem | pad(ENS_PAD, '0') %}
-            [[preprocess{{ctr_flw}}_ens_{{idx}}]]
+            [[preprocess_{{ctr_flw}}_ens_{{idx}}]]
                 platform = {{environ['SCHED']}}
                 execution time limit = {{PRE_WC}}
                 script = {{environ['DRIVERS']}}/run_preprocessMPAS.sh

@@ -280,12 +280,12 @@ met_tools_py="singularity exec -B "
 met_tools_py+="${WRK_DIR}:/wrk_dir:rw,${IN_DIR}:/in_dir:ro,${UTLTY}:/utlty:ro "
 met_tools_py+="${MET_TOOLS_PY} python"
 
-# clean work directory from previous wrfcf files
-cmd="rm -f ${WRK_DIR}/wrfcf*"
+# move to work directory
+cmd="cd ${WRK_DIR}"
 printf "${cmd}\n"; ${cmd}
 
-# clean work directory from previous accumulation files
-cmd="rm -f ${WRK_DIR}/${CTR_FLW}_*"
+# clean work directory from previous files
+cmd="rm -f wrfcf*; rm -f ${CTR_FLW}_*"
 printf "${cmd}\n"; ${cmd}
 
 for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
@@ -310,9 +310,9 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
     printf "${cmd}\n"; ${cmd}
 
   else
-    msg="Input file\n ${f_in}\n is not readable or "
-    msg+="does not exist, skipping forecast initialization ${CYC_DT}, "
-    msg+="forecast hour ${anl_hr}.\n"
+    f_in="${IN_DIR}/wrfout_${GRD}_${anl_dt}"
+    msg="WARNING: no input file matching pattern\n ${f_in}\n is readable,"
+    msg+=" skipping forecast hour ${anl_hr}.\n"
     printf "${msg}"
   fi
   if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
@@ -322,23 +322,37 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
         acc_strt=$(( ${anl_hr}  - ${acc_hr} ))
         acc_stop=${anl_hr}
 
-        # start / stop date strings
+        # start / stop date strings, cf files
         anl_strt=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${acc_strt} hours"`
         anl_stop=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${acc_stop} hours"`
+        cf_strt="wrfcf_${anl_strt}.nc"
+        cf_stop="wrfcf_${anl_stop}.nc"
 
-        # define padded forecast hour for name strings
-        pdd_hr=`printf %03d $(( 10#${anl_hr} ))`
+        if [ ! -r "${WRK_DIR}/${cf_strt}" ]; then
+          msg="WARNING: cf file\n ${WRK_DIR}/${cf_strt}\n does not exist" 
+          msg+=" or is not readable, skipping forecast hour ${anl_hr} /"
+          msg+=" accumulation hour ${acc_hr}.\n"
+          printf "${msg}"
+        elif [ ! -r "${WRK_DIR}/${cf_stop}" ]; then
+          msg="WARNING: cf file\n ${WRK_DIR}/${cf_stop}\n does not exist" 
+          msg+=" or is not readable, skipping forecast hour ${anl_hr} /"
+          msg+=" accumulation hour ${acc_hr}.\n"
+          printf "${msg}"
+        else
+          # define padded forecast hour for name strings
+          pdd_hr=`printf %03d $(( 10#${anl_hr} ))`
 
-        # CTR_FLW QPF file name convention following similar products
-        wrf_acc=${CTR_FLW}_${acc_hr}QPF_${CYC_DT}_F${pdd_hr}.nc
+          # CTR_FLW QPF file name convention following similar products
+          cf_acc=${CTR_FLW}_${acc_hr}QPF_${CYC_DT}_F${pdd_hr}.nc
 
-        # Combine precip to accumulation period 
-        cmd="${met} pcp_combine \
-        -subtract /in_dir/wrfcf_${anl_stop}.nc /in_dir/wrfcf_${anl_strt}.nc\
-        /wrk_dir/${wrf_acc} \
-        -field 'name=\"precip\"; level=\"(0,*,*)\";'\
-        -name \"QPF_${acc_hr}hr\" "
-        printf "${cmd}\n"; ${cmd}
+          # Combine precip to accumulation period 
+          cmd="${met} pcp_combine \
+          -subtract /in_dir/${cf_stop} /in_dir/${cf_start}\
+          /wrk_dir/${cf_acc} \
+          -field 'name=\"precip\"; level=\"(0,*,*)\";'\
+          -name \"QPF_${acc_hr}hr\" "
+          printf "${cmd}\n"; ${cmd}
+        fi
       fi
     done
   fi

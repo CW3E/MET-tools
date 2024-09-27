@@ -134,7 +134,7 @@
             {% for dom in range(0,max_dom) %}
                 {% set grd = loop.index | pad(2, '0') %}
                 {% set grd = ['d', grd] | join %}
-                [[preprocess{{ctr_flw}}_ens_{{idx}}_{{grd}}]]
+                [[preprocess_{{ctr_flw}}_ens_{{idx}}_{{grd}}]]
                     platform = {{environ['SCHED']}}
                     execution time limit = {{PRE_WC}}
                     script = {{environ['DRIVERS']}}/run_preprocessWRF.sh

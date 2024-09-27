@@ -55,7 +55,7 @@ if [ ! -x ${CNST} ]; then
 else
   # Read constants into the current shell
   cmd=". ${CNST}"
-  printf "${cmd}\n"; ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 # control flow to be processed
@@ -210,6 +210,17 @@ else
   exit 1
 fi
 
+if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
+  printf "Preprocessing breaks on missing data.\n"
+elif [[ ${FULL_DATA} =~ ${FALSE} ]]; then
+  printf "Preprocessing allows missing data.\n"
+else
+  msg="ERROR: \${FULL_DATA} must be set to 'TRUE' or 'FALSE' to decide if "
+  msg+="missing input data is allowed."
+  printf "${msg}"
+  exit 1
+fi
+
 # check software dependencies
 if [ ! -x ${MET} ]; then
   msg="ERROR: MET singularity image\n ${MET}\n does not exist"
@@ -259,7 +270,7 @@ if [ -z ${WRK_DIR} ]; then
   printf "ERROR: work directory \${WRK_DIR} is not defined.\n"
 else
   cmd="mkdir -p ${WRK_DIR}"
-  printf "${cmd}\n"; ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 if [[ ! -d ${WRK_DIR} || ! -w ${WRK_DIR} ]]; then
@@ -282,11 +293,14 @@ met_tools_py+="${MET_TOOLS_PY} python"
 
 # move to work directory
 cmd="cd ${WRK_DIR}"
-printf "${cmd}\n"; ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 # clean work directory from previous files
 cmd="rm -f wrfcf*; rm -f ${CTR_FLW}_*"
-printf "${cmd}\n"; ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
+
+# create trigger for handling errors
+error_check=0
 
 for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
   # define valid times for wrfcf precip evenly spaced
@@ -306,14 +320,27 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
     f_out="wrfcf_${anl_dt}.nc"
 
     cmd="${met_tools_py} /utlty/wrfout_to_cf.py"
-    cmd+=" '/in_dir/${f_in}' '/wrk_dir/${f_out}' '${rgrd}'"
-    printf "${cmd}\n"; ${cmd}
-
+    cmd+=" '/in_dir/${f_in}' '/wrk_dir/${f_out}' '${rgrd}'; error=\$?"
+    printf "${cmd}\n"; eval "${cmd}"
+    printf "wrfout_to_cf.py exited with status ${error}.\n"
+    if [ ${error} -ne 0 ]; then
+      msg="ERROR: wrfout_to_cf.py failed to produce cf file\n"
+      msg+=" ${f_out}\n"
+      printf "${msg}"
+      error_check=1
+    fi
   else
-    f_in="${IN_DIR}/wrfout_${GRD}_${anl_dt}"
-    msg="WARNING: no input file matching pattern\n ${f_in}\n is readable,"
-    msg+=" skipping forecast hour ${anl_hr}.\n"
-    printf "${msg}"
+    if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
+      f_in="${IN_DIR}/wrfout_${GRD}_${anl_dt}"
+      msg="ERROR: no input file matching pattern\n ${f_in}\n is readable.\n"
+      printf "${msg}"
+      error_check=1
+    else
+      f_in="${IN_DIR}/wrfout_${GRD}_${anl_dt}"
+      msg="WARNING: no input file matching pattern\n ${f_in}\n is readable,"
+      msg+=" skipping forecast hour ${anl_hr}.\n"
+      printf "${msg}"
+    fi
   fi
   if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
     for acc_hr in ${acc_hrs[@]}; do
@@ -322,6 +349,9 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
         acc_strt=$(( ${anl_hr}  - ${acc_hr} ))
         acc_stop=${anl_hr}
 
+        # set flag to skip computing accumulation if missing files
+        acc_check=0
+
         # start / stop date strings, cf files
         anl_strt=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${acc_strt} hours"`
         anl_stop=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${acc_stop} hours"`
@@ -329,16 +359,36 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
         cf_stop="wrfcf_${anl_stop}.nc"
 
         if [ ! -r "${WRK_DIR}/${cf_strt}" ]; then
-          msg="WARNING: cf file\n ${WRK_DIR}/${cf_strt}\n does not exist" 
-          msg+=" or is not readable, skipping forecast hour ${anl_hr} /"
-          msg+=" accumulation hour ${acc_hr}.\n"
-          printf "${msg}"
-        elif [ ! -r "${WRK_DIR}/${cf_stop}" ]; then
-          msg="WARNING: cf file\n ${WRK_DIR}/${cf_stop}\n does not exist" 
-          msg+=" or is not readable, skipping forecast hour ${anl_hr} /"
-          msg+=" accumulation hour ${acc_hr}.\n"
-          printf "${msg}"
-        else
+          acc_check=1
+          if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
+            msg="ERROR: cf file\n ${WRK_DIR}/${cf_strt}\n does not exist" 
+            msg+=" or is not readable to compute forecast hour ${anl_hr} /"
+            msg+=" accumulation hour ${acc_hr}.\n"
+            error_check=1
+            printf "${msg}"
+          else
+            msg="WARNING: cf file\n ${WRK_DIR}/${cf_strt}\n does not exist" 
+            msg+=" or is not readable, skipping forecast hour ${anl_hr} /"
+            msg+=" accumulation hour ${acc_hr}.\n"
+            printf "${msg}"
+          fi
+        fi
+        if [ ! -r "${WRK_DIR}/${cf_stop}" ]; then
+          acc_check=1
+          if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
+            msg="ERROR: cf file\n ${WRK_DIR}/${cf_stop}\n does not exist" 
+            msg+=" or is not readable to compute forecast hour ${anl_hr} /"
+            msg+=" accumulation hour ${acc_hr}.\n"
+            error_check=1
+            printf "${msg}"
+          else
+            msg="WARNING: cf file\n ${WRK_DIR}/${cf_stop}\n does not exist" 
+            msg+=" or is not readable, skipping forecast hour ${anl_hr} /"
+            msg+=" accumulation hour ${acc_hr}.\n"
+            printf "${msg}"
+          fi
+        fi
+        if [ ${acc_check} = 0 ]; then
           # define padded forecast hour for name strings
           pdd_hr=`printf %03d $(( 10#${anl_hr} ))`
 
@@ -347,20 +397,33 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
 
           # Combine precip to accumulation period 
           cmd="${met} pcp_combine \
-          -subtract /in_dir/${cf_stop} /in_dir/${cf_start}\
+          -subtract /in_dir/${cf_stop} /in_dir/${cf_strt}\
           /wrk_dir/${cf_acc} \
           -field 'name=\"precip\"; level=\"(0,*,*)\";'\
-          -name \"QPF_${acc_hr}hr\" "
-          printf "${cmd}\n"; ${cmd}
+          -name \"QPF_${acc_hr}hr\"; error=\$?"
+          printf "${cmd}\n"; eval "${cmd}"
+          printf "pcp_combine exited with status ${error}.\n"
+          if [ ${error} -ne 0 ]; then
+            error_check=1
+            msg="ERROR: pcp_combine failed to produce accumulation file\n"
+            msg+=" ${cf_acc}\n"
+            printf "${msg}"
+          fi
         fi
       fi
     done
   fi
 done
 
-msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`,"
-msg+="verify outputs at \${WRK_DIR}:\n ${WRK_DIR}\n"
-printf "${msg}"
+if [ ${error_check} = 1 ]; then
+  msg="ERROR: preprocessing did not complete successfully, see above errors.\n"
+  printf "${msg}"
+  exit 1
+else
+  msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`,"
+  msg+="verify outputs at \${WRK_DIR}:\n ${WRK_DIR}\n"
+  printf "${msg}"
+fi
 
 #################################################################################
 # end

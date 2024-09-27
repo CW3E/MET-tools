@@ -45,8 +45,11 @@
 
 {# OPTIONAL ARGUMENT to set a verification termination date -- preprocessing will #}
 {# stop automatically at this valid date, define as blank string if unused #}
-{% set EXP_VRF = '' %}
+{% set EXP_VRF = '2022-12-28T00' %}
 
+{################################################################################}
+{# PREPROCESSING SETTINGS #}
+{################################################################################}
 {# Compute precipitation accumulations from cf files, TRUE or FALSE #}
 {% set CMP_ACC = 'TRUE' %}
 
@@ -59,6 +62,9 @@
 
 {# Define the directory to find mpas outputs relative to ISO cycle directories #}
 {% set IN_DT_SUBDIR = 'mpas_model' %}
+
+{# Preprocessing fails on missing data TRUE / FALSE #}
+{% set FULL_DATA = 'FALSE' %}
 
 {################################################################################}
 {# JOB SETTINGS #}
@@ -107,6 +113,7 @@
             ACC_MIN = {{ACC_MIN}}
             ACC_MAX = {{ACC_MAX}}
             ACC_INC = {{ACC_INC}}
+            FULL_DATA = {{FULL_DATA}}
             MET = {{environ['MET']}}
             MET_TOOLS_PY = {{environ['MET_TOOLS_PY']}}
             UTLTY = {{environ['UTLTY']}}

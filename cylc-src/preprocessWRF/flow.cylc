@@ -43,6 +43,14 @@
 {# stop automatically at this valid date, define as blank string if unused #}
 {% set EXP_VRF = '2022-12-28T00' %}
 
+{# Defines the offset to the initialization time in HH #}
+{# Use to correct for the offset in start time / forecast hour due to a restart run #}
+{# Needed for ingesting NetCDF meta-data in MET correctly #}
+{% set INIT_OFFSET = 0 %}
+
+{################################################################################}
+{# PREPROCESSING SETTINGS #}
+{################################################################################}
 {# Regrid to generic lat-lon for MET if native grid errors (TRUE or FALSE) #}
 {% set RGRD = 'TRUE' %}
 
@@ -56,13 +64,11 @@
 {# Defines the increment between min / max to compute accumulation intervals #}
 {% set ACC_INC = 24 %}
 
-{# Defines the offset to the initialization time in HH #}
-{# Use to correct for the offset in start time / forecast hour due to a restart run #}
-{# Needed for ingesting NetCDF meta-data in MET correctly #}
-{% set INIT_OFFSET = 0 %}
-
 {# Define the directory to find wrf outputs relative to ISO cycle directories #}
 {% set IN_DT_SUBDIR = 'wrf_model' %}
+
+{# Preprocessing fails on missing data TRUE / FALSE #}
+{% set FULL_DATA = 'TRUE' %}
 
 {################################################################################}
 {# JOB SETTINGS #}
@@ -119,6 +125,7 @@
             ACC_MIN = {{ACC_MIN}}
             ACC_MAX = {{ACC_MAX}}
             ACC_INC = {{ACC_INC}}
+            FULL_DATA = {{FULL_DATA}}
             MET = {{environ['MET']}}
             MET_TOOLS_PY = {{environ['MET_TOOLS_PY']}}
             UTLTY = {{environ['UTLTY']}}

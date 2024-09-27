@@ -60,7 +60,7 @@ if [ ! -x ${CNST} ]; then
 else
   # Read constants into the current shell
   cmd=". ${CNST}"
-  printf "${cmd}\n"; ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 # control flow to be processed
@@ -232,6 +232,17 @@ else
   exit 1
 fi
 
+if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
+  printf "Preprocessing breaks on missing data.\n"
+elif [[ ${FULL_DATA} =~ ${FALSE} ]]; then
+  printf "Preprocessing allows missing data.\n"
+else
+  msg="ERROR: \${FULL_DATA} must be set to 'TRUE' or 'FALSE' to decide if "
+  msg+="missing input data is allowed."
+  printf "${msg}"
+  exit 1
+fi
+
 # check software dependencies
 if [ ! -x ${MET} ]; then
   msg="ERROR: MET singularity image\n ${MET}\n does not exist"
@@ -288,7 +299,7 @@ if [ -z ${WRK_DIR} ]; then
   printf "ERROR: work directory \${WRK_DIR} is not defined.\n"
 else
   cmd="mkdir -p ${WRK_DIR}"
-  printf "${cmd}\n"; ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 if [[ ! -d ${WRK_DIR} || ! -w ${WRK_DIR} ]]; then
@@ -311,11 +322,14 @@ met_tools_py+="${MET_TOOLS_PY} python"
 
 # NOTE: convert_mpas always writes outputs to working directory
 cmd="cd ${WRK_DIR}"
-printf "${cmd}\n"; ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 # clean work directory from previous data
 cmd="rm -f *.latlon.*; rm -f mpascf*; rm -f ${CTR_FLW}_*QPF*"
-printf "${cmd}\n"; ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
+
+# create trigger for handling errors
+error_check=0
 
 for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
   # define valid times for mpascf precip evenly spaced
@@ -336,32 +350,45 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
 
     # run script from work directory to hold temp outputs from convert_mpas
     cmd="${UTLTY}/mpas_to_latlon.sh ${CONVERT_MPAS}"
-    cmd+=" ${WRK_DIR} ${in_msh_dir} ${in_msh_f} ${IN_DIR} ${f_in}"
-    printf "${cmd}\n"; ${cmd}
-    error=$?
-
+    cmd+=" ${WRK_DIR} ${in_msh_dir} ${in_msh_f} ${IN_DIR} ${f_in} 2>&1; error=\$?"
+    printf "${cmd}\n"; eval "${cmd}"
+    printf "mpas_to_latlon.sh exited with status ${error}.\n"
     if [ ${error} -ne 0 ]; then
-      printf "ERROR: mpas_to_latlon.sh did not complete successfully.\n"
-      exit 1
+      msg="ERROR: mpas_to_latlon.sh failed to produce latlon file.\n"
+      printf "${msg}"
+      error_check=1
+    else
+      # set temporary lat-lon file name from work directory
+      f_tmp=`ls *latlon.*${anl_dt}.nc`
+
+      # set output cf file name, convert to cf from latlon tmp
+      # NOTE: currently convert_mpas doesn't carry time coords from input
+      # to regridded output, f_in is reused here to recover timing information
+      anl_dt=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${anl_hr} hours"`
+      f_out="mpascf_${anl_dt}.nc"
+      cmd="${met_tools_py} /utlty/mpas_to_cf.py"
+      cmd+=" '/wrk_dir/${f_tmp}' '/wrk_dir/${f_out}'"
+      cmd+=" '/in_dir/${f_in}'; error=\$?"
+      printf "${cmd}\n"; eval "${cmd}"
+      if [ ${error} -ne 0 ]; then
+        msg="ERROR: mpas_to_cf.py failed to produce cf file\n"
+        msg+=" ${f_out}\n"
+        printf "${msg}"
+        error_check=1
+      fi
     fi
-
-    # set temporary lat-lon file name from work directory
-    f_tmp=`ls *latlon.*${anl_dt}.nc`
-
-    # set output cf file name, convert to cf from latlon tmp
-    # NOTE: currently convert_mpas doesn't carry time coords from input
-    # to regridded output, f_in is reused here to recover timing information
-    anl_dt=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${anl_hr} hours"`
-    f_out="mpascf_${anl_dt}.nc"
-    cmd="${met_tools_py} /utlty/mpas_to_cf.py"
-    cmd+=" '/wrk_dir/${f_tmp}' '/wrk_dir/${f_out}' '/in_dir/${f_in}'"
-    printf "${cmd}\n"; ${cmd}
-
   else
-    f_in="${IN_DIR}/*${MPAS_PRFX}.${anl_dt}.nc"
-    msg="WARNING: no input file matching pattern\n ${f_in}\n is readable,"
-    msg+=" skipping forecast hour ${anl_hr}.\n"
-    printf "${msg}"
+    if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
+      f_in="${IN_DIR}/*${MPAS_PRFX}.${anl_dt}.nc"
+      msg="ERROR: no input file matching pattern\n ${f_in}\n is readable.\n"
+      printf "${msg}"
+      error_check=1
+    else
+      f_in="${IN_DIR}/*${MPAS_PRFX}.${anl_dt}.nc"
+      msg="WARNING: no input file matching pattern\n ${f_in}\n is readable,"
+      msg+=" skipping forecast hour ${anl_hr}.\n"
+      printf "${msg}"
+    fi
   fi
   if [[ ${CMP_ACC} = ${TRUE} ]]; then
     for acc_hr in ${acc_hrs[@]}; do
@@ -370,6 +397,9 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
         acc_strt=$(( ${anl_hr}  - ${acc_hr} ))
         acc_stop=${anl_hr}
 
+        # set flag to skip computing accumulation if missing files
+        acc_check=0
+
         # start / stop date strings
         anl_strt=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${acc_strt} hours"`
         anl_stop=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${acc_stop} hours"`
@@ -377,16 +407,36 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
         cf_stop="mpascf_${anl_stop}.nc"
 
         if [ ! -r "${WRK_DIR}/${cf_strt}" ]; then
-          msg="WARNING: cf file\n ${WRK_DIR}/${cf_strt}\n does not exist" 
-          msg+=" or is not readable, skipping forecast hour ${anl_hr} /"
-          msg+=" accumulation hour ${acc_hr}.\n"
-          printf "${msg}"
-        elif [ ! -r "${WRK_DIR}/${cf_stop}" ]; then
-          msg="WARNING: cf file\n ${WRK_DIR}/${cf_stop}\n does not exist" 
-          msg+=" or is not readable, skipping forecast hour ${anl_hr} /"
-          msg+=" accumulation hour ${acc_hr}.\n"
-          printf "${msg}"
-        else
+          acc_check=1
+          if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
+            msg="ERROR: cf file\n ${WRK_DIR}/${cf_strt}\n does not exist" 
+            msg+=" or is not readable to compute forecast hour ${anl_hr} /"
+            msg+=" accumulation hour ${acc_hr}.\n"
+            error_check=1
+            printf "${msg}"
+          else
+            msg="WARNING: cf file\n ${WRK_DIR}/${cf_strt}\n does not exist" 
+            msg+=" or is not readable, skipping forecast hour ${anl_hr} /"
+            msg+=" accumulation hour ${acc_hr}.\n"
+            printf "${msg}"
+          fi
+        fi
+        if [ ! -r "${WRK_DIR}/${cf_stop}" ]; then
+          acc_check=1
+          if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
+            msg="ERROR: cf file\n ${WRK_DIR}/${cf_stop}\n does not exist" 
+            msg+=" or is not readable to compute forecast hour ${anl_hr} /"
+            msg+=" accumulation hour ${acc_hr}.\n"
+            error_check=1
+            printf "${msg}"
+          else
+            msg="WARNING: cf file\n ${WRK_DIR}/${cf_stop}\n does not exist" 
+            msg+=" or is not readable, skipping forecast hour ${anl_hr} /"
+            msg+=" accumulation hour ${acc_hr}.\n"
+            printf "${msg}"
+          fi
+        fi
+        if [ ${acc_check} = 0 ]; then
           # define padded forecast hour for name strings
           pdd_hr=`printf %03d $(( 10#${anl_hr} ))`
 
@@ -395,20 +445,33 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
 
           # Combine precip to accumulation period
           cmd="${met} pcp_combine \
-          -subtract /in_dir/${cf_stop} /in_dir/${cf_start}\
+          -subtract /in_dir/${cf_stop} /in_dir/${cf_strt}\
           /wrk_dir/${cf_acc} \
           -field 'name=\"precip\"; level=\"(0,*,*)\";'\
-          -name \"QPF_${acc_hr}hr\" "
-          printf "${cmd}\n"; ${cmd}
+          -name \"QPF_${acc_hr}hr\"; error=\$?"
+          printf "${cmd}\n"; eval "${cmd}"
+          printf "pcp_combine exited with status ${error}.\n"
+          if [ ${error} -ne 0 ]; then
+            error_check=1
+            msg="ERROR: pcp_combine failed to produce accumulation file\n"
+            msg+=" ${cf_acc}\n"
+            printf "${msg}"
+          fi
         fi
       fi
     done
   fi
 done
 
-msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`,"
-msg+="verify outputs at \${WRK_DIR}:\n ${WRK_DIR}\n"
-printf "${msg}"
+if [ ${error_check} = 1 ]; then
+  msg="ERROR: preprocessing did not complete successfully, see above errors.\n"
+  printf "${msg}"
+  exit 1
+else
+  msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`,"
+  msg+="verify outputs at \${WRK_DIR}:\n ${WRK_DIR}\n"
+  printf "${msg}"
+fi
 
 #################################################################################
 # end

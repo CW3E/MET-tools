@@ -33,14 +33,14 @@
 [scheduling]
     [[graph]]
         R1 = """
-        run_vxmask
+        vxmask
         """
 
 [runtime]
-   [[run_vxmask]]
+   [[vxmask]]
        platform = {{environ['SCHED']}}
        execution time limit = {{VXMASK_WC}}
-       script = {{environ['DRIVERS']}}/run_vxmask.sh
+       script = {{environ['DRIVERS']}}/vxmask.sh
        execution retry delays = 3*PT5M
        [[[environment]]]
            CNST = {{environ['DRIVERS']}}/CONSTANTS.sh

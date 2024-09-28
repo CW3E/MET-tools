@@ -98,6 +98,7 @@
 
 [runtime]
     [[root]]
+        platform = {{environ['SCHED']}}
         [[[environment]]]
             CNST = {{environ['DRIVERS']}}/CONSTANTS.sh
             CYC_DT = $(isodatetime ${CYLC_TASK_CYCLE_POINT} --f '%Y%m%d%H')
@@ -114,9 +115,6 @@
             ACC_MAX = {{ACC_MAX}}
             ACC_INC = {{ACC_INC}}
             FULL_DATA = {{FULL_DATA}}
-            MET = {{environ['MET']}}
-            MET_TOOLS_PY = {{environ['MET_TOOLS_PY']}}
-            UTLTY = {{environ['UTLTY']}}
             MPAS_PRFX = {{MPAS_PRFX}}
 
     {# Loop model control flows #}
@@ -127,9 +125,8 @@
         {% for mem in range(0,ENS_SIZE) %}
             {% set idx = mem | pad(ENS_PAD, '0') %}
             [[preprocess_{{ctr_flw}}_ens_{{idx}}]]
-                platform = {{environ['SCHED']}}
                 execution time limit = {{PRE_WC}}
-                script = {{environ['DRIVERS']}}/run_preprocessMPAS.sh
+                script = {{environ['DRIVERS']}}/preprocessMPAS.sh
                 execution retry delays = 3*PT5M
                 [[[environment]]]
                     CTR_FLW = {{ctr_flw}}

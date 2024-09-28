@@ -100,6 +100,7 @@
 
 [runtime]
     [[root]]
+        platform = {{environ['SCHED']}}
         [[[environment]]]
             OMP_NUM_THREADS = {{ENS_PROC}}
             CNST = {{environ['DRIVERS']}}/CONSTANTS.sh
@@ -124,17 +125,14 @@
             CTR_MEM = {{CTR_MEM}}
             VRF_FLD = {{VRF_FLD}}
             CAT_THR = {{CAT_THR}}
-            MET = {{environ['MET']}}
-            UTLTY = {{environ['UTLTY']}}
 
     {# Loop model control flows #}
     {% for ctr_flw in CTR_FLWS %}
         {# Neighborhood width is in 1-1 correspondence with model grd #}
         {% set nbrhd_wdth = NBRHD_WDTHS[loop.index0] %}
         [[GenEnsProd_{{ctr_flw}}]]
-            platform = {{environ['SCHED']}}
             execution time limit = {{ENS_WC}}
-            script = {{environ['DRIVERS']}}/run_GenEnsProd.sh
+            script = {{environ['DRIVERS']}}/GenEnsProd.sh
             execution retry delays = 3*PT5M
             [[[environment]]]
                 CTR_FLW = {{ctr_flw}}

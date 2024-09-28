@@ -109,6 +109,7 @@
 
 [runtime]
     [[root]]
+        platform = {{environ['SCHED']}}
         [[[environment]]]
             CNST = {{environ['DRIVERS']}}/CONSTANTS.sh
             CYC_DT = $(isodatetime ${CYLC_TASK_CYCLE_POINT} --f '%Y%m%d%H')
@@ -126,9 +127,6 @@
             ACC_MAX = {{ACC_MAX}}
             ACC_INC = {{ACC_INC}}
             FULL_DATA = {{FULL_DATA}}
-            MET = {{environ['MET']}}
-            MET_TOOLS_PY = {{environ['MET_TOOLS_PY']}}
-            UTLTY = {{environ['UTLTY']}}
 
     {# Loop model control flows #}
     {% for ctr_flw in CTR_FLWS %}
@@ -142,9 +140,8 @@
                 {% set grd = loop.index | pad(2, '0') %}
                 {% set grd = ['d', grd] | join %}
                 [[preprocess_{{ctr_flw}}_ens_{{idx}}_{{grd}}]]
-                    platform = {{environ['SCHED']}}
                     execution time limit = {{PRE_WC}}
-                    script = {{environ['DRIVERS']}}/run_preprocessWRF.sh
+                    script = {{environ['DRIVERS']}}/preprocessWRF.sh
                     execution retry delays = 3*PT5M
                     [[[environment]]]
                         CTR_FLW = {{ctr_flw}}

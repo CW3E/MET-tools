@@ -52,7 +52,7 @@ if [ ! -x ${CNST} ]; then
 else
   # Read constants into the current shell
   cmd=". ${CNST}"
-  printf "${cmd}\n"; ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 # control flow to be processed
@@ -145,8 +145,8 @@ if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
     printf "${msg}"
     exit 1
   elif [ ${ACC_MAX} -lt ${ACC_MIN} ]; then
-    msg="ERROR: max precip accumulation interval ${ACC_MAX} must be greater than"
-    msg+=" min accumulation interval ${ACC_MIN}.\n"
+    msg="ERROR: max precip accumulation interval ${ACC_MAX} must be greater"
+    msg+=" than min accumulation interval ${ACC_MIN}.\n"
     printf "${msg}"
     exit 1
   elif [[ ! ${ACC_INC} =~ ${INT_RE} ]]; then
@@ -335,7 +335,7 @@ else
     wrk_dir="${WRK_DIR}/${OUT_DT_SUBDIR}"
   fi
   cmd="mkdir -p ${wrk_dir}"
-  printf "${cmd}\n"; ${cmd}
+  printf "${cmd}\n"; eval "${cmd}"
 fi
 
 if [[ ! -d ${wrk_dir} || ! -w ${wrk_dir} ]]; then
@@ -479,7 +479,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
           /STC_ROOT/${obs_in} \
           /wrk_dir/GridStatConfig${acc_hr} \
           -outdir /wrk_dir"
-          printf "${cmd}\n"; ${cmd}
+          printf "${cmd}\n"; eval "${cmd}"
           
         else
           msg="Observation verification file\n ${STC_ROOT}/${obs_in}\n is not "
@@ -497,7 +497,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
 
       # clean up working directory from accumulation time
       cmd="rm -f ${wrk_dir}/${for_in}"
-      printf "${cmd}\n"; ${cmd}
+      printf "${cmd}\n"; eval "${cmd}"
     elif [[ ${CMP_ACC} =~ ${FALSE} ]]; then
       for_in=${CTR_FLW}_${VRF_FLD}_${cyc_dt}_F${pdd_hr}${pstfx}.nc
 
@@ -537,7 +537,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
           /STC_ROOT/${obs_in} \
           /wrk_dir/GridStatConfig${acc_hr} \
           -outdir /wrk_dir"
-          printf "${cmd}\n"; ${cmd}
+          printf "${cmd}\n"; eval "${cmd}"
           error="$?"
           # ADD IN ERROR HANDLING HERE
           
@@ -557,7 +557,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
 
       # clean up working directory from accumulation time
       cmd="rm -f ${wrk_dir}/${for_in}"
-      printf "${cmd}\n"; ${cmd}
+      printf "${cmd}\n"; eval "${cmd}"
 
     fi
   done
@@ -565,10 +565,10 @@ done
 
 # clean up working directory from forecast start time
 cmd="rm -f ${wrk_dir}/*_StageIVGrid.nc"
-printf "${cmd}\n"; ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 cmd="rm -f ${wrk_dir}/PLY_MSK.txt"
-printf "${cmd}\n"; ${cmd}
+printf "${cmd}\n"; eval "${cmd}"
 
 msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "
 msg+="outputs at OUT_DT_ROOT:\n ${OUT_DT_ROOT}\n"

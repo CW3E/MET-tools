@@ -30,6 +30,9 @@
 {# defined as empty string if not necessary #}
 {% set CTR_MEM = '00' %}
 
+{################################################################################}
+{# GENENSPROD SETTINGS #}
+{################################################################################}
 {# Require all ensemble members, no missing files, TRUE or FALSE #}
 {% set FULL_DATA = 'TRUE' %}
 
@@ -114,6 +117,11 @@
         [[[environment]]]
             OMP_NUM_THREADS = {{ENS_PROC}}
             CNST = {{environ['DRIVERS']}}/CONSTANTS.sh
+            FULL_DATA = {{FULL_DATA}}
+            CMP_ACC = {{CMP_ACC}}
+            ACC_MIN = {{ACC_MIN}}
+            ACC_MAX = {{ACC_MAX}}
+            ACC_INC = {{ACC_INC}}
             CYC_DT = $(isodatetime ${CYLC_TASK_CYCLE_POINT} --f '%Y%m%d%H')
             ANL_MIN = {{ANL_MIN}}
             ANL_MAX = {{ANL_MAX}}
@@ -123,11 +131,6 @@
             {% else %}
                 EXP_VRF = $(isodatetime {{EXP_VRF}} --f '%Y%m%d%H')
             {% endif %}
-            CMP_ACC = {{CMP_ACC}}
-            ACC_MIN = {{ACC_MIN}}
-            ACC_MAX = {{ACC_MAX}}
-            ACC_INC = {{ACC_INC}}
-            FULL_DATA = {{FULL_DATA}}
             ENS_MIN = {{ENS_MIN}}
             ENS_MAX = {{ENS_MAX}}
             ENS_PRFX = {{ENS_PRFX}}

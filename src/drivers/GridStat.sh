@@ -55,9 +55,75 @@ else
   printf "${cmd}\n"; eval "${cmd}"
 fi
 
-# control flow to be processed
-if [ -z ${CTR_FLW} ]; then
-  printf "ERROR: control flow name \${CTR_FLW} is not defined.\n"
+if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
+  printf "GenEnsProd breaks on missing data.\n"
+elif [[ ${FULL_DATA} =~ ${FALSE} ]]; then
+  printf "GenEnsProd allows missing data.\n"
+else
+  msg="ERROR: \${FULL_DATA} must be set to 'TRUE' or 'FALSE' to decide if "
+  msg+="missing input data is allowed."
+  printf "${msg}"
+  exit 1
+fi
+
+# compute accumulation from cf file, TRUE or FALSE
+if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
+  # define the accumulation intervals for precip
+  if [[ ! ${ACC_MIN} =~ ${INT_RE} ]]; then
+    msg="ERROR: min accumulation interval \${ACC_MIN},\n ${ACC_MIN}\n"
+    msg+=" is not an integer.\n"
+    printf "${msg}"
+    exit 1
+  elif [ ${ACC_MIN} -le 0 ]; then
+    msg="ERROR: min accumulation interval ${ACC_MIN} must be greater than"
+    msg+=" zero.\n"
+    printf "${msg}"
+    exit 1
+  elif [[ ! ${ACC_MAX} =~ ${INT_RE} ]]; then
+    msg="ERROR: max accumulation interval \${ACC_MAX},\n ${ACC_MAX}\n"
+    msg+=" is not integer.\n"
+    printf "${msg}"
+    exit 1
+  elif [ ${ACC_MAX} -lt ${ACC_MIN} ]; then
+    msg="ERROR: max precip accumulation interval ${ACC_MAX} must be greater"
+    msg+=" than min accumulation interval ${ACC_MIN}.\n"
+    printf "${msg}"
+    exit 1
+  elif [[ ! ${ACC_INC} =~ ${INT_RE} ]]; then
+    msg="ERROR: increment between precip accumulation intervals \${ACC_INC}"
+    msg+=" is not integer.\n"
+    printf "${msg}"
+    exit 1
+  elif [ ! $(( (${ACC_MAX} - ${ACC_MIN}) % ${ACC_INC} )) = 0 ]; then
+    msg="ERROR: the interval [\${ACC_MIN}, \${ACC_MAX}]\n"
+    msg+=" [${ACC_MIN}, ${ACC_MAX}] must be evenly divisible into\n"
+    msg+=" increments of \${ACC_INC}, ${ACC_INC}.\n"
+    printf "${msg}"
+    exit 1
+  else
+    # define array of accumulation interval computation hours
+    acc_hrs=()
+    for (( acc_hr=${ACC_MIN}; acc_hr <= ${ACC_MAX}; acc_hr += ${ACC_INC} )); do
+      # check that the precip accumulations are summable from wrfcf files
+      if [ ! $(( ${acc_hr} % ${ANL_INC} )) = 0 ]; then
+        msg="ERROR: precip accumulation ${acc_hr} is not a multiple"
+        msg+=" of ${ANL_INC}.\n"
+        printf "${msg}"
+        exit 1
+      else
+       msg="Computing precipitation accumulation for interval"
+       msg+=" ${acc_hr} hours.\n"
+       printf "${msg}"
+       acc_hrs+=( ${acc_hr} )
+      fi
+    done
+  fi
+elif [[ ${CMP_ACC} =~ ${FALSE} ]]; then
+  printf "run_preprocessWRF does not compute accumulations.\n"
+else
+  msg="ERROR: \${CMP_ACC} must be set to 'TRUE' or 'FALSE' to decide if "
+  msg+="computing statistics on accumulation fields."
+  printf "${msg}"
   exit 1
 fi
 
@@ -126,67 +192,6 @@ else
   anl_max=$(( ${anl_max} / 3600 ))
 fi
 
-# compute accumulation from cf file, TRUE or FALSE
-if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
-  # define the accumulation intervals for precip
-  if [[ ! ${ACC_MIN} =~ ${INT_RE} ]]; then
-    msg="ERROR: min accumulation interval \${ACC_MIN},\n ${ACC_MIN}\n"
-    msg+=" is not an integer.\n"
-    printf "${msg}"
-    exit 1
-  elif [ ${ACC_MIN} -le 0 ]; then
-    msg="ERROR: min accumulation interval ${ACC_MIN} must be greater than"
-    msg+=" zero.\n"
-    printf "${msg}"
-    exit 1
-  elif [[ ! ${ACC_MAX} =~ ${INT_RE} ]]; then
-    msg="ERROR: max accumulation interval \${ACC_MAX},\n ${ACC_MAX}\n"
-    msg+=" is not integer.\n"
-    printf "${msg}"
-    exit 1
-  elif [ ${ACC_MAX} -lt ${ACC_MIN} ]; then
-    msg="ERROR: max precip accumulation interval ${ACC_MAX} must be greater"
-    msg+=" than min accumulation interval ${ACC_MIN}.\n"
-    printf "${msg}"
-    exit 1
-  elif [[ ! ${ACC_INC} =~ ${INT_RE} ]]; then
-    msg="ERROR: increment between precip accumulation intervals \${ACC_INC}"
-    msg+=" is not integer.\n"
-    printf "${msg}"
-    exit 1
-  elif [ ! $(( (${ACC_MAX} - ${ACC_MIN}) % ${ACC_INC} )) = 0 ]; then
-    msg="ERROR: the interval [\${ACC_MIN}, \${ACC_MAX}]\n"
-    msg+=" [${ACC_MIN}, ${ACC_MAX}] must be evenly divisible into\n"
-    msg+=" increments of \${ACC_INC}, ${ACC_INC}.\n"
-    printf "${msg}"
-    exit 1
-  else
-    # define array of accumulation interval computation hours
-    acc_hrs=()
-    for (( acc_hr=${ACC_MIN}; acc_hr <= ${ACC_MAX}; acc_hr += ${ACC_INC} )); do
-      # check that the precip accumulations are summable from wrfcf files
-      if [ ! $(( ${acc_hr} % ${ANL_INC} )) = 0 ]; then
-        msg="ERROR: precip accumulation ${acc_hr} is not a multiple"
-        msg+=" of ${ANL_INC}.\n"
-        printf "${msg}"
-        exit 1
-      else
-       msg="Computing precipitation accumulation for interval"
-       msg+=" ${acc_hr} hours.\n"
-       printf "${msg}"
-       acc_hrs+=( ${acc_hr} )
-      fi
-    done
-  fi
-elif [[ ${CMP_ACC} =~ ${FALSE} ]]; then
-  printf "run_preprocessWRF does not compute accumulations.\n"
-else
-  msg="ERROR: \${CMP_ACC} must be set to 'TRUE' or 'FALSE' to decide if "
-  msg+="computing statistics on accumulation fields."
-  printf "${msg}"
-  exit 1
-fi
-
 # define the verification field
 if [ -z "${VRF_FLD}" ]; then
   printf "ERROR: verification field \${VRF_FLD} is not defined.\n"
@@ -207,10 +212,7 @@ elif [ ! -r ${MSK_LST} ]; then
   msg+=" not readable.\n"
   printf "${msg}"
   exit 1
-fi
-
-# Root directory for landmasks
-if [ -z ${MSK_GRDS} ]; then
+elif [ -z ${MSK_GRDS} ]; then
   printf "ERROR: landmask directory \${MSK_GRDS} is not defined.\n"
   exit 1
 elif [[ ! -d ${MSK_GRDS} || ! -x ${MSK_GRDS} ]]; then
@@ -218,36 +220,28 @@ elif [[ ! -d ${MSK_GRDS} || ! -x ${MSK_GRDS} ]]; then
   msg+=" executable.\n"
   printf "${msg}"
   exit 1
-fi
-
-# loop lines of the mask list, set temporary exit status before searching for masks
-error=0
-while read msk; do
-  fpath=${MSK_GRDS}/${msk}_StageIV.nc
-  if [ -r "${fpath}" ]; then
-    printf "Found\n ${fpath}\n landmask.\n"
-  else
-    msg="ERROR: verification region landmask\n ${fpath}\n"
-    msg+=" does not exist or is not readable.\n"
+else
+  # loop lines of the mask list, set temporary exit status before searching for masks
+  error=0
+  while read msk; do
+    fpath=${MSK_GRDS}/${msk}_StageIV.nc
+    if [ -r "${fpath}" ]; then
+      printf "Found\n ${fpath}\n landmask.\n"
+    else
+      msg="ERROR: verification region landmask\n ${fpath}\n"
+      msg+=" does not exist or is not readable.\n"
+      printf "${msg}"
+      # create exit status flag to kill program, after checking all files in list
+      error=1
+    fi
+  done < "${MSK_LST}"
+  if [ ${error} -eq 1 ]; then
+    msg="ERROR: Exiting due to missing landmasks, please see the above error "
+    msg+="messages and verify the location for these files. These files can be "
+    msg+="generated from lat-lon text files using the run_vxmask.sh script."
     printf "${msg}"
-    # create exit status flag to kill program, after checking all files in list
-    error=1
+    exit 1
   fi
-done < "${MSK_LST}"
-
-if [ ${error} -eq 1 ]; then
-  msg="ERROR: Exiting due to missing landmasks, please see the above error "
-  msg+="messages and verify the location for these files. These files can be "
-  msg+="generated from lat-lon text files using the run_vxmask.sh script."
-  printf "${msg}"
-  exit 1
-fi
-
-# define the interpolation neighborhood size
-if [[ ! ${INT_WDTH} =~ ${INT_RE} ]]; then 
-  msg="ERROR: interpolation neighborhood width \${INT_WDTH}\n ${INT_WDTH}\n"
-  msg+=" is not an integer.\n"
-  exit 1
 fi
 
 # neighborhood width for neighborhood methods
@@ -273,33 +267,16 @@ if [[ ${RNK_CRR} != "TRUE" && ${RNK_CRR} != "FALSE" ]]; then
   exit 1
 fi
 
-# check for software and data deps.
-if [ -z ${STC_ROOT} ]; then
-  printf "ERROR: \${STC_ROOT} is not defined.\n"   
-  exit 1
-elif [[ ! -d ${STC_ROOT} || ! -x ${STC_ROOT} ]]; then
-  msg="ERROR: static verification data directory\n ${STC_ROOT}\n"
-  msg+=" does not exist or is not executable.\n"
-  printf "${msg}"
+# control flow to be processed
+if [ -z ${CTR_FLW} ]; then
+  printf "ERROR: control flow name \${CTR_FLW} is not defined.\n"
   exit 1
 fi
 
-if [ -z ${MET_VER} ]; then
-  msg="MET version \${MET_VER} is not defined.\n"
-  printf "${msg}"
-  exit 1
-fi
-
-if [ ! -x ${MET} ]; then
-  msg="MET singularity image\n ${MET}\n does not exist or is not executable.\n"
-  printf "${msg}"
-  exit 1
-fi
-
-if [ ! -r ${SHARED}/GridStatConfigTemplate ]; then
-  msg="GridStatConfig template \n ${SHARED}/GridStatConfigTemplate\n"
-  msg+=" does not exist or is not readable.\n"
-  printf "${msg}"
+# define the interpolation neighborhood size
+if [[ ! ${INT_WDTH} =~ ${INT_RE} ]]; then 
+  msg="ERROR: interpolation neighborhood width \${INT_WDTH}\n ${INT_WDTH}\n"
+  msg+=" is not an integer.\n"
   exit 1
 fi
 
@@ -347,12 +324,7 @@ fi
 
 # if GenEnsProd output for ensemble mean verification
 if [[ ${IF_ENS_PRD} =~ ${TRUE} ]]; then
-  if [ -z ${ENS_PAD+x} ]; then
-    msg="ERROR: ensemble index padding \${ENS_PAD} is undeclared, set to empty"
-    msg+=" string if not used.\n"
-    printf "${msg}"
-    exit 1
-  elif [[ ! ${ENS_PAD} =~ ${INT_RE} ]]; then
+  if [[ ! ${ENS_PAD} =~ ${INT_RE} ]]; then
     msg="ERROR: ensemble index padding \${ENS_PAD}\n ${ENS_PAD}\n is not"
     msg+=" an integer.\n"
     printf "${msg}"
@@ -383,7 +355,6 @@ if [[ ${IF_ENS_PRD} =~ ${TRUE} ]]; then
     msg="ERROR: max ensemble index ${ENS_MAX} must be greater than or equal"
     msg+=" to the minimum ensemble index.\n"
     exit 1
-  else 
   fi
   pstfx="_ens-${ens_min}-${ens_max}_prd"
   msg="Computing gridstat on ${CTR_FLW} ensemble product from members"
@@ -395,6 +366,36 @@ elif [[ ${IF_ENS_PRD} =~ ${FALSE} ]]; then
 else
   msg="ERROR: \${IF_ENS_PRD} must be TRUE or FALSE (case insensitive)"
   msg+=" if verifying GenEnsProd output.\n"
+  printf "${msg}"
+  exit 1
+fi
+
+# check for software and data deps.
+if [ -z ${STC_ROOT} ]; then
+  printf "ERROR: \${STC_ROOT} is not defined.\n"   
+  exit 1
+elif [[ ! -d ${STC_ROOT} || ! -x ${STC_ROOT} ]]; then
+  msg="ERROR: static verification data directory\n ${STC_ROOT}\n"
+  msg+=" does not exist or is not executable.\n"
+  printf "${msg}"
+  exit 1
+fi
+
+if [ -z ${MET_VER} ]; then
+  msg="MET version \${MET_VER} is not defined.\n"
+  printf "${msg}"
+  exit 1
+fi
+
+if [ ! -x ${MET} ]; then
+  msg="MET singularity image\n ${MET}\n does not exist or is not executable.\n"
+  printf "${msg}"
+  exit 1
+fi
+
+if [ ! -r ${SHARED}/GridStatConfigTemplate ]; then
+  msg="GridStatConfig template \n ${SHARED}/GridStatConfigTemplate\n"
+  msg+=" does not exist or is not readable.\n"
   printf "${msg}"
   exit 1
 fi
@@ -427,6 +428,9 @@ while read msk; do
   fi
   line_count=$(( ${line_count} + 1 ))
 done <${MSK_LST}
+
+# create trigger for handling errors
+error_check=0
 
 # loop lead hours for forecast valid time for each initialization time
 for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
@@ -478,21 +482,40 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
           /in_dir/${for_in} \
           /STC_ROOT/${obs_in} \
           /wrk_dir/GridStatConfig${acc_hr} \
-          -outdir /wrk_dir"
+          -outdir /wrk_dir; error=\$?"
           printf "${cmd}\n"; eval "${cmd}"
+          printf "grid_stat exited with status ${error}.\n"
+          if [ ${error} -ne 0 ]; then
+            msg="ERROR: grid_stat failed to produce verification for input\n"
+            msg+=" ${for_in}\n and ground truth\n ${obs_in}\n"
+            printf "${msg}" 
+            error_check=1
+          fi
           
         else
-          msg="Observation verification file\n ${STC_ROOT}/${obs_in}\n is not "
-          msg+=" readable or does not exist, skipping grid_stat for forecast "
-          msg+="initialization ${cyc_dt}, forecast hour ${anl_hr}.\n"
+          if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
+            msg="ERROR: Observation verification file\n ${STC_ROOT}/${obs_in}\n"
+            msg+=" is not readable or does not exist.\n"
+            printf "${msg}"
+            error_check=1
+          else
+            msg="WARNING: Observation verification file\n ${STC_ROOT}/${obs_in}\n"
+            msg+=" is not readable or does not exist, skipping grid_stat for"
+            msg+=" forecast initialization ${cyc_dt}, forecast hour ${anl_hr}.\n"
+            printf "${msg}"
+          fi
+        fi
+      else
+        if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
+          msg="ERROR: gridstat input file\n ${in_dir}/${for_in}\n is not"
+          msg+=" readable or does not exist.\n"
+          error_check=1
+        else
+          msg="WARNING: gridstat input file\n ${in_dir}/${for_in}\n is not"
+          msg+=" readable or does not exist, skipping grid_stat for forecast"
+          msg+=" initialization ${cyc_dt}, forecast hour ${anl_hr}.\n"
           printf "${msg}"
         fi
-
-      else
-        msg="gridstat input file\n ${in_dir}/${for_in}\n is not readable " 
-        msg+=" or does not exist, skipping grid_stat for forecast initialization "
-        msg+="${cyc_dt}, forecast hour ${anl_hr}.\n"
-        printf "${msg}"
       fi
 
       # clean up working directory from accumulation time
@@ -536,42 +559,63 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
           /in_dir/${for_in} \
           /STC_ROOT/${obs_in} \
           /wrk_dir/GridStatConfig${acc_hr} \
-          -outdir /wrk_dir"
+          -outdir /wrk_dir; error=\$?"
           printf "${cmd}\n"; eval "${cmd}"
-          error="$?"
-          # ADD IN ERROR HANDLING HERE
-          
+          printf "grid_stat exited with status ${error}.\n"
+          if [ ${error} -ne 0 ]; then
+            msg="ERROR: grid_stat failed to produce verification for input\n"
+            msg+=" ${for_in}\n and ground truth\n ${obs_in}\n"
+            printf "${msg}" 
+            error_check=1
+          fi
         else
-          msg="Observation verification file\n ${STC_ROOT}/${obs_in}\n is not "
-          msg+=" readable or does not exist, skipping grid_stat for forecast "
-          msg+="initialization ${cyc_dt}, forecast hour ${anl_hr}.\n"
+          if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
+            msg="ERROR: Observation verification file\n ${STC_ROOT}/${obs_in}\n"
+            msg+=" is not readable or does not exist.\n"
+            printf "${msg}"
+            error_check=1
+          else
+            msg="WARNING: Observation verification file\n ${STC_ROOT}/${obs_in}\n"
+            msg+=" is not readable or does not exist, skipping grid_stat for"
+            msg+=" forecast initialization ${cyc_dt}, forecast hour ${anl_hr}.\n"
+            printf "${msg}"
+          fi
+        fi
+      else
+        if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
+          msg="ERROR: gridstat input file\n ${in_dir}/${for_in}\n is not"
+          msg+=" readable or does not exist.\n"
+          error_check=1
+        else
+          msg="WARNING: gridstat input file\n ${in_dir}/${for_in}\n is not"
+          msg+=" readable or does not exist, skipping grid_stat for forecast"
+          msg+=" initialization ${cyc_dt}, forecast hour ${anl_hr}.\n"
           printf "${msg}"
         fi
-
-      else
-        msg="gridstat input file\n ${in_dir}/${for_in}\n is not readable " 
-        msg+=" or does not exist, skipping grid_stat for forecast initialization "
-        msg+="${cyc_dt}, forecast hour ${anl_hr}.\n"
-        printf "${msg}"
       fi
 
       # clean up working directory from accumulation time
       cmd="rm -f ${wrk_dir}/${for_in}"
       printf "${cmd}\n"; eval "${cmd}"
-
     fi
   done
 done
 
 # clean up working directory from forecast start time
-cmd="rm -f ${wrk_dir}/*_StageIVGrid.nc"
+cmd="rm -f ${wrk_dir}/*_StageIV.nc"
 printf "${cmd}\n"; eval "${cmd}"
 
 cmd="rm -f ${wrk_dir}/PLY_MSK.txt"
 printf "${cmd}\n"; eval "${cmd}"
 
+if [ ${error_check} = 1 ]; then
+  printf "ERROR: GridStat.sh failed on one or more analyses.\n"
+  printf "Check above error messages to diagnose issues.\n"
+  exit 1
+fi
+
 msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "
-msg+="outputs at OUT_DT_ROOT:\n ${OUT_DT_ROOT}\n"
+msg+="outputs at:\n ${wrk_dir}\n"
 printf "${msg}"
 
 #################################################################################

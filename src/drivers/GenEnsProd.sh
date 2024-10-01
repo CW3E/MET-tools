@@ -54,9 +54,75 @@ else
   printf "${cmd}\n"; eval "${cmd}"
 fi
 
-# control flow to be processed
-if [ -z ${CTR_FLW} ]; then
-  printf "ERROR: control flow name \${CTR_FLW} is not defined.\n"
+if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
+  printf "GenEnsProd breaks on missing data.\n"
+elif [[ ${FULL_DATA} =~ ${FALSE} ]]; then
+  printf "GenEnsProd allows missing data.\n"
+else
+  msg="ERROR: \${FULL_DATA} must be set to 'TRUE' or 'FALSE' to decide if "
+  msg+="missing input data is allowed."
+  printf "${msg}"
+  exit 1
+fi
+
+# compute accumulation from cf file, TRUE or FALSE
+if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
+  # define the accumulation intervals for precip
+  if [[ ! ${ACC_MIN} =~ ${INT_RE} ]]; then
+    msg="ERROR: min accumulation interval \${ACC_MIN},\n ${ACC_MIN}\n"
+    msg+=" is not an integer.\n"
+    printf "${msg}"
+    exit 1
+  elif [ ${ACC_MIN} -le 0 ]; then
+    msg="ERROR: min accumulation interval ${ACC_MIN} must be greater than"
+    msg+=" zero.\n"
+    printf "${msg}"
+    exit 1
+  elif [[ ! ${ACC_MAX} =~ ${INT_RE} ]]; then
+    msg="ERROR: max accumulation interval \${ACC_MAX},\n ${ACC_MAX}\n"
+    msg+=" is not integer.\n"
+    printf "${msg}"
+    exit 1
+  elif [ ${ACC_MAX} -lt ${ACC_MIN} ]; then
+    msg="ERROR: max precip accumulation interval ${ACC_MAX} must be greater than"
+    msg+=" min accumulation interval ${ACC_MIN}.\n"
+    printf "${msg}"
+    exit 1
+  elif [[ ! ${ACC_INC} =~ ${INT_RE} ]]; then
+    msg="ERROR: increment between precip accumulation intervals \${ACC_INC}"
+    msg+=" is not integer.\n"
+    printf "${msg}"
+    exit 1
+  elif [ ! $(( (${ACC_MAX} - ${ACC_MIN}) % ${ACC_INC} )) = 0 ]; then
+    msg="ERROR: the interval [\${ACC_MIN}, \${ACC_MAX}]\n"
+    msg+=" [${ACC_MIN}, ${ACC_MAX}] must be evenly divisible into\n"
+    msg+=" increments of \${ACC_INC}, ${ACC_INC}.\n"
+    printf "${msg}"
+    exit 1
+  else
+    # define array of accumulation interval computation hours
+    acc_hrs=()
+    for (( acc_hr=${ACC_MIN}; acc_hr <= ${ACC_MAX}; acc_hr += ${ACC_INC} )); do
+      # check that the precip accumulations are summable from forecasts
+      if [ ! $(( ${acc_hr} % ${ANL_INC} )) = 0 ]; then
+        msg="ERROR: precip accumulation ${acc_hr} is not a multiple"
+        msg+=" of ${ANL_INC}.\n"
+        printf "${msg}"
+        exit 1
+      else
+       msg="Computing precipitation accumulation for interval"
+       msg+=" ${acc_hr} hours.\n"
+       printf "${msg}"
+       acc_hrs+=( ${acc_hr} )
+      fi
+    done
+  fi
+elif [[ ${CMP_ACC} =~ ${FALSE} ]]; then
+  printf "run_preprocessWRF does not compute accumulations.\n"
+else
+  msg="ERROR: \${CMP_ACC} must be set to 'TRUE' or 'FALSE' to decide if "
+  msg+="computing ensemble accumulation fields."
+  printf "${msg}"
   exit 1
 fi
 
@@ -122,78 +188,6 @@ else
   exp_vrf=`date +%s -d "${exp_vrf}"`
   anl_max=$(( ${exp_vrf} - `date +%s -d "${cyc_dt}"` ))
   anl_max=$(( ${anl_max} / 3600 ))
-fi
-
-# compute accumulation from cf file, TRUE or FALSE
-if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
-  # define the accumulation intervals for precip
-  if [[ ! ${ACC_MIN} =~ ${INT_RE} ]]; then
-    msg="ERROR: min accumulation interval \${ACC_MIN},\n ${ACC_MIN}\n"
-    msg+=" is not an integer.\n"
-    printf "${msg}"
-    exit 1
-  elif [ ${ACC_MIN} -le 0 ]; then
-    msg="ERROR: min accumulation interval ${ACC_MIN} must be greater than"
-    msg+=" zero.\n"
-    printf "${msg}"
-    exit 1
-  elif [[ ! ${ACC_MAX} =~ ${INT_RE} ]]; then
-    msg="ERROR: max accumulation interval \${ACC_MAX},\n ${ACC_MAX}\n"
-    msg+=" is not integer.\n"
-    printf "${msg}"
-    exit 1
-  elif [ ${ACC_MAX} -lt ${ACC_MIN} ]; then
-    msg="ERROR: max precip accumulation interval ${ACC_MAX} must be greater than"
-    msg+=" min accumulation interval ${ACC_MIN}.\n"
-    printf "${msg}"
-    exit 1
-  elif [[ ! ${ACC_INC} =~ ${INT_RE} ]]; then
-    msg="ERROR: increment between precip accumulation intervals \${ACC_INC}"
-    msg+=" is not integer.\n"
-    printf "${msg}"
-    exit 1
-  elif [ ! $(( (${ACC_MAX} - ${ACC_MIN}) % ${ACC_INC} )) = 0 ]; then
-    msg="ERROR: the interval [\${ACC_MIN}, \${ACC_MAX}]\n"
-    msg+=" [${ACC_MIN}, ${ACC_MAX}] must be evenly divisible into\n"
-    msg+=" increments of \${ACC_INC}, ${ACC_INC}.\n"
-    printf "${msg}"
-    exit 1
-  else
-    # define array of accumulation interval computation hours
-    acc_hrs=()
-    for (( acc_hr=${ACC_MIN}; acc_hr <= ${ACC_MAX}; acc_hr += ${ACC_INC} )); do
-      # check that the precip accumulations are summable from forecasts
-      if [ ! $(( ${acc_hr} % ${ANL_INC} )) = 0 ]; then
-        msg="ERROR: precip accumulation ${acc_hr} is not a multiple"
-        msg+=" of ${ANL_INC}.\n"
-        printf "${msg}"
-        exit 1
-      else
-       msg="Computing precipitation accumulation for interval"
-       msg+=" ${acc_hr} hours.\n"
-       printf "${msg}"
-       acc_hrs+=( ${acc_hr} )
-      fi
-    done
-  fi
-elif [[ ${CMP_ACC} =~ ${FALSE} ]]; then
-  printf "run_preprocessWRF does not compute accumulations.\n"
-else
-  msg="ERROR: \${CMP_ACC} must be set to 'TRUE' or 'FALSE' to decide if "
-  msg+="computing ensemble accumulation fields."
-  printf "${msg}"
-  exit 1
-fi
-
-if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
-  printf "Preprocessing breaks on missing data.\n"
-elif [[ ${FULL_DATA} =~ ${FALSE} ]]; then
-  printf "Preprocessing allows missing data.\n"
-else
-  msg="ERROR: \${FULL_DATA} must be set to 'TRUE' or 'FALSE' to decide if "
-  msg+="missing input data is allowed."
-  printf "${msg}"
-  exit 1
 fi
 
 # ensemble prefix and ens_ids below construct nested paths to loop over and
@@ -287,6 +281,12 @@ fi
 
 if [ -z "${CAT_THR}" ]; then
   printf "ERROR: thresholds \${CAT_THR} is not defined.\n"
+  exit 1
+fi
+
+# control flow to be processed
+if [ -z ${CTR_FLW} ]; then
+  printf "ERROR: control flow name \${CTR_FLW} is not defined.\n"
   exit 1
 fi
 
@@ -458,8 +458,10 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
         printf "${cmd}\n"; eval "${cmd}"
         cmd="rm -f ${ENS_PRFX}*"
         printf "${cmd}\n"; eval "${cmd}"
+        printf "gen_ens_prod exited with status ${error}.\n"
         if [ ${error} -ne 0 ]; then
-          printf "ERROR: gen_ens_prod exited with code ${error}.\n"
+          msg="ERROR: gen_ens_prod failed to produce ensemble file\n"
+          msg+=" ${f_out}.\n"
           error_check=1
         fi
       fi
@@ -467,7 +469,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
   done 
 done
 if [ ${error_check} = 1 ]; then
-  printf "ERROR: run_GenEnsProd failed on one or more analyses.\n"
+  printf "ERROR: GenEnsProd.sh failed on one or more analyses.\n"
   printf "Check above error messages to diagnose issues.\n"
   exit 1
 fi

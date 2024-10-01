@@ -32,6 +32,9 @@
 {################################################################################}
 {# GRIDSTAT SETTINGS #}
 {################################################################################}
+{# Require all data, no missing files, TRUE or FALSE #}
+{% set FULL_DATA = 'TRUE' %}
+
 {# Define the verification field #}
 {% set VRF_FLD = 'QPF' %}
 
@@ -42,7 +45,7 @@
 {% set NBRHD_WDTH = 9 %}
 
 {# Verification region group name - used for mask list file name #}
-{% set VRF_RGNS = 'CA_Climate_Zone' %}
+{% set VRF_RGNS = 'CA_Climate_Zones' %}
 
 {# Number of bootstrap resamplings, set 0 for off #}
 {% set BTSTRP = 0 %}
@@ -114,7 +117,16 @@
             {% for dom in range(0,max_dom) %}
                 {% set grd = loop.index | pad(2, '0') %}
                 {% set grd = ['d', grd] | join %}
-                GridStat_{{ctr_flw}}_{{grd}}
+                {% if IF_ENS_MEAN == 'TRUE' %}
+                    GridStat_{{ctr_flw}}_mean_{{grd}}
+                {% endif %}
+                {% if IF_ENS_MEMS == 'TRUE' %}
+                    {% set ens_size = ENS_MAX + 1 %}
+                    {% for mem in range(ENS_MIN,ens_size) %}
+                        {% set idx = mem | pad(ENS_PAD, '0') %}
+                        GridStat_{{ctr_flw}}_ens_{{idx}}_{{grd}}
+                    {% endfor %}
+                {% endif %}
             {% endfor %}
         {% endfor %}
         """
@@ -125,6 +137,11 @@
         [[[environment]]]
             OMP_NUM_THREADS = {{GRD_PROC}}
             CNST = {{environ['DRIVERS']}}/CONSTANTS.sh
+            FULL_DATA = {{FULL_DATA}}
+            CMP_ACC = {{CMP_ACC}}
+            ACC_MIN = {{ACC_MIN}}
+            ACC_MAX = {{ACC_MAX}}
+            ACC_INC = {{ACC_INC}}
             CYC_DT = $(isodatetime ${CYLC_TASK_CYCLE_POINT} --f '%Y%m%d%H')
             ANL_MIN = {{ANL_MIN}}
             ANL_MAX = {{ANL_MAX}}
@@ -134,21 +151,13 @@
             {% else %}
                 EXP_VRF = $(isodatetime {{EXP_VRF}} --f '%Y%m%d%H')
             {% endif %}
-            CMP_ACC = {{CMP_ACC}}
-            ACC_MIN = {{ACC_MIN}}
-            ACC_MAX = {{ACC_MAX}}
-            ACC_INC = {{ACC_INC}}
-            ENS_PRFX = {{ENS_PRFX}}
-            ENS_PAD = {{ENS_PAD}}
             VRF_FLD = {{VRF_FLD}}
             CAT_THR = {{CAT_THR}}
-            MSK_LST = {{environ['MSK_ROOT']}}/mask-lists/${VRF_RGNS}.txt
-            MSK_GRDS = {{environ['MSK_GRDS']}}
-            NBRHD_WDTH = {{nbrhd_wdth}}
+            MSK_LST = {{environ['MSK_ROOT']}}/mask-lists/{{VRF_RGNS}}.txt
+            NBRHD_WDTH = {{NBRHD_WDTH}}
             BTSTRP = {{BTSTRP}}
             RNK_CRR = {{RNK_CRR}}
 
-    NEED TO INTRODUCE LOGIC HERE FOR ENS MEAN VERSUS MEMBERS AND APPROPRIATE IO
     {# Loop model control flows #}
     {% for ctr_flw in CTR_FLWS %}
         {# inherit the max domain to process from 1-1 correspondence #}
@@ -159,34 +168,74 @@
             {% set grd = ['d', grd] | join %}
             {# Neighborhood width is in 1-1 correspondence with model grd #}
             {% set int_wdth = INT_WDTHS[loop.index0] %}
-            [[GenEnsProd_{{ctr_flw}}_{{grd}}]]
-                execution time limit = {{GRD_WC}}
-                script = {{environ['DRIVERS']}}/run_GenEnsProd.sh
-                execution retry delays = 3*PT5M
-                [[[environment]]]
-                    CTR_FLW = {{ctr_flw}}
-                    INT_WDTH = {{int_wdth}}
-                    IN_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT
-                    {# WRF workflow outputs are nested relative to ISO/mem_id by domain #}
-                    IN_DT_SUBDIR = {{grd}}
-                    WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GenEnsProd/$CYC_DT
-                    OUT_DT_SUBDIR = {{grd}}
-                [[[directives]]]
-                    {% if environ['SCHED'] == 'slurm' %}
-                        {% if environ['SYS_TYPE' ] == 'penguin' %}
-                            --partition = general
-                            --qos = {{environ['PART_DBG']}}
-                            --nodes = 1
-                            --ntasks-per-node = {{GRD_PROC}}
-                        {% else %}
-                            --partition = {{environ['PART_DBG']}}
-                            --nodes = 1
-                            --ntasks-per-node = {{GRD_PROC}}
-                            --mem = {{GRD_MEM}}
+            {% if IF_ENS_MEAN == 'TRUE' %}
+                [[GridStat_{{ctr_flw}}_mean_{{grd}}]]
+                    execution time limit = {{GRD_WC}}
+                    script = {{environ['DRIVERS']}}/GridStat.sh
+                    execution retry delays = 3*PT5M
+                    [[[environment]]]
+                        IF_ENS_PRD = 'TRUE'
+                        ENS_PAD = {{ENS_PAD}}
+                        CTR_FLW = {{ctr_flw}}
+                        INT_WDTH = {{int_wdth}}
+                        IN_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GenEnsProd/$CYC_DT
+                        {# WRF workflow outputs are nested relative to ISO/mem_id by domain #}
+                        IN_DT_SUBDIR = {{grd}}
+                        WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GridStat/$CYC_DT
+                        OUT_DT_SUBDIR = {{grd}}
+                    [[[directives]]]
+                        {% if environ['SCHED'] == 'slurm' %}
+                            {% if environ['SYS_TYPE' ] == 'penguin' %}
+                                --partition = general
+                                --qos = {{environ['PART_DBG']}}
+                                --nodes = 1
+                                --ntasks-per-node = {{GRD_PROC}}
+                            {% else %}
+                                --partition = {{environ['PART_DBG']}}
+                                --nodes = 1
+                                --ntasks-per-node = {{GRD_PROC}}
+                                --mem = {{GRD_MEM}}
+                            {% endif %}
+                        {% elif environ['SCHED'] == 'pbs' %}
+                            -q = {{environ['PART_DBG']}}
+                            -l select=1:mpiprocs={{GRD_PROC}}:ncpus=1
                         {% endif %}
-                    {% elif environ['SCHED'] == 'pbs' %}
-                        -q = {{environ['PART_DBG']}}
-                        -l select=1:mpiprocs={{GRD_PROC}}:ncpus=1
-                    {% endif %}
+            {% endif %}
+            {% if IF_ENS_MEMS == 'TRUE' %}
+                {% set ens_size = ENS_MAX + 1 %}
+                {% for mem in range(ENS_MIN,ens_size) %}
+                    {% set idx = mem | pad(ENS_PAD, '0') %}
+                    [[GridStat_{{ctr_flw}}_ens_{{idx}}_{{grd}}]]
+                        execution time limit = {{GRD_WC}}
+                        script = {{environ['DRIVERS']}}/GridStat.sh
+                        execution retry delays = 3*PT5M
+                        [[[environment]]]
+                            CTR_FLW = {{ctr_flw}}
+                            INT_WDTH = {{int_wdth}}
+                            IN_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT
+                            {# WRF workflow outputs are nested relative to ISO/mem_id by domain #}
+                            IN_DT_SUBDIR = {{grd}}
+                            WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GridStat/$CYC_DT
+                            OUT_DT_SUBDIR = {{grd}}
+                            IF_ENS_PRD = 'FALSE'
+                        [[[directives]]]
+                            {% if environ['SCHED'] == 'slurm' %}
+                                {% if environ['SYS_TYPE' ] == 'penguin' %}
+                                    --partition = general
+                                    --qos = {{environ['PART_DBG']}}
+                                    --nodes = 1
+                                    --ntasks-per-node = {{GRD_PROC}}
+                                {% else %}
+                                    --partition = {{environ['PART_DBG']}}
+                                    --nodes = 1
+                                    --ntasks-per-node = {{GRD_PROC}}
+                                    --mem = {{GRD_MEM}}
+                                {% endif %}
+                            {% elif environ['SCHED'] == 'pbs' %}
+                                -q = {{environ['PART_DBG']}}
+                                -l select=1:mpiprocs={{GRD_PROC}}:ncpus=1
+                            {% endif %}
+                {% endfor %}
+            {% endif %}
         {% endfor %}
     {% endfor %}

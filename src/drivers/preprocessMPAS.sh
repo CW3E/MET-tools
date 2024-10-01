@@ -6,11 +6,7 @@
 # grid configuration and date range as defined in the companion batch and config
 # scripts. This driver script loops the calls to the MPAS preprocessing scripts
 # mpas_to_latlon.sh / mpas_to_cf.py to ready MPAS outputs for MET, and will
-# optionally compute  accumulated precip in addition. This script is based on
-# original source code provided by Rachel Weihs, Caroline Papadopoulos and
-# Daniel Steinhoff.  This is re-written to homogenize project structure and to
-# include error handling, process logs and additional flexibility with batch
-# processing ranges of data from multiple models and / or workflows.
+# optionally compute  accumulated precip in addition.
 #
 #################################################################################
 # License Statement:
@@ -63,112 +59,15 @@ else
   printf "${cmd}\n"; eval "${cmd}"
 fi
 
-# control flow to be processed
-if [ ! ${CTR_FLW} ]; then
-  printf "ERROR: control flow name \${CTR_FLW} is not defined.\n"
-  exit 1
-fi
-
-# flag is set to source mesh information from the same stream as the MPAS outputs
-# unless a mesh root directory and file name is supplied
-in_msh_strm=FALSE
-if [ -z ${IN_MSH_DIR+x} ]; then
-  printf "ERROR: Static information directory \${IN_MSH_DIR} is not declared.\n"
-  msg="Supply a blank string for this variable if static information is derived"
-  msg+=" from the same data stream as MPAS output files.\n"
-  printf "${msg}"
-  exit 1
-elif [ -n ${IN_MSH_DIR} ]; then
-  if [[ ! -d  ${IN_MSH_DIR} || ! -x ${IN_MSH_DIR} ]]; then
-    msg="ERROR: static information directory IN_MSH_DIR\n ${IN_MSH_DIR}\n"
-    msg+=" is not a directory or is not executable.\n"
-    printf "${msg}"
-    exit 1
-  elif [[ ! -r ${IN_MSH_DIR}/${IN_MSH_F} ]]; then
-    msg="ERROR: static information file\n ${IN_MSH_DIR}/${IN_MSH_F}\n"
-    msg+=" is not readable or does not exist.\n"
-    printf "${msg}"
-    exit 1
-  else
-    in_msh_strm=TRUE
-    in_msh_dir="${IN_MSH_DIR}"
-    in_msh_f="${IN_MSH_F}"
-    printf "MPAS static fields are sourced from\n ${IN_MSH_DIR}/${IN_MSH_F}\n"
-  fi
+if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
+  printf "Preprocessing breaks on missing data.\n"
+elif [[ ${FULL_DATA} =~ ${FALSE} ]]; then
+  printf "Preprocessing allows missing data.\n"
 else
-  # When MSH_ROOT is defined as an empty sting, static info sourced from input
-  msg="\${IN_MSH_DIR} is an empty string, static information is derived"
-  msg+=" from the same data stream as MPAS outputs.\n"
-  printf "${msg}"
-fi
-
-if [ -z ${MPAS_PRFX} ]; then
-  msg="ERROR: MPAS file prefix \${MPAS_PRFX} is not defined. Supply a file"
-  msg+=" prefix value, e.g., hist / diag, for the source of model outputs.\n"
+  msg="ERROR: \${FULL_DATA} must be set to 'TRUE' or 'FALSE' to decide if "
+  msg+="missing input data is allowed."
   printf "${msg}"
   exit 1
-else
-  printf "MPAS model outputs are sourced from file prefix\n ${MPAS_PRFX}\n"
-fi
-
-# Convert CYC_DT from 'YYYYMMDDHH' format to cyc_dt Unix date format
-if [[ ! ${CYC_DT} =~ ${ISO_RE} ]]; then
-  msg="ERROR: cycle date \${CYC_DT}\n ${CYC_DT}\n"
-  msg+=" is not in YYYYMMDDHH format.\n"
-  printf "${msg}"
-  exit 1
-else
-  cyc_dt="${CYC_DT:0:8} ${CYC_DT:8:2}"
-  cyc_dt=`date -d "${cyc_dt}"`
-fi
-
-# define min / max forecast hours for forecast outputs to be processed
-if [[ ! ${ANL_MIN} =~ ${N_RE} ]]; then
-  printf "ERROR: min forecast hour \${ANL_MIN} is not numeric.\n"
-  exit 1
-elif [ ${ANL_MIN} -lt 0 ]; then
-  printf "ERROR: min forecast hour ${ANL_MIN} must be non-negative.\n"
-  exit 1
-elif [[ ! ${ANL_MAX} =~ ${N_RE} ]]; then
-  printf "ERROR: max forecast hour \${ANL_MAX} is not numeric.\n"
-  exit 1
-elif [ ${ANL_MAX} -lt ${ANL_MIN} ]; then
-  msg="ERROR: max forecast hour ${ANL_MAX} must be greater than or equal to"
-  msg+="min forecast hour ${ANL_MIN}.\n"
-  printf "${msg}"
-  exit 1
-fi
-
-# define the increment at which to process forecast outputs (HH)
-if [[ ! ${ANL_INC} =~ ${N_RE} ]]; then
-  printf "ERROR: hours increment between analyses \${ANL_INC} is not numeric.\n"
-  exit 1
-elif [ ! $(( (${ANL_MAX} - ${ANL_MIN}) % ${ANL_INC} )) = 0 ]; then
-  msg="ERROR: the interval [\${ANL_MIN}, \${ANL_MAX}]\n [${ANL_MIN}, ${ANL_MAX}]\n" 
-  msg+=" must be evenly divisible into increments of \${ANL_INC}, ${ANL_INC}.\n"
-  printf "${msg}"
-  exit 1
-fi
-
-if [ -z ${EXP_VRF} ]; then
-  anl_max="${ANL_MAX}"
-  msg="No stop date is set - preprocessMPAS runs until max forecast"
-  msg+=" hour ${ANL_MAX}.\n"
-  printf "${msg}"
-elif [[ ! ${EXP_VRF} =~ ${ISO_RE} ]]; then
-  msg="ERROR: stop date \${EXP_VRF}\n ${EXP_VRF}\n"
-  msg+=" is not in YYYYMMDDHH format.\n"
-  printf "${msg}"
-  exit 1
-else
-  # Convert EXP_VRF from 'YYYYMMDDHH' format to exp_vrf Unix date format
-  exp_vrf="${EXP_VRF:0:8} ${EXP_VRF:8:2}"
-  printf "Stop date is set at `date +%Y-%m-%d_%H_%M_%S -d "${exp_vrf}"`.\n"
-  printf "Preprocessing stops automatically for forecasts at this time.\n"
-  # Recompute the max forecast hour with respect to exp_vrf
-  exp_vrf=`date +%s -d "${exp_vrf}"`
-  anl_max=$(( ${exp_vrf} - `date +%s -d "${cyc_dt}"` ))
-  anl_max=$(( ${anl_max} / 3600 ))
 fi
 
 # compute accumulation from cf file, TRUE or FALSE
@@ -232,15 +131,136 @@ else
   exit 1
 fi
 
-if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
-  printf "Preprocessing breaks on missing data.\n"
-elif [[ ${FULL_DATA} =~ ${FALSE} ]]; then
-  printf "Preprocessing allows missing data.\n"
-else
-  msg="ERROR: \${FULL_DATA} must be set to 'TRUE' or 'FALSE' to decide if "
-  msg+="missing input data is allowed."
+if [ -z ${MPAS_PRFX} ]; then
+  msg="ERROR: MPAS file type \${MPAS_PRFX} is undefined.  Supply an output"
+  msg+=" e.g., history / diag, to source dynamic fields from.\n"
   printf "${msg}"
   exit 1
+fi
+
+# Convert CYC_DT from 'YYYYMMDDHH' format to cyc_dt Unix date format
+if [[ ! ${CYC_DT} =~ ${ISO_RE} ]]; then
+  msg="ERROR: cycle date \${CYC_DT}\n ${CYC_DT}\n"
+  msg+=" is not in YYYYMMDDHH format.\n"
+  printf "${msg}"
+  exit 1
+else
+  cyc_dt="${CYC_DT:0:8} ${CYC_DT:8:2}"
+  cyc_dt=`date -d "${cyc_dt}"`
+fi
+
+# define min / max forecast hours for forecast outputs to be processed
+if [[ ! ${ANL_MIN} =~ ${N_RE} ]]; then
+  printf "ERROR: min forecast hour \${ANL_MIN} is not numeric.\n"
+  exit 1
+elif [ ${ANL_MIN} -lt 0 ]; then
+  printf "ERROR: min forecast hour ${ANL_MIN} must be non-negative.\n"
+  exit 1
+elif [[ ! ${ANL_MAX} =~ ${N_RE} ]]; then
+  printf "ERROR: max forecast hour \${ANL_MAX} is not numeric.\n"
+  exit 1
+elif [ ${ANL_MAX} -lt ${ANL_MIN} ]; then
+  msg="ERROR: max forecast hour ${ANL_MAX} must be greater than or equal to"
+  msg+="min forecast hour ${ANL_MIN}.\n"
+  printf "${msg}"
+  exit 1
+fi
+
+# define the increment at which to process forecast outputs (HH)
+if [[ ! ${ANL_INC} =~ ${N_RE} ]]; then
+  printf "ERROR: hours increment between analyses \${ANL_INC} is not numeric.\n"
+  exit 1
+elif [ ! $(( (${ANL_MAX} - ${ANL_MIN}) % ${ANL_INC} )) = 0 ]; then
+  msg="ERROR: the interval [\${ANL_MIN}, \${ANL_MAX}]\n [${ANL_MIN}, ${ANL_MAX}]\n" 
+  msg+=" must be evenly divisible into increments of \${ANL_INC}, ${ANL_INC}.\n"
+  printf "${msg}"
+  exit 1
+fi
+
+if [ -z ${EXP_VRF} ]; then
+  anl_max="${ANL_MAX}"
+  msg="No stop date is set - preprocessMPAS runs until max forecast"
+  msg+=" hour ${ANL_MAX}.\n"
+  printf "${msg}"
+elif [[ ! ${EXP_VRF} =~ ${ISO_RE} ]]; then
+  msg="ERROR: stop date \${EXP_VRF}\n ${EXP_VRF}\n"
+  msg+=" is not in YYYYMMDDHH format.\n"
+  printf "${msg}"
+  exit 1
+else
+  # Convert EXP_VRF from 'YYYYMMDDHH' format to exp_vrf Unix date format
+  exp_vrf="${EXP_VRF:0:8} ${EXP_VRF:8:2}"
+  printf "Stop date is set at `date +%Y-%m-%d_%H_%M_%S -d "${exp_vrf}"`.\n"
+  printf "Preprocessing stops automatically for forecasts at this time.\n"
+  # Recompute the max forecast hour with respect to exp_vrf
+  exp_vrf=`date +%s -d "${exp_vrf}"`
+  anl_max=$(( ${exp_vrf} - `date +%s -d "${cyc_dt}"` ))
+  anl_max=$(( ${anl_max} / 3600 ))
+fi
+
+# control flow to be processed
+if [ ! ${CTR_FLW} ]; then
+  printf "ERROR: control flow name \${CTR_FLW} is not defined.\n"
+  exit 1
+fi
+
+# check for input data root
+if [ -z ${IN_DIR} ]; then
+  printf "ERROR: input data directory \${IN_DIR} is not defined.\n"
+  exit 1
+elif [[ ! -d ${IN_DIR} || ! -x ${IN_DIR} ]]; then
+  msg="ERROR: input data directory\n ${IN_DIR}\n"
+  msg+=" does not exist or is not executable.\n"
+  printf "${msg}"
+  exit 1
+fi
+
+# create output directory if does not exist
+if [ -z ${WRK_DIR} ]; then
+  printf "ERROR: work directory \${WRK_DIR} is not defined.\n"
+else
+  cmd="mkdir -p ${WRK_DIR}"
+  printf "${cmd}\n"; eval "${cmd}"
+fi
+
+if [[ ! -d ${WRK_DIR} || ! -w ${WRK_DIR} ]]; then
+  msg="ERROR: work directory\n ${WRK_DIR}\n does not"
+  msg+=" exist or is not writable.\n"
+  printf "${msg}"
+  exit 1
+fi
+
+# flag is set to source mesh information from the same stream as the MPAS outputs
+# unless a mesh root directory and file name is supplied
+in_msh_strm=FALSE
+if [ -z ${IN_MSH_DIR+x} ]; then
+  printf "ERROR: Static information directory \${IN_MSH_DIR} is not declared.\n"
+  msg="Supply a blank string for this variable if static information is derived"
+  msg+=" from the same data stream as MPAS output files.\n"
+  printf "${msg}"
+  exit 1
+elif [ -n ${IN_MSH_DIR} ]; then
+  if [[ ! -d  ${IN_MSH_DIR} || ! -x ${IN_MSH_DIR} ]]; then
+    msg="ERROR: static information directory IN_MSH_DIR\n ${IN_MSH_DIR}\n"
+    msg+=" is not a directory or is not executable.\n"
+    printf "${msg}"
+    exit 1
+  elif [[ ! -r ${IN_MSH_DIR}/${IN_MSH_F} ]]; then
+    msg="ERROR: static information file\n ${IN_MSH_DIR}/${IN_MSH_F}\n"
+    msg+=" is not readable or does not exist.\n"
+    printf "${msg}"
+    exit 1
+  else
+    in_msh_strm=TRUE
+    in_msh_dir="${IN_MSH_DIR}"
+    in_msh_f="${IN_MSH_F}"
+    printf "MPAS static fields are sourced from\n ${IN_MSH_DIR}/${IN_MSH_F}\n"
+  fi
+else
+  # When MSH_ROOT is defined as an empty sting, static info sourced from input
+  msg="\${IN_MSH_DIR} is an empty string, static information is derived"
+  msg+=" from the same data stream as MPAS outputs.\n"
+  printf "${msg}"
 fi
 
 # check software dependencies
@@ -279,32 +299,6 @@ fi
 if [ ! -x ${UTLTY}/mpas_to_latlon.sh ]; then
   msg="ERROR: Utility script\n ${UTLTY}/mpas_to_latlon.sh\n does not exist"
   msg+=" or is not executable.\n"
-  printf "${msg}"
-  exit 1
-fi
-
-# check for input data root
-if [ -z ${IN_DIR} ]; then
-  printf "ERROR: input data directory \${IN_DIR} is not defined.\n"
-  exit 1
-elif [[ ! -d ${IN_DIR} || ! -x ${IN_DIR} ]]; then
-  msg="ERROR: input data directory\n ${IN_DIR}\n"
-  msg+=" does not exist or is not executable.\n"
-  printf "${msg}"
-  exit 1
-fi
-
-# create output directory if does not exist
-if [ -z ${WRK_DIR} ]; then
-  printf "ERROR: work directory \${WRK_DIR} is not defined.\n"
-else
-  cmd="mkdir -p ${WRK_DIR}"
-  printf "${cmd}\n"; eval "${cmd}"
-fi
-
-if [[ ! -d ${WRK_DIR} || ! -w ${WRK_DIR} ]]; then
-  msg="ERROR: work directory\n ${WRK_DIR}\n does not"
-  msg+=" exist or is not writable.\n"
   printf "${msg}"
   exit 1
 fi
@@ -370,6 +364,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
       cmd+=" '/wrk_dir/${f_tmp}' '/wrk_dir/${f_out}'"
       cmd+=" '/in_dir/${f_in}'; error=\$?"
       printf "${cmd}\n"; eval "${cmd}"
+      printf "mpas_to_cf.sh exited with status ${error}.\n"
       if [ ${error} -ne 0 ]; then
         msg="ERROR: mpas_to_cf.py failed to produce cf file\n"
         msg+=" ${f_out}\n"

@@ -407,10 +407,10 @@ msk_count=`wc -l < ${MSK_LST}`
 line_count=1
 while read msk; do
   if [ ${line_count} -lt ${msk_count} ]; then
-    ply_msk="\"/MSK_GRDS/${msk}_StageIVGrid.nc\",\n"
+    ply_msk="\"/MSK_GRDS/${msk}_StageIV.nc\",\n"
     printf ${ply_msk} >> ${WRK_DIR}/PLY_MSK.txt
   else
-    ply_msk="\"/MSK_GRDS/${msk}_StageIVGrid.nc\""
+    ply_msk="\"/MSK_GRDS/${msk}_StageIV.nc\""
     printf ${ply_msk} >> ${WRK_DIR}/PLY_MSK.txt
   fi
   line_count=$(( ${line_count} + 1 ))

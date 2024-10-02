@@ -84,7 +84,7 @@
 
 {# Defines the min / max accumulation interval for precip #}
 {% set ACC_MIN = 24 %}
-{% set ACC_MAX = 72 %}
+{% set ACC_MAX = 24 %}
 
 {# Defines the increment between min / max to compute accumulation intervals #}
 {% set ACC_INC = 24 %}

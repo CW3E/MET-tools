@@ -281,6 +281,7 @@ fi
 if [[ ! -d ${UTLTY} || ! -x ${UTLTY} ]]; then
   msg="ERROR: utility script directory\n ${UTLTY}\n does not exist"
   msg+=" or is not executable.\n"
+  printf "${msg}"
   exit 1
 fi
 

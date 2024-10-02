@@ -259,6 +259,7 @@ if [ ${ens_min} -lt 0 ]; then
 elif [ ${ens_max} -lt ${ens_min} ]; then
   msg="ERROR: max ensemble index ${ENS_MAX} must be greater than or equal"
   msg+=" to the minimum ensemble index.\n"
+  printf "${msg}"
   exit 1
 else 
   # define array of ensemble member ids, padded ${ENS_PAD} digits
@@ -392,11 +393,11 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
 
       # define output file name depending on parameters
       f_out="${CTR_FLW}_${acc_hr}${VRF_FLD}_${CYC_DT}_F${pdd_hr}"
-      f_out+="_ens-${ens_min}-${ens_max}_prd.nc"
+      f_out+="_${ENS_PRFX}-${ens_min}-${ens_max}_prd.nc"
 
       # define the ensemble member list name and cleanup existing
       mem_lst="ens_list_${CTR_FLW}_${acc_hr}${VRF_FLD}_${CYC_DT}_F${pdd_hr}"
-      mem_lst+="_ens-${ens_min}-${ens_max}_prd.txt"
+      mem_lst+="_${ENS_PRFX}-${ens_min}-${ens_max}_prd.txt"
 
       cmd="rm -f ${mem_lst}"
       printf "${cmd}\n"; eval "${cmd}"
@@ -462,6 +463,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
         if [ ${error} -ne 0 ]; then
           msg="ERROR: gen_ens_prod failed to produce ensemble file\n"
           msg+=" ${f_out}.\n"
+          printf "${msg}"
           error_check=1
         fi
       fi

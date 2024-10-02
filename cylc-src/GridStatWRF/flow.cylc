@@ -23,6 +23,9 @@
 {# Define the number of digits to pad ensemble indices #}
 {% set ENS_PAD = 2 %}
 
+{# Define ensemble index prefix used in member / ensemble product name syntax #}
+{% set ENS_PRFX = 'ens_' %}
+
 {# If computing ensemble mean verification #}
 {% set IF_ENS_MEAN = 'TRUE' %}
 
@@ -175,14 +178,14 @@
                     execution retry delays = 3*PT5M
                     [[[environment]]]
                         IF_ENS_PRD = 'TRUE'
+                        ENS_MIN = {{ENS_MIN}}
+                        ENS_MAX = {{ENS_MAX}}
                         ENS_PAD = {{ENS_PAD}}
                         CTR_FLW = {{ctr_flw}}
                         INT_WDTH = {{int_wdth}}
-                        IN_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GenEnsProd/$CYC_DT
+                        IN_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GenEnsProd/$CYC_DT/{{grd}}
                         {# WRF workflow outputs are nested relative to ISO/mem_id by domain #}
-                        IN_DT_SUBDIR = {{grd}}
-                        WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GridStat/$CYC_DT
-                        OUT_DT_SUBDIR = {{grd}}
+                        WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GridStat/$CYC_DT/mean/{{grd}}
                     [[[directives]]]
                         {% if environ['SCHED'] == 'slurm' %}
                             {% if environ['SYS_TYPE' ] == 'penguin' %}
@@ -212,11 +215,9 @@
                         [[[environment]]]
                             CTR_FLW = {{ctr_flw}}
                             INT_WDTH = {{int_wdth}}
-                            IN_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT
+                            IN_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT/{{ENS_PRFX}}{{idx}}/{{grd}}
                             {# WRF workflow outputs are nested relative to ISO/mem_id by domain #}
-                            IN_DT_SUBDIR = {{grd}}
-                            WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GridStat/$CYC_DT
-                            OUT_DT_SUBDIR = {{grd}}
+                            WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GridStat/$CYC_DT/{{ENS_PRFX}}{{idx}}/{{grd}}
                             IF_ENS_PRD = 'FALSE'
                         [[[directives]]]
                             {% if environ['SCHED'] == 'slurm' %}

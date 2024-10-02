@@ -277,6 +277,7 @@ fi
 if [[ ! ${INT_WDTH} =~ ${INT_RE} ]]; then 
   msg="ERROR: interpolation neighborhood width \${INT_WDTH}\n ${INT_WDTH}\n"
   msg+=" is not an integer.\n"
+  printf "${msg}"
   exit 1
 fi
 
@@ -291,36 +292,21 @@ elif [[ ! -d ${IN_DIR} || ! -x ${IN_DIR} ]]; then
   exit 1
 fi
 
-# Define the subdirectory to source data from relative to ISO date
-if [ -z ${IN_DT_SUBDIR+x} ]; then
-  msg="ERROR: input data directory subdirectory \${IN_DT_SUBDIR} is not"
-  msg+=" declared, define as an empty string if unused.\n"
-  printf "${msg}"
-  exit 1
-fi
-
 # create output directory if does not exist
 if [ -z ${WRK_DIR} ]; then
   printf "ERROR: work directory \${WRK_DIR} is not defined.\n"
 else
-  if [ -z ${OUT_DT_SUBDIR+x} ]; then
-    msg="ERROR: output data directory subdirectory \${OUT_DT_SUBDIR} is not"
-    msg+=" declared, define as an empty string if unused.\n"
-    printf "${msg}"
-    exit 1
-  else
-    wrk_dir="${WRK_DIR}/${OUT_DT_SUBDIR}"
-  fi
-  cmd="mkdir -p ${wrk_dir}"
+  cmd="mkdir -p ${WRK_DIR}"
   printf "${cmd}\n"; eval "${cmd}"
 fi
 
-if [[ ! -d ${wrk_dir} || ! -w ${wrk_dir} ]]; then
-  msg="ERROR: work directory\n ${wrk_dir}\n does not"
+if [[ ! -d ${WRK_DIR} || ! -w ${WRK_DIR} ]]; then
+  msg="ERROR: work directory\n ${WRK_DIR}\n does not"
   msg+=" exist or is not writable.\n"
   printf "${msg}"
   exit 1
 fi
+
 
 # if GenEnsProd output for ensemble mean verification
 if [[ ${IF_ENS_PRD} =~ ${TRUE} ]]; then
@@ -346,7 +332,7 @@ if [[ ${IF_ENS_PRD} =~ ${TRUE} ]]; then
     exit 1
   else
     # ensure correct padding
-    ens_max=`printf %0${ENS_PAD}d $(( 10#${ens_max} ))`
+    ens_max=`printf %0${ENS_PAD}d $(( 10#${ENS_MAX} ))`
   fi
   if [ ${ens_min} -lt 0 ]; then
     printf "ERROR: min ensemble index ${ENS_MIN} must be non-negative.\n"
@@ -354,6 +340,7 @@ if [[ ${IF_ENS_PRD} =~ ${TRUE} ]]; then
   elif [ ${ens_max} -lt ${ens_min} ]; then
     msg="ERROR: max ensemble index ${ENS_MAX} must be greater than or equal"
     msg+=" to the minimum ensemble index.\n"
+    printf "${msg}"
     exit 1
   fi
   pstfx="_ens-${ens_min}-${ens_max}_prd"
@@ -404,16 +391,16 @@ fi
 # Process data
 #################################################################################
 # Define directory privileges for singularity exec
-met="singularity exec -B ${wrk_dir}:/wrk_dir:rw,"
+met="singularity exec -B ${WRK_DIR}:/wrk_dir:rw,"
 met+="${STC_ROOT}:/STC_ROOT:ro,${MSK_GRDS}:/MSK_GRDS:ro,"
-met+="${in_dir}:/in_dir:ro ${MET}"
+met+="${IN_DIR}:/in_dir:ro ${MET}"
 
 # clean old data
-rm -f ${wrk_dir}/grid_stat_*.txt
-rm -f ${wrk_dir}/grid_stat_*.stat
-rm -f ${wrk_dir}/grid_stat_*.nc
-rm -f ${wrk_dir}/GridStatConfig*
-rm -f ${wrk_dir}/PLY_MSK.txt
+rm -f ${WRK_DIR}/grid_stat_*.txt
+rm -f ${WRK_DIR}/grid_stat_*.stat
+rm -f ${WRK_DIR}/grid_stat_*.nc
+rm -f ${WRK_DIR}/GridStatConfig*
+rm -f ${WRK_DIR}/PLY_MSK.txt
 
 # loop lines of the mask list, generate PLY_MSK.txt for GridStatConfig insert
 msk_count=`wc -l < ${MSK_LST}`
@@ -421,10 +408,10 @@ line_count=1
 while read msk; do
   if [ ${line_count} -lt ${msk_count} ]; then
     ply_msk="\"/MSK_GRDS/${msk}_StageIVGrid.nc\",\n"
-    printf ${ply_msk} >> ${wrk_dir}/PLY_MSK.txt
+    printf ${ply_msk} >> ${WRK_DIR}/PLY_MSK.txt
   else
     ply_msk="\"/MSK_GRDS/${msk}_StageIVGrid.nc\""
-    printf ${ply_msk} >> ${wrk_dir}/PLY_MSK.txt
+    printf ${ply_msk} >> ${WRK_DIR}/PLY_MSK.txt
   fi
   line_count=$(( ${line_count} + 1 ))
 done <${MSK_LST}
@@ -435,19 +422,12 @@ error_check=0
 # loop lead hours for forecast valid time for each initialization time
 for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
   # define valid times for verification
-  anl_stop_hr=$(( ${anl_hr} + ${cyc_hr} ))
-  anl_stop=`date +%Y-%m-%d_%H_%M_%S -d "${strt_dt} ${anl_stop_hr} hours"`
-
-  vld_Y=${anl_stop:0:4}
-  vld_m=${anl_stop:5:2}
-  vld_d=${anl_stop:8:2}
-  vld_H=${anl_stop:11:2}
-  
+  anl_dt=`date +%Y%m%d%H -d "${cyc_dt} ${anl_hr} hours"`
   pdd_hr=`printf %03d $(( 10#${anl_hr} ))`
 
   for acc_hr in ${acc_hrs[@]}; do
     if [[ ${CMP_ACC} =~ ${TRUE} && ${acc_hr} -le ${anl_hr} ]]; then
-      for_in=${CTR_FLW}_${acc_hr}${VRF_FLD}_${cyc_dt}_F${pdd_hr}${pstfx}.nc
+      for_in=${CTR_FLW}_${acc_hr}${VRF_FLD}_${CYC_DT}_F${pdd_hr}${pstfx}.nc
       if [[ ${IF_ENS_PRD} =~ ${TRUE} ]]; then
         fld=${VRF_FLD}_${acc_hr}hr_0_all_all_ENS_MEAN
       else
@@ -455,26 +435,26 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
       fi
 
       # obs file defined in terms of valid time, path relative to STC_ROOT
-      obs_in=StageIV/StageIV_QPE_${vld_Y}${vld_m}${vld_d}${vld_H}.nc
+      obs_in=StageIV/StageIV_QPE_${anl_dt}.nc
 
-      if [ -r ${in_dir}/${for_in} ]; then
+      if [ -r ${IN_DIR}/${for_in} ]; then
         if [ -r ${STC_ROOT}/${obs_in} ]; then
           # update GridStatConfigTemplate archiving file in working directory
           # this remains unchanged on inner loop
-          if [ ! -r ${wrk_dir}/GridStatConfig${acc_hr} ]; then
+          if [ ! -r ${WRK_DIR}/GridStatConfig${acc_hr} ]; then
             cat ${SHARED}/GridStatConfigTemplate \
               | sed "s/CTR_FLW/model = \"${CTR_FLW}\"/" \
               | sed "s/INT_WDTH/width = ${INT_WDTH}/" \
               | sed "s/RNK_CRR/rank_corr_flag      = ${RNK_CRR}/" \
               | sed "s/VRF_FLD/name       = \"${fld}\"/" \
               | sed "s/CAT_THR/cat_thresh = ${CAT_THR}/" \
-              | sed "/PLY_MSK/r ${wrk_dir}/PLY_MSK.txt" \
+              | sed "/PLY_MSK/r ${WRK_DIR}/PLY_MSK.txt" \
               | sed "/PLY_MSK/d " \
               | sed "s/BTSTRP/n_rep    = ${BTSTRP}/" \
               | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
               | sed "s/PRFX/output_prefix    = \"${VRF_FLD}_${acc_hr}hr\"/" \
               | sed "s/MET_VER/version           = \"V${MET_VER}\"/" \
-              > ${wrk_dir}/GridStatConfig${acc_hr}
+              > ${WRK_DIR}/GridStatConfig${acc_hr}
           fi
 
           # Run gridstat
@@ -501,28 +481,29 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
           else
             msg="WARNING: Observation verification file\n ${STC_ROOT}/${obs_in}\n"
             msg+=" is not readable or does not exist, skipping grid_stat for"
-            msg+=" forecast initialization ${cyc_dt}, forecast hour ${anl_hr}.\n"
+            msg+=" forecast initialization ${CYC_DT}, forecast hour ${anl_hr}.\n"
             printf "${msg}"
           fi
         fi
       else
         if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
-          msg="ERROR: gridstat input file\n ${in_dir}/${for_in}\n is not"
+          msg="ERROR: gridstat input file\n ${IN_DIR}/${for_in}\n is not"
           msg+=" readable or does not exist.\n"
+          printf "${msg}"
           error_check=1
         else
-          msg="WARNING: gridstat input file\n ${in_dir}/${for_in}\n is not"
+          msg="WARNING: gridstat input file\n ${IN_DIR}/${for_in}\n is not"
           msg+=" readable or does not exist, skipping grid_stat for forecast"
-          msg+=" initialization ${cyc_dt}, forecast hour ${anl_hr}.\n"
+          msg+=" initialization ${CYC_DT}, forecast hour ${anl_hr}.\n"
           printf "${msg}"
         fi
       fi
 
       # clean up working directory from accumulation time
-      cmd="rm -f ${wrk_dir}/${for_in}"
+      cmd="rm -f ${WRK_DIR}/${for_in}"
       printf "${cmd}\n"; eval "${cmd}"
     elif [[ ${CMP_ACC} =~ ${FALSE} ]]; then
-      for_in=${CTR_FLW}_${VRF_FLD}_${cyc_dt}_F${pdd_hr}${pstfx}.nc
+      for_in=${CTR_FLW}_${VRF_FLD}_${CYC_DT}_F${pdd_hr}${pstfx}.nc
 
       if [[ ${IF_ENS_PRD} =~ ${TRUE} ]]; then
         fld=${VRF_FLD}_0_all_all_ENS_MEAN
@@ -532,26 +513,26 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
 
       # obs file defined in terms of valid time
       # NOTE: reference fields other than StageIV still in development
-      obs_in=${VRF_REF}_${VRF_FLD}_${cyc_dt}_F${pdd_hr}${pstfx}.nc
+      obs_in=${VRF_REF}_${VRF_FLD}_${CYC_DT}_F${pdd_hr}${pstfx}.nc
       
-      if [ -r ${in_dir}/${for_in} ]; then
+      if [ -r ${IN_DIR}/${for_in} ]; then
         if [ -r ${STC_ROOT}/${obs_in} ]; then
           # update GridStatConfigTemplate archiving file in working directory
           # this remains unchanged on inner loop
-          if [ ! -r ${wrk_dir}/GridStatConfig${acc_hr} ]; then
+          if [ ! -r ${WRK_DIR}/GridStatConfig${acc_hr} ]; then
             cat ${SHARED}/GridStatConfigTemplate \
               | sed "s/CTR_FLW/model = \"${CTR_FLW}\"/" \
               | sed "s/INT_WDTH/width = ${INT_WDTH}/" \
               | sed "s/RNK_CRR/rank_corr_flag      = ${RNK_CRR}/" \
               | sed "s/VRF_FLD/name       = \"${fld}\"/" \
               | sed "s/CAT_THR/cat_thresh = ${CAT_THR}/" \
-              | sed "/PLY_MSK/r ${wrk_dir}/PLY_MSK.txt" \
+              | sed "/PLY_MSK/r ${WRK_DIR}/PLY_MSK.txt" \
               | sed "/PLY_MSK/d " \
               | sed "s/BTSTRP/n_rep    = ${BTSTRP}/" \
               | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
               | sed "s/PRFX/output_prefix    = \"${VRF_FLD}\"/" \
               | sed "s/MET_VER/version           = \"V${MET_VER}\"/" \
-              > ${wrk_dir}/GridStatConfig${acc_hr}
+              > ${WRK_DIR}/GridStatConfig${acc_hr}
           fi
 
           # Run gridstat
@@ -577,35 +558,36 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
           else
             msg="WARNING: Observation verification file\n ${STC_ROOT}/${obs_in}\n"
             msg+=" is not readable or does not exist, skipping grid_stat for"
-            msg+=" forecast initialization ${cyc_dt}, forecast hour ${anl_hr}.\n"
+            msg+=" forecast initialization ${CYC_DT}, forecast hour ${anl_hr}.\n"
             printf "${msg}"
           fi
         fi
       else
         if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
-          msg="ERROR: gridstat input file\n ${in_dir}/${for_in}\n is not"
+          msg="ERROR: gridstat input file\n ${IN_DIR}/${for_in}\n is not"
           msg+=" readable or does not exist.\n"
+          printf "${msg}"
           error_check=1
         else
-          msg="WARNING: gridstat input file\n ${in_dir}/${for_in}\n is not"
+          msg="WARNING: gridstat input file\n ${IN_DIR}/${for_in}\n is not"
           msg+=" readable or does not exist, skipping grid_stat for forecast"
-          msg+=" initialization ${cyc_dt}, forecast hour ${anl_hr}.\n"
+          msg+=" initialization ${CYC_DT}, forecast hour ${anl_hr}.\n"
           printf "${msg}"
         fi
       fi
 
       # clean up working directory from accumulation time
-      cmd="rm -f ${wrk_dir}/${for_in}"
+      cmd="rm -f ${WRK_DIR}/${for_in}"
       printf "${cmd}\n"; eval "${cmd}"
     fi
   done
 done
 
 # clean up working directory from forecast start time
-cmd="rm -f ${wrk_dir}/*_StageIV.nc"
+cmd="rm -f ${WRK_DIR}/*_StageIV.nc"
 printf "${cmd}\n"; eval "${cmd}"
 
-cmd="rm -f ${wrk_dir}/PLY_MSK.txt"
+cmd="rm -f ${WRK_DIR}/PLY_MSK.txt"
 printf "${cmd}\n"; eval "${cmd}"
 
 if [ ${error_check} = 1 ]; then
@@ -615,7 +597,7 @@ if [ ${error_check} = 1 ]; then
 fi
 
 msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "
-msg+="outputs at:\n ${wrk_dir}\n"
+msg+="outputs at:\n ${WRK_DIR}\n"
 printf "${msg}"
 
 #################################################################################

@@ -222,7 +222,7 @@ elif [[ ! -d ${MSK_GRDS} || ! -x ${MSK_GRDS} ]]; then
   exit 1
 else
   # loop lines of the mask list, set temporary exit status before searching for masks
-  error=0
+  error_check=0
   while read msk; do
     fpath=${MSK_GRDS}/${msk}_StageIV.nc
     if [ -r "${fpath}" ]; then
@@ -232,10 +232,10 @@ else
       msg+=" does not exist or is not readable.\n"
       printf "${msg}"
       # create exit status flag to kill program, after checking all files in list
-      error=1
+      error_check=1
     fi
   done < "${MSK_LST}"
-  if [ ${error} -eq 1 ]; then
+  if [ ${error_check} -eq 1 ]; then
     msg="ERROR: Exiting due to missing landmasks, please see the above error "
     msg+="messages and verify the location for these files. These files can be "
     msg+="generated from lat-lon text files using the run_vxmask.sh script."
@@ -380,6 +380,34 @@ if [ ! -x ${MET} ]; then
   exit 1
 fi
 
+if [ ! -x ${MET_TOOLS_PY} ]; then
+  msg="ERROR: MET-tools-py singularity image\n ${MET_TOOLS_PY}\n does not exist"
+  msg+=" or is not executable.\n"
+  printf "${msg}"
+  exit 1
+fi
+
+if [[ ! -d ${UTLTY} || ! -x ${UTLTY} ]]; then
+  msg="ERROR: utility script directory\n ${UTLTY}\n does not exist"
+  msg+=" or is not executable.\n"
+  printf "${msg}"
+  exit 1
+fi
+
+if [ ! -r ${UTLTY}/config_DataFrames.py ]; then
+  msg="ERROR: Utility module\n ${UTLTY}/config_DataFrames.py\n"
+  msg+=" does not exist.\n"
+  printf "${msg}"
+  exit 1
+fi
+
+if [ ! -r ${UTLTY}/ASCII_to_DataFrames.py ]; then
+  msg="ERROR: Utility script\n ${UTLTY}/ASCII_to_DataFrames.py\n"
+  msg+=" does not exist.\n"
+  printf "${msg}"
+  exit 1
+fi
+
 if [ ! -r ${SHARED}/GridStatConfigTemplate ]; then
   msg="GridStatConfig template \n ${SHARED}/GridStatConfigTemplate\n"
   msg+=" does not exist or is not readable.\n"
@@ -394,6 +422,11 @@ fi
 met="singularity exec -B ${WRK_DIR}:/wrk_dir:rw,"
 met+="${STC_ROOT}:/STC_ROOT:ro,${MSK_GRDS}:/MSK_GRDS:ro,"
 met+="${IN_DIR}:/in_dir:ro ${MET}"
+
+# Define directory privileges for singularity exec MET_TOOLS_PY
+met_tools_py="singularity exec -B "
+met_tools_py+="${WRK_DIR}:/wrk_dir:rw,${WRK_DIR}:/in_dir:ro,${UTLTY}:/utlty:ro "
+met_tools_py+="${MET_TOOLS_PY} python"
 
 # clean old data
 rm -f ${WRK_DIR}/grid_stat_*.txt
@@ -589,6 +622,19 @@ printf "${cmd}\n"; eval "${cmd}"
 
 cmd="rm -f ${WRK_DIR}/PLY_MSK.txt"
 printf "${cmd}\n"; eval "${cmd}"
+
+for acc_hr in ${acc_hrs[@]}; do 
+  # run makeDataFrames to parse the ASCII outputs
+  cmd="${met_tools_py} /utlty/ASCII_to_DataFrames.py"
+  cmd+=" 'grid_stat_QPF_${acc_hr}hr' '/in_dir' '/wrk_dir'; error=\$?"
+  printf "${cmd}\n"; eval "${cmd}"
+  printf "ASCII_to_DataFrames.py exited with status ${error}.\n"
+  if [ ${error} -ne 0 ]; then
+    msg="ERROR: ASCII_to_DataFrames.py failed to produce parsed binaries.\n"
+    printf "${msg}"
+    error_check=1
+  fi
+done
 
 if [ ${error_check} = 1 ]; then
   printf "ERROR: GridStat.sh failed on one or more analyses.\n"

@@ -1,16 +1,7 @@
-#!/bin/bash
-#SBATCH --account=cwp168
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=64
-#SBATCH --mem=20G
-#SBATCH -p cw3e-shared
-#SBATCH -t 00:30:00
-#SBATCH -J makeDataFrames
-#SBATCH -o ./logs/makeDataFrames-%A_%a.out
-#SBATCH --export=ALL
 ##################################################################################
 # Description
 ##################################################################################
+#
 ##################################################################################
 # License Statement:
 ##################################################################################
@@ -47,17 +38,20 @@
 # OBLIGATIONS TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
 # MODIFICATIONS.
 # 
-# 
 ##################################################################################
-# SET GLOBAL PARAMETERS
+# Imports
 ##################################################################################
-source ./config_DataFrames.sh
+from config_DataFrames import *
+import sys
 
 ##################################################################################
-cmd="${MTPY}run_makeDataFrames.py"
-printf "${cmd}\n"; eval ${cmd}
+# arguments for makeDataFrames are taken from command line
+PRFX = sys.argv[1]
+IN_DIR = sys.argv[2]
+OUT_DIR = sys.argv[3]
+
+# execute and exit with status
+error = makeDataFrames(PRFX, in_dir, out_dir)
+sys.exit(error)
 
 ##################################################################################
-# end
-
-exit 0

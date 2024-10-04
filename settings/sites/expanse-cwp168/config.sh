@@ -69,7 +69,7 @@ export MSH_ROOT="/expanse/nfs/cw3e/cwp168/Ensemble-DA-Cycling-Template/cylc-src"
 # MET EXECUTABLE AND DEPENDENCIES PATHS
 ##################################################################################
 # MET version
-export MET_VER="11.0.1"
+export MET_VER="11.1.1"
 
 # MET singularity image path 
 export MET="${SOFT_ROOT}/met-${MET_VER}.sif"

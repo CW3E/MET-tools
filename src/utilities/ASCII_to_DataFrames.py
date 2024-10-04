@@ -51,7 +51,7 @@ IN_DIR = sys.argv[2]
 OUT_DIR = sys.argv[3]
 
 # execute and exit with status
-error = makeDataFrames(PRFX, in_dir, out_dir)
+error = makeDataFrames(PRFX, IN_DIR, OUT_DIR)
 sys.exit(error)
 
 ##################################################################################

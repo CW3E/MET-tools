@@ -180,6 +180,7 @@
                         IF_ENS_PRD = 'TRUE'
                         ENS_MIN = {{ENS_MIN}}
                         ENS_MAX = {{ENS_MAX}}
+                        ENS_PRFX = {{ENS_PRFX}}
                         ENS_PAD = {{ENS_PAD}}
                         CTR_FLW = {{ctr_flw}}
                         INT_WDTH = {{int_wdth}}

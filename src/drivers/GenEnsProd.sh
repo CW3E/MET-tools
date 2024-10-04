@@ -393,7 +393,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
 
       # define output file name depending on parameters
       f_out="${CTR_FLW}_${acc_hr}${VRF_FLD}_${CYC_DT}_F${pdd_hr}"
-      f_out+="_${ENS_PRFX}-${ens_min}-${ens_max}_prd.nc"
+      f_out+="_${ENS_PRFX}${ens_min}-${ENS_PRFX}${ens_max}_prd.nc"
 
       # define the ensemble member list name and cleanup existing
       mem_lst="ens_list_${CTR_FLW}_${acc_hr}${VRF_FLD}_${CYC_DT}_F${pdd_hr}"

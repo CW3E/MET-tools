@@ -307,12 +307,21 @@ if [[ ! -d ${WRK_DIR} || ! -w ${WRK_DIR} ]]; then
   exit 1
 fi
 
-
 # if GenEnsProd output for ensemble mean verification
 if [[ ${IF_ENS_PRD} =~ ${TRUE} ]]; then
-  if [[ ! ${ENS_PAD} =~ ${INT_RE} ]]; then
+  if [ -z ${ENS_PAD+x} ]; then
+    msg="ERROR: ensemble index padding \${ENS_PAD} is undeclared, set to empty"
+    msg+=" string if not used.\n"
+    printf "${msg}"
+    exit 1
+  elif [[ ! ${ENS_PAD} =~ ${INT_RE} ]]; then
     msg="ERROR: ensemble index padding \${ENS_PAD}\n ${ENS_PAD}\n is not"
     msg+=" an integer.\n"
+    printf "${msg}"
+    exit 1
+  elif [ -z ${ENS_PRFX+x} ]; then
+    msg="ERROR: ensemble member prefix to index value"
+    msg+=" is undeclared, set to empty string if not used.\n"
     printf "${msg}"
     exit 1
   fi
@@ -343,7 +352,7 @@ if [[ ${IF_ENS_PRD} =~ ${TRUE} ]]; then
     printf "${msg}"
     exit 1
   fi
-  pstfx="_ens-${ens_min}-${ens_max}_prd"
+  pstfx="_${ENS_PRFX}${ens_min}-${ENS_PRFX}${ens_max}_prd"
   msg="Computing gridstat on ${CTR_FLW} ensemble product from members"
   msg+=" ${ens_min} to ${ens_max}.\n"
   printf "${msg}"

@@ -49,7 +49,6 @@ import pandas as pd
 import pickle
 import glob
 from datetime import datetime as dt
-import ipdb
 
 ##################################################################################
 # UTILITY DEFINITIONS
@@ -141,7 +140,6 @@ def makeDataFrames(prfx, in_dir, out_dir, log_f=None):
                         tmp_dict[cols[i_v]].append(val)
  
                 if postfix in data_dict.keys():
-                    ipdb.set_trace()
                     for col in tmp_dict.keys():
                         data_dict[postfix][col] = data_dict[postfix][col] +\
                                 tmp_dict[col]
@@ -155,7 +153,6 @@ def makeDataFrames(prfx, in_dir, out_dir, log_f=None):
 
         print('Closing file ' + fname, file=log_f)
     
-    ipdb.set_trace()
     if bool(data_dict):
         # re-define the stored dictionaries as dataframes
         for key in data_dict.keys():

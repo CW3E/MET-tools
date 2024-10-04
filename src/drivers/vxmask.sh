@@ -149,13 +149,14 @@ printf "${cmd}\n"; eval "${cmd}"
 
 while read msk; do
   # masks are recreated depending on the existence of files from previous analyses
-  out_path=${MSK_GRDS}/${msk}_StageIVGrid.nc
+  fname="${msk}_${GRD_NME}.nc"
+  out_path="${MSK_GRDS}/${fname}"
   if [ ! -r "${out_path}" ]; then
     # regridded mask does not exist in mask out, create from scratch
     cmd="singularity exec instance://MET gen_vx_mask -v 10 \
     /STC_ROOT/${GRD_IN} \
     -type poly /MSK_LTLN/${msk}.txt \
-    /MSK_GRDS/${msk}_${GRD_NME}.nc"
+    /MSK_GRDS/${fname}"
     printf "${cmd}\n"; eval "${cmd}"
   else
     # mask exists and is readable, skip this step

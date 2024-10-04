@@ -9,7 +9,7 @@
 # Mask Parameters
 ##################################################################################
 # Verification region group name
-{% set VRF_RGN = 'CA_Climate_Zones' %}
+{% set VRF_RGN = 'NRT' %}
 
 # Set the verification product grid name
 {% set GRD_NME = 'StageIV' %}
@@ -25,7 +25,7 @@
 {% set VXMASK_MEM = '2000M' %}
 
 # Wallclock limit for ungrib jobs
-{% set VXMASK_WC = 'PT30M' %}
+{% set VXMASK_WC = 'PT2H30M' %}
 
 ##################################################################################
 # CYLC SETTINGS

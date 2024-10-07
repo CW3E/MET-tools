@@ -56,8 +56,8 @@
 {# Last initial time for a forecast YYYY-MM-DDTHH #}
 {% set CYC_STOP = '2022-12-27T00' %}
 
-{# Interval between cycle start times PTXXH #}
-{% set CYC_INC = 'PT24H' %}
+{# Interval between cycle start times hours INT #}
+{% set CYC_INC = 24 %}
 
 {# Define min / max forecast hours for cf outputs to be generated #}
 {% set ANL_MIN = 0 %}
@@ -89,7 +89,7 @@
     initial cycle point = {{CYC_STRT}}
     final cycle point = {{CYC_STOP}}
     [[graph]]
-        {{CYC_INC}} = """
+        PT{{CYC_INC}}H = """
         {# Loop model control flows #}
         {% for ctr_flw in CTR_FLWS %}
             {# loop ensemble members to process #}

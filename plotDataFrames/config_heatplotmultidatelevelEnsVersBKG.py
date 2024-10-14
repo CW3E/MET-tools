@@ -20,6 +20,8 @@ MET_TOOL = 'GridStat'
 # Prefix for MET product outputs
 PRFX = 'grid_stat_QPF_24hr'
 
+QPE_SOURCE = 'Stage-IV'
+
 # MET stat file type -- should be leveled data
 TYPE = 'nbrcnt'
 
@@ -62,8 +64,10 @@ CYC_INC = '24'
 # Land mask for verification
 MSK = 'CA_All'
 
+DMN_TITLE = 'California'
+
 # accumulation threshold
-LEV = '>=50.0'
+LEV = '>=10.0'
 
 ##################################################################################
 # PlOT RENDERING PARAMETERS
@@ -82,13 +86,25 @@ ANL_GRD_LAB = True
 REF_GRD_LAB = False
 
 # Plot title generated from above parameters
-TITLE = STAT + ' - '
+if STAT == 'FSS':
+    stat_title = 'Fractions Skill Score'
+elif STAT == 'AFSS':
+    stat_title = 'Asymptotic Fractions Skill Score'
+else:
+    stat_title = ''
+
+TITLE = stat_title  + ' ('  +  LEV + ' mm)'
+
 split_string = ANL_CFG.split('_')
 split_len = len(split_string)
 idx_len = len(ANL_LAB_IDX)
 line_lab = ''
 lab_len = min(idx_len, split_len)
-if lab_len > 1:
+
+if lab_len == 2:
+    TITLE += '\nWest-WRF/' + split_string[1]
+
+elif lab_len > 1:
     for i_ll in range(lab_len, 1, -1):
         i_li = ANL_LAB_IDX[-i_ll]
         TITLE += split_string[i_li] + '_'
@@ -100,30 +116,37 @@ else:
     TITLE += split_string[0]
 
 if len(ANL_MEM) > 0:
-    anl_ens = '_' + ANL_MEM
+    anl_ens = ANL_MEM
 else:
     anl_ens = ''
 
-if len(ANL_GRD) > 0:
-    anl_grd = '_' + ANL_GRD
-
+if ANL_GRD == 'd01':
+    anl_grd = '9km'
+elif ANL_GRD == 'd02':
+    anl_grd = '3km'
+elif ANL_GRD == 'd01':
+    anl_grd = '1km'
 else:
     anl_grd = ''
 
 if ANL_ENS_LAB:
-    TITLE += ANL_MEM
+    TITLE += ' ' + anl_ens
 
 if ANL_GRD_LAB:
-    TITLE += anl_grd
+    TITLE += ' ' + anl_grd
 
-TITLE += ' relative difference from '
+TITLE += ' Relative Difference From '
 
 split_string = REF_CFG.split('_')
 split_len = len(split_string)
 idx_len = len(REF_LAB_IDX)
 line_lab = ''
 lab_len = min(idx_len, split_len)
-if lab_len > 1:
+
+if lab_len == 2:
+    TITLE += '\nWest-WRF/' + split_string[1]
+
+elif lab_len > 1:
     for i_ll in range(lab_len, 1, -1):
         i_li = REF_LAB_IDX[-i_ll]
         TITLE += split_string[i_li] + '_'
@@ -135,28 +158,27 @@ else:
     TITLE += split_string[0]
 
 if len(REF_MEM) > 0:
-    ref_ens = '_' + REF_MEM
+    ref_ens = REF_MEM
 else:
     ref_ens = ''
 
-if len(REF_GRD) > 0:
-    ref_grd = '_' + REF_GRD
-
+if REF_GRD == 'd01':
+    ref_grd = '9km'
+elif REF_GRD == 'd02':
+    ref_grd = '3km'
+elif REF_GRD == 'd03':
+    ref_grd = '1km'
 else:
     ref_grd = ''
 
 if REF_ENS_LAB:
-    TITLE += ref_ens
+    TITLE += ' ' + ref_ens
 
 if REF_GRD_LAB:
-    TITLE += ref_grd
+    TITLE += ' ' + ref_grd
 
-lnd_msk_split = MSK.split('_')
-SUBTITLE = 'Verification Region -'
-for split in lnd_msk_split:
-    SUBTITLE += ' ' + split
-
-SUBTITLE += ', Precip Thresh ' + LEV + ' mm'
+DMN_SUBTITLE = 'Domain: ' + DMN_TITLE
+QPE_SUBTITLE = 'QPE Source: ' + QPE_SOURCE
 
 # Bool switch for choosing color bar scale
 DYN_SCL = True
@@ -171,8 +193,8 @@ MIN_SCALE = 0
 MAX_SCALE = 1
 
 # define color map to be used for heat plot color bar
-COLOR_MAP = sns.diverging_palette(145, 300, s=60, as_cmap=True)
-COLOR_MAP.set_bad('gray')
+#COLOR_MAP = sns.diverging_palette(145, 300, s=60, as_cmap=True)
+#COLOR_MAP.set_bad('darkgrey')
 
 ##################################################################################
 # I/O PARAMETERS
@@ -205,8 +227,8 @@ else:
     fig_lab = ''
 
 OUT_PATH = OUT_ROOT + '/' + ANL_STRT + '-to-' + ANL_STOP + '_FCST-' + MAX_LD +\
-           '_' + MSK + '_' + STAT + '_' + LEV + '_' + ANL_CFG + anl_grd + fig_lab +\
-           '_relative_difference_' + REF_CFG + ref_grd + ref_ens + fig_lab +\
-	       '_heatplot.png'
+           '_' + MSK + '_' + STAT + '_' + LEV + '_' + ANL_CFG + '_' + anl_grd + fig_lab +\
+           '_relative_difference_' + REF_CFG + '_' + ref_grd + ref_ens + fig_lab +\
+  	       '_heatplot.png'
 
 ##################################################################################

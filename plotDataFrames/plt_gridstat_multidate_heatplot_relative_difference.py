@@ -55,6 +55,7 @@ from datetime import datetime as dt
 from datetime import timedelta as td
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize as nrm
+from matplotlib.colors import BoundaryNorm, ListedColormap
 from matplotlib.cm import get_cmap
 from matplotlib.colorbar import Colorbar as cb
 import seaborn as sns
@@ -231,8 +232,8 @@ while i_fl < len(fcst_leads):
 fig = plt.figure(figsize=(12,9.6))
 
 # Set the axes
-ax0 = fig.add_axes([.86, .26, .05, .56])
-ax1 = fig.add_axes([.07, .18, .78, .72])
+ax0 = fig.add_axes([.86, .24, .05, .56])
+ax1 = fig.add_axes([.07, .16, .78, .72])
 
 # create array storage for stats
 num_leads = len(fcst_leads)
@@ -244,6 +245,7 @@ fcst_dates = []
 
 # reverse order for plotting
 fcst_leads = fcst_leads[::-1]
+ref_array = np.zeros((num_leads, num_dates))
 
 for i_nd in range(num_dates):
     for i_nl in range(num_leads):
@@ -264,10 +266,13 @@ for i_nd in range(num_dates):
             ref_val = plt_data[REF_key]['data'].loc[(plt_data[REF_key]['data']['FCST_LEAD'] ==\
                     fcst_leads[i_nl]) & (plt_data[REF_key]['data']['FCST_VALID_END'] ==\
                     anl_dts[i_nd].strftime('%Y%m%d_%H%M%S'))]
-            
+
             if not anl_val.empty and not ref_val.empty:
                 anl_val = float(anl_val[STAT].values[0])
                 ref_val = float(ref_val[STAT].values[0])
+                
+                ref_array[i_nl, i_nd] = ref_val
+
                 if np.abs(ref_val) <= 0.1 or np.abs(anl_val) <= 0.1:
                     pass
 
@@ -295,8 +300,45 @@ else:
     min_scale = MIN_SCALE
     max_scale = MAX_SCALE
 
-sns.heatmap(plt_vals[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scale,
-            vmax=max_scale, cmap=COLOR_MAP)
+if max_scale < 100 and min_scale > -100:
+    THRESHOLDS = [-100, -50, -25, -15, -0.1, 0.1, 15, 25, 50, 100]
+    COLORS = ['#2166ac', # -50 to -100%
+              '#4393c3', # -25 to -50%
+              '#92c5de', # -15 to -25%
+              '#d1e5f0', # -0.1 to -15%
+              '#f7f7f7', # for zero values
+              '#fddbc7', # 0.1 to 15%
+              '#f4a582', # 15 to 25%
+              '#d6604d', # 25 to 50%
+              '#b2182b', # 50 to 100%
+              ]
+    labels = ['-100%', '-50%', '-25%', '-15%',
+              '-0.1%', '0.1%', '15%', '25%', '50%', '100%']
+else:
+    THRESHOLDS = [min_scale, -100, -50, -25, -15, -0.1, 0.1, 15, 25, 50, 100, max_scale]
+    COLORS = ['#053061', # < -100%
+              '#2166ac', # -50 to -100%
+              '#4393c3', # -25 to -50%
+              '#92c5de', # -15 to -25%
+              '#d1e5f0', # -0.1 to -15%
+              '#f7f7f7', # for zero values
+              '#fddbc7', # 0.1 to 15%
+              '#f4a582', # 15 to 25%
+              '#d6604d', # 25 to 50%
+              '#b2182b', # 50 to 100%
+              '#67001f'  # >100%
+              ]
+    labels = ['<-100%', '-100%', '-50%', '-25%', '-15%',
+              '-0.1%', '0.1%', '15%', '25%', '50%', '100%', '>100%']
+
+COLOR_MAP = ListedColormap(COLORS)
+
+COLOR_MAP.set_bad('darkgrey')
+
+norm = BoundaryNorm(THRESHOLDS, ncolors=len(COLORS))
+
+sns.heatmap(plt_vals[:,:], linewidth=0.5, norm=norm, ax=ax1, cbar_ax=ax0, vmin=min_scale,
+            vmax=max_scale, cmap=COLOR_MAP, annot=ref_array, annot_kws={"size": 11})
 
 ##################################################################################
 # define display parameters
@@ -308,8 +350,8 @@ for i in range(num_leads):
 pct_ticks = np.around(np.linspace(min_scale, max_scale, 9), 0)
 pct_labs = [str(int(tick)) + '%' for tick in pct_ticks]
 
-ax0.set_yticks(pct_ticks)
-ax0.set_yticklabels(pct_labs, rotation=45, va='center')
+ax0.set_yticks(THRESHOLDS)
+ax0.set_yticklabels(labels, va='center')
 ax1.set_xticklabels(fcst_dates, rotation=45, ha='right')
 ax1.set_yticklabels(fcst_leads)
 
@@ -327,25 +369,20 @@ lab2='Forecast Lead Hrs'
 plt.figtext(.5, .02, lab1, horizontalalignment='center',
             verticalalignment='center', fontsize=20)
 
-plt.figtext(.02, .565, lab2, horizontalalignment='center',
+plt.figtext(.02, .5, lab2, horizontalalignment='center',
             verticalalignment='center', fontsize=20, rotation=90)
 
-plt.figtext(.5, .98, TITLE, horizontalalignment='center',
-            verticalalignment='center', fontsize=20)
+plt.title(TITLE, x = 0.5, y = 1.05, fontsize = 20)
+plt.title(DMN_SUBTITLE, fontsize = 16, loc = 'left')
+plt.title(QPE_SUBTITLE, fontsize = 16, loc = 'right')
 
-plt.figtext(.5, .94, SUBTITLE, horizontalalignment='center',
-            verticalalignment='center', fontsize=20)
+plt.figtext(.86, .94, '* Reference \n   Score in Cell', horizontalalignment='left',
+            verticalalignment='bottom', fontsize=14)
 
-plt.figtext(.86, .22, 'Skill', horizontalalignment='left',
+plt.figtext(.86, .1625, 'Skill\nLoss', horizontalalignment='left',
             verticalalignment='bottom', fontsize=20)
 
-plt.figtext(.86, .18, 'Loss', horizontalalignment='left',
-            verticalalignment='bottom', fontsize=20)
-
-plt.figtext(.86, .90, 'Skill', horizontalalignment='left',
-            verticalalignment='top', fontsize=20)
-
-plt.figtext(.86, .86, 'Gain', horizontalalignment='left',
+plt.figtext(.86, .87, 'Skill\nGain', horizontalalignment='left',
             verticalalignment='top', fontsize=20)
 
 # save figure and display

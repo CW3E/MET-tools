@@ -153,7 +153,7 @@ for ctr_flw in CTR_FLWS:
                         line_lab += split_string[i_li] + '_'
                     except:
                         pass
-    
+                
                 line_lab = line_lab[:-1]
     
             if ENS_LAB:
@@ -227,11 +227,11 @@ fcst_leads = sorted(list(set(fcst_leads)), key=lambda x:(len(x), x))
 # Begin plotting
 ##################################################################################
 # create a figure
-fig = plt.figure(figsize=(12,9.6))
+fig = plt.figure(figsize=(16,9.6))
 
 # Set the axes
-ax0 = fig.add_axes([.110, .395, .85, .33])
-ax1 = fig.add_axes([.110, .065, .85, .33])
+ax0 = fig.add_axes([.08, .07, .42, .70])
+ax1 = fig.add_axes([.5, .07, .42, .70])
 
 num_leads = len(fcst_leads)
 line_list = []
@@ -306,7 +306,7 @@ for i_lc in range(line_count):
             l.set_color(line_colors[i_lc])
             if i_na == 0:
               l.set_marker((i_lc + 2, 0, 0))
-              l.set_markersize(18)
+              l.set_markersize(15)
 
 ##################################################################################
 # define display parameters
@@ -315,6 +315,8 @@ for i_lc in range(line_count):
 for i_nl in range(num_leads):
     fcst_leads[i_nl] = fcst_leads[i_nl][:-4]
 
+ax0.set_xticks(range(num_leads))
+ax0.set_xticklabels(fcst_leads)
 ax1.set_xticks(range(num_leads))
 ax1.set_xticklabels(fcst_leads)
 
@@ -329,32 +331,55 @@ ax0.tick_params(
 
 ax0.tick_params(
         labelsize=18,
-        bottom=False,
-        labelbottom=False,
+        bottom=True,
+        labelbottom=True,
         right=False,
         labelright=False,
         )
 
-ax0.set_yticks(ax0.get_yticks(), ax0.get_yticklabels(), va='bottom')
-ax1.set_yticks(ax1.get_yticks(), ax1.get_yticklabels(), va='top')
+ax.yaxis.tick_right()
+plot0_yticks = ax0.get_yticks()
+ax0.set_yticks(plot0_yticks, ax0.get_yticklabels(), va='bottom')
+tick_labs = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+ax1.set_yticks(np.linspace(0.5, 1, 6), tick_labs, va='bottom')
+ax1.set_ylim([0.45, 1.05])
 
-lab0=STATS[0]
-lab1=STATS[1]
+y_min, y_max = ax0.get_ylim()
+tick_spacing = (plot0_yticks[1] - plot0_yticks[0]) / 2
+ax0.set_ylim([y_min - tick_spacing, y_max + tick_spacing])
+
+ax0.grid(which = 'major', axis = 'y')
+ax1.grid(which = 'major', axis = 'y')
+
+labels = []
+labels = [None] * len(STATS)
+for i in range(len(STATS)):
+    if STATS[i] == 'RMSE':
+        labels[i] = 'Root-Mean\nSquared Error (mm)'
+    elif STATS[i] == 'PR_CORR':
+        labels[i] = 'Pearson\nCorrelation'
+    else:
+        labels[i] = ''
+
 lab2='Forecast lead hrs'
-plt.figtext(.5, .98, TITLE, horizontalalignment='center',
+
+plt.figtext(.5, .95, TITLE, horizontalalignment='center',
             verticalalignment='center', fontsize=22)
 
-plt.figtext(.5, .93, SUBTITLE, horizontalalignment='center',
-            verticalalignment='center', fontsize=22)
+plt.figtext(.15, .90, DMN_SUBTITLE, horizontalalignment='center',
+            verticalalignment='center', fontsize=18)
 
-plt.figtext(.03, .595, lab0, horizontalalignment='right', rotation=90,
-            verticalalignment='center', fontsize=22)
+plt.figtext(.8375, .90, QPE_SUBTITLE, horizontalalignment='center',
+            verticalalignment='center', fontsize=18)
 
-plt.figtext(.03, .265, lab1, horizontalalignment='right', rotation=90,
-            verticalalignment='center', fontsize=22)
+plt.figtext(.025, .43, labels[0], horizontalalignment='center', rotation=90,
+            verticalalignment='center', fontsize=20)
 
-plt.figtext(.5, .01, lab2, horizontalalignment='center',
-            verticalalignment='center', fontsize=22)
+plt.figtext(.975, .43, labels[1], horizontalalignment='center', rotation=270,
+            verticalalignment='center', fontsize=20)
+
+plt.figtext(.5, .02, lab2, horizontalalignment='center',
+            verticalalignment='center', fontsize=20)
 
 if line_count <= 3:
     ncols = line_count

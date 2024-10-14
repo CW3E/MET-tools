@@ -13,7 +13,7 @@
 source ../config_MET-tools.sh
 
 # Verification region group name
-export VRF_RGN=CA_All
+export VRF_RGN=CA_Climate_Zone
 
 # Path to lat-lon text files for mask generation
 export MSK_LTLN=${MSK_ROOT}/lat-lon

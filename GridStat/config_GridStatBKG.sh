@@ -13,7 +13,7 @@ source ../config_MET-tools.sh
 
 # Define the case-wise sub-directory for path names with case-study nesting,
 # leave as empty string "" if not needed
-export CSE=2024010300_valid_date
+export CSE=2022122800_valid_date
 
 # root directory for cycle time (YYYYMMDDHH) directories of cf-compliant files
 export IN_ROOT=${STC_ROOT}
@@ -22,7 +22,7 @@ export IN_ROOT=${STC_ROOT}
 export OUT_ROOT=${VRF_ROOT}/${CSE}
 
 # Verification region group name
-export VRF_RGNS=CA_All
+export VRF_RGNS=CA_Climate_Zone
 
 # Path to file with list of landmasks for verification regions
 export MSK_LST=${MSK_ROOT}/mask-lists/${VRF_RGNS}_MaskList.txt
@@ -51,8 +51,8 @@ export VRF_FLD=QPF
 export CAT_THR="[ >0.0, >=10.0, >=25.0, >=50.0, >=100.0 ]"
 
 # Define first and last date time for forecast initialization (YYYYMMDDHH)
-export STRT_DT=2024010300
-export STOP_DT=2024012400
+export STRT_DT=2022122300
+export STOP_DT=2022122700
 
 # Define the increment between forecast initializations (HH)
 export CYC_INC=24

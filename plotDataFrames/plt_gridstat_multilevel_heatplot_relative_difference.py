@@ -228,7 +228,6 @@ scl_vals = np.full([num_levs, num_leads], np.nan)
 
 # reverse order for plotting
 lead_labs = []
-
 ref_array = np.zeros((num_levs, num_leads)) 
 
 for i_nv in range(num_levs):
@@ -256,7 +255,6 @@ for i_nv in range(num_levs):
             if not anl_val.empty and not ref_val.empty:
                 anl_val = float(anl_val[STAT].values[0])
                 ref_val = float(ref_val[STAT].values[0])
-
                 ref_array[i_nv, i_nl] = ref_val
 
                 if np.abs(ref_val) <= 0.3 or np.abs(anl_val) <= 0.3:

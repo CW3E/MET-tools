@@ -245,7 +245,6 @@ fcst_dates = []
 
 # reverse order for plotting
 fcst_leads = fcst_leads[::-1]
-
 ref_array = np.zeros((num_leads, num_dates))
 
 for i_nd in range(num_dates):
@@ -267,8 +266,6 @@ for i_nd in range(num_dates):
             ref_val = plt_data[REF_key]['data'].loc[(plt_data[REF_key]['data']['FCST_LEAD'] ==\
                     fcst_leads[i_nl]) & (plt_data[REF_key]['data']['FCST_VALID_END'] ==\
                     anl_dts[i_nd].strftime('%Y%m%d_%H%M%S'))]
-            
-            #ref_list.append(ref_val)
 
             if not anl_val.empty and not ref_val.empty:
                 anl_val = float(anl_val[STAT].values[0])

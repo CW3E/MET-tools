@@ -29,10 +29,10 @@ TYPE = 'nbrcnt'
 STAT = 'FSS'
 
 # define configuration to analyze
-ANL_CFG = 'NRT_GFS'
+ANL_CFG = 'WRF_9-3_WestCoast'
 
 # define the refence configuration to produce the relative difference statistic
-REF_CFG = 'GFS'
+REF_CFG = 'GEFS'
 
 # analyzed ensemble member indices to plot
 ANL_MEM = 'mean'
@@ -47,7 +47,7 @@ ANL_GRD = 'd02'
 REF_GRD = ''
 
 # valid date for verification (string YYYYMMDDHH)
-VLD_DT = '2024011400'
+VLD_DT = '2022122800'
 
 # increment between zero hours for forecast data (string HH)
 CYC_INC = '24'
@@ -91,11 +91,7 @@ split_len = len(split_string)
 idx_len = len(ANL_LAB_IDX)
 line_lab = ''
 lab_len = min(idx_len, split_len)
-
-if split_len == 2:
-    TITLE += '\nWest-WRF/' + split_string[1]
-
-elif lab_len > 1:
+if lab_len > 1:
     for i_ll in range(lab_len, 1, -1):
         i_li = ANL_LAB_IDX[-i_ll]
         TITLE += split_string[i_li] + '_'
@@ -195,7 +191,7 @@ MAX_SCALE = 1
 # I/O PARAMETERS
 ##################################################################################
 # Case study directory structure for input data
-CSE = '2024010300_valid_date'
+CSE = '2022122800_valid_date'
 
 # figure case study nesting
 FIG_CSE = ''
@@ -224,6 +220,6 @@ else:
 OUT_PATH = OUT_ROOT + '/' + VLD_DT + '_FCST-' + MAX_LD +\
            '_' + MSK + '_' + STAT + '_' + ANL_CFG + '_' + anl_grd + anl_ens +\
            '_relative_difference_' + REF_CFG + '_' + ref_grd + ref_ens + fig_lab +\
-	       '_all-level_heatplot.png'
+  	       '_all-level_heatplot.png'
 
 ##################################################################################

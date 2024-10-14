@@ -64,7 +64,6 @@ import numpy as np
 import pickle
 import os
 import sys
-#import ipdb
 
 # Execute configuration file supplied as command line argument
 CFG = sys.argv[1].split('.')[0]
@@ -259,7 +258,6 @@ fcst_dates = []
 
 # reverse order for plotting
 fcst_leads = fcst_leads[::-1]
-
 ref_array = np.zeros((num_leads, num_dates))
 
 for i_nd in range(num_dates):
@@ -285,7 +283,6 @@ for i_nd in range(num_dates):
             if not anl_val.empty and not ref_val.empty:
                 anl_val = float(anl_val[STAT].values[0])
                 ref_val = float(ref_val[STAT].values[0])
-
                 ref_array[i_nl, i_nd] = ref_val
 
                 if np.abs(ref_val) <= 0.1 or np.abs(anl_val) <= 0.1:

@@ -29,10 +29,10 @@ TYPE = 'nbrcnt'
 STAT = 'FSS'
 
 # define configuration to analyze
-ANL_CFG = 'NRT_ECMWF'
+ANL_CFG = 'WRF_9-3_WestCoast'
 
 # define the refence configuration to produce the relative difference statistic
-REF_CFG = 'ECMWF'
+REF_CFG = 'GEFS'
 
 # analyzed ensemble member indices to plot
 ANL_MEM = 'mean'
@@ -47,10 +47,10 @@ ANL_GRD = 'd02'
 REF_GRD = ''
 
 # starting valid date for verification (string YYYYMMDDHH)
-ANL_STRT = '2024010300'
+ANL_STRT = '2022122400'
 
 # end valid date for verification (string YYYYMMDDHH)
-ANL_STOP = '2024012400'
+ANL_STOP = '2022122800'
 
 # increment between verification valid dates (string HH)
 ANL_INC = '24'
@@ -74,7 +74,7 @@ LEV = '>=10.0'
 ##################################################################################
 # List of indices for the underscore-separated components of control flow name
 # to use in the plot title
-ANL_LAB_IDX = [0, 1]
+ANL_LAB_IDX = [0, 2]
 REF_LAB_IDX = [0]
 
 # Include ensemble index in plot title True or False
@@ -200,7 +200,7 @@ MAX_SCALE = 1
 # I/O PARAMETERS
 ##################################################################################
 # Case study directory structure for input data
-CSE = '2024010300_valid_date'
+CSE = '2022122800_valid_date'
 
 # figure case study nesting
 FIG_CSE = ''
@@ -229,6 +229,6 @@ else:
 OUT_PATH = OUT_ROOT + '/' + ANL_STRT + '-to-' + ANL_STOP + '_FCST-' + MAX_LD +\
            '_' + MSK + '_' + STAT + '_' + LEV + '_' + ANL_CFG + '_' + anl_grd + fig_lab +\
            '_relative_difference_' + REF_CFG + '_' + ref_grd + ref_ens + fig_lab +\
-	       '_heatplot.png'
+  	       '_heatplot.png'
 
 ##################################################################################

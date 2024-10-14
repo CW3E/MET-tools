@@ -29,10 +29,10 @@ TYPE = 'cnt'
 STAT = 'RMSE'
 
 # define configuration to analyze
-ANL_CFG = 'NRT_ECMWF'
+ANL_CFG = 'WRF_9-3_WestCoast'
 
 # define the refence configuration to produce the relative difference statistic
-REF_CFG = 'ECMWF'
+REF_CFG = 'GEFS'
 
 # analyzed ensemble member indices to plot
 ANL_MEM = 'mean'
@@ -47,10 +47,10 @@ ANL_GRD = 'd02'
 REF_GRD = ''
 
 # starting valid date for verification (string YYYYMMDDHH)
-ANL_STRT = '2024010300'
+ANL_STRT = '2022122400'
 
 # end valid date for verification (string YYYYMMDDHH)
-ANL_STOP = '2024012400'
+ANL_STOP = '2022122800'
 
 # increment between verification valid dates (string HH)
 ANL_INC = '24'
@@ -71,7 +71,7 @@ DMN_TITLE = 'California'
 ##################################################################################
 # List of indices for the underscore-separated components of control flow name
 # to use in the plot title
-ANL_LAB_IDX = [0, 1]
+ANL_LAB_IDX = [0, 2]
 REF_LAB_IDX = [0]
 
 # Include ensemble index in plot title True or False
@@ -123,6 +123,13 @@ elif ANL_GRD == 'd02':
     anl_grd = '3km'
 elif ANL_GRD == 'd03':
     anl_grd = '1km'
+    anl_ens = '_' + ANL_MEM
+else:
+    anl_ens = ''
+
+if len(ANL_GRD) > 0:
+    anl_grd = '_' + ANL_GRD
+
 else:
     anl_grd = ''
 
@@ -133,6 +140,12 @@ if ANL_GRD_LAB:
     TITLE += ' ' + anl_grd
 
 TITLE += ' Relative Difference From '
+    TITLE += anl_ens
+
+if ANL_GRD_LAB:
+    TITLE += anl_grd
+
+TITLE += ' relative difference from '
 
 split_string = REF_CFG.split('_')
 split_len = len(split_string)
@@ -196,7 +209,7 @@ MAX_SCALE = 1
 # I/O PARAMETERS
 ##################################################################################
 # Case study directory structure for input data
-CSE = '2024010300_valid_date'
+CSE = '2022122800_valid_date'
 
 # figure case study nesting
 FIG_CSE = ''

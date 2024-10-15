@@ -139,7 +139,6 @@
         platform = {{environ['SCHED']}}
         [[[environment]]]
             OMP_NUM_THREADS = {{GRD_PROC}}
-            CNST = {{environ['DRIVERS']}}/CONSTANTS.sh
             FULL_DATA = {{FULL_DATA}}
             CMP_ACC = {{CMP_ACC}}
             ACC_MIN = {{ACC_MIN}}

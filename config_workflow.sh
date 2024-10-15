@@ -27,6 +27,9 @@ source ${HOME}/settings/sites/${SITE}/config.sh
 # Root directory of task driver scripts
 export DRIVERS="${HOME}/src/drivers"
 
+# Defines constants / patterns used for driver scripts
+export CNST="${DRIVERS}/CONSTANTS.sh"
+
 # Root directory of task driver scripts
 export UTLTY="${HOME}/src/utilities"
 

@@ -113,7 +113,6 @@
     [[root]]
         platform = {{environ['SCHED']}}
         [[[environment]]]
-            CNST = {{environ['DRIVERS']}}/CONSTANTS.sh
             FULL_DATA = {{FULL_DATA}}
             RGRD = {{RGRD}}
             CMP_ACC = {{CMP_ACC}}

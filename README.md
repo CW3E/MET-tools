@@ -41,13 +41,13 @@ on large-scale, shared computing resources.  This is performed as with the
 [instructions](https://apptainer.org/docs/user/latest/build_a_container.html#downloading-an-existing-container-from-docker-hub)
 for building an Apptainer / Singularity container from a DockerHub image, using a tagged image
 from [MET Dockerhub](https://hub.docker.com/r/dtcenter/met). 
-This workflow has been tested with MET version 11.0.1, installing the tagged version
-11.0.1 from DockerHub can be performed with either Apptainer (or legacy Singularity) as
+This workflow has been tested with MET version 11.1.1, installing the tagged version
+11.1.1 from DockerHub can be performed with either Apptainer (or legacy Singularity) as
 ```
-apptainer build met-11.0.1.sif docker://dtcenter/met:11.0.1
-singularity build met-11.0.1.sif docker://dtcenter/met:11.0.1
+apptainer build met-11.1.1.sif docker://dtcenter/met:11.1.1
+singularity build met-11.1.1.sif docker://dtcenter/met:11.1.1
 ```
-where the executable singularity image is the output file `met-11.0.1.sif`.
+where the executable singularity image is the output file `met-11.1.1.sif`.
 
 ### Installing additional libraries
 Supplementary libraries for running these workflows are provided in additional containers

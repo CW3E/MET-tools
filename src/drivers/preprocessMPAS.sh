@@ -133,7 +133,7 @@ fi
 
 if [ -z ${MPAS_PRFX} ]; then
   msg="ERROR: MPAS file type \${MPAS_PRFX} is undefined.  Supply an output"
-  msg+=" e.g., history / diag, to source dynamic fields from.\n"
+  msg+=" name e.g., history / diag, to source dynamic fields from.\n"
   printf "${msg}"
   exit 1
 fi
@@ -331,7 +331,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
   anl_dt=`date +%Y?%m?%d?%H?%M?%S -d "${cyc_dt} ${anl_hr} hours"`
 
   # set input file name
-  f_in=`ls ${IN_DIR}/*${MPAS_PRFX}.${anl_dt}.nc`
+  f_in=`ls ${IN_DIR}/*${MPAS_PRFX}*.${anl_dt}.nc`
 
   if [[ -r ${f_in} ]]; then
     # cut down to file name alone

@@ -11,6 +11,9 @@
 {# Max number of sub-domain to be processed, 1-1 correspondence with CTR_FLWS #}
 {% set MAX_DOMS = 2, 1 %}
 
+{# WRF output file prefix to source model outputs from, e.g., wrfout / wrfcf #}
+{% set WRF_PRFX = 'wrfout' %}
+
 {# Define the min / max ensemble indices #}
 {% set ENS_MIN = 0 %}
 {% set ENS_MAX = 5 %}

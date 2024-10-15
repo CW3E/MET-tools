@@ -9,7 +9,7 @@ in the following steps.
 
 A variety of commonly used lat-lon regions are included in the
 ```
-MET-tools/vxmask/lat-lon
+MET-tools/settings/mask-root/lat-lon
 ```
 directory in this repository, which can be used to generate the NetCDF landmasks
 for the verification region in the StageIV grid. New lat-lon files can be added
@@ -30,7 +30,7 @@ the mask's printed name in plotting routines, with any underscores corresponding
 blank spaces - these underscores are parsed in the plotting scripts when defining 
 the printed name with spaces. Example KML files are located in the 
 ```
-MET-tools/vxmask/kml_files
+MET-tools/settings/mask-root/kml_files
 ```
 directory.  
 
@@ -65,7 +65,7 @@ and `run_GridStat.sh` scripts in the following. A landmask list is a text file
 with lines consisting of each `Mask_Name` region over which to perform
 verification. Example landmask lists can be found in the
 ```
-MET-tools/vxmask/mask-lists
+MET-tools/settings/mask-root/mask-lists
 ```
 directory.
 
@@ -76,25 +76,4 @@ file that was processed by the script.
 
 The NetCDF landmasks that will be ingested by GridStat are generated
 with the `run_vxmask.sh` script. The output NetCDF masks from this script can be re-used
-over multiple analyses that study the same verification regions. The required arguments of 
-the `run_vxmask.sh` script are defined in the configuration file `config_vxmask.sh` and are as follows:
-
- * `${USR_HOME}`    - the directory path for the MET-tools clone (sourced by `../config_MET-tools.sh`).
- * `${MSK_ROOT}`    - the root directory path for the landmasks, lat-lon files, KML files, and reference grids (sourced by `../config_MET-tools.sh`).
- * `${MET}`         - the MET singularity image path (sourced by `../config_MET-tools.sh`).
- * `${VRF_RGN}`     - the verification region group name.
- * `${MSK_LTLN}`    - the directory path to lat-lon text files for mask generation.
- * `${MSK_LST}`     - the directory path to the file with a list of landmasks for verification regions.
- * `${MSK_GRDS}`    - the root directory of regridded .nc landmasks on StageIV domain for verification.
- * `${OBS_F_IN}`    - the generic StageIV data product for reference verification grid in `${MSK_ROOT}`.
- 
-Currently, the StageIV 4km precipitation grid is supported, and integration of the PRISM 
-precipitation grid in the workflow is pending. In this repository, a generic StageIV 
-product is included in the following path:
-```
-MET-tools/vxmask/StageIV_QPE_2019021500.nc
-```
-which can be used for the `${OBS_F_IN}` above as the reference grid for
-generating landmasks.
-
-
+over multiple analyses that study the same verification regions.

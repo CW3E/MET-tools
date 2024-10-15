@@ -142,6 +142,13 @@ else
   exit 1
 fi
 
+if [ -z ${WRF_PRFX} ]; then
+  msg="ERROR: WRF file type \${WRF_PRFX} is undefined.  Supply an output"
+  msg+=" name e.g., wrfout / wrfcf, to source fields from.\n"
+  printf "${msg}"
+  exit 1
+fi
+
 if [[ ! ${CYC_DT} =~ ${ISO_RE} ]]; then
   msg="ERROR: cycle date \${CYC_DT}\n ${CYC_DT}\n"
   msg+=" is not in YYYYMMDDHH format.\n"
@@ -322,7 +329,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
   anl_dt=`date +%Y?%m?%d?%H?%M?%S -d "${cyc_dt} ${anl_hr} hours"`
 
   # set input file names
-  f_in=`ls ${IN_DIR}/wrfout_${GRD}_${anl_dt}`
+  f_in=`ls ${IN_DIR}/*${WRF_PRFX}*_${GRD}_${anl_dt}`
   
   if [[ -r ${f_in} ]]; then
     # Cut system path from input file

@@ -18,6 +18,9 @@ export HOME="/expanse/nfs/cw3e/cwp168/MET-tools"
 # expanse-cwp168 template and edited to set local paths / computing environment
 export SITE="expanse-cwp168"
 
+# If plotting will be called from containerized envrionment (sets path binds)
+export IF_CNTR_PLT="TRUE"
+
 ##################################################################################
 # WORKFLOW RELATIVE PATHS (DO NOT CHANGE)
 ##################################################################################
@@ -33,11 +36,28 @@ export CNST="${DRIVERS}/CONSTANTS.sh"
 # Root directory of task driver scripts
 export UTLTY="${HOME}/src/utilities"
 
+# Directory for plotting routines
+export PLT="${HOME}/src/plotting"
+
 # Root directory of shared task settings
 export SHARED="${HOME}/settings/shared"
 
 # Root directory for landmasks
 export MSK_ROOT="${HOME}/settings/mask-root"
+
+##################################################################################
+# PLOTTING UTILITIES AND DEFS
+##################################################################################
+# Define MET-tools-py Python execution with directory binds
+MTPY="singularity exec -B "
+MTPY+="${PLT}:/scrpt_dir:ro,${VRF_ROOT}:/in_root:ro,${VRF_ROOT}:/out_root:rw "
+MTPY+="${MET_TOOLS_PY} python /scrpt_dir/"
+
+# simple wrapper function for interactive shell calls of plotting scripts
+mtplot() {
+  cmd="${MTPY}$1 $2"
+  echo "${cmd}"; eval ${cmd}
+}
 
 ##################################################################################
 # EMBEDDED CYLC CONFIGURATION SETTINGS (DO NOT CHANGE)

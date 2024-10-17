@@ -257,8 +257,8 @@ class line_plot:
         return lines_labs
 
     def gen_data_range(self):
-        # generate the date range and forecast leads for the analysis, parse binary files
-        # for relevant fields
+        # generate the date range and forecast leads for the analysis,
+        # parse binary files for relevant fields
         plt_data = {}
 
         # check for cycling fields and format for workflow
@@ -471,15 +471,9 @@ class line_plot:
         ax0.grid(which = 'major', axis = 'y')
         ax1.grid(which = 'major', axis = 'y')
         
-        labels = []
-        labels = [None] * len(self.STAT_KEYS)
-        for i in range(len(self.STAT_KEYS)):
-            if self.STAT_KEYS[i] == 'RMSE':
-                labels[i] = 'Root-Mean\nSquared Error (mm)'
-            elif self.STAT_KEYS[i] == 'PR_CORR':
-                labels[i] = 'Pearson\nCorrelation'
-            else:
-                labels[i] = ''
+        panel_labels = []
+        for i_s in range(2):
+            panel_labels[i_s] = self.stat_labs[self.STAT_KEYS[i_s]]
         
         lab2='Forecast lead hrs'
         
@@ -492,11 +486,11 @@ class line_plot:
         plt.figtext(.8375, .90, QPE_SUBTITLE, horizontalalignment='center',
                     verticalalignment='center', fontsize=18)
         
-        plt.figtext(.025, .43, labels[0], horizontalalignment='center', rotation=90,
-                    verticalalignment='center', fontsize=20)
+        plt.figtext(.025, .43, panel_labels[0], horizontalalignment='center',
+                    rotation=90, verticalalignment='center', fontsize=20)
         
-        plt.figtext(.975, .43, labels[1], horizontalalignment='center', rotation=270,
-                    verticalalignment='center', fontsize=20)
+        plt.figtext(.975, .43, panel_labels[1], horizontalalignment='center',
+                    rotation=270, verticalalignment='center', fontsize=20)
         
         plt.figtext(.5, .02, lab2, horizontalalignment='center',
                     verticalalignment='center', fontsize=20)
@@ -514,10 +508,10 @@ class line_plot:
         fig.legend(line_list, line_labs, fontsize=18, ncol=ncols, loc='center',
                    bbox_to_anchor=[0.5, 0.83])
 
-# save figure and display
-os.system('mkdir -p ' + out_root)
-plt.savefig(OUT_PATH)
-plt.show()
+    # save figure and display
+    os.system('mkdir -p ' + out_root)
+    plt.savefig(OUT_PATH)
+    plt.show()
 
 ##################################################################################
 # end

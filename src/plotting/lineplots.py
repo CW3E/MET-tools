@@ -2,7 +2,7 @@
 # Description
 ##################################################################################
 # This script is designed to generate line plots in Matplotlib from MET ASCII
-# output files, converted to dataframes with the companion postprocessing routines.
+# output files, converted to dataframes with companion postprocessing routines.
 # This plotting scheme is designed to plot non-threshold data as lines in the
 # vertical axis and the number of lead hours to the valid time for verification
 # from the forecast initialization in the horizontal axis.
@@ -46,7 +46,6 @@
 # OBLIGATIONS TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
 # MODIFICATIONS.
 # 
-# 
 ##################################################################################
 # Imports
 ##################################################################################
@@ -59,17 +58,12 @@ import pandas as pd
 import pickle
 import os
 import sys
+import ipdb
 
 ##################################################################################
 # Define the line plotting class
 ##################################################################################
-
 class line_plot:
-    # Define environment variables in the class
-    INDT = os.environ['INDT']
-    VRF_ROOT = os.environ['VRF_ROOT']
-    IF_SING = os.environ['IF_SING']
-
     # Define pre-set plotting parameters for specific stats
     stat_labs = {
                  'RMSE': 'Root-Mean\nSquared Error (mm)',
@@ -79,6 +73,13 @@ class line_plot:
                  'GSS': 'Gilbert\nSkill Score',
                  'CSI': 'Critical\nSuccess Index',
                 }
+
+    stat_types = [
+                  'cnt',
+                  'cts',
+                  'nbrcnt',
+                  'nbrcts',
+                 ]
 
     # Define the currently supported attributes for line plots
     MET_TOOLS = [
@@ -92,100 +93,136 @@ class line_plot:
         for key, val in dictionary.items():
             setattr(self, key, val)
 
-    def format_cyc(self):
-        if not self.STRT_DT.isdigit() or len(self.STRT_DT) != 10:
-            print('ERROR: STRT_DT\n' + self.STRT_DT +\
-                    '\n is not in YYYYMMDDHH format.')
-            sys.exit(1)
-        else:
-            iso = self.STRT_DT[:4] + '-' + self.STRT_DT[4:6] + '-' +\
-                    self.STRT_DT[6:8] + '_' + self.STRT_DT[8:]
-            strt_dt = dt.fromisoformat(iso)
-        
-        if not self.STOP_DT.isdigit() or len(self.STOP_DT) != 10:
-            print('ERROR: STOP_DT\n' + self.STOP_DT +\
-                    '\n is not in YYYYMMDDHH format.')
-            sys.exit(1)
-        else:
-            iso = self.STOP_DT[:4] + '-' + self.STOP_DT[4:6] +\
-                    '-' + self.STOP_DT[6:8] + '_' + self.STOP_DT[8:]
-            stop_dt = dt.fromisoformat(iso)
-        
-        if not self.CYC_INC.isdigit():
-            print('ERROR: CYC_INC\n' + self.CYC_INC + '\n is not in HH format.')
-            sys.exit(1)
-        else:
-            cyc_inc = self.CYC_INC + 'H'
-        
-        if not self.VALID_DT.isdigit() or len(self.VALID_DT) != 10:
-            print('ERROR: VALID_DT, ' + self.VALID_DT + ', is not in YYYYMMDDHH format.')
-            sys.exit(1)
-        else:
-            iso = self.VALID_DT[:4] + '-' + self.VALID_DT[4:6] + '-' +\
-                    self.VALID_DT[6:8] + '_' + self.VALID_DT[8:]
-            valid_dt = dt.fromisoformat(iso)
+    def gen_cycs(self):
+        try:
+            strt_dt = dt.strptime(self.STRT_DT, '%Y%m%d%H')
+        except:
+            raise ValueError(1,
+                  'ERROR: STRT_DT\n' + self.STRT_DT +\
+                  '\n is not in YYYYMMDDHH format.')
+        try:
+            stop_dt = dt.strptime(self.STOP_DT, '%Y%m%d%H')
+        except:
+            raise ValueError(1,
+                  'ERROR: STOP_DT\n' + self.STOP_DT +\
+                  '\n is not in YYYYMMDDHH format.')
+        try:
+            cyc_inc = self.CYC_INC + 'h'
+        except:
+            raise ValueError(1,
+                  'ERROR: CYC_INC\n' + self.CYC_INC +\
+                  '\n must be a string in hours digit format.')
+        try:
+            valid_dt = dt.strptime(self.VALID_DT, '%Y%m%d%H')
+        except:
+            raise ValueError(1,
+                  'ERROR: VALID_DT, ' + self.VALID_DT +\
+                  ', is not in YYYYMMDDHH format.')
 
-        return strt_dt, stop_dt, cyc_inc, valid_dt
+        fcst_zhs = pd.date_range(start=strt_dt, end=stop_dt,
+                freq=cyc_inc).to_pydatetime()
+
+        return fcst_zhs, valid_dt
  
+    def gen_plot_text(self):
+        ## NOTE: NEED TO FINISH THIS METHOD TO GENERATE GENERIC PLOT TEXT
+        ## THIS SHOULD BE CONSIDERED WITH RESPECT TO CHECKS OF ATTRS
+        dmn_title = 'Domain: ' + self.MSK.replace('_', ' ')
+        title='24hr Accumulated Precipitation\n' + 'Valid: ' +\
+                valid_dt.strftime('%HZ %d/%m/%Y')
+        obs_subtitle = 'Obs Source: ' + self.OBS_TITLE
+        panel_labels = []
+        for i_s in range(2):
+            panel_labels[i_s] = self.stat_labs[self.STAT_KEYS[i_s]]
+        
+        # generate tic labels based on hour values
+        for i_nl in range(num_leads):
+            tmp = dt.strptime(fcst_leads[i_nl], '%Y%m%d_%H%M%S')
+            fcst_leads[i_nl] = tmp.srtftime(self.DT_FRMT)
+
     def validate_io(self):
-        if not self.MET_TOOL in MET_TOOLS:
-            print('ERROR: ' + self.MET_TOOL + ' is not a supported tool currently.')
+        if not self.MET_TOOL in line_plot.MET_TOOLS:
+            print('ERROR: ' + self.MET_TOOL + ' is not a supported tool' +\
+                  ' currently.')
             print('Supported tools include:')
-            for tool in self.MET_TOOLS:
+            for tool in line_plot.MET_TOOLS:
                 print(INDT + tool)
-            sys.exit(1)
+            raise ValueError
         else:
             met_tool = self.MET_TOOL
 
-        if not self.PRFX in PRFXS:
-            print('ERROR: ' + self.PRFX + ' is not a supported analysis currently.')
+        if not self.PRFX in line_plot.PRFXS:
+            print('ERROR: ' + line_plot.PRFX + ' is not a supported' +\
+                  ' analysis currently.')
             print('Supported analyses include:')
-            for prfx in self.PRFXS:
+            for prfx in line_plot.PRFXS:
                 print(INDT + prfx)
-            sys.exit(1)
+            raise ValueError
         else:
             prfx = self.PRFX
 
-        if not type(self.CSE) == str or len(self.CSE) == 0:
-            print('ERROR: case study name attribute "CSE" is not a string' +\
-                  ' or is length zero. This must be defined as the root of' +\
-                  ' the case study / configuration directory structure for' +\
-                  ' verification IO.')
-            sys.exit(1)
+        if not type(self.MSK) == str:
+            raise TypeError(1,
+                  'ERROR: verification region name attribute "MSK" is not' +\
+                  ' a string.')
+        elif len(self.MSK) == 0:
+            raise ValueError(1,
+                  'ERROR: verification region name attribute "CSE" is length' +\
+                  ' zero.')
+        else:
+            msk = self.MSK
+
+        if not type(self.CSE) == str:
+            raise TypeError(1,
+                  'ERROR: case study name attribute "CSE" is not a string.')
+        elif len(self.CSE) == 0:
+            raise ValueError(1,
+                  'ERROR: case study name attribute "CSE" is length zero.' +\
+                  ' This must be defined as the root of the case study ' +\
+                  ' / configuration directory structure for verification IO.')
         else:
             cse = self.CSE
 
         if not type(self.FIG_CSE) == str:
-            print('ERROR: figure output sub-directory name FIG_CSE is not' +\
-                  ' a string. Define equal to an empty string if not used.')
-            sys.exit(1)
-
+            raise TypeError('ERROR: figure output sub-directory name' +\
+                  ' FIG_CSE is not a string. Define equal to an empty' +\
+                  ' string if not used.')
         else:
             fig_cse = self.FIG_CSE
 
-        if self.IF_SING == 'TRUE':
+        if self.IF_CNTR_PLT == 'TRUE':
             in_root = '/in_root/' + self.CSE
             out_root = '/out_root/' + self.CSE + '/figures/' + self.FIG_CSE
             os.system('mkdir -p ' + out_root)
             if not os.path.isdir(in_root):
-                print('ERROR: input data case directory does not exist.')
-                sys.exit(1)
+                raise OSError(1,
+                      'ERROR: input data case directory does not exist.',
+                      in_root)
             elif not os.path.isdir(out_root):
-                print('ERROR: output figure write directory does not exist.')
-        elif self.IF_SING == 'FALSE':
-            in_root = VRF_ROOT + '/' + self.CSE
-            out_root = VRF_ROOT + '/' + self.CSE + '/figures/' + self.FIG_CSE
+                raise OSError(1,
+                      'ERROR: output figure write directory does not exist.',
+                      out_root)
+        elif self.IF_CNTR_PLT == 'FALSE':
+            in_root = self.VRF_ROOT + '/' + self.CSE
+            out_root = self.VRF_ROOT + '/' + self.CSE + '/figures/' +\
+                    self.FIG_CSE
             os.system('mkdir -p ' + out_root)
             if not os.path.isdir(in_root):
-                print('ERROR: input data case directory does not exist.')
-                sys.exit(1)
+                raise OSError(1,
+                      'ERROR: input data case directory does not exist.',
+                      in_root)
             elif not os.path.isdir(out_root):
-                print('ERROR: output figure write directory does not exist.')
+                raise OSError(1,
+                      'ERROR: output figure write directory does not exist.',
+                      out_root)
         else:
-            print('ERROR: IF_SING must be set to "TRUE" or "FALSE" to' +\
+            raise ValueError(1,
+                  'ERROR: IF_CNTR_PLT must be set to "TRUE" or "FALSE" to' +\
                   ' determine if IO paths are system paths or singularity' +\
                   ' bind paths.')
-            sys.exit(1)
+
+        out_f = self.VALID_DT + '_' + msk + '_' + self.STAT_KEYS[0] + '_' +\
+                self.STAT_KEYS[1] + fig_lab + '_lineplot.png'
 
         return met_tool, prfx, cse, in_root, out_root
 
@@ -212,40 +249,40 @@ class line_plot:
                     lab_len = min(idx_len, split_len)
                     if split_len == 1:
                         line_lab += split_string[0]
-        
+
                     elif idx_len == 1:
-                        i_li = LAB_IDX[0]
+                        i_li = self.LAB_IDX[0]
                         try:
                             line_lab += split_string[i_li]
                         except:
                             msg = 'WARNING: label index ' + str(i_li) +\
                                   ' is out out of bounds for ' + ctr_flw +\
                                   ' underscore components.'
-        
+
                             print(msg)
                             print('Using the full control flow name for' +\
                                   ' plot label.')
                             line_lab += ctr_flw
-        
+
                     else:
                         for i_ll in range(0, lab_len):
-                            i_li = LAB_IDX[i_ll]
+                            i_li = self.LAB_IDX[i_ll]
                             try:
                                 line_lab += split_string[i_li] + '_'
                             except:
                                 pass
-                        
+
                         line_lab = line_lab[:-1]
-            
+
                     if self.ENS_LAB:
                         if len(mem) > 0:
                             line_lab += '_' + mem
-            
+
                     if self.GRD_LAB:
                         if len(grd) > 0:
                             line_lab += '_' + grd
         
-                    key = ctr_flw + ens + grd
+                    key = ctr_flw.name + mem + grd
 
                     lines_labs[key] = {
                                        'flw_nme': ctr_flw.name,
@@ -262,18 +299,16 @@ class line_plot:
         plt_data = {}
 
         # check for cycling fields and format for workflow
-        strt_dt, stop_dt, cyc_inc, valid_dt = self.format_cyc()
-        fcst_zhs = pd.date_range(start=strt_dt, end=stop_dt,
-                freq=cyc_inc).to_pydatetime()
+        fcst_zhs, valid_dt = self.gen_cycs()
 
         # check for valid IO parameters for plotting
         met_tool, prfx, cse, in_root, out_root = self.validate_io()
 
         # generate all lines to be plotted
         lines_labs = self.gen_lines_labs()
-        
+
         fcst_leads = []
-        for key, lines in lines_labs:
+        for key, lines in lines_labs.items():
             # define derived data paths 
             flw_nme = lines['flw_nme']
             label = lines['label']
@@ -295,17 +330,17 @@ class line_plot:
                            self.STAT_TYPE + ' does not exist, skipping this' +\
                            ' configuration.')
                     continue
-        
+
                 # load the values to be plotted along with landmask and lead
                 vals = [
                         'VX_MASK',
                         'FCST_LEAD',
                         'FCST_VALID_END',
                        ]
-    
+
                 if hasattr(self, 'LEV'):
                     vals += ['FCST_THRESH']
-        
+
                 # include the statistics and optionally confidence intervals
                 vals += self.STAT_KEYS
                 if hasattr(self, 'CI'):
@@ -315,13 +350,13 @@ class line_plot:
                         if stat_CI + 'L' in data:
                             vals.append(stat_CI + 'L')
                             vals.append(stat_CI + 'U')
-            
+
                 # cut down df to specified valid date / region / relevant stats
                 stat_data = data[vals]
                 stat_data = stat_data.loc[(stat_data['VX_MASK'] == self.MSK)]
                 stat_data = stat_data.loc[(stat_data['FCST_VALID_END'] ==
                                            valid_dt.strftime('%Y%m%d_%H%M%S'))]
-                if hasattr(self, 'LEV') 
+                if hasattr(self, 'LEV'):
                     stat_data = \
                     stat_data.loc[(stat_data['FCST_THRESH'] == self.LEV)]
 
@@ -329,49 +364,49 @@ class line_plot:
                 if not stat_data.empty:
                     leads = sorted(list(set(stat_data['FCST_LEAD'].values)),
                                    key=lambda x:(len(x), x))
-            
+
                     if key in plt_data.keys():
                         # if there is existing data, concatenate dataframes
                         plt_data[key]['data'] = pd.concat([plt_data[key]['data'],
                             stat_data], axis=0)
                     else:
                         # if this is a first instance, create fields
-                        plt_data[key] = {'data': stat_data, 'label': line_lab}
-        
+                        plt_data[key] = {'data': stat_data, 'label': label}
+
                     # obtain leads of data 
                     fcst_leads += leads
 
                 else:
                     print('ERROR: no data exists in:\n' + INDT + in_path)
                     print('corresponding to plotting configuration.')
-        
+
         # find all unique values for forecast leads, sorted for plotting, less than max lead
         fcst_leads = sorted(list(set(fcst_leads)), key=lambda x:(len(x), x))
-    
-        return plt_data, fcst_leads
+
+        return plt_data, fcst_leads, out_root
 
     def gen_fig(self):
         # generate the plot data
-        plt_data, fcst_leads = self.gen_data_range()
+        plt_data, fcst_leads, out_root = self.gen_data_range()
 
         # create a figure
         fig = plt.figure(figsize=(16,9.6))
-        
+
         # Set the axes
         ax0 = fig.add_axes([.08, .07, .42, .70])
         ax1 = fig.add_axes([.5, .07, .42, .70])
-        
+        ax_list = [ax0, ax1]
+        ax_lines_list = [[], []]
+
         num_leads = len(fcst_leads)
         line_list = []
         line_labs = []
-        ax0_l = []
-        ax1_l = []
-        
+
         # loop configurations, load trimmed data from plt_data dictionary
-        for key, line in plt_data:
+        for key, line in plt_data.items():
             data = line['data']
             line_lab = line['label']
-            
+
             # infer existence of confidence interval data
             cnf_lvs = []
             for i_ns in range(2):
@@ -381,14 +416,13 @@ class line_plot:
                     if stat_CI + 'L' in data and\
                         not (data[stat_CI + 'L'].isnull().values.any()):
                             cnf_lvs.append(True)
-            
+
                 except:
                     cnf_lvs.append(False)
-            
-                exec('ax = ax%s'%i_ns)
+
+                ax = ax_list[i_ns]
                 if cnf_lvs[i_ns]:
                     tmp = np.full([num_leads, 3], np.nan)
-            
                     for i_nl in range(num_leads):
                         val = data.loc[(data['FCST_LEAD'] == fcst_leads[i_nl])]
                         if not val.empty:
@@ -398,9 +432,10 @@ class line_plot:
                             tmp[i_nl, 2] = val[self.STAT_KEYS[i_ns] +\
                                     '_' + self.CI + 'U']
                     
-                    l0 = ax.fill_between(range(num_leads), tmp[:, 1], tmp[:, 2], alpha=0.5)
+                    l0 = ax.fill_between(range(num_leads), tmp[:, 1],
+                            tmp[:, 2], alpha=0.5)
                     l1, = ax.plot(range(num_leads), tmp[:, 0], linewidth=2)
-                    exec('ax%s_l.append([l1,l0])'%i_ns)
+                    ax_lines_list[i_ns].append([l1,l0])
                     l = l1
             
                 else:
@@ -409,10 +444,10 @@ class line_plot:
                     for i_nl in range(num_leads):
                         val = data.loc[(data['FCST_LEAD'] == fcst_leads[i_nl])]
                         if not val.empty:
-                            tmp[i_nl] = val[self.STAT_KEYS[i_ns]]
+                            tmp[i_nl] = val[self.STAT_KEYS[i_ns]].iloc[0]
                     
                     l, = ax.plot(range(num_leads), tmp[:], linewidth=2)
-                    exec('ax%s_l.append([l])'%i_ns)
+                    ax_lines_list[i_ns].append([l])
             
             # add the line type to the legend
             line_list.append(l)
@@ -421,19 +456,16 @@ class line_plot:
         # set colors and markers
         line_count = len(line_list)
         line_colors = sns.color_palette('husl', line_count)
+        ipdb.set_trace()
         for i_lc in range(line_count):
             for i_ns in range(2):
-                exec('axl = ax%s_l[i_lc]'%i_ns)
+                axl = ax_lines_list[i_lc]
                 for i_na in range(len(axl)):
                     l = axl[i_na]
                     l.set_color(line_colors[i_lc])
                     if i_na == 0:
                       l.set_marker((i_lc + 2, 0, 0))
                       l.set_markersize(15)
-        
-        # generate tic labels based on hour values
-        for i_nl in range(num_leads):
-            fcst_leads[i_nl] = fcst_leads[i_nl][:-4]
         
         ax0.set_xticks(range(num_leads))
         ax0.set_xticklabels(fcst_leads)
@@ -471,19 +503,15 @@ class line_plot:
         ax0.grid(which = 'major', axis = 'y')
         ax1.grid(which = 'major', axis = 'y')
         
-        panel_labels = []
-        for i_s in range(2):
-            panel_labels[i_s] = self.stat_labs[self.STAT_KEYS[i_s]]
-        
         lab2='Forecast lead hrs'
         
-        plt.figtext(.5, .95, TITLE, horizontalalignment='center',
+        plt.figtext(.5, .95, self.TITLE, horizontalalignment='center',
                     verticalalignment='center', fontsize=22)
         
-        plt.figtext(.15, .90, DMN_SUBTITLE, horizontalalignment='center',
+        plt.figtext(.15, .90, self.DMN_SUBTITLE, horizontalalignment='center',
                     verticalalignment='center', fontsize=18)
         
-        plt.figtext(.8375, .90, QPE_SUBTITLE, horizontalalignment='center',
+        plt.figtext(.8375, .90, self.FLD_SUBTITLE, horizontalalignment='center',
                     verticalalignment='center', fontsize=18)
         
         plt.figtext(.025, .43, panel_labels[0], horizontalalignment='center',
@@ -508,10 +536,9 @@ class line_plot:
         fig.legend(line_list, line_labs, fontsize=18, ncol=ncols, loc='center',
                    bbox_to_anchor=[0.5, 0.83])
 
-    # save figure and display
-    os.system('mkdir -p ' + out_root)
-    plt.savefig(OUT_PATH)
-    plt.show()
+        # save figure and display
+        plt.savefig(OUT_PATH)
+        #plt.show()
 
 ##################################################################################
 # end

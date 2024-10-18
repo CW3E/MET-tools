@@ -59,6 +59,9 @@ from control_flows import ctr_flw
 from lineplots import line_plot
 
 ##################################################################################
+INDT = '    '
+VRF_ROOT = os.environ['VRF_ROOT']
+IF_CNTR_PLT = os.environ['IF_CNTR_PLT']
 
 MPAS_240_U = ctr_flw('MPAS_240-U', mem_ids=['mean'])
 MPAS_240_U_LwrBnd = ctr_flw('MPAS_240-U_LwrBnd', mem_ids=['mean'])
@@ -71,7 +74,9 @@ GEFS = ctr_flw('GEFS')
 ens_v_bkg = {
              'MET_TOOL': 'GridStat',
              'PRFX': 'grid_stat_QPF_24hr',
-             'TYPE': 'cnt',
+             'STAT_TYPE': 'cnt',
+             'CSE': 'valid_date_2022-12-28T00',
+             'FIG_CSE': 'testing',
              'CTR_FLWS': [
                           MPAS_240_U,
                           MPAS_240_U_LwrBnd,
@@ -81,6 +86,8 @@ ens_v_bkg = {
                           GFS,
                           GEFS
                          ],
+             'VRF_ROOT': VRF_ROOT,
+             'IF_CNTR_PLT': IF_CNTR_PLT,
              'STAT_KEYS': ['RMSE', 'PR_CORR'],
              'STRT_DT': '2022122300',
              'STOP_DT': '2022122700',
@@ -90,17 +97,8 @@ ens_v_bkg = {
              'LAB_IDX': [0, 1],
              'ENS_LAB': False,
              'GRD_LAB': True,
+             'DT_FRMT': '%Y%m%d%H'
             }
 
 test_lineplot = line_plot(ens_v_bkg)
 
-#DMN_TITLE = 'California' # title to plot name of landmask/domain
-#TITLE='24hr Accumulated Precipitation\n' + 'Valid: ' +\
-#        VALID_DT[8:] + 'Z ' + VALID_DT[4:6] + '/' + VALID_DT[6:8] + '/' + VALID_DT[:4]
-#DMN_SUBTITLE = 'Domain: ' + DMN_TITLE
-#QPE_SUBTITLE = 'QPE Source: ' + QPE_TITLE
-#CSE = 'valid_date_2021-12-28T00'
-#FIG_CSE = ''
-#FIG_LAB = 'ENS_V_BKG'
-#OUT_PATH = OUT_ROOT + '/' + VALID_DT + '_' + MSK + '_' + STATS[0] + '_' +\
-#           STATS[1] + fig_lab + '_lineplot.png'

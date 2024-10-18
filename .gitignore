@@ -13,6 +13,12 @@
 .conda
 .conda/*
 
+# No ipython files
+###################
+.cache/
+.ipython/
+.pdbhistory
+
 # Packages #
 ############
 # it's better to unpack these files and commit the raw source

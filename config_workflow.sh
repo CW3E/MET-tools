@@ -19,7 +19,7 @@ export HOME="/expanse/nfs/cw3e/cwp168/MET-tools"
 export SITE="expanse-cwp168"
 
 # If plotting will be called from containerized envrionment (sets path binds)
-export IF_CNTR_PLT="TRUE"
+export IF_CNTR_PLT="FALSE"
 
 ##################################################################################
 # WORKFLOW RELATIVE PATHS (DO NOT CHANGE)
@@ -27,37 +27,26 @@ export IF_CNTR_PLT="TRUE"
 # Source the site-specific settings from the configuration file
 source ${HOME}/settings/sites/${SITE}/config.sh
 
+# Root directory of source codes
+export SRC="${HOME}/src"
+
 # Root directory of task driver scripts
-export DRIVERS="${HOME}/src/drivers"
+export DRIVERS="${SRC}/drivers"
 
 # Defines constants / patterns used for driver scripts
 export CNST="${DRIVERS}/CONSTANTS.sh"
 
 # Root directory of task driver scripts
-export UTLTY="${HOME}/src/utilities"
+export UTLTY="${SRC}/utilities"
 
 # Directory for plotting routines
-export PLT="${HOME}/src/plotting"
+export PLT="${SRC}/plotting"
 
 # Root directory of shared task settings
 export SHARED="${HOME}/settings/shared"
 
 # Root directory for landmasks
 export MSK_ROOT="${HOME}/settings/mask-root"
-
-##################################################################################
-# PLOTTING UTILITIES AND DEFS
-##################################################################################
-# Define MET-tools-py Python execution with directory binds
-MTPY="singularity exec -B "
-MTPY+="${PLT}:/scrpt_dir:ro,${VRF_ROOT}:/in_root:ro,${VRF_ROOT}:/out_root:rw "
-MTPY+="${MET_TOOLS_PY} python /scrpt_dir/"
-
-# simple wrapper function for interactive shell calls of plotting scripts
-mtplot() {
-  cmd="${MTPY}$1 $2"
-  echo "${cmd}"; eval ${cmd}
-}
 
 ##################################################################################
 # EMBEDDED CYLC CONFIGURATION SETTINGS (DO NOT CHANGE)
@@ -91,5 +80,22 @@ else
     alias micromamba="$MAMBA_EXE"  # Fallback on help from mamba activate
 fi
 unset __mamba_setup
+
+##################################################################################
+# PLOTTING UTILITIES AND DEFS
+##################################################################################
+# Add the plotting directory to Python path for running outide of container
+export PYTHONPATH="${SRC}"
+
+# Define MET-tools-py Python execution with directory binds
+MTPY="singularity exec -B "
+MTPY+="${PLT}:/scrpt_dir:ro,${VRF_ROOT}:/in_root:ro,${VRF_ROOT}:/out_root:rw "
+MTPY+="${MET_TOOLS_PY} python /scrpt_dir/"
+
+# simple wrapper function for interactive shell calls of plotting scripts
+mtplot() {
+  cmd="${MTPY}$1 $2"
+  echo "${cmd}"; eval ${cmd}
+}
 
 ##################################################################################

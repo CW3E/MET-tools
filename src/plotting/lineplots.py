@@ -49,6 +49,7 @@
 ##################################################################################
 # Imports
 ##################################################################################
+import plotting
 import matplotlib
 from datetime import datetime as dt
 import matplotlib.pyplot as plt
@@ -57,73 +58,28 @@ import numpy as np
 import pandas as pd
 import pickle
 import os
-import sys
+from attrs import define, field, validators
 import ipdb
 
 ##################################################################################
 # Define the line plotting class
 ##################################################################################
-class line_plot:
-    # Define pre-set plotting parameters for specific stats
-    stat_labs = {
-                 'RMSE': 'Root-Mean\nSquared Error (mm)',
-                 'PR_CORR': 'Pearson\nCorrelation',
-                 'FSS': 'Fractional\nSkill Score',
-                 'AFSS': 'Asymptotic Fractional\nSkill Score',
-                 'GSS': 'Gilbert\nSkill Score',
-                 'CSI': 'Critical\nSuccess Index',
-                }
+@define
+class line_plot(plotting.plot):
+    VALID_DT:str = field(
+                         validator=validators.matches_re('^[0-9]{10}$'),
+                         converter=plotting.convert_dt,
+                        )
 
-    stat_types = [
-                  'cnt',
-                  'cts',
-                  'nbrcnt',
-                  'nbrcts',
-                 ]
-
-    # Define the currently supported attributes for line plots
-    MET_TOOLS = [
-                 'GridStat',
-                ]
-    PRFXS = [
-             'grid_stat_QPF_24hr',
-            ]
-
-    def __init__(self, dictionary):
-        for key, val in dictionary.items():
-            setattr(self, key, val)
+    LEV:str = field(
+                    validator=validators.optional(validators.instance_of(str)),
+                    converter=plotting.convert_dt,
+                    )
 
     def gen_cycs(self):
-        try:
-            strt_dt = dt.strptime(self.STRT_DT, '%Y%m%d%H')
-        except:
-            raise ValueError(1,
-                  'ERROR: STRT_DT\n' + self.STRT_DT +\
-                  '\n is not in YYYYMMDDHH format.')
-        try:
-            stop_dt = dt.strptime(self.STOP_DT, '%Y%m%d%H')
-        except:
-            raise ValueError(1,
-                  'ERROR: STOP_DT\n' + self.STOP_DT +\
-                  '\n is not in YYYYMMDDHH format.')
-        try:
-            cyc_inc = self.CYC_INC + 'h'
-        except:
-            raise ValueError(1,
-                  'ERROR: CYC_INC\n' + self.CYC_INC +\
-                  '\n must be a string in hours digit format.')
-        try:
-            valid_dt = dt.strptime(self.VALID_DT, '%Y%m%d%H')
-        except:
-            raise ValueError(1,
-                  'ERROR: VALID_DT, ' + self.VALID_DT +\
-                  ', is not in YYYYMMDDHH format.')
-
-        fcst_zhs = pd.date_range(start=strt_dt, end=stop_dt,
-                freq=cyc_inc).to_pydatetime()
-
-        return fcst_zhs, valid_dt
- 
+        return pd.date_range(start=self.STRT_DT, end=self.STOP_DT, 
+                             freq=self.CYC_INC).to_pydatetime()
+                
     def gen_plot_text(self):
         ## NOTE: NEED TO FINISH THIS METHOD TO GENERATE GENERIC PLOT TEXT
         ## THIS SHOULD BE CONSIDERED WITH RESPECT TO CHECKS OF ATTRS
@@ -141,55 +97,6 @@ class line_plot:
             fcst_leads[i_nl] = tmp.srtftime(self.DT_FRMT)
 
     def validate_io(self):
-        if not self.MET_TOOL in line_plot.MET_TOOLS:
-            print('ERROR: ' + self.MET_TOOL + ' is not a supported tool' +\
-                  ' currently.')
-            print('Supported tools include:')
-            for tool in line_plot.MET_TOOLS:
-                print(INDT + tool)
-            raise ValueError
-        else:
-            met_tool = self.MET_TOOL
-
-        if not self.PRFX in line_plot.PRFXS:
-            print('ERROR: ' + line_plot.PRFX + ' is not a supported' +\
-                  ' analysis currently.')
-            print('Supported analyses include:')
-            for prfx in line_plot.PRFXS:
-                print(INDT + prfx)
-            raise ValueError
-        else:
-            prfx = self.PRFX
-
-        if not type(self.MSK) == str:
-            raise TypeError(1,
-                  'ERROR: verification region name attribute "MSK" is not' +\
-                  ' a string.')
-        elif len(self.MSK) == 0:
-            raise ValueError(1,
-                  'ERROR: verification region name attribute "CSE" is length' +\
-                  ' zero.')
-        else:
-            msk = self.MSK
-
-        if not type(self.CSE) == str:
-            raise TypeError(1,
-                  'ERROR: case study name attribute "CSE" is not a string.')
-        elif len(self.CSE) == 0:
-            raise ValueError(1,
-                  'ERROR: case study name attribute "CSE" is length zero.' +\
-                  ' This must be defined as the root of the case study ' +\
-                  ' / configuration directory structure for verification IO.')
-        else:
-            cse = self.CSE
-
-        if not type(self.FIG_CSE) == str:
-            raise TypeError('ERROR: figure output sub-directory name' +\
-                  ' FIG_CSE is not a string. Define equal to an empty' +\
-                  ' string if not used.')
-        else:
-            fig_cse = self.FIG_CSE
-
         if self.IF_CNTR_PLT == 'TRUE':
             in_root = '/in_root/' + self.CSE
             out_root = '/out_root/' + self.CSE + '/figures/' + self.FIG_CSE
@@ -224,7 +131,7 @@ class line_plot:
         out_f = self.VALID_DT + '_' + msk + '_' + self.STAT_KEYS[0] + '_' +\
                 self.STAT_KEYS[1] + fig_lab + '_lineplot.png'
 
-        return met_tool, prfx, cse, in_root, out_root
+        return in_root, out_root
 
     def gen_lines_labs(self):
         lines_labs = {}
@@ -299,7 +206,7 @@ class line_plot:
         plt_data = {}
 
         # check for cycling fields and format for workflow
-        fcst_zhs, valid_dt = self.gen_cycs()
+        fcst_zhs = self.gen_cycs()
 
         # check for valid IO parameters for plotting
         met_tool, prfx, cse, in_root, out_root = self.validate_io()
@@ -355,7 +262,7 @@ class line_plot:
                 stat_data = data[vals]
                 stat_data = stat_data.loc[(stat_data['VX_MASK'] == self.MSK)]
                 stat_data = stat_data.loc[(stat_data['FCST_VALID_END'] ==
-                                           valid_dt.strftime('%Y%m%d_%H%M%S'))]
+                    self.VALID_DT.strftime('%Y%m%d_%H%M%S'))]
                 if hasattr(self, 'LEV'):
                     stat_data = \
                     stat_data.loc[(stat_data['FCST_THRESH'] == self.LEV)]

@@ -38,7 +38,6 @@
 # OBLIGATIONS TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
 # MODIFICATIONS.
 # 
-# 
 ##################################################################################
 # Imports
 ##################################################################################
@@ -54,22 +53,143 @@ import numpy as np
 import pandas as pd
 import pickle
 import os
-import sys
-from control_flows import ctr_flw
-from lineplots import line_plot
+from attrs import define, field, validators
 
+##################################################################################
+# Load workflow constants and Utility Methods 
 ##################################################################################
 INDT = '    '
 VRF_ROOT = os.environ['VRF_ROOT']
 IF_CNTR_PLT = os.environ['IF_CNTR_PLT']
 
-MPAS_240_U = ctr_flw('MPAS_240-U', mem_ids=['mean'])
-MPAS_240_U_LwrBnd = ctr_flw('MPAS_240-U_LwrBnd', mem_ids=['mean'])
-WRF_9_WestCoast = ctr_flw('WRF_9_WestCoast', ['d01'], ['mean'])
-WRF_9_3_WestCoast = ctr_flw('WRF_9-3_WestCoast', ['d01', 'd02'], ['mean'])
-ECMWF = ctr_flw('ECMWF')
-GFS = ctr_flw('GFS')
-GEFS = ctr_flw('GEFS')
+def convert_dt(iso_str):
+    return dt.strptime(iso_str, '%Y%m%d%H')
+
+# Define pre-set plotting parameters for specific stats
+stat_labs = {
+             'RMSE': 'Root-Mean\nSquared Error (mm)',
+             'PR_CORR': 'Pearson\nCorrelation',
+             'FSS': 'Fractional\nSkill Score',
+             'AFSS': 'Asymptotic Fractional\nSkill Score',
+             'GSS': 'Gilbert\nSkill Score',
+             'CSI': 'Critical\nSuccess Index',
+            }
+
+stat_types = [
+              'cnt',
+              'cts',
+              'nbrcnt',
+              'nbrcts',
+             ]
+
+# Define the currently supported attributes for line plots
+MET_TOOLS = [
+             'GridStat',
+            ]
+PRFXS = [
+         'grid_stat_QPF_24hr',
+        ]
+
+##################################################################################
+# Define parent classes
+##################################################################################
+
+@define
+class plot:
+    STRT_DT:str = field(
+                        validator=validators.matches_re('^[0-9]{10}$'),
+                        converter=plotting.convert_dt,
+                       )
+    STOP_DT:str = field(
+                        validator=validators.matches_re('^[0-9]{10}$'),
+                        converter=plotting.convert_dt,
+                       )
+    CYC_INC:str = field(
+                        validator=validators.matches_re('^[0-9]+$'),
+                        converter=lambda x : x + 'h'
+                       )
+    # NOTE: NEED TO START CONVERTING THESE INTO ATTRIBUTES OF PLOTTING CLASS
+    # USING ATTRS TO HANDLE INTANTIATION VALIDATION
+    if not self.MET_TOOL in line_plot.MET_TOOLS:
+        print('ERROR: ' + self.MET_TOOL + ' is not a supported tool' +\
+              ' currently.')
+        print('Supported tools include:')
+        for tool in line_plot.MET_TOOLS:
+            print(INDT + tool)
+        raise ValueError
+    else:
+        met_tool = self.MET_TOOL
+
+    if not self.PRFX in line_plot.PRFXS:
+        print('ERROR: ' + line_plot.PRFX + ' is not a supported' +\
+              ' analysis currently.')
+        print('Supported analyses include:')
+        for prfx in line_plot.PRFXS:
+            print(INDT + prfx)
+        raise ValueError
+    else:
+        prfx = self.PRFX
+
+    if not type(self.MSK) == str:
+        raise TypeError(1,
+              'ERROR: verification region name attribute "MSK" is not' +\
+              ' a string.')
+    elif len(self.MSK) == 0:
+        raise ValueError(1,
+              'ERROR: verification region name attribute "CSE" is length' +\
+              ' zero.')
+    else:
+        msk = self.MSK
+
+    if not type(self.CSE) == str:
+        raise TypeError(1,
+              'ERROR: case study name attribute "CSE" is not a string.')
+    elif len(self.CSE) == 0:
+        raise ValueError(1,
+              'ERROR: case study name attribute "CSE" is length zero.' +\
+              ' This must be defined as the root of the case study ' +\
+              ' / configuration directory structure for verification IO.')
+    else:
+        cse = self.CSE
+
+    if not type(self.FIG_CSE) == str:
+        raise TypeError('ERROR: figure output sub-directory name' +\
+              ' FIG_CSE is not a string. Define equal to an empty' +\
+              ' string if not used.')
+    else:
+        fig_cse = self.FIG_CSE
+
+
+@define
+class ctr_flw:
+    name:str = field(validator=[validators.instance_of(str),
+                                validators.min_len(1)])
+
+    grds:list = field(validator=validators.optional(
+          validators.deep_iterable(
+          member_validator=validators.instance_of(str),
+          iterable_validator=validators.instance_of(list))
+         )
+        )
+
+    mem_ids:list = field(validator=validators.optional(
+             validators.deep_iterable(
+              member_validator=validators.instance_of(str),
+              iterable_validator=validators.instance_of(list))
+            )
+           )
+
+##################################################################################
+# Templated configurations
+##################################################################################
+MPAS_240_U = ctr_flw(name='MPAS_240-U', grds=None, mem_ids=['mean'])
+MPAS_240_U_LwrBnd = ctr_flw(name='MPAS_240-U_LwrBnd', grds=None, mem_ids=['mean'])
+WRF_9_WestCoast = ctr_flw(name='WRF_9_WestCoast', grds=['d01'], mem_ids=['mean'])
+WRF_9_3_WestCoast = ctr_flw(name='WRF_9-3_WestCoast', grds=['d01', 'd02'],
+        mem_ids=['mean'])
+ECMWF = ctr_flw(name='ECMWF', grds=None, mem_ids=None)
+GFS = ctr_flw(name='GFS', grds=None, mem_ids=None)
+GEFS = ctr_flw(name='GEFS', grds=None, mem_ids=None)
 
 ens_v_bkg = {
              'MET_TOOL': 'GridStat',
@@ -99,6 +219,3 @@ ens_v_bkg = {
              'GRD_LAB': True,
              'DT_FRMT': '%Y%m%d%H'
             }
-
-test_lineplot = line_plot(ens_v_bkg)
-

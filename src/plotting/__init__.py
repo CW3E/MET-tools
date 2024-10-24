@@ -188,6 +188,9 @@ class plot:
     GRD_LAB:bool = field(
             validator=validators.instance_of(bool),
             )
+    IF_SHOW:bool = field(
+            validator=validators.instance_of(bool),
+            )
 
     def gen_cycs(self):
         return pd.date_range(start=self.STRT_DT, end=self.STOP_DT, 
@@ -235,48 +238,3 @@ class control_flow:
         )
 
 ##################################################################################
-# Templated configurations
-##################################################################################
-MPAS_240_U = control_flow(NAME='MPAS_240-U', PLT_LAB='MPAS 240-U',
-        GRDS=None, MEM_IDS=['mean'])
-MPAS_240_U_LwrBnd = control_flow(NAME='MPAS_240-U_LwrBnd',
-        PLT_LAB='MPAS 240-U LwrBnd', GRDS=None, MEM_IDS=['mean'])
-WRF_9_WestCoast = control_flow(NAME='WRF_9_WestCoast',
-        PLT_LAB='WRF 9km', GRDS=['d01'], MEM_IDS=['mean'])
-WRF_9_3_WestCoast = control_flow(NAME='WRF_9-3_WestCoast',
-        PLT_LAB='WRF 9km/3km', GRDS=['d01', 'd02'], MEM_IDS=['mean'])
-ECMWF = control_flow(NAME='ECMWF', PLT_LAB='ECMWF Deterministic',
-        GRDS=None, MEM_IDS=None)
-GFS = control_flow(NAME='GFS', PLT_LAB='GFS Determinisitc',
-        GRDS=None, MEM_IDS=None)
-GEFS = control_flow(NAME='GEFS', PLT_LAB='GEFS mean',
-        GRDS=None, MEM_IDS=None)
-
-ens_v_bkg = {
-             'MET_TOOL': 'GridStat',
-             'CSE': 'valid_date_2022-12-28T00',
-             'FIG_CSE': 'testing',
-             'CTR_FLWS': [
-                          MPAS_240_U,
-                          MPAS_240_U_LwrBnd,
-                          WRF_9_WestCoast,
-                          WRF_9_3_WestCoast,
-                          ECMWF,
-                          GFS,
-                          GEFS
-                         ],
-             'VRF_REF': 'StageIV',
-             'VRF_FLD': 'QPF_24hr',
-             'LEV': None,
-             'IF_CNTR_PLT': IF_CNTR_PLT,
-             'STAT_KEYS': ['RMSE', 'PR_CORR'],
-             'CI': 'NC',
-             'STRT_DT': '2022122300',
-             'STOP_DT': '2022122700',
-             'DT_INC': '24',
-             'VALID_DT': '2022122800',
-             'MSK': 'CA_All',
-             'ENS_LAB': False,
-             'GRD_LAB': True,
-             'FIG_LAB': None,
-            }

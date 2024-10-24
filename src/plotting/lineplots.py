@@ -60,7 +60,6 @@ import pandas as pd
 import pickle
 import os
 from attrs import define, field, validators
-import ipdb
 
 ##################################################################################
 # Load workflow constants and Utility Methods 
@@ -122,10 +121,14 @@ class dual_line_plot(plot):
 
             tick_labs.append(tick_label)
 
-        return fcst_lds, tick_labs
+        return fcst_lds[::-1], tick_labs[::-1]
 
     def gen_plot_text(self):
-        title=VRF_REFS[self.VRF_REF]['fields'][self.VRF_FLD]['label'] + '\n' +\
+        title=VRF_REFS[self.VRF_REF]['fields'][self.VRF_FLD]['label']
+        if self.LEV:
+            title += ' - Threshold: ' + self.LEV + 'mm'
+        
+        title +='\n' +\
                 'Valid: ' + self.VALID_DT.strftime('%HZ %d/%m/%Y')
         dmn_title = 'Domain: ' + self.MSK.replace('_', ' ')
         obs_title = 'Obs Source: ' + self.VRF_REF
@@ -333,23 +336,21 @@ class dual_line_plot(plot):
                 l, = ax.plot(range(num_lds), tmp[:], linewidth=2)
                 ax_lines_list[i_ns].append([l])
             
-            # NOTE: NEED TO REVISE THE LINE SETTINGS SCHEME FROM HERE
-            # add the line type to the legend
-            ipdb.set_trace()
-            line_list.append(l)
-            line_labs.append(line_lab)
+            if i_ns == 0:
+                line_list.append(l)
+                line_labs.append(line_lab)
         
         # set colors and markers
         line_count = len(line_list)
         line_colors = sns.color_palette('husl', line_count)
-        ipdb.set_trace()
-        for i_lc in range(line_count):
-            for i_ns in range(2):
-                axl = ax_lines_list[i_lc]
-                for i_na in range(len(axl)):
-                    l = axl[i_na]
+        for i_ns in range(2):
+            line_ns = ax_lines_list[i_ns]
+            for i_lc in range(line_count):
+                line = line_ns[i_lc]
+                for i_nl in range(len(line)):
+                    l = line[i_nl]
                     l.set_color(line_colors[i_lc])
-                    if i_na == 0:
+                    if i_nl == 0:
                       l.set_marker((i_lc + 2, 0, 0))
                       l.set_markersize(15)
         
@@ -390,14 +391,16 @@ class dual_line_plot(plot):
         ax1.grid(which = 'major', axis = 'y')
         
         lab2='Forecast lead hrs'
+
+        title, dmn_title, obs_title, panel_labels = self.gen_plot_text()
         
-        plt.figtext(.5, .95, self.TITLE, horizontalalignment='center',
+        plt.figtext(.5, .95, title, horizontalalignment='center',
                     verticalalignment='center', fontsize=22)
         
-        plt.figtext(.15, .90, self.DMN_SUBTITLE, horizontalalignment='center',
+        plt.figtext(.15, .90, dmn_title, horizontalalignment='center',
                     verticalalignment='center', fontsize=18)
         
-        plt.figtext(.8375, .90, self.FLD_SUBTITLE, horizontalalignment='center',
+        plt.figtext(.8375, .90, obs_title, horizontalalignment='center',
                     verticalalignment='center', fontsize=18)
         
         plt.figtext(.025, .43, panel_labels[0], horizontalalignment='center',
@@ -429,12 +432,16 @@ class dual_line_plot(plot):
             fig_lab = ''
 
         out_path = out_root + '/' + self.VALID_DT.strftime('%Y%m%d%H') + '_' +\
-                self.MSK + '_' + self.STAT_KEYS[0] + '_' + self.STAT_KEYS[1] +\
-                fig_lab + '_lineplot.png'
+                self.MSK + '_' + self.STAT_KEYS[0] + '_' + self.STAT_KEYS[1]
+
+        if self.LEV:
+            out_path += '_lev_' + self.LEV
+
+        out_path += fig_lab + '_lineplot.png'
 
         # save figure and display
         plt.savefig(out_path)
-        #plt.show()
+        if self.IF_SHOW:
+            plt.show()
 
 ##################################################################################
-# end

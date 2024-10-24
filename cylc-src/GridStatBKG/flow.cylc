@@ -19,6 +19,9 @@
 {# Require all data, no missing files, TRUE or FALSE #}
 {% set FULL_DATA = 'TRUE' %}
 
+{# Define the observation / ground truth data type #}
+{% set VRF_REF = 'StageIV' %}
+
 {# Define the verification field #}
 {% set VRF_FLD = 'QPF' %}
 
@@ -125,6 +128,7 @@
             {% else %}
                 EXP_VRF = $(isodatetime {{EXP_VRF}} --f '%Y%m%d%H')
             {% endif %}
+            VRF_REF = {{VRF_REF}}
             VRF_FLD = {{VRF_FLD}}
             CAT_THR = {{CAT_THR}}
             MSK_LST = {{environ['MSK_ROOT']}}/mask-lists/{{VRF_RGNS}}.txt
@@ -146,7 +150,7 @@
                     INT_WDTH = {{int_wdth}}
                     IN_DIR = {{environ['STC_ROOT']}}/{{ctr_flw}}/{{IN_STC_SUBDIR}}/$CYC_DT/{{IN_DT_SUBDIR}}
                     {# WRF workflow outputs are nested relative to ISO/mem_id by domain #}
-                    WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GridStat/$CYC_DT
+                    WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GridStat/{{VRF_REF}}/$CYC_DT
                 [[[directives]]]
                     {% if environ['SCHED'] == 'slurm' %}
                         {% if environ['SYS_TYPE' ] == 'penguin' %}

@@ -62,33 +62,76 @@ INDT = '    '
 VRF_ROOT = os.environ['VRF_ROOT']
 IF_CNTR_PLT = os.environ['IF_CNTR_PLT']
 
+# Supported MET tools and their stat information
+MET_TOOLS = {
+             'GridStat':
+             {
+                 'RMSE': {
+                     'label': 'Root-Mean\nSquared Error (mm)',
+                     'type': 'cnt',
+                     },
+                 'PR_CORR': {
+                     'label': 'Pearson\nCorrelation',
+                     'type': 'cnt',
+                     },
+                 'FSS': {
+                     'label': 'Fractional\nSkill Score',
+                     'type': 'nbrcnt',
+                     },
+                 'AFSS': {
+                     'label': 'Asymptotic Fractional\nSkill Score',
+                     'type': 'nbrcnt',
+                     },
+                 'GSS': {
+                     'label': 'Gilbert\nSkill Score',
+                     'type': 'nbrcts',
+                     },
+                 'CSI': {
+                     'label': 'Critical\nSuccess Index',
+                     'type': 'nbrcts',
+                     },
+                 }
+             }
+
+# Verfification reference data sets for ground truth
+VRF_REFS = {
+            'StageIV': {
+                'label': 'StageIV',
+                'fields': {
+                    'QPF_24hr': {
+                        'label': '24hr Accumulated Precipitation',
+                        }
+                    }
+                }
+            }
+
 def convert_dt(iso_str):
     return dt.strptime(iso_str, '%Y%m%d%H')
 
-# Define pre-set plotting parameters for specific stats
-stat_labs = {
-             'RMSE': 'Root-Mean\nSquared Error (mm)',
-             'PR_CORR': 'Pearson\nCorrelation',
-             'FSS': 'Fractional\nSkill Score',
-             'AFSS': 'Asymptotic Fractional\nSkill Score',
-             'GSS': 'Gilbert\nSkill Score',
-             'CSI': 'Critical\nSuccess Index',
-            }
+def check_vrf_ref(instance, attribute, value):
+    if not value in VRF_REFS:
+        raise ValueError('ERROR: ' + value + ' is not a supported' +\
+                ' ground truth for verfication reference ' + instance.VRF_REF)
 
-stat_types = [
-              'cnt',
-              'cts',
-              'nbrcnt',
-              'nbrcts',
-             ]
+def check_vrf_fld(instance, attribute, value):
+    if not value in VRF_REFS[instance.VRF_REF]['fields']:
+        raise ValueError('ERROR: ' + value + ' is not a supported' +\
+                ' field for verfication reference ' + instance.VRF_REF)
 
-# Define the currently supported attributes for line plots
-MET_TOOLS = [
-             'GridStat',
-            ]
-PRFXS = [
-         'grid_stat_QPF_24hr',
-        ]
+def check_stat_key(instance, attribute, value):
+    if not value in MET_TOOLS[instance.MET_TOOL]:
+        raise ValueError('ERROR: ' + value + ' is not a supported' +\
+                ' statistic for verfication reference ' + instance.MET_TOOL)
+
+def check_path(instance, attribute, value):
+    if not os.path.isdir(value):
+        raise OSError('ERROR: ' + value + 'directory does not exist.')
+
+def check_io(instance, attribute, value):
+    in_root, out_root = instance.gen_io_paths()
+    os.system('mkdir -p ' + out_root)
+    check_path(instance, attribute, in_root)
+    check_path(instance, attribute, out_root)
 
 ##################################################################################
 # Define parent classes
@@ -97,104 +140,120 @@ PRFXS = [
 @define
 class plot:
     STRT_DT:str = field(
-                        validator=validators.matches_re('^[0-9]{10}$'),
-                        converter=plotting.convert_dt,
-                       )
+            converter=convert_dt,
+            )
     STOP_DT:str = field(
-                        validator=validators.matches_re('^[0-9]{10}$'),
-                        converter=plotting.convert_dt,
-                       )
-    CYC_INC:str = field(
-                        validator=validators.matches_re('^[0-9]+$'),
-                        converter=lambda x : x + 'h'
-                       )
-    # NOTE: NEED TO START CONVERTING THESE INTO ATTRIBUTES OF PLOTTING CLASS
-    # USING ATTRS TO HANDLE INTANTIATION VALIDATION
-    if not self.MET_TOOL in line_plot.MET_TOOLS:
-        print('ERROR: ' + self.MET_TOOL + ' is not a supported tool' +\
-              ' currently.')
-        print('Supported tools include:')
-        for tool in line_plot.MET_TOOLS:
-            print(INDT + tool)
-        raise ValueError
-    else:
-        met_tool = self.MET_TOOL
+            converter=convert_dt,
+            )
+    DT_INC:str = field(
+            validator=validators.matches_re('^[0-9]+h$'),
+            converter=lambda x : x + 'h',
+            )
+    MET_TOOL:str = field(
+            validator=validators.in_(MET_TOOLS),
+            )
+    MSK:str = field(
+            validator=[validators.instance_of(str),
+                validators.min_len(1)],
+            )
+    CSE:str = field(
+            validator=[validators.instance_of(str),
+                validators.min_len(1)],
+            )
+    FIG_CSE:str = field(
+            validator=validators.optional([validators.instance_of(str),
+                validators.min_len(1)]),
+            )
+    VRF_REF:str = field(
+            validator=validators.in_(VRF_REFS),
+            )
+    VRF_FLD:str = field(
+            validator=[validators.instance_of(str),
+                check_vrf_fld]
+            )
+    LEV:str = field(
+            validator=validators.optional(validators.instance_of(str)),
+            )
+    IF_CNTR_PLT:str = field(
+            validator=[validators.instance_of(bool),
+                check_io],
+            converter=lambda x: eval(x.lower().capitalize()),
+            )
+    FIG_LAB:str = field(
+            validator=validators.optional(validators.instance_of(str)),
+            )
+    ENS_LAB:bool = field(
+            validator=validators.instance_of(bool),
+            )
+    GRD_LAB:bool = field(
+            validator=validators.instance_of(bool),
+            )
 
-    if not self.PRFX in line_plot.PRFXS:
-        print('ERROR: ' + line_plot.PRFX + ' is not a supported' +\
-              ' analysis currently.')
-        print('Supported analyses include:')
-        for prfx in line_plot.PRFXS:
-            print(INDT + prfx)
-        raise ValueError
-    else:
-        prfx = self.PRFX
+    def gen_cycs(self):
+        return pd.date_range(start=self.STRT_DT, end=self.STOP_DT, 
+                             freq=self.DT_INC).to_pydatetime()
+                
+    def gen_io_paths(self):
+        if self.IF_CNTR_PLT:
+            in_root = '/in_root/' + self.CSE
+            out_root = '/out_root/' + self.CSE + '/figures/' +\
+                    self.CSE
+        else:
+            in_root = VRF_ROOT + '/' + self.CSE
+            out_root = VRF_ROOT + '/' + self.CSE + '/figures/' +\
+                    self.CSE
+    
+        if self.FIG_CSE:
+                out_root += '/' + self.FIG_CSE
 
-    if not type(self.MSK) == str:
-        raise TypeError(1,
-              'ERROR: verification region name attribute "MSK" is not' +\
-              ' a string.')
-    elif len(self.MSK) == 0:
-        raise ValueError(1,
-              'ERROR: verification region name attribute "CSE" is length' +\
-              ' zero.')
-    else:
-        msk = self.MSK
-
-    if not type(self.CSE) == str:
-        raise TypeError(1,
-              'ERROR: case study name attribute "CSE" is not a string.')
-    elif len(self.CSE) == 0:
-        raise ValueError(1,
-              'ERROR: case study name attribute "CSE" is length zero.' +\
-              ' This must be defined as the root of the case study ' +\
-              ' / configuration directory structure for verification IO.')
-    else:
-        cse = self.CSE
-
-    if not type(self.FIG_CSE) == str:
-        raise TypeError('ERROR: figure output sub-directory name' +\
-              ' FIG_CSE is not a string. Define equal to an empty' +\
-              ' string if not used.')
-    else:
-        fig_cse = self.FIG_CSE
-
+        return in_root, out_root
 
 @define
-class ctr_flw:
-    name:str = field(validator=[validators.instance_of(str),
-                                validators.min_len(1)])
-
-    grds:list = field(validator=validators.optional(
-          validators.deep_iterable(
-          member_validator=validators.instance_of(str),
-          iterable_validator=validators.instance_of(list))
-         )
+class control_flow:
+    NAME:str = field(
+        validator=[validators.instance_of(str),
+        validators.min_len(1)]
         )
-
-    mem_ids:list = field(validator=validators.optional(
-             validators.deep_iterable(
-              member_validator=validators.instance_of(str),
-              iterable_validator=validators.instance_of(list))
+    PLT_LAB:str = field(
+            validator=[validators.instance_of(str),
+                validators.min_len(1)]
             )
-           )
+
+    GRDS:list = field(
+        validator=validators.optional(
+            validators.deep_iterable(
+                member_validator=validators.instance_of(str),
+                iterable_validator=validators.instance_of(list))
+            )
+        )
+    MEM_IDS:list = field(
+        validator=validators.optional(
+            validators.deep_iterable(
+                member_validator=validators.instance_of(str),
+                iterable_validator=validators.instance_of(list))
+            )
+        )
 
 ##################################################################################
 # Templated configurations
 ##################################################################################
-MPAS_240_U = ctr_flw(name='MPAS_240-U', grds=None, mem_ids=['mean'])
-MPAS_240_U_LwrBnd = ctr_flw(name='MPAS_240-U_LwrBnd', grds=None, mem_ids=['mean'])
-WRF_9_WestCoast = ctr_flw(name='WRF_9_WestCoast', grds=['d01'], mem_ids=['mean'])
-WRF_9_3_WestCoast = ctr_flw(name='WRF_9-3_WestCoast', grds=['d01', 'd02'],
-        mem_ids=['mean'])
-ECMWF = ctr_flw(name='ECMWF', grds=None, mem_ids=None)
-GFS = ctr_flw(name='GFS', grds=None, mem_ids=None)
-GEFS = ctr_flw(name='GEFS', grds=None, mem_ids=None)
+MPAS_240_U = control_flow(NAME='MPAS_240-U', PLT_LAB='MPAS 240-U',
+        GRDS=None, MEM_IDS=['mean'])
+MPAS_240_U_LwrBnd = control_flow(NAME='MPAS_240-U_LwrBnd',
+        PLT_LAB='MPAS 240-U LwrBnd', GRDS=None, MEM_IDS=['mean'])
+WRF_9_WestCoast = control_flow(NAME='WRF_9_WestCoast',
+        PLT_LAB='WRF 9km', GRDS=['d01'], MEM_IDS=['mean'])
+WRF_9_3_WestCoast = control_flow(NAME='WRF_9-3_WestCoast',
+        PLT_LAB='WRF 9km/3km', GRDS=['d01', 'd02'], MEM_IDS=['mean'])
+ECMWF = control_flow(NAME='ECMWF', PLT_LAB='ECMWF Deterministic',
+        GRDS=None, MEM_IDS=None)
+GFS = control_flow(NAME='GFS', PLT_LAB='GFS Determinisitc',
+        GRDS=None, MEM_IDS=None)
+GEFS = control_flow(NAME='GEFS', PLT_LAB='GEFS mean',
+        GRDS=None, MEM_IDS=None)
 
 ens_v_bkg = {
              'MET_TOOL': 'GridStat',
-             'PRFX': 'grid_stat_QPF_24hr',
-             'STAT_TYPE': 'cnt',
              'CSE': 'valid_date_2022-12-28T00',
              'FIG_CSE': 'testing',
              'CTR_FLWS': [
@@ -206,16 +265,18 @@ ens_v_bkg = {
                           GFS,
                           GEFS
                          ],
-             'VRF_ROOT': VRF_ROOT,
+             'VRF_REF': 'StageIV',
+             'VRF_FLD': 'QPF_24hr',
+             'LEV': None,
              'IF_CNTR_PLT': IF_CNTR_PLT,
              'STAT_KEYS': ['RMSE', 'PR_CORR'],
+             'CI': 'NC',
              'STRT_DT': '2022122300',
              'STOP_DT': '2022122700',
-             'CYC_INC': '24',
+             'DT_INC': '24',
              'VALID_DT': '2022122800',
              'MSK': 'CA_All',
-             'LAB_IDX': [0, 1],
              'ENS_LAB': False,
              'GRD_LAB': True,
-             'DT_FRMT': '%Y%m%d%H'
+             'FIG_LAB': None,
             }

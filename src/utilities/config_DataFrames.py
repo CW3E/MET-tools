@@ -59,13 +59,13 @@ INDT = '    '
 # METHODS
 ##################################################################################
 
-def makeDataFrames(prfx, in_dir, out_dir, log_f=None):
+def makeDataFrames(field, in_dir, out_dir, log_f=None):
 
     """Parses ASCII files of MET outputs into Pandas data frames
 
     Inputs to the method are as follows:
 
-        prfx    -- MET tool prefix for parsing ASCII files
+        field   -- Verification field used as prefix for MET ASCII files
         in_dir  -- full path to directory of MET ASCII outputs
         out_dir -- full path to directory of output binary
         log_f   -- optional full path to log file
@@ -94,7 +94,7 @@ def makeDataFrames(prfx, in_dir, out_dir, log_f=None):
     # initiate empty dictionary for storage of outputs by stat type
     data_dict = {}
 
-    in_glob = in_dir + '/' + prfx +'_' + '*.txt'
+    in_glob = in_dir + '/*' + field + '*.txt'
     print('Searching path pattern:\n' + INDT + in_glob, file=log_f)
 
     # Sorting first on length to handle non-padded forecast hours in MET
@@ -156,11 +156,12 @@ def makeDataFrames(prfx, in_dir, out_dir, log_f=None):
     if bool(data_dict):
         # re-define the stored dictionaries as dataframes
         for key in data_dict.keys():
-            data_dict[key] = pd.DataFrame.from_dict(data_dict[key], 
-                    orient='columns')
+            data_dict[key] = pd.DataFrame.dropna(
+                    pd.DataFrame.from_dict(data_dict[key], orient='columns'),
+                    axis=1, how='all')
 
         # define the output binary file for pickled dataframe per date
-        out_path = out_dir + '/' + prfx + '.bin'
+        out_path = out_dir + '/' + field + '.bin'
         print('Writing out data to ' + out_path, file=log_f)
         with open(out_path, 'wb') as f:
             pickle.dump(data_dict, f)

@@ -122,6 +122,7 @@
             ACC_MIN = {{ACC_MIN}}
             ACC_MAX = {{ACC_MAX}}
             ACC_INC = {{ACC_INC}}
+            WRF_PRFX = {{WRF_PRFX}}
             CYC_DT = $(isodatetime ${CYLC_TASK_CYCLE_POINT} --f '%Y%m%d%H')
             ANL_MIN = {{ANL_MIN}}
             ANL_MAX = {{ANL_MAX}}

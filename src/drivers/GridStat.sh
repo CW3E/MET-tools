@@ -193,6 +193,12 @@ else
 fi
 
 # define the verification field
+if [ -z "${VRF_REF}" ]; then
+  printf "ERROR: verification obs type \${VRF_REF} is not defined.\n"
+  exit 1
+fi
+
+# define the verification field
 if [ -z "${VRF_FLD}" ]; then
   printf "ERROR: verification field \${VRF_FLD} is not defined.\n"
   exit 1
@@ -224,7 +230,7 @@ else
   # loop lines of the mask list, set temporary exit status before searching for masks
   error_check=0
   while read msk; do
-    fpath=${MSK_GRDS}/${msk}_StageIV.nc
+    fpath=${MSK_GRDS}/${msk}_${VRF_REF}.nc
     if [ -r "${fpath}" ]; then
       printf "Found\n ${fpath}\n landmask.\n"
     else
@@ -438,10 +444,10 @@ met_tools_py+="${WRK_DIR}:/wrk_dir:rw,${WRK_DIR}:/in_dir:ro,${UTLTY}:/utlty:ro "
 met_tools_py+="${MET_TOOLS_PY} python"
 
 # clean old data
-rm -f ${WRK_DIR}/grid_stat_*.txt
-rm -f ${WRK_DIR}/grid_stat_*.stat
-rm -f ${WRK_DIR}/grid_stat_*.nc
-rm -f ${WRK_DIR}/GridStatConfig*
+rm -f ${WRK_DIR}/grid_stat_${VRF_FLD}*.txt
+rm -f ${WRK_DIR}/grid_stat_${VRF_FLD}*.stat
+rm -f ${WRK_DIR}/grid_stat_${VRF_FLD}*.nc
+rm -f ${WRK_DIR}/GridStatConfig_${VRF_FLD}*
 rm -f ${WRK_DIR}/PLY_MSK.txt
 
 # loop lines of the mask list, generate PLY_MSK.txt for GridStatConfig insert
@@ -449,10 +455,10 @@ msk_count=`wc -l < ${MSK_LST}`
 line_count=1
 while read msk; do
   if [ ${line_count} -lt ${msk_count} ]; then
-    ply_msk="\"/MSK_GRDS/${msk}_StageIV.nc\",\n"
+    ply_msk="\"/MSK_GRDS/${msk}_${VRF_REF}.nc\",\n"
     printf ${ply_msk} >> ${WRK_DIR}/PLY_MSK.txt
   else
-    ply_msk="\"/MSK_GRDS/${msk}_StageIV.nc\""
+    ply_msk="\"/MSK_GRDS/${msk}_${VRF_REF}.nc\""
     printf ${ply_msk} >> ${WRK_DIR}/PLY_MSK.txt
   fi
   line_count=$(( ${line_count} + 1 ))
@@ -477,13 +483,15 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
       fi
 
       # obs file defined in terms of valid time, path relative to STC_ROOT
-      obs_in=StageIV/StageIV_QPE_${anl_dt}.nc
+      if [[ "${VRF_REF}" = "StageIV" ]]; then
+        obs_in=StageIV/StageIV_QPE_${anl_dt}.nc
+      fi
 
       if [ -r ${IN_DIR}/${for_in} ]; then
         if [ -r ${STC_ROOT}/${obs_in} ]; then
           # update GridStatConfigTemplate archiving file in working directory
           # this remains unchanged on inner loop
-          if [ ! -r ${WRK_DIR}/GridStatConfig${acc_hr} ]; then
+          if [ ! -r ${WRK_DIR}/GridStatConfig_${VRF_FLD}_${acc_hr}hr ]; then
             cat ${SHARED}/GridStatConfigTemplate \
               | sed "s/CTR_FLW/model = \"${CTR_FLW}\"/" \
               | sed "s/INT_WDTH/width = ${INT_WDTH}/" \
@@ -496,14 +504,14 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
               | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
               | sed "s/PRFX/output_prefix    = \"${VRF_FLD}_${acc_hr}hr\"/" \
               | sed "s/MET_VER/version           = \"V${MET_VER}\"/" \
-              > ${WRK_DIR}/GridStatConfig${acc_hr}
+              > ${WRK_DIR}/GridStatConfig_${VRF_FLD}_${acc_hr}hr
           fi
 
           # Run gridstat
           cmd="${met} grid_stat -v 10 \
           /in_dir/${for_in} \
           /STC_ROOT/${obs_in} \
-          /wrk_dir/GridStatConfig${acc_hr} \
+          /wrk_dir/GridStatConfig_${VRF_FLD}_${acc_hr}hr \
           -outdir /wrk_dir; error=\$?"
           printf "${cmd}\n"; eval "${cmd}"
           printf "grid_stat exited with status ${error}.\n"
@@ -554,14 +562,13 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
       fi
 
       # obs file defined in terms of valid time
-      # NOTE: reference fields other than StageIV still in development
-      obs_in=${VRF_REF}_${VRF_FLD}_${CYC_DT}_F${pdd_hr}${pstfx}.nc
+      obs_in=${VRF_REF}_${VRF_FLD}_${CYC_DT}_F${pdd_hr}.nc
       
       if [ -r ${IN_DIR}/${for_in} ]; then
         if [ -r ${STC_ROOT}/${obs_in} ]; then
           # update GridStatConfigTemplate archiving file in working directory
           # this remains unchanged on inner loop
-          if [ ! -r ${WRK_DIR}/GridStatConfig${acc_hr} ]; then
+          if [ ! -r ${WRK_DIR}/GridStatConfig_${VRF_FLD} ]; then
             cat ${SHARED}/GridStatConfigTemplate \
               | sed "s/CTR_FLW/model = \"${CTR_FLW}\"/" \
               | sed "s/INT_WDTH/width = ${INT_WDTH}/" \
@@ -574,14 +581,14 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
               | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
               | sed "s/PRFX/output_prefix    = \"${VRF_FLD}\"/" \
               | sed "s/MET_VER/version           = \"V${MET_VER}\"/" \
-              > ${WRK_DIR}/GridStatConfig${acc_hr}
+              > ${WRK_DIR}/GridStatConfig_${VRF_FLD}
           fi
 
           # Run gridstat
           cmd="${met} grid_stat -v 10 \
           /in_dir/${for_in} \
           /STC_ROOT/${obs_in} \
-          /wrk_dir/GridStatConfig${acc_hr} \
+          /wrk_dir/GridStatConfig_${VRF_FLD} \
           -outdir /wrk_dir; error=\$?"
           printf "${cmd}\n"; eval "${cmd}"
           printf "grid_stat exited with status ${error}.\n"
@@ -632,10 +639,23 @@ printf "${cmd}\n"; eval "${cmd}"
 cmd="rm -f ${WRK_DIR}/PLY_MSK.txt"
 printf "${cmd}\n"; eval "${cmd}"
 
-for acc_hr in ${acc_hrs[@]}; do 
+if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
+  for acc_hr in ${acc_hrs[@]}; do 
+    # run makeDataFrames to parse the ASCII outputs
+    cmd="${met_tools_py} /utlty/ASCII_to_DataFrames.py"
+    cmd+=" '${VRF_FLD}_${acc_hr}hr' '/in_dir' '/wrk_dir'; error=\$?"
+    printf "${cmd}\n"; eval "${cmd}"
+    printf "ASCII_to_DataFrames.py exited with status ${error}.\n"
+    if [ ${error} -ne 0 ]; then
+      msg="ERROR: ASCII_to_DataFrames.py failed to produce parsed binaries.\n"
+      printf "${msg}"
+      error_check=1
+    fi
+  done
+else
   # run makeDataFrames to parse the ASCII outputs
   cmd="${met_tools_py} /utlty/ASCII_to_DataFrames.py"
-  cmd+=" 'grid_stat_QPF_${acc_hr}hr' '/in_dir' '/wrk_dir'; error=\$?"
+  cmd+=" '${VRF_FLD}' '/in_dir' '/wrk_dir'; error=\$?"
   printf "${cmd}\n"; eval "${cmd}"
   printf "ASCII_to_DataFrames.py exited with status ${error}.\n"
   if [ ${error} -ne 0 ]; then
@@ -643,7 +663,7 @@ for acc_hr in ${acc_hrs[@]}; do
     printf "${msg}"
     error_check=1
   fi
-done
+fi
 
 if [ ${error_check} = 1 ]; then
   printf "ERROR: GridStat.sh failed on one or more analyses.\n"

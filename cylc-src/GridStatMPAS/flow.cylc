@@ -35,6 +35,9 @@
 {# Require all data, no missing files, TRUE or FALSE #}
 {% set FULL_DATA = 'TRUE' %}
 
+{# Define the observation / ground truth data type #}
+{% set VRF_REF = 'StageIV' %}
+
 {# Define the verification field #}
 {% set VRF_FLD = 'QPF' %}
 
@@ -144,6 +147,7 @@
             {% else %}
                 EXP_VRF = $(isodatetime {{EXP_VRF}} --f '%Y%m%d%H')
             {% endif %}
+            VRF_REF = {{VRF_REF}}
             VRF_FLD = {{VRF_FLD}}
             CAT_THR = {{CAT_THR}}
             MSK_LST = {{environ['MSK_ROOT']}}/mask-lists/{{VRF_RGNS}}.txt
@@ -170,7 +174,7 @@
                     INT_WDTH = {{int_wdth}}
                     IN_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GenEnsProd/$CYC_DT
                     {# WRF workflow outputs are nested relative to ISO/mem_id by domain #}
-                    WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GridStat/$CYC_DT/mean
+                    WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GridStat/{{VRF_REF}}/$CYC_DT/mean
                 [[[directives]]]
                     {% if environ['SCHED'] == 'slurm' %}
                         {% if environ['SYS_TYPE' ] == 'penguin' %}
@@ -202,7 +206,7 @@
                         INT_WDTH = {{int_wdth}}
                         IN_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT/{{ENS_PRFX}}{{idx}}
                         {# WRF workflow outputs are nested relative to ISO/mem_id by domain #}
-                        WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GridStat/$CYC_DT/{{ENS_PRFX}}{{idx}}
+                        WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GridStat/{{VRF_REF}}/$CYC_DT/{{ENS_PRFX}}{{idx}}
                         IF_ENS_PRD = 'FALSE'
                     [[[directives]]]
                         {% if environ['SCHED'] == 'slurm' %}

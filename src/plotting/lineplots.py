@@ -59,6 +59,7 @@ import numpy as np
 import pandas as pd
 import pickle
 import os
+import re
 from attrs import define, field, validators
 
 ##################################################################################
@@ -155,7 +156,7 @@ class dual_line_plot(plot):
             for grd in grds:
                 for mem in mem_ids:
                     line_lab = ctr_flw.PLT_LAB
-                    if self.ENS_LAB:
+                    if self.MEM_LAB:
                         if len(mem) > 0:
                             line_lab += ' ' + mem
 
@@ -183,7 +184,7 @@ class dual_line_plot(plot):
         # define storage for plotting data
         plt_data = {}
 
-        # check for cycling fields and format for workflow
+        # generate sequence of forecast zero hours for sourcing data
         fcst_zhs = self.gen_cycs()
 
         # check for valid IO parameters for plotting
@@ -435,7 +436,11 @@ class dual_line_plot(plot):
                 self.MSK + '_' + self.STAT_KEYS[0] + '_' + self.STAT_KEYS[1]
 
         if self.LEV:
-            out_path += '_lev_' + self.LEV
+            out_path += '_lev'
+            lev_split = re.split(r'\D+', self.LEV)
+            for split in lev_split:
+                if split:
+                    out_path += '_' + split
 
         out_path += fig_lab + '_lineplot.png'
 

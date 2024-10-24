@@ -182,7 +182,7 @@ class plot:
     FIG_LAB:str = field(
             validator=validators.optional(validators.instance_of(str)),
             )
-    ENS_LAB:bool = field(
+    MEM_LAB:bool = field(
             validator=validators.instance_of(bool),
             )
     GRD_LAB:bool = field(

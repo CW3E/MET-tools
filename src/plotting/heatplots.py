@@ -55,9 +55,7 @@ import matplotlib
 from datetime import datetime as dt
 from datetime import timedelta as td
 import matplotlib.pyplot as plt
-from matplotlib.colors import Normalize as nrm
-from matplotlib.cm import get_cmap
-from matplotlib.colorbar import Colorbar as cb
+from matplotlib.colors import BoundaryNorm, ListedColormap
 import seaborn as sns
 import numpy as np
 import pandas as pd
@@ -65,16 +63,125 @@ import pickle
 import os
 import re
 from attrs import define, field, validators
+from functools import partial
 import ipdb
 
 ##################################################################################
 # Load workflow constants and Utility Methods 
 ##################################################################################
 
+@define
+class color_bars:
+    pass
+
+@define
+class explicit_discrete(color_bars):
+    THRESHOLDS:list = field(
+            validator=validators.deep_iterable(
+                member_validator=validators.instance_of(float),
+                iterable_validator=validators.instance_of(list),
+                )
+            )
+    COLORS:ListedColormap = field(
+            validator=validators.instance_of(ListedColormap)
+            )
+
+    def get_norm():
+        return BoundaryNorm(self.THRESHOLDS, ncolors=self.COLORS)
+
+    def get_colormap():
+        return ListedColormap(self.COLORS)
+
+@define
+class implicit_discrete(color_bars):
+    NCOL:int = field(
+        validator=validators.instance_of(int),
+        )
+    MIN:int = field(
+        validator=validators.instance_of(int),
+        )
+    MAX:int = field(
+        validator=validators.instance_of(int),
+        )
+    ALPHA:float = field(
+            validator=validators.optional([
+                validators.instance_of(float),
+                validators.gt(0.0),
+                validators.lt(100.0),
+                ]),
+            )
+    PALLETE = field()
+    @PALLETE.validator
+    def test_call(self, attribute, value):
+        try:
+            value(10)
+        except:
+            raise RuntimeError('PALLETE must be a function of a single \
+                    integer argument for the number of color bins.')
+
+    def set_min_max(data):
+        if not self.ALPHA:
+            raise AttributeError('ALPHA must be set to define the inner \
+                    100 - ALPHA range to define the min / max from datat.')
+
+        scale = data[~np.isnan(data)]
+        max_scl, min_scl = np.percentile(scale,
+                [100 - self.ALPHA / 2, self.ALPHA / 2])
+
+        self.MIN = min_scl
+        self.MAX = max_scl
+        
+    def get_norm():
+        if not self.MIN:
+            raise AttributeError('Minimum value of color bar not set, \
+                    define explicitly or use inner 100 - ALPHA range.')
+
+        if not self.MAX:
+            raise AttributeError('Minimum value of color bar not set, \
+                    define explicitly or use inner 100 - ALPHA range.')
+
+        norm = np.linspace(self.MIN, self.MAX, int(self.NCOL + 1))
+        return BoundaryNorm(norm, ncolors=self.NCOL)
+
+    def get_colormap():
+        return self.PALLETE(self.NCOL)
+
+##################################################################################
+# Default color map options
+##################################################################################
+EXPLICIT_DISCRETE_MAPS = {
+        'relative_diff': {
+            'THRESHOLDS': [-100, -50, -25, -15, -0.1, 0.1, 15, 25, 50, 100],
+            'COLORS': [
+                '#762a83', # -50 to -100%
+                '#9970ab', # -25 to -50%
+                '#c2a5cf', # -15 to -25%
+                '#e7d4e8', # -0.1 to -15%
+                '#f7f7f7', # for zero values
+                '#d9f0d3', # 0.1 to 15%
+                '#a6dba0', # 15 to 25%
+                '#5aae61', # 25 to 50%
+                '#1b7837', # 50 to 100%
+                ],
+            'LABELS': ['-100%', '-50%', '-25%', '-15%',
+                '-0.1%', '0.1%', '15%', '25%', '50%', '100%'],
+            }
+        }
+
+IMPLICIT_DISCRETE_MAPS = {
+        'dynamic_basic': {
+            'ALPHA': 5.0,
+            'PALLETE': partial(sns.cubehelix_palette,
+            start=.75, rot=1.50, reverse=False, dark=0.25)
+            }
+        }
+
 ##################################################################################
 
 def check_fcst_lds(instance, attribute, value):
     fcst_range = instance.MAX_LD - instance.MIN_LD
+    if fcst_range < 0:
+        raise ValueError('MAX_LD is less than MIN_LD.')
     if (fcst_range % int(value)):
         raise ValueError('Hours between the minimum and maximum forecast lead\
                 must be dvisible by the lead incremnt.')
@@ -86,10 +193,19 @@ def check_dt_fmt(instance, attribute, value):
     except:
         raise ValueError('Value is not a valid date time format code.')
 
+def check_grd_key(instance, attribute, value):
+    if not value in instance.CTR_FLW['GRDS']:
+        raise ValueError('ERROR: ' + value + ' is not a subdomain' +\
+                ' of ' + instance.CTR_FLW.NAME)
+
+def check_mem_key(instance, attribute, value):
+    if not value in instance.CTR_FLW['GRDS']:
+        raise ValueError('ERROR: ' + value + ' is not a member' +\
+                ' of ' + instance.CTR_FLW.NAME)
+
 class multidate_multilead(plot):
     CTR_FLW:control_flow = field(
             validator=validators.instance_of(control_flow),
-                )
             )
     STAT_KEY:str = field(
             validator=[
@@ -100,26 +216,24 @@ class multidate_multilead(plot):
     GRD_KEY:str = field(
             validator=validators.optional([
                 validators.instance_of(str),
-                validators.in_(self.CTR_FLW.GRDS),
+                check_grd_key,
                 ]),
             )
     MEM_KEY:str = field(
             validator=validators.optional([
                 validators.instance_of(str),
-                validators.in_(self.CTR_FLW.MEM_IDS),
+                check_mem_key,
                 ]),
             )
     MIN_LD:int = field(
             validator=[
                 validators.instance_of(int),
-                validators.lt(self.MAX_LD),
                 ],
             converter=lambda x : int(x),
             )
     MAX_LD:int = field(
             validator=[
                 validators.instance_of(int),
-                validators.gt(self.MIN_LD),
                 ],
             converter=lambda x : int(x),
             )
@@ -127,7 +241,7 @@ class multidate_multilead(plot):
             validator=[
                 validators.instance_of(int),
                 check_fcst_lds,
-                ]
+                ],
             converter=lambda x : int(x),
             )
     DT_FMT:str = field(
@@ -136,29 +250,11 @@ class multidate_multilead(plot):
                 check_dt_fmt,
                 ],
             )
-    IF_DYN_SCL:bool = field(
-            validator=validators.instance_of(bool),
-            )
-    ALPHA:float = field(
-            validator=[
-                validators.instance_of(float),
-                validators.gt(0.0),
-                ]
-            )
-    MIN_SCL:float = field(
-            validator=[
-                validators.instance_of(float),
-                validators.lt(self.MAX_SCL),
-                ]
-            )
-    MAX_SCL:float = field(
-            validator=[
-                validators.instance_of(float),
-                validators.gt(self.MIN_SCL),
-                ]
+    COLOR_BAR:color_bars = field(
+            validator=validators.instance_of(color_bars)
             )
 
-    def gen_fcst_dts_labs()
+    def gen_fcst_dts_labs():
         # generate valid date range
         anl_dts = self.gen_cycs()
         num_dts = len(anl_dts)
@@ -183,7 +279,7 @@ class multidate_multilead(plot):
             fcst_strt = anl_dt - td(hours=self.MAX_LD)
             fcst_stop = anl_dt - td(hours=self.MIN_LD)
             fcst_zhs.append(pd.date_range(start=fcst_strt,
-                end=fcst_stop, freq=str(self.LD_INC) + 'h')
+                end=fcst_stop, freq=str(self.LD_INC) + 'h'))
 
         fcst_zhs = list(set(fcst_zhs)).sort().to_pydatetime()
 
@@ -354,30 +450,20 @@ class multidate_multilead(plot):
         
                 except:
                     continue
+
+        ipdb.set_trace()
+        color_bar = self.COLOR_BAR
+        if hasattr(color_map, 'ALPHA'):
+            color_map.set_min_max(tmp)
         
-        if DYN_SCL:
-            # find the max / min value over the inner 100 - ALPHA range of the data
-            scale = tmp[~np.isnan(tmp)]
-            max_scl, min_scl = np.percentile(scale, [100 - ALPHA / 2, ALPHA / 2])
-        
-        else:
-            # min scale and max scale are set in the above
-            min_scl = MIN_SCL
-            max_scl = MAX_SCL
-        
-        sns.heatmap(tmp[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0, vmin=min_scl,
-                    vmax=max_scl, cmap=COLOR_MAP)
+        sns.heatmap(tmp[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0,
+                    cmap=color_bar.get_color_map(), norm=color_bar.get_norm())
         
         ##################################################################################
         # define display parameters
-        
-        # generate tic labels based on hour values
-        for i in range(num_lds):
-            fcst_lds[i] = fcst_lds[i][:-4]
-        
         ax0.set_yticklabels(ax0.get_yticklabels(), rotation=270, va='top')
         ax1.set_xticklabels(fcst_dts, rotation=45, ha='right')
-        ax1.set_yticklabels(fcst_lds)
+        ax1.set_yticklabels(ld_labs)
         
         # tick parameters
         ax0.tick_params(
@@ -396,11 +482,40 @@ class multidate_multilead(plot):
         plt.figtext(.02, .5, lab2, horizontalalignment='center',
                     verticalalignment='center', fontsize=20, rotation=90)
         
+        title, dmn_title, obs_title = self.gen_plot_text()
         plt.title(title, x = 0.5, y = 1.03, fontsize = 20)
         plt.title(dmn_title, fontsize = 16, loc = 'left')
         plt.title(obs_title, fontsize = 16, loc = 'right')
         
-        # save figure and display
-        plt.savefig(OUT_PATH)
-        plt.show()
+        in_root, out_root = self.gen_io_paths()
+        out_path = out_root + '/' +\
+                self.STRT_DT.strftime('%Y%m%d%H') + '-to-'+\
+                self.STOP_DT.strftime('%Y%m%d%H') + '_FCST-'+\
+                str(self.MIN_LD) + 'hrs-' + str(self.MAX_LD) + 'hrs_'+\
+                self.MSK + '_' + self.STAT_KEY + '_' 
 
+
+        if self.LEV:
+            out_path += '_lev'
+            lev_split = re.split(r'\D+', self.LEV)
+            for split in lev_split:
+                if split:
+                    out_path += '_' + split
+
+        out_path += '_' + self.CTR_FLW.NAME
+
+        if self.MEM_KEY:
+            out_path += '_' + self.MEM_KEY
+
+        if self.GRD_KEY:
+            out_path += '_' + self.GRD_KEY
+
+        if self.FIG_LAB:
+            out_path += '_' + self.FIG_LAB
+
+        out_path += '_heatplot.png'
+
+        # save figure and display
+        plt.savefig(out_path)
+        if self.IF_SHOW:
+            plt.show()

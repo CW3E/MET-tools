@@ -95,9 +95,6 @@ lineplot_rmse_corr = {
        }
 
 lineplot_fss_afss = {
-        'MET_TOOL': 'GridStat',
-        'CSE': 'valid_date_2022-12-28T00',
-        'FIG_CSE': 'testing',
         'CTR_FLWS': [
                      MPAS_240_U,
                      MPAS_240_U_LwrBnd,
@@ -107,21 +104,52 @@ lineplot_fss_afss = {
                      GFS,
                      GEFS
                     ],
-        'VRF_REF': 'StageIV',
-        'VRF_FLD': 'QPF_24hr',
-        'LEV': '>=50.0',
-        'IF_CNTR_PLT': IF_CNTR_PLT,
+        'VALID_DT': '2022122800',
         'STAT_KEYS': ['FSS', 'AFSS'],
         'CI': 'NC',
         'STRT_DT': '2022122300',
         'STOP_DT': '2022122700',
         'DT_INC': '24',
-        'VALID_DT': '2022122800',
+        'MET_TOOL': 'GridStat',
         'MSK': 'CA_All',
+        'CSE': 'valid_date_2022-12-28T00',
+        'FIG_CSE': 'testing',
+        'VRF_REF': 'StageIV',
+        'VRF_FLD': 'QPF_24hr',
+        'LEV': '>=50.0',
+        'IF_CNTR_PLT': IF_CNTR_PLT,
         'MEM_LAB': False,
         'GRD_LAB': True,
         'FIG_LAB': None,
         'IF_SHOW': True,
        }
+
+heat_plot_multidate_rmse = {
+        'CTR_FLW': WRF_9_3_WestCoast,
+        'STAT_KEY': 'RMSE',
+        'GRD_KEY': 'd02',
+        'MEM_KEY': 'mean',
+        'MIN_LD': 24,
+        'MAX_LD': 120,
+        'LD_INC': 24,
+        'DT_FMT': '%Y%m%d%H',
+        'ALPHA': 5.0,
+        'PLT_SCL': None,
+        'STRT_DT': '2022122300',
+        'STOP_DT': '2022122700',
+        'DT_INC': '24',
+        'MET_TOOL': 'GridStat',
+        'MSK': 'CA_All',
+        'CSE': 'valid_date_2022-12-28T00',
+        'FIG_CSE': 'testing',
+        'VRF_REF': 'StageIV',
+        'VRF_FLD': 'QPF_24hr',
+        'LEV': '>=50.0',
+        'IF_CNTR_PLT': IF_CNTR_PLT,
+        'MEM_LAB': False,
+        'GRD_LAB': True,
+        'FIG_LAB': None,
+        'IF_SHOW': True,
+        }
 
 ##################################################################################

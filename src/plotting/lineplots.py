@@ -50,17 +50,7 @@
 # Imports
 ##################################################################################
 from plotting import *
-import matplotlib
-from datetime import datetime as dt
-from datetime import timedelta as td
-import matplotlib.pyplot as plt
-import seaborn as sns
-import numpy as np
-import pandas as pd
-import pickle
-import os
 import re
-from attrs import define, field, validators
 
 ##################################################################################
 # Load workflow constants and Utility Methods 
@@ -78,6 +68,16 @@ class dual_line_plot(plot):
                 member_validator=validators.instance_of(control_flow),
                 iterable_validator=validators.instance_of(list),
                 )
+            )
+    STRT_DT:str = field(
+            converter=convert_dt,
+            )
+    STOP_DT:str = field(
+            converter=convert_dt,
+            )
+    DT_INC:str = field(
+            validator=validators.matches_re('^[0-9]+h$'),
+            converter=lambda x : x + 'h',
             )
     VALID_DT:str = field(
             validator=validators.instance_of(dt),
@@ -102,6 +102,10 @@ class dual_line_plot(plot):
                 validators.in_(CIS),
                 ])
             )
+    def gen_cycs(self):
+        return pd.date_range(start=self.STRT_DT, end=self.STOP_DT, 
+                             freq=self.DT_INC).to_pydatetime()
+                
 
     def gen_fcst_lds_labs(self):
         fcst_zhs = self.gen_cycs()
@@ -117,8 +121,6 @@ class dual_line_plot(plot):
             tick_label = hours 
             if not seconds == '00':
                 tick_label += ':' + minutes + ':' + seconds
-            elif not minutes == '00':
-                tick_label += ':' + minutes
 
             tick_labs.append(tick_label)
 

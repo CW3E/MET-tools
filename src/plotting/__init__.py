@@ -45,9 +45,6 @@ import matplotlib
 from datetime import datetime as dt
 from datetime import timedelta as td
 import matplotlib.pyplot as plt
-from matplotlib.colors import Normalize as nrm
-from matplotlib.cm import get_cmap
-from matplotlib.colorbar import Colorbar as cb
 import seaborn as sns
 import numpy as np
 import pandas as pd
@@ -67,27 +64,27 @@ MET_TOOLS = {
              'GridStat':
              {
                  'RMSE': {
-                     'label': 'Root-Mean\nSquared Error (mm)',
+                     'label': 'Root-Mean Squared Error (mm)',
                      'type': 'cnt',
                      },
                  'PR_CORR': {
-                     'label': 'Pearson\nCorrelation',
+                     'label': 'Pearson Correlation',
                      'type': 'cnt',
                      },
                  'FSS': {
-                     'label': 'Fractional\nSkill Score',
+                     'label': 'Fractional Skill Score',
                      'type': 'nbrcnt',
                      },
                  'AFSS': {
-                     'label': 'Asymptotic Fractional\nSkill Score',
+                     'label': 'Asymptotic Fractional Skill Score',
                      'type': 'nbrcnt',
                      },
                  'GSS': {
-                     'label': 'Gilbert\nSkill Score',
+                     'label': 'Gilbert Skill Score',
                      'type': 'nbrcts',
                      },
                  'CSI': {
-                     'label': 'Critical\nSuccess Index',
+                     'label': 'Critical Success Index',
                      'type': 'nbrcts',
                      },
                  }
@@ -139,16 +136,6 @@ def check_io(instance, attribute, value):
 
 @define
 class plot:
-    STRT_DT:str = field(
-            converter=convert_dt,
-            )
-    STOP_DT:str = field(
-            converter=convert_dt,
-            )
-    DT_INC:str = field(
-            validator=validators.matches_re('^[0-9]+h$'),
-            converter=lambda x : x + 'h',
-            )
     MET_TOOL:str = field(
             validator=validators.in_(MET_TOOLS),
             )
@@ -192,10 +179,6 @@ class plot:
             validator=validators.instance_of(bool),
             )
 
-    def gen_cycs(self):
-        return pd.date_range(start=self.STRT_DT, end=self.STOP_DT, 
-                             freq=self.DT_INC).to_pydatetime()
-                
     def gen_io_paths(self):
         if self.IF_CNTR_PLT:
             in_root = '/in_root/' + self.CSE

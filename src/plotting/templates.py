@@ -42,6 +42,8 @@
 # Imports
 ##################################################################################
 from plotting import *
+from heatplots import *
+from lineplots import *
 
 ##################################################################################
 # Templated Experiment Configurations
@@ -65,9 +67,6 @@ GEFS = control_flow(NAME='GEFS', PLT_LAB='GEFS mean',
 # Templated Plot Configurations
 ##################################################################################
 lineplot_rmse_corr = {
-        'MET_TOOL': 'GridStat',
-        'CSE': 'valid_date_2022-12-28T00',
-        'FIG_CSE': 'testing',
         'CTR_FLWS': [
                      MPAS_240_U,
                      MPAS_240_U_LwrBnd,
@@ -77,17 +76,20 @@ lineplot_rmse_corr = {
                      GFS,
                      GEFS
                     ],
-        'VRF_REF': 'StageIV',
-        'VRF_FLD': 'QPF_24hr',
-        'LEV': None,
-        'IF_CNTR_PLT': IF_CNTR_PLT,
-        'STAT_KEYS': ['RMSE', 'PR_CORR'],
-        'CI': 'NC',
         'STRT_DT': '2022122300',
         'STOP_DT': '2022122700',
         'DT_INC': '24',
         'VALID_DT': '2022122800',
+        'STAT_KEYS': ['RMSE', 'PR_CORR'],
+        'CI': 'NC',
+        'MET_TOOL': 'GridStat',
         'MSK': 'CA_All',
+        'CSE': 'valid_date_2022-12-28T00',
+        'FIG_CSE': 'testing',
+        'VRF_REF': 'StageIV',
+        'VRF_FLD': 'QPF_24hr',
+        'LEV': None,
+        'IF_CNTR_PLT': IF_CNTR_PLT,
         'MEM_LAB': False,
         'GRD_LAB': True,
         'FIG_LAB': None,
@@ -104,12 +106,12 @@ lineplot_fss_afss = {
                      GFS,
                      GEFS
                     ],
-        'VALID_DT': '2022122800',
-        'STAT_KEYS': ['FSS', 'AFSS'],
-        'CI': 'NC',
         'STRT_DT': '2022122300',
         'STOP_DT': '2022122700',
         'DT_INC': '24',
+        'VALID_DT': '2022122800',
+        'STAT_KEYS': ['FSS', 'AFSS'],
+        'CI': 'NC',
         'MET_TOOL': 'GridStat',
         'MSK': 'CA_All',
         'CSE': 'valid_date_2022-12-28T00',
@@ -124,7 +126,15 @@ lineplot_fss_afss = {
         'IF_SHOW': True,
        }
 
-heat_plot_multidate_rmse = {
+
+dynamic_basic_cb = IMPLICIT_DISCRETE_MAPS['dynamic_basic']
+dynamic_basic_cb['NCOL'] = 10
+dynamic_basic_cb['MIN'] = None
+dynamic_basic_cb['MAX'] = None
+dynamic_basic_cb = implicit_discrete(**dynamic_basic_cb)
+
+
+heatplot_multidate_rmse = {
         'CTR_FLW': WRF_9_3_WestCoast,
         'STAT_KEY': 'RMSE',
         'GRD_KEY': 'd02',
@@ -132,11 +142,37 @@ heat_plot_multidate_rmse = {
         'MIN_LD': 24,
         'MAX_LD': 120,
         'LD_INC': 24,
-        'DT_FMT': '%Y%m%d%H',
-        'ALPHA': 5.0,
-        'PLT_SCL': None,
-        'STRT_DT': '2022122300',
-        'STOP_DT': '2022122700',
+        'DT_FMT': '%Y-%m-%d',
+        'COLOR_BAR': dynamic_basic_cb,
+        'VRF_STRT': '2022122400',
+        'VRF_STOP': '2022122800',
+        'DT_INC': '24',
+        'MET_TOOL': 'GridStat',
+        'MSK': 'CA_All',
+        'CSE': 'valid_date_2022-12-28T00',
+        'FIG_CSE': 'testing',
+        'VRF_REF': 'StageIV',
+        'VRF_FLD': 'QPF_24hr',
+        'LEV': None,
+        'IF_CNTR_PLT': IF_CNTR_PLT,
+        'MEM_LAB': False,
+        'GRD_LAB': True,
+        'FIG_LAB': None,
+        'IF_SHOW': True,
+        }
+
+heatplot_multidate_fss = {
+        'CTR_FLW': WRF_9_3_WestCoast,
+        'STAT_KEY': 'RMSE',
+        'GRD_KEY': 'd02',
+        'MEM_KEY': 'mean',
+        'MIN_LD': 24,
+        'MAX_LD': 120,
+        'LD_INC': 24,
+        'DT_FMT': '%Y-%m-%d',
+        'COLOR_BAR': dynamic_basic_cb,
+        'VRF_STRT': '2022122400',
+        'VRF_STOP': '2022122800',
         'DT_INC': '24',
         'MET_TOOL': 'GridStat',
         'MSK': 'CA_All',

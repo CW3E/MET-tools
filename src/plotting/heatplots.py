@@ -51,18 +51,9 @@
 # Imports
 ##################################################################################
 from plotting import *
-import matplotlib
-from datetime import datetime as dt
-from datetime import timedelta as td
-import matplotlib.pyplot as plt
 from matplotlib.colors import BoundaryNorm, ListedColormap
-import seaborn as sns
-import numpy as np
-import pandas as pd
-import pickle
-import os
 import re
-from attrs import define, field, validators
+import math
 from functools import partial
 import ipdb
 
@@ -86,22 +77,30 @@ class explicit_discrete(color_bars):
             validator=validators.instance_of(ListedColormap)
             )
 
-    def get_norm():
+    def get_norm(self):
         return BoundaryNorm(self.THRESHOLDS, ncolors=self.COLORS)
 
-    def get_colormap():
+    def get_colormap(self):
         return ListedColormap(self.COLORS)
+
+    def get_ticks_labels(self):
+        return self.THRESHOLDS, self.LABELS
 
 @define
 class implicit_discrete(color_bars):
     NCOL:int = field(
         validator=validators.instance_of(int),
+        converter= lambda x: int(x),
         )
-    MIN:int = field(
-        validator=validators.instance_of(int),
+    MIN:float = field(
+        validator=validators.optional(
+            validators.instance_of(float),
+            )
         )
-    MAX:int = field(
-        validator=validators.instance_of(int),
+    MAX:float = field(
+        validator=validators.optional(
+            validators.instance_of(float),
+            )
         )
     ALPHA:float = field(
             validator=validators.optional([
@@ -119,7 +118,7 @@ class implicit_discrete(color_bars):
             raise RuntimeError('PALLETE must be a function of a single \
                     integer argument for the number of color bins.')
 
-    def set_min_max(data):
+    def set_min_max(self, data):
         if not self.ALPHA:
             raise AttributeError('ALPHA must be set to define the inner \
                     100 - ALPHA range to define the min / max from datat.')
@@ -131,7 +130,7 @@ class implicit_discrete(color_bars):
         self.MIN = min_scl
         self.MAX = max_scl
         
-    def get_norm():
+    def get_norm(self):
         if not self.MIN:
             raise AttributeError('Minimum value of color bar not set, \
                     define explicitly or use inner 100 - ALPHA range.')
@@ -141,10 +140,31 @@ class implicit_discrete(color_bars):
                     define explicitly or use inner 100 - ALPHA range.')
 
         norm = np.linspace(self.MIN, self.MAX, int(self.NCOL + 1))
+        step_size = norm[1] - norm[0]
+        step_order = math.floor(math.log(step_size, 10))
+        round_order = abs(min(0, step_order))
+        norm = np.around(norm, decimals=round_order)
         return BoundaryNorm(norm, ncolors=self.NCOL)
 
-    def get_colormap():
-        return self.PALLETE(self.NCOL)
+    def get_ticks_labels(self):
+        if not self.MIN:
+            raise AttributeError('Minimum value of color bar not set, \
+                    define explicitly or use inner 100 - ALPHA range.')
+
+        if not self.MAX:
+            raise AttributeError('Minimum value of color bar not set, \
+                    define explicitly or use inner 100 - ALPHA range.')
+
+        ticks = np.linspace(self.MIN, self.MAX, int(self.NCOL + 1))
+        step_size = ticks[1] - ticks[0]
+        step_order = math.floor(math.log(step_size, 10))
+        round_order = abs(min(0, step_order))
+        ticks = np.around(ticks, decimals=round_order)
+        labels = np.array(ticks, dtype=str)
+        return ticks, labels
+
+    def get_colormap(self):
+        return ListedColormap(self.PALLETE(self.NCOL))
 
 ##################################################################################
 # Default color map options
@@ -171,8 +191,8 @@ EXPLICIT_DISCRETE_MAPS = {
 IMPLICIT_DISCRETE_MAPS = {
         'dynamic_basic': {
             'ALPHA': 5.0,
-            'PALLETE': partial(sns.cubehelix_palette,
-            start=.75, rot=1.50, reverse=False, dark=0.25)
+            'PALLETE': partial(sns.cubehelix_palette, start=.75, rot=1.50,
+                reverse=False, dark=0.25)
             }
         }
 
@@ -194,18 +214,29 @@ def check_dt_fmt(instance, attribute, value):
         raise ValueError('Value is not a valid date time format code.')
 
 def check_grd_key(instance, attribute, value):
-    if not value in instance.CTR_FLW['GRDS']:
+    if not value in instance.CTR_FLW.GRDS:
         raise ValueError('ERROR: ' + value + ' is not a subdomain' +\
                 ' of ' + instance.CTR_FLW.NAME)
 
 def check_mem_key(instance, attribute, value):
-    if not value in instance.CTR_FLW['GRDS']:
+    if not value in instance.CTR_FLW.MEM_IDS:
         raise ValueError('ERROR: ' + value + ' is not a member' +\
                 ' of ' + instance.CTR_FLW.NAME)
 
+@define
 class multidate_multilead(plot):
     CTR_FLW:control_flow = field(
             validator=validators.instance_of(control_flow),
+            )
+    VRF_STRT:str = field(
+            converter=convert_dt,
+            )
+    VRF_STOP:str = field(
+            converter=convert_dt,
+            )
+    DT_INC:str = field(
+            validator=validators.matches_re('^[0-9]+h$'),
+            converter=lambda x : x + 'h',
             )
     STAT_KEY:str = field(
             validator=[
@@ -246,7 +277,7 @@ class multidate_multilead(plot):
             )
     DT_FMT:str = field(
             validator=[
-                validators.instance_of(int),
+                validators.instance_of(str),
                 check_dt_fmt,
                 ],
             )
@@ -254,7 +285,11 @@ class multidate_multilead(plot):
             validator=validators.instance_of(color_bars)
             )
 
-    def gen_fcst_dts_labs():
+    def gen_cycs(self):
+        return pd.date_range(start=self.VRF_STRT, end=self.VRF_STOP, 
+                             freq=self.DT_INC).to_pydatetime()
+                
+    def gen_fcst_dts_labs(self):
         # generate valid date range
         anl_dts = self.gen_cycs()
         num_dts = len(anl_dts)
@@ -264,7 +299,7 @@ class multidate_multilead(plot):
         date_labs = []
         fcst_zhs = []
 
-        for i_nd in anl_dts:
+        for i_nd in range(num_dts):
             # generate the tick label
             anl_dt = anl_dts[i_nd]
             date_keys.append(anl_dt.strftime('%Y%m%d_%H%M%S'))
@@ -278,10 +313,12 @@ class multidate_multilead(plot):
             # generate start dates by min / max forecast length from valid dates
             fcst_strt = anl_dt - td(hours=self.MAX_LD)
             fcst_stop = anl_dt - td(hours=self.MIN_LD)
-            fcst_zhs.append(pd.date_range(start=fcst_strt,
-                end=fcst_stop, freq=str(self.LD_INC) + 'h'))
+            fcst_dts = pd.date_range(start=fcst_strt, end=fcst_stop,
+                    freq=str(self.LD_INC) + 'h').to_pydatetime()
+            for fcst_dt in fcst_dts:
+                fcst_zhs.append(fcst_dt)
 
-        fcst_zhs = list(set(fcst_zhs)).sort().to_pydatetime()
+        fcst_zhs = sorted(set(fcst_zhs))
 
         return fcst_zhs, date_keys, date_labs
 
@@ -389,7 +426,6 @@ class multidate_multilead(plot):
             # cut down df to specified valid dates /leads / region / stat
             stat_data = data[vals]
             stat_data = stat_data.loc[(stat_data['VX_MASK'] == self.MSK)]
-            ipdb.set_trace()
             stat_data = stat_data.loc[(stat_data['FCST_VALID_END'].isin(date_keys))]
             stat_data = stat_data.loc[(stat_data['FCST_LEAD'].isin(fcst_lds))]
             if self.LEV:
@@ -434,10 +470,9 @@ class multidate_multilead(plot):
         
         # create array storage for stats
         num_lds = len(fcst_lds)
-        num_dts = len(anl_dts)
+        num_dts = len(date_keys)
         tmp = np.full([num_lds, num_dts], np.nan)
 
-        ipdb.set_trace()
         for i_nd in range(num_dts):
             for i_nl in range(num_lds):
                 try:
@@ -446,32 +481,36 @@ class multidate_multilead(plot):
                             (data['FCST_VALID_END'] == date_keys[i_nd])]
                     
                     if not val.empty:
-                        tmp[i_nl, i_nd] = val[STAT]
+                        tmp[i_nl, i_nd] = val[self.STAT_KEY]
         
                 except:
                     continue
 
-        ipdb.set_trace()
         color_bar = self.COLOR_BAR
-        if hasattr(color_map, 'ALPHA'):
-            color_map.set_min_max(tmp)
+        if hasattr(color_bar, 'ALPHA'):
+            color_bar.set_min_max(tmp)
         
         sns.heatmap(tmp[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0,
-                    cmap=color_bar.get_color_map(), norm=color_bar.get_norm())
+                    cmap=color_bar.get_colormap(), norm=color_bar.get_norm())
         
         ##################################################################################
         # define display parameters
-        ax0.set_yticklabels(ax0.get_yticklabels(), rotation=270, va='top')
-        ax1.set_xticklabels(fcst_dts, rotation=45, ha='right')
+        ipdb.set_trace()
+        cb_ticks, cb_labels = color_bar.get_ticks_labels()
+        ax0.set_yticks(cb_ticks, cb_labels, rotation=270, va='top')
+        ax1.set_xticklabels(date_labs, rotation=45, ha='right')
         ax1.set_yticklabels(ld_labs)
         
         # tick parameters
         ax0.tick_params(
-                labelsize=16
+                right=True,
+                labelsize=16,
+                va='top',
+                rotation=270,
                 )
         
         ax1.tick_params(
-                labelsize=16
+                labelsize=16,
                 )
         
         lab1='Verification Valid Date'
@@ -489,8 +528,8 @@ class multidate_multilead(plot):
         
         in_root, out_root = self.gen_io_paths()
         out_path = out_root + '/' +\
-                self.STRT_DT.strftime('%Y%m%d%H') + '-to-'+\
-                self.STOP_DT.strftime('%Y%m%d%H') + '_FCST-'+\
+                self.VRF_STRT.strftime('%Y%m%d%H') + '-to-'+\
+                self.VRF_STOP.strftime('%Y%m%d%H') + '_FCST-'+\
                 str(self.MIN_LD) + 'hrs-' + str(self.MAX_LD) + 'hrs_'+\
                 self.MSK + '_' + self.STAT_KEY + '_' 
 

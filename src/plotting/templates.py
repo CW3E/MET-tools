@@ -44,6 +44,7 @@
 from plotting import *
 from heatplots import *
 from lineplots import *
+from colorbars import *
 
 ##################################################################################
 # Templated Experiment Configurations
@@ -64,7 +65,13 @@ GEFS = control_flow(NAME='GEFS', PLT_LAB='GEFS mean',
         GRDS=None, MEM_IDS=None)
 
 ##################################################################################
-# Templated Plot Configurations
+# Templated colorbars
+##################################################################################
+relative_diff_cb = explicit_discrete(**EXPLICIT_DISCRETE_MAPS['relative_diff'])
+dynamic_gw_cb = implicit_discrete(**IMPLICIT_DISCRETE_MAPS['dynamic_green_white'])
+
+##################################################################################
+# Templated lineplots
 ##################################################################################
 lineplot_rmse_corr = {
         'CTR_FLWS': [
@@ -127,13 +134,6 @@ lineplot_fss_afss = {
        }
 
 
-dynamic_basic_cb = IMPLICIT_DISCRETE_MAPS['dynamic_basic']
-dynamic_basic_cb['NCOL'] = 10
-dynamic_basic_cb['MIN'] = None
-dynamic_basic_cb['MAX'] = None
-dynamic_basic_cb = implicit_discrete(**dynamic_basic_cb)
-
-
 heatplot_multidate_rmse = {
         'CTR_FLW': WRF_9_3_WestCoast,
         'STAT_KEY': 'RMSE',
@@ -143,7 +143,7 @@ heatplot_multidate_rmse = {
         'MAX_LD': 120,
         'LD_INC': 24,
         'DT_FMT': '%Y-%m-%d',
-        'COLOR_BAR': dynamic_basic_cb,
+        'COLORBAR': dynamic_gw_cb,
         'VRF_STRT': '2022122400',
         'VRF_STOP': '2022122800',
         'DT_INC': '24',
@@ -163,14 +163,14 @@ heatplot_multidate_rmse = {
 
 heatplot_multidate_fss = {
         'CTR_FLW': WRF_9_3_WestCoast,
-        'STAT_KEY': 'RMSE',
+        'STAT_KEY': 'FSS',
         'GRD_KEY': 'd02',
         'MEM_KEY': 'mean',
         'MIN_LD': 24,
         'MAX_LD': 120,
         'LD_INC': 24,
         'DT_FMT': '%Y-%m-%d',
-        'COLOR_BAR': dynamic_basic_cb,
+        'COLORBAR': dynamic_gw_cb,
         'VRF_STRT': '2022122400',
         'VRF_STOP': '2022122800',
         'DT_INC': '24',

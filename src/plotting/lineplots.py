@@ -50,7 +50,6 @@
 # Imports
 ##################################################################################
 from plotting import *
-import re
 
 ##################################################################################
 # Load workflow constants and Utility Methods 
@@ -106,7 +105,6 @@ class dual_line_plot(plot):
         return pd.date_range(start=self.STRT_DT, end=self.STOP_DT, 
                              freq=self.DT_INC).to_pydatetime()
                 
-
     def gen_fcst_lds_labs(self):
         fcst_zhs = self.gen_cycs()
         fcst_lds = []

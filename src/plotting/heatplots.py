@@ -3,12 +3,6 @@
 ##################################################################################
 # This script is designed to generate heat plots in Matplotlib from MET ASCII
 # output files, converted to dataframes with the companion postprocessing routines.
-# This plotting scheme is designed to plot forecast lead in the vertical axis and
-# the valid time for verification from the forecast initialization in the
-# horizontal axis.
-#
-# Parameters for the script are to be supplied from a configuration file, with
-# name supplied as a command line argument.
 #
 ##################################################################################
 # License Statement:
@@ -51,151 +45,10 @@
 # Imports
 ##################################################################################
 from plotting import *
-from matplotlib.colors import BoundaryNorm, ListedColormap
-import re
-import math
-from functools import partial
-import ipdb
+from colorbars import *
 
 ##################################################################################
 # Load workflow constants and Utility Methods 
-##################################################################################
-
-@define
-class color_bars:
-    pass
-
-@define
-class explicit_discrete(color_bars):
-    THRESHOLDS:list = field(
-            validator=validators.deep_iterable(
-                member_validator=validators.instance_of(float),
-                iterable_validator=validators.instance_of(list),
-                )
-            )
-    COLORS:ListedColormap = field(
-            validator=validators.instance_of(ListedColormap)
-            )
-
-    def get_norm(self):
-        return BoundaryNorm(self.THRESHOLDS, ncolors=self.COLORS)
-
-    def get_colormap(self):
-        return ListedColormap(self.COLORS)
-
-    def get_ticks_labels(self):
-        return self.THRESHOLDS, self.LABELS
-
-@define
-class implicit_discrete(color_bars):
-    NCOL:int = field(
-        validator=validators.instance_of(int),
-        converter= lambda x: int(x),
-        )
-    MIN:float = field(
-        validator=validators.optional(
-            validators.instance_of(float),
-            )
-        )
-    MAX:float = field(
-        validator=validators.optional(
-            validators.instance_of(float),
-            )
-        )
-    ALPHA:float = field(
-            validator=validators.optional([
-                validators.instance_of(float),
-                validators.gt(0.0),
-                validators.lt(100.0),
-                ]),
-            )
-    PALLETE = field()
-    @PALLETE.validator
-    def test_call(self, attribute, value):
-        try:
-            value(10)
-        except:
-            raise RuntimeError('PALLETE must be a function of a single \
-                    integer argument for the number of color bins.')
-
-    def set_min_max(self, data):
-        if not self.ALPHA:
-            raise AttributeError('ALPHA must be set to define the inner \
-                    100 - ALPHA range to define the min / max from datat.')
-
-        scale = data[~np.isnan(data)]
-        max_scl, min_scl = np.percentile(scale,
-                [100 - self.ALPHA / 2, self.ALPHA / 2])
-
-        self.MIN = min_scl
-        self.MAX = max_scl
-        
-    def get_norm(self):
-        if not self.MIN:
-            raise AttributeError('Minimum value of color bar not set, \
-                    define explicitly or use inner 100 - ALPHA range.')
-
-        if not self.MAX:
-            raise AttributeError('Minimum value of color bar not set, \
-                    define explicitly or use inner 100 - ALPHA range.')
-
-        norm = np.linspace(self.MIN, self.MAX, int(self.NCOL + 1))
-        step_size = norm[1] - norm[0]
-        step_order = math.floor(math.log(step_size, 10))
-        round_order = abs(min(0, step_order))
-        norm = np.around(norm, decimals=round_order)
-        return BoundaryNorm(norm, ncolors=self.NCOL)
-
-    def get_ticks_labels(self):
-        if not self.MIN:
-            raise AttributeError('Minimum value of color bar not set, \
-                    define explicitly or use inner 100 - ALPHA range.')
-
-        if not self.MAX:
-            raise AttributeError('Minimum value of color bar not set, \
-                    define explicitly or use inner 100 - ALPHA range.')
-
-        ticks = np.linspace(self.MIN, self.MAX, int(self.NCOL + 1))
-        step_size = ticks[1] - ticks[0]
-        step_order = math.floor(math.log(step_size, 10))
-        round_order = abs(min(0, step_order))
-        ticks = np.around(ticks, decimals=round_order)
-        labels = np.array(ticks, dtype=str)
-        return ticks, labels
-
-    def get_colormap(self):
-        return ListedColormap(self.PALLETE(self.NCOL))
-
-##################################################################################
-# Default color map options
-##################################################################################
-EXPLICIT_DISCRETE_MAPS = {
-        'relative_diff': {
-            'THRESHOLDS': [-100, -50, -25, -15, -0.1, 0.1, 15, 25, 50, 100],
-            'COLORS': [
-                '#762a83', # -50 to -100%
-                '#9970ab', # -25 to -50%
-                '#c2a5cf', # -15 to -25%
-                '#e7d4e8', # -0.1 to -15%
-                '#f7f7f7', # for zero values
-                '#d9f0d3', # 0.1 to 15%
-                '#a6dba0', # 15 to 25%
-                '#5aae61', # 25 to 50%
-                '#1b7837', # 50 to 100%
-                ],
-            'LABELS': ['-100%', '-50%', '-25%', '-15%',
-                '-0.1%', '0.1%', '15%', '25%', '50%', '100%'],
-            }
-        }
-
-IMPLICIT_DISCRETE_MAPS = {
-        'dynamic_basic': {
-            'ALPHA': 5.0,
-            'PALLETE': partial(sns.cubehelix_palette, start=.75, rot=1.50,
-                reverse=False, dark=0.25)
-            }
-        }
-
 ##################################################################################
 
 def check_fcst_lds(instance, attribute, value):
@@ -203,8 +56,8 @@ def check_fcst_lds(instance, attribute, value):
     if fcst_range < 0:
         raise ValueError('MAX_LD is less than MIN_LD.')
     if (fcst_range % int(value)):
-        raise ValueError('Hours between the minimum and maximum forecast lead\
-                must be dvisible by the lead incremnt.')
+        raise ValueError('Hours between the minimum and maximum forecast lead' +\
+                ' must be dvisible by the lead incremnt.')
 
 def check_dt_fmt(instance, attribute, value):
     dt_sample = dt(2024, 1, 1, 0)
@@ -281,8 +134,8 @@ class multidate_multilead(plot):
                 check_dt_fmt,
                 ],
             )
-    COLOR_BAR:color_bars = field(
-            validator=validators.instance_of(color_bars)
+    COLORBAR:colorbars = field(
+            validator=validators.instance_of(colorbars)
             )
 
     def gen_cycs(self):
@@ -343,7 +196,7 @@ class multidate_multilead(plot):
 
             ld += self.LD_INC
 
-        return fcst_lds, tick_labs
+        return fcst_lds[::-1], tick_labs[::-1]
 
     def gen_plot_text(self):
         title = MET_TOOLS[self.MET_TOOL][self.STAT_KEY]['label'] 
@@ -481,22 +334,21 @@ class multidate_multilead(plot):
                             (data['FCST_VALID_END'] == date_keys[i_nd])]
                     
                     if not val.empty:
-                        tmp[i_nl, i_nd] = val[self.STAT_KEY]
+                        tmp[i_nl, i_nd] = val[self.STAT_KEY].iloc[0]
         
                 except:
                     continue
 
-        color_bar = self.COLOR_BAR
-        if hasattr(color_bar, 'ALPHA'):
-            color_bar.set_min_max(tmp)
+        colorbar = self.COLORBAR
+        if hasattr(colorbar, 'ALPHA'):
+            colorbar.set_min_max(tmp)
         
         sns.heatmap(tmp[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0,
-                    cmap=color_bar.get_colormap(), norm=color_bar.get_norm())
+                    cmap=colorbar.get_colormap(), norm=colorbar.get_norm())
         
         ##################################################################################
         # define display parameters
-        ipdb.set_trace()
-        cb_ticks, cb_labels = color_bar.get_ticks_labels()
+        cb_ticks, cb_labels = colorbar.get_ticks_labels()
         ax0.set_yticks(cb_ticks, cb_labels, rotation=270, va='top')
         ax1.set_xticklabels(date_labs, rotation=45, ha='right')
         ax1.set_yticklabels(ld_labs)
@@ -505,8 +357,6 @@ class multidate_multilead(plot):
         ax0.tick_params(
                 right=True,
                 labelsize=16,
-                va='top',
-                rotation=270,
                 )
         
         ax1.tick_params(
@@ -558,3 +408,5 @@ class multidate_multilead(plot):
         plt.savefig(out_path)
         if self.IF_SHOW:
             plt.show()
+
+##################################################################################

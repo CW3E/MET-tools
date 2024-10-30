@@ -45,104 +45,17 @@
 # HEREUNDER IS ON AN “AS IS” BASIS, AND THE UNIVERSITY OF CALIFORNIA HAS NO
 # OBLIGATIONS TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
 # MODIFICATIONS.
-# 
-# 
+#
+#
 ##################################################################################
 # Imports
 ##################################################################################
-import matplotlib
-from datetime import datetime as dt
-from datetime import timedelta as td
-import matplotlib.pyplot as plt
-from matplotlib.colors import Normalize as nrm
-from matplotlib.cm import get_cmap
-from matplotlib.colorbar import Colorbar as cb
-import seaborn as sns
-import numpy as np
-import pandas as pd
-import pickle
-import os
-import sys
-
-# Execute configuration file supplied as command line argument
-CFG = sys.argv[1].split('.')[0]
-cmd = 'from ' + CFG + ' import *'
-print(cmd)
-exec(cmd)
-
-##################################################################################
-# Make data checks and determine all lead times over all files
-##################################################################################
-if not VLD_DT.isdigit() or len(VLD_DT) != 10:
-    print('ERROR: VLD_DT\n' + VLD_DT + '\n is not in YYYYMMDDHH format.')
-    sys.exit(1)
-else:
-    iso = VLD_DT[:4] + '-' + VLD_DT[4:6] + '-' + VLD_DT[6:8] + '_' +\
-            VLD_DT[8:]
-    vld_dt = dt.fromisoformat(iso)
-
-if not MAX_LD.isdigit():
-    print('ERROR: MAX_LD, ' + MAX_LD + ', is not HH format.')
-    sys.exit(1)
-else:
-    max_ld = int(MAX_LD)
-
-if not CYC_INC.isdigit():
-    print('ERROR: CYC_INC\n' + CYC_INC + '\n is not in HH format.')
-    sys.exit(1)
-else:
-    cyc_inc = CYC_INC + 'h'
-
-try:
-    if DYN_SCL:
-        if ALPHA <= 0 or ALPHA >= 100:
-            print('ERROR: ALPHA must be between 0 and 100 to define the'+\
-                    ' inner 100 - ALPHA range of data.')
-            sys.exit(1)
-
-    elif not DYN_SCL:
-        if MIN_SCALE >= MAX_SCALE:
-            print('ERROR: MIN_SCALE must be less than MAX_SCALE for valid'+\
-                    ' color bar.')
-except:
-    print('ERROR: DYN_SCL, ' + str(DYN_SCL) + ' must be equal to True or False.')
-    print('If True supply ALPHA value or if False supply min / max scale.')
-    sys.exit(1)
-
-if not MSK:
-    print('ERROR: Landmask variable MSK is not defined.')
-    sys.exit(1)
-
-# generate the date range and forecast leads for the analysis, parse binary files
-# for relevant fields
-fcst_strt = vld_dt - td(hours=max_ld)
-fcst_stop = vld_dt - td(hours=int(CYC_INC))
-fcst_zhs = pd.date_range(start=fcst_strt, end=fcst_stop, freq=cyc_inc)
-fcst_zhs = fcst_zhs.to_pydatetime()
-plt_data = {}
-
-fcst_leads = []
-fcst_levs = []
-# define derived data paths 
-data_root = IN_ROOT + '/' + CTR_FLW + '/' + MET_TOOL
-
-if len(MEM) > 0:
-    ens = '_' + MEM
-else:
-    ens = ''
-
-if len(GRD) > 0:
-    grd = '_' + GRD
-else:
-    grd = ''
-
-key = CTR_FLW + ens + grd
 for fcst_zh in fcst_zhs:
     # define the input name
     zh_str = fcst_zh.strftime('%Y%m%d%H')
     in_path = data_root + '/' + zh_str + '/' + PRFX + ens + grd +\
               '_' + zh_str + '.bin'
-    
+
     try:
         with open(in_path, 'rb') as f:
             data = pickle.load(f)
@@ -171,8 +84,6 @@ for fcst_zh in fcst_zhs:
         leads = sorted(list(set(stat_data['FCST_LEAD'].values)),
                        key=lambda x:(len(x), x))
 
-        levs = sorted(list(set(stat_data['FCST_THRESH'].values)),
-                key=lambda x:(len(x.split('.')[0]), x), reverse=True)
 
         if key in plt_data.keys():
             # if there is existing data, concatenate dataframes
@@ -182,7 +93,7 @@ for fcst_zh in fcst_zhs:
             # if this is a first instance, create fields
             plt_data[key] = {'data': stat_data}
 
-        # obtain leads of data 
+        # obtain leads of data
         fcst_leads += leads
         fcst_levs += levs
 
@@ -235,7 +146,7 @@ for i_nv in range(num_levs):
                     fcst_leads[i_nl]) & (plt_data[key]['data']['FCST_VALID_END'] ==\
                     vld_dt.strftime('%Y%m%d_%H%M%S')) &\
                     (plt_data[key]['data']['FCST_THRESH'] == fcst_levs[i_nv]) ]
-            
+
             if not val.empty:
                 tmp[i_nv, i_nl] = val[STAT]
 

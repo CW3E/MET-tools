@@ -37,8 +37,8 @@
 # HEREUNDER IS ON AN “AS IS” BASIS, AND THE UNIVERSITY OF CALIFORNIA HAS NO
 # OBLIGATIONS TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
 # MODIFICATIONS.
-# 
-# 
+#
+#
 ##################################################################################
 # Imports
 ##################################################################################
@@ -48,7 +48,7 @@ import math
 from functools import partial
 
 ##################################################################################
-# Load workflow constants and Utility Methods 
+# Load workflow constants and Utility Methods
 ##################################################################################
 
 @define
@@ -125,7 +125,7 @@ class implicit_discrete(colorbars):
 
         self.MIN = min_scl
         self.MAX = max_scl
-        
+
     def get_norm(self):
         if self.MIN is None:
             raise AttributeError('Minimum value of color bar not set,' +\
@@ -170,18 +170,27 @@ EXPLICIT_DISCRETE_MAPS = {
             'THRESHOLDS': [-100., -50., -25., -15., -0.1,
                 0.1, 15., 25., 50., 100.],
             'COLORS': [
-                '#762a83', # -50 to -100%
-                '#9970ab', # -25 to -50%
-                '#c2a5cf', # -15 to -25%
-                '#e7d4e8', # -0.1 to -15%
-                '#f7f7f7', # for zero values
-                '#d9f0d3', # 0.1 to 15%
-                '#a6dba0', # 15 to 25%
-                '#5aae61', # 25 to 50%
-                '#1b7837', # 50 to 100%
+                '#762a83',
+                '#9970ab',
+                '#c2a5cf',
+                '#e7d4e8',
+                '#f7f7f7',
+                '#d9f0d3',
+                '#a6dba0',
+                '#5aae61',
+                '#1b7837',
                 ],
             'LABELS': ['-100%', '-50%', '-25%', '-15%',
                 '-0.1%', '0.1%', '15%', '25%', '50%', '100%'],
+            }
+        # NOTE: FINISH OFF DEFINITION
+        'normalized': {
+            'THRESHOLDS': [0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75,
+                           0.8, 0.85, 0.9, 0.95, 1.0]
+            'COLORS': [
+                ],
+            'LABELS': ['.45', '.50', '.55', '.60', '.65', '.70',
+                       '.75', '.80', '.85', '.90', '.95', '1.0'
             }
         }
 

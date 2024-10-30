@@ -28,7 +28,7 @@ TYPE = 'nbrcnt'
 # MET stat column names to be made to heat plots / labels
 STAT = 'FSS'
 
-# define control flows to analyze for lineplots 
+# define control flows to analyze for lineplots
 CTR_FLW = 'NRT_ECMWF'
 
 # ensemble member indices to plot

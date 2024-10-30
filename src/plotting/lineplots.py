@@ -45,14 +45,14 @@
 # HEREUNDER IS ON AN “AS IS” BASIS, AND THE UNIVERSITY OF CALIFORNIA HAS NO
 # OBLIGATIONS TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
 # MODIFICATIONS.
-# 
+#
 ##################################################################################
 # Imports
 ##################################################################################
 from plotting import *
 
 ##################################################################################
-# Load workflow constants and Utility Methods 
+# Load workflow constants and Utility Methods
 ##################################################################################
 # Confidence interval type leading code (Normal or Bootstrap)
 CIS = ['NC', 'BC']
@@ -101,10 +101,11 @@ class dual_line_plot(plot):
                 validators.in_(CIS),
                 ])
             )
+    VRT_RNG_0
     def gen_cycs(self):
-        return pd.date_range(start=self.STRT_DT, end=self.STOP_DT, 
+        return pd.date_range(start=self.STRT_DT, end=self.STOP_DT,
                              freq=self.DT_INC).to_pydatetime()
-                
+
     def gen_fcst_lds_labs(self):
         fcst_zhs = self.gen_cycs()
         fcst_lds = []
@@ -116,9 +117,12 @@ class dual_line_plot(plot):
             hours = str(int(lead / 3600 ))
             fcst_lds.append(hours + minutes + seconds)
 
-            tick_label = hours 
+            tick_label = hours
             if not seconds == '00':
                 tick_label += ':' + minutes + ':' + seconds
+
+            elif not minutes == '00':
+                tick_label += ':' + minutes
 
             tick_labs.append(tick_label)
 
@@ -128,7 +132,7 @@ class dual_line_plot(plot):
         title=VRF_REFS[self.VRF_REF]['fields'][self.VRF_FLD]['label']
         if self.LEV:
             title += ' - Threshold: ' + self.LEV + 'mm'
-        
+
         title +='\n' +\
                 'Valid: ' + self.VALID_DT.strftime('%HZ %d/%m/%Y')
         dmn_title = 'Domain: ' + self.MSK.replace('_', ' ')
@@ -139,7 +143,7 @@ class dual_line_plot(plot):
                     MET_TOOLS[self.MET_TOOL][self.STAT_KEYS[i_s]]['label'])
 
         return title, dmn_title, obs_title, panel_labels
-        
+
     def gen_lines_labs(self):
         lines_labs = {}
         for ctr_flw in self.CTR_FLWS:
@@ -163,7 +167,7 @@ class dual_line_plot(plot):
                     if self.GRD_LAB:
                         if len(grd) > 0:
                             line_lab += ' ' + grd
-        
+
                     key = ctr_flw.NAME
                     if ctr_flw.MEM_IDS:
                         key += '_' + mem
@@ -194,7 +198,7 @@ class dual_line_plot(plot):
         lines_labs = self.gen_lines_labs()
 
         for line_key, line in lines_labs.items():
-            # define derived data paths 
+            # define derived data paths
             flw_nme = line['flw_nme']
             label = line['label']
             grd = line['grd']
@@ -298,7 +302,7 @@ class dual_line_plot(plot):
             line_lab = data['label']
             stat_name = data['stat_name']
             CI = data['CI']
-            
+
             # Set the figure panel to add the stat line
             if stat_name == self.STAT_KEYS[0]:
                 i_ns = 0
@@ -317,30 +321,30 @@ class dual_line_plot(plot):
                                 self.CI + 'L'].iloc[0]
                         tmp[i_nl, 2] = val[stat_name + '_' +\
                                 self.CI + 'U'].iloc[0]
-                
+
                 l0 = ax.fill_between(range(num_lds), tmp[:, 1],
                         tmp[:, 2], alpha=0.5)
                 l1, = ax.plot(range(num_lds), tmp[:, 0], linewidth=2)
                 ax_lines_list[i_ns].append([l1,l0])
                 l = l1
-            
+
             else:
                 tmp = np.full(num_lds, np.nan)
-            
+
                 for i_nl in range(num_lds):
                     val = plt_data.loc[(plt_data['FCST_LEAD'] ==\
                             fcst_lds[i_nl])]
                     val = val[stat_name]
                     if not val.empty:
                         tmp[i_nl] = val.iloc[0]
-                
+
                 l, = ax.plot(range(num_lds), tmp[:], linewidth=2)
                 ax_lines_list[i_ns].append([l])
-            
+
             if i_ns == 0:
                 line_list.append(l)
                 line_labs.append(line_lab)
-        
+
         # set colors and markers
         line_count = len(line_list)
         line_colors = sns.color_palette('husl', line_count)
@@ -354,21 +358,21 @@ class dual_line_plot(plot):
                     if i_nl == 0:
                       l.set_marker((i_lc + 2, 0, 0))
                       l.set_markersize(15)
-        
+
         ax0.set_xticks(range(num_lds))
         ax0.set_xticklabels(x_tick_labs)
         ax1.set_xticks(range(num_lds))
         ax1.set_xticklabels(x_tick_labs)
-        
+
         # tick parameters
         ax1.tick_params(
                 labelsize=18
                 )
-        
+
         ax0.tick_params(
                 labelsize=18
                 )
-        
+
         ax0.tick_params(
                 labelsize=18,
                 bottom=True,
@@ -376,43 +380,44 @@ class dual_line_plot(plot):
                 right=False,
                 labelright=False,
                 )
-        
+
+        # NOTE: NEED TO DECIDE HOW TO SUPPLY A FIXED SCALE HERE
         ax.yaxis.tick_right()
         plot0_yticks = ax0.get_yticks()
         ax0.set_yticks(plot0_yticks, ax0.get_yticklabels(), va='bottom')
         tick_labs = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
         ax1.set_yticks(np.linspace(0.5, 1, 6), tick_labs, va='bottom')
         ax1.set_ylim([0.45, 1.05])
-        
+
         y_min, y_max = ax0.get_ylim()
         tick_spacing = (plot0_yticks[1] - plot0_yticks[0]) / 2
         ax0.set_ylim([y_min - tick_spacing, y_max + tick_spacing])
-        
+
         ax0.grid(which = 'major', axis = 'y')
         ax1.grid(which = 'major', axis = 'y')
-        
+
         lab2='Forecast lead hrs'
 
         title, dmn_title, obs_title, panel_labels = self.gen_plot_text()
-        
+
         plt.figtext(.5, .95, title, horizontalalignment='center',
                     verticalalignment='center', fontsize=22)
-        
+
         plt.figtext(.15, .90, dmn_title, horizontalalignment='center',
                     verticalalignment='center', fontsize=18)
-        
+
         plt.figtext(.8375, .90, obs_title, horizontalalignment='center',
                     verticalalignment='center', fontsize=18)
-        
+
         plt.figtext(.025, .43, panel_labels[0], horizontalalignment='center',
                     rotation=90, verticalalignment='center', fontsize=20)
-        
+
         plt.figtext(.975, .43, panel_labels[1], horizontalalignment='center',
                     rotation=270, verticalalignment='center', fontsize=20)
-        
+
         plt.figtext(.5, .02, lab2, horizontalalignment='center',
                     verticalalignment='center', fontsize=20)
-        
+
         if line_count <= 3:
             ncols = line_count
         else:
@@ -422,7 +427,7 @@ class dual_line_plot(plot):
                 ncols = 3
             else:
                 ncols = 4
-        
+
         fig.legend(line_list, line_labs, fontsize=18, ncol=ncols, loc='center',
                    bbox_to_anchor=[0.5, 0.83])
 

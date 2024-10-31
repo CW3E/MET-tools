@@ -101,7 +101,6 @@ class dual_line_plot(plot):
                 validators.in_(CIS),
                 ])
             )
-    VRT_RNG_0
     def gen_cycs(self):
         return pd.date_range(start=self.STRT_DT, end=self.STOP_DT,
                              freq=self.DT_INC).to_pydatetime()
@@ -432,11 +431,6 @@ class dual_line_plot(plot):
                    bbox_to_anchor=[0.5, 0.83])
 
         in_root, out_root = self.gen_io_paths()
-        if self.FIG_LAB:
-            fig_lab = '_' + self.FIG_LAB
-        else:
-            fig_lab = ''
-
         out_path = out_root + '/' + self.VALID_DT.strftime('%Y%m%d%H') + '_' +\
                 self.MSK + '_' + self.STAT_KEYS[0] + '_' + self.STAT_KEYS[1]
 
@@ -447,7 +441,10 @@ class dual_line_plot(plot):
                 if split:
                     out_path += '_' + split
 
-        out_path += fig_lab + '_lineplot.png'
+        if self.FIG_LAB:
+            out_path += '_' + self.FIG_LAB
+
+        out_path += '_lineplot.png'
 
         # save figure and display
         plt.savefig(out_path)

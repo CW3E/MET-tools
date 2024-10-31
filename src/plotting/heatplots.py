@@ -46,11 +46,11 @@
 ##################################################################################
 from plotting import *
 from colorbars import *
+import ipdb
 
 ##################################################################################
 # Load workflow constants and Utility Methods
 ##################################################################################
-
 def check_fcst_lds(instance, attribute, value):
     fcst_range = instance.MAX_LD - instance.MIN_LD
     if fcst_range < 0:
@@ -346,8 +346,12 @@ class multidate_multilead(plot):
         if hasattr(colorbar, 'ALPHA'):
             colorbar.set_min_max(tmp)
 
+        cb_colormap = colorbar.get_colormap()
+        cb_colormap.set_bad('darkgrey')
+        cb_norm = colorbar.get_norm()
+
         sns.heatmap(tmp[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0,
-                    cmap=colorbar.get_colormap(), norm=colorbar.get_norm())
+                    cmap=cb_colormap, norm=cb_norm)
 
         # define display parameters
         cb_ticks, cb_labels = colorbar.get_ticks_labels()
@@ -451,31 +455,6 @@ class multilevel_multilead(plot):
                 validators.instance_of(str),
                 check_mem_key,
                 ]),
-            )
-    MIN_LD:int = field(
-            validator=[
-                validators.instance_of(int),
-                ],
-            converter=lambda x : int(x),
-            )
-    MAX_LD:int = field(
-            validator=[
-                validators.instance_of(int),
-                ],
-            converter=lambda x : int(x),
-            )
-    LD_INC:int = field(
-            validator=[
-                validators.instance_of(int),
-                check_fcst_lds,
-                ],
-            converter=lambda x : int(x),
-            )
-    DT_FMT:str = field(
-            validator=[
-                validators.instance_of(str),
-                check_dt_fmt,
-                ],
             )
     COLORBAR:colorbars = field(
             validator=validators.instance_of(colorbars)
@@ -619,7 +598,6 @@ class multilevel_multilead(plot):
 
         return plt_data
 
-    # NOTE: NEED TO CONTINUE WITH MULTILEVEL PLOT HERE
     def gen_fig(self):
         # generate the plot data
         plt_data = self.gen_data_range()
@@ -640,15 +618,16 @@ class multilevel_multilead(plot):
         num_lvs = len(fcst_lvs)
         tmp = np.full([num_lvs, num_lds], np.nan)
 
-        for i_nd in range(num_lds):
-            for i_nv in range(num_lvs):
+        ipdb.set_trace()
+        for i_nv in range(num_lvs):
+            for i_nd in range(num_lds):
                 try:
                     # try to load data for the date / lead combination
                     val = data.loc[(data['FCST_LEAD'] == fcst_lds[i_nd]) &\
                             (data['FCST_THRESH'] == fcst_lvs[i_nv])]
 
                     if not val.empty:
-                        tmp[i_nl, i_nd] = val[self.STAT_KEY].iloc[0]
+                        tmp[i_nv, i_nd] = val[self.STAT_KEY].iloc[0]
 
                 except:
                     continue
@@ -657,10 +636,16 @@ class multilevel_multilead(plot):
         if hasattr(colorbar, 'ALPHA'):
             colorbar.set_min_max(tmp)
 
+        ipdb.set_trace()
+        cb_colormap = colorbar.get_colormap()
+        cb_colormap.set_bad('darkgrey')
+        cb_norm = colorbar.get_norm()
+
         sns.heatmap(tmp[:,:], linewidth=0.5, ax=ax1, cbar_ax=ax0,
-                    cmap=colorbar.get_colormap(), norm=colorbar.get_norm())
+                    cmap=cb_colormap, norm=cb_norm)
 
         # define display parameters
+        ipdb.set_trace()
         cb_ticks, cb_labels = colorbar.get_ticks_labels()
         ax0.set_yticks(cb_ticks, cb_labels, rotation=270, va='top')
         ax1.set_xticklabels(ld_labs, rotation=45, ha='right')
@@ -676,33 +661,23 @@ class multilevel_multilead(plot):
                 labelsize=16,
                 )
 
+        lab1='Forecast Lead Hrs'
+        lab2='Accumulation threshold - mm'
+
         plt.figtext(.5, .02, lab1, horizontalalignment='center',
                     verticalalignment='center', fontsize=20)
 
         plt.figtext(.02, .5, lab2, horizontalalignment='center',
                     verticalalignment='center', fontsize=20, rotation=90)
 
-        title, dmn_title, obs_title = self.gen_plot_text()
+        title, dmn_title, obs_title, vdt_title = self.gen_plot_text()
         plt.title(title, x = 0.5, y = 1.03, fontsize = 20)
         plt.title(dmn_title, fontsize = 16, loc = 'left')
         plt.title(obs_title, fontsize = 16, loc = 'right')
 
         in_root, out_root = self.gen_io_paths()
-        out_path = out_root + '/' +\
-                self.VLD_DT + '_FCST-' + MAX_LD +\
-                   '_' + MSK + '_' + STAT + '_' + CTR_FLW + '_' + GRD + fig_lab +\
-        	       '_all-level_heatplot.png'
-                self.MSK + '_' + self.STAT_KEY + '_'
-
-
-        if self.LEV:
-            out_path += '_lev'
-            lev_split = re.split(r'\D+', self.LEV)
-            for split in lev_split:
-                if split:
-                    out_path += '_' + split
-
-        out_path += '_' + self.CTR_FLW.NAME
+        out_path = out_root + '/' + self.VALID_DT.strftime('%Y%m%d%H') + '_' +\
+                self.MSK  + '_' + self.STAT_KEY + '_' + self.CTR_FLW.NAME
 
         if self.MEM_KEY:
             out_path += '_' + self.MEM_KEY
@@ -713,7 +688,7 @@ class multilevel_multilead(plot):
         if self.FIG_LAB:
             out_path += '_' + self.FIG_LAB
 
-        out_path += '_heatplot.png'
+        out_path += '_all-level_heatplot.png'
 
         # save figure and display
         plt.savefig(out_path)

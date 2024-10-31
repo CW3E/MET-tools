@@ -68,6 +68,7 @@ GEFS = control_flow(NAME='GEFS', PLT_LAB='GEFS mean',
 # Templated colorbars
 ##################################################################################
 relative_diff_cb = explicit_discrete(**EXPLICIT_DISCRETE_MAPS['relative_diff'])
+normalized_cb = explicit_discrete(**EXPLICIT_DISCRETE_MAPS['normalized_skillful'])
 dynamic_gw_cb = implicit_discrete(**IMPLICIT_DISCRETE_MAPS['dynamic_green_white'])
 
 ##################################################################################
@@ -133,9 +134,14 @@ lineplot_fss_afss = {
         'IF_SHOW': True,
        }
 
-
+##################################################################################
+# Templated multidate / multilead heatplots
+##################################################################################
 heatplot_multidate_rmse = {
         'CTR_FLW': WRF_9_3_WestCoast,
+        'VRF_STRT': '2022122400',
+        'VRF_STOP': '2022122800',
+        'DT_INC': '24',
         'STAT_KEY': 'RMSE',
         'GRD_KEY': 'd02',
         'MEM_KEY': 'mean',
@@ -144,9 +150,6 @@ heatplot_multidate_rmse = {
         'LD_INC': 24,
         'DT_FMT': '%Y-%m-%d',
         'COLORBAR': dynamic_gw_cb,
-        'VRF_STRT': '2022122400',
-        'VRF_STOP': '2022122800',
-        'DT_INC': '24',
         'MET_TOOL': 'GridStat',
         'MSK': 'CA_All',
         'CSE': 'valid_date_2022-12-28T00',
@@ -163,6 +166,9 @@ heatplot_multidate_rmse = {
 
 heatplot_multidate_fss = {
         'CTR_FLW': WRF_9_3_WestCoast,
+        'VRF_STRT': '2022122400',
+        'VRF_STOP': '2022122800',
+        'DT_INC': '24',
         'STAT_KEY': 'FSS',
         'GRD_KEY': 'd02',
         'MEM_KEY': 'mean',
@@ -170,10 +176,34 @@ heatplot_multidate_fss = {
         'MAX_LD': 120,
         'LD_INC': 24,
         'DT_FMT': '%Y-%m-%d',
-        'COLORBAR': dynamic_gw_cb,
-        'VRF_STRT': '2022122400',
-        'VRF_STOP': '2022122800',
+        'COLORBAR': normalized_cb,
+        'MET_TOOL': 'GridStat',
+        'MSK': 'CA_All',
+        'CSE': 'valid_date_2022-12-28T00',
+        'FIG_CSE': 'testing',
+        'VRF_REF': 'StageIV',
+        'VRF_FLD': 'QPF_24hr',
+        'LEV': '>=50.0',
+        'IF_CNTR_PLT': IF_CNTR_PLT,
+        'MEM_LAB': False,
+        'GRD_LAB': True,
+        'FIG_LAB': None,
+        'IF_SHOW': True,
+        }
+
+##################################################################################
+# Templated multilevel / multilead heatplots
+##################################################################################
+heatplot_multilevel_fss = {
+        'CTR_FLW': WRF_9_3_WestCoast,
+        'STRT_DT': '2022122300',
+        'STOP_DT': '2022122700',
         'DT_INC': '24',
+        'VALID_DT': '2022122800',
+        'STAT_KEY': 'FSS',
+        'GRD_KEY': 'd02',
+        'MEM_KEY': 'mean',
+        'COLORBAR': normalized_cb,
         'MET_TOOL': 'GridStat',
         'MSK': 'CA_All',
         'CSE': 'valid_date_2022-12-28T00',

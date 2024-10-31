@@ -32,7 +32,7 @@
 {% set IN_DT_SUBDIR = '' %}
 
 {# Specify thresholds levels for verification (NEEDS INTERNAL QUOTES "")#}
-{% set CAT_THR='"[ >0.0, >=10.0, >=25.0, >=50.0, >=100.0 ]"' %}
+{% set CAT_THR='"[ >=1.0, >=10.0, >=25.0, >=50.0, >=100.0 ]"' %}
 
 {# Neighborhood size for stats computation on observation grid #}
 {% set NBRHD_WDTH = 9 %}

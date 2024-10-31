@@ -50,7 +50,15 @@ from functools import partial
 ##################################################################################
 # Load workflow constants and Utility Methods
 ##################################################################################
+def check_length(instance, attribute, value):
+    if not len(instance.COLORS) + 1 == len(instance.THRESHOLDS) or \
+            not len(instance.LABELS) == len(instance.THRESHOLDS):
+                raise ValueError('Thresholds, colors and labels must all' +\
+                        ' be in 1-1 correspondence.')
 
+##################################################################################
+# Define color bar template classes
+##################################################################################
 @define
 class colorbars:
     pass
@@ -58,26 +66,38 @@ class colorbars:
 @define
 class explicit_discrete(colorbars):
     THRESHOLDS:list = field(
-            validator=validators.deep_iterable(
-                member_validator=validators.instance_of(float),
-                iterable_validator=validators.instance_of(list),
-                )
+            validator=[
+                validators.deep_iterable(
+                    member_validator=validators.instance_of(float),
+                    iterable_validator=validators.instance_of(list),
+                    ),
+                check_length,
+                ]
             )
     COLORS:ListedColormap = field(
-            validator=validators.instance_of(ListedColormap),
-            converter=lambda x: ListedColormap(x),
+            validator=[
+                validators.deep_iterable(
+                    member_validator=validators.instance_of(str),
+                    iterable_validator=validators.instance_of(list),
+                    ),
+                check_length,
+                ]
             )
     LABELS:list = field(
-            validator=validators.deep_iterable(
-                member_validator=validators.instance_of(str),
-                iterable_validator=validators.instance_of(list),
-                )
+            validator=[
+                validators.deep_iterable(
+                    member_validator=validators.instance_of(str),
+                    iterable_validator=validators.instance_of(list),
+                    ),
+                check_length,
+                ]
             )
     def get_norm(self):
-        return BoundaryNorm(self.THRESHOLDS, ncolors=self.COLORS)
+        return BoundaryNorm(self.THRESHOLDS, ncolors=len(self.COLORS),
+                clip=True)
 
     def get_colormap(self):
-        return self.COLORS
+        return ListedColormap(self.COLORS)
 
     def get_ticks_labels(self):
         return self.THRESHOLDS, self.LABELS
@@ -182,15 +202,25 @@ EXPLICIT_DISCRETE_MAPS = {
                 ],
             'LABELS': ['-100%', '-50%', '-25%', '-15%',
                 '-0.1%', '0.1%', '15%', '25%', '50%', '100%'],
-            }
-        # NOTE: FINISH OFF DEFINITION
-        'normalized': {
-            'THRESHOLDS': [0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75,
-                           0.8, 0.85, 0.9, 0.95, 1.0]
+            },
+        'normalized_skillful': {
+            'THRESHOLDS': [0.0, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75,
+                           0.8, 0.85, 0.9, 0.95, 1.0],
             'COLORS': [
+                '#f2f2f2',
+                '#ffffe5',
+                '#fff7bc',
+                '#fee391',
+                '#fec44f',
+                '#fe9929',
+                '#ec7014',
+                '#cc4c02',
+                '#993404',
+                '#662506',
+                '#301103',
                 ],
-            'LABELS': ['.45', '.50', '.55', '.60', '.65', '.70',
-                       '.75', '.80', '.85', '.90', '.95', '1.0'
+            'LABELS': ['Non-skillful', '.50', '.55', '.60', '.65', '.70',
+                       '.75', '.80', '.85', '.90', '.95', '1.0'],
             }
         }
 

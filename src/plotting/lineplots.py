@@ -61,7 +61,7 @@ CIS = ['NC', 'BC']
 # Define the line plotting class
 ##################################################################################
 @define
-class dual_line_plot(plot):
+class dual_lineplot(plot):
     CTR_FLWS:list = field(
             validator=validators.deep_iterable(
                 member_validator=validators.instance_of(control_flow),
@@ -94,6 +94,26 @@ class dual_line_plot(plot):
                 validators.min_len(2),
                 validators.max_len(2),
                 ]
+            )
+    STAT0_LIM:list = field(
+            validator=validators.optional([
+                validators.deep_iterable(
+                    member_validator=validators.instance_of(float),
+                    iterable_validator=validators.instance_of(list),
+                ),
+                validators.min_len(2),
+                validators.max_len(2),
+                ])
+            )
+    STAT1_LIM:list = field(
+            validator=validators.optional([
+                validators.deep_iterable(
+                    member_validator=validators.instance_of(float),
+                    iterable_validator=validators.instance_of(list),
+                ),
+                validators.min_len(2),
+                validators.max_len(2),
+                ])
             )
     CI:str = field(
             validator=validators.optional([
@@ -135,8 +155,7 @@ class dual_line_plot(plot):
         if not self.LEV is None:
             title += ' - Threshold: ' + self.LEV + 'mm'
 
-        title +='\n' +\
-                'Valid: ' + self.VALID_DT.strftime('%HZ %d/%m/%Y')
+        subtitle = 'Valid: ' + self.VALID_DT.strftime('%HZ %d/%m/%Y')
         dmn_title = 'Domain: ' + self.MSK.replace('_', ' ')
         obs_title = 'Obs Source: ' + self.VRF_REF
         panel_labels = []
@@ -144,7 +163,7 @@ class dual_line_plot(plot):
             panel_labels.append(\
                     MET_TOOLS[self.MET_TOOL][self.STAT_KEYS[i_s]]['label'])
 
-        return title, dmn_title, obs_title, panel_labels
+        return title, subtitle, dmn_title, obs_title, panel_labels
 
     def gen_lines_labs(self):
         lines_labs = {}
@@ -365,59 +384,45 @@ class dual_line_plot(plot):
         ax0.set_xticklabels(x_tick_labs)
         ax1.set_xticks(range(num_lds))
         ax1.set_xticklabels(x_tick_labs)
+        if not self.STAT0_LIM is None:
+            ax0.set_ylim(self.STAT0_LIM)
+        if not self.STAT1_LIM is None:
+            ax1.set_ylim(self.STAT1_LIM)
 
         # tick parameters
-        ax1.tick_params(
-                labelsize=18
-                )
-
-        ax0.tick_params(
-                labelsize=18
-                )
-
         ax0.tick_params(
                 labelsize=18,
-                bottom=True,
-                labelbottom=True,
-                right=False,
-                labelright=False,
                 )
 
-        # NOTE: NEED TO DECIDE HOW TO SUPPLY A FIXED SCALE HERE
-        ax.yaxis.tick_right()
-        plot0_yticks = ax0.get_yticks()
-        ax0.set_yticks(plot0_yticks, ax0.get_yticklabels(), va='bottom')
-        tick_labs = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-        ax1.set_yticks(np.linspace(0.5, 1, 6), tick_labs, va='bottom')
-        ax1.set_ylim([0.45, 1.05])
-
-        y_min, y_max = ax0.get_ylim()
-        tick_spacing = (plot0_yticks[1] - plot0_yticks[0]) / 2
-        ax0.set_ylim([y_min - tick_spacing, y_max + tick_spacing])
+        ax1.tick_params(
+                labelsize=18,
+                right=True,
+                labelright=True,
+                left=False,
+                labelleft=False,
+                )
 
         ax0.grid(which = 'major', axis = 'y')
         ax1.grid(which = 'major', axis = 'y')
 
-        lab2='Forecast lead hrs'
+        hlab='Forecast lead hrs'
 
-        title, dmn_title, obs_title, panel_labels = self.gen_plot_text()
+        title, subtitle, dmn_title, obs_title, panel_labels =\
+                self.gen_plot_text()
 
         plt.figtext(.5, .95, title, horizontalalignment='center',
-                    verticalalignment='center', fontsize=22)
-
-        plt.figtext(.15, .90, dmn_title, horizontalalignment='center',
-                    verticalalignment='center', fontsize=18)
-
-        plt.figtext(.8375, .90, obs_title, horizontalalignment='center',
-                    verticalalignment='center', fontsize=18)
-
-        plt.figtext(.025, .43, panel_labels[0], horizontalalignment='center',
+                    verticalalignment='bottom', fontsize=22)
+        plt.figtext(.5, .91, subtitle, horizontalalignment='center',
+                    verticalalignment='bottom', fontsize=22)
+        plt.figtext(.15, .88, dmn_title, horizontalalignment='center',
+                    verticalalignment='bottom', fontsize=18)
+        plt.figtext(.8375, .88, obs_title, horizontalalignment='center',
+                    verticalalignment='bottom', fontsize=18)
+        plt.figtext(.020, .43, panel_labels[0], horizontalalignment='center',
                     rotation=90, verticalalignment='center', fontsize=20)
-
-        plt.figtext(.975, .43, panel_labels[1], horizontalalignment='center',
+        plt.figtext(.980, .43, panel_labels[1], horizontalalignment='center',
                     rotation=270, verticalalignment='center', fontsize=20)
-
-        plt.figtext(.5, .02, lab2, horizontalalignment='center',
+        plt.figtext(.5, .02, hlab, horizontalalignment='center',
                     verticalalignment='center', fontsize=20)
 
         if line_count <= 3:

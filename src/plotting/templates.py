@@ -89,6 +89,8 @@ lineplot_rmse_corr = {
         'DT_INC': '24',
         'VALID_DT': '2022122800',
         'STAT_KEYS': ['RMSE', 'PR_CORR'],
+        'STAT0_LIM': None,
+        'STAT1_LIM': [0.5, 1.0],
         'CI': 'NC',
         'MET_TOOL': 'GridStat',
         'MSK': 'CA_All',
@@ -119,6 +121,8 @@ lineplot_fss_afss = {
         'DT_INC': '24',
         'VALID_DT': '2022122800',
         'STAT_KEYS': ['FSS', 'AFSS'],
+        'STAT0_LIM': [0.5, 1.0],
+        'STAT1_LIM': [0.7, 1.0],
         'CI': 'NC',
         'MET_TOOL': 'GridStat',
         'MSK': 'CA_All',
@@ -194,7 +198,7 @@ heatplot_multidate_fss = {
 ##################################################################################
 # Templated multilevel / multilead heatplots
 ##################################################################################
-heatplot_multilevel_fss = {
+heatplot_multilevel_multilead_fss = {
         'CTR_FLW': WRF_9_3_WestCoast,
         'STRT_DT': '2022122300',
         'STOP_DT': '2022122700',
@@ -296,6 +300,35 @@ heatplot_fixedlead_fss_relative_diff = {
         'REF_MEM_KEY': None,
         'FCST_LD': 24,
         'DT_FMT': '%Y-%m-%d',
+        'COLORBAR': relative_diff_cb,
+        'MET_TOOL': 'GridStat',
+        'MSK': 'CA_All',
+        'CSE': 'valid_date_2022-12-28T00',
+        'FIG_CSE': 'testing',
+        'VRF_REF': 'StageIV',
+        'VRF_FLD': 'QPF_24hr',
+        'IF_CNTR_PLT': IF_CNTR_PLT,
+        'MEM_LAB': True,
+        'GRD_LAB': True,
+        'FIG_LAB': None,
+        'IF_SHOW': True,
+        }
+
+##################################################################################
+# Templated multidate all level fixed-lead relative difference heatplots
+##################################################################################
+heatplot_multilevel_multilead_fss_relative_diff = {
+        'ANL_CTR_FLW': WRF_9_3_WestCoast,
+        'REF_CTR_FLW': GEFS,
+        'STRT_DT': '2022122300',
+        'STOP_DT': '2022122700',
+        'DT_INC': '24',
+        'VALID_DT': '2022122800',
+        'STAT_KEY': 'FSS',
+        'ANL_GRD_KEY': 'd02',
+        'ANL_MEM_KEY': 'mean',
+        'REF_GRD_KEY': None,
+        'REF_MEM_KEY': None,
         'COLORBAR': relative_diff_cb,
         'MET_TOOL': 'GridStat',
         'MSK': 'CA_All',

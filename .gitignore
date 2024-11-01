@@ -18,6 +18,7 @@
 .cache/
 .ipython/
 .pdbhistory
+.config/
 
 # No x11 data #
 ###############

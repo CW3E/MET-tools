@@ -159,9 +159,6 @@ class plot:
             validator=[validators.instance_of(str),
                 check_vrf_fld]
             )
-    LEV:str = field(
-            validator=validators.optional(validators.instance_of(str)),
-            )
     IF_CNTR_PLT:str = field(
             validator=[validators.instance_of(bool),
                 check_io],

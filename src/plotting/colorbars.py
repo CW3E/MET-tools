@@ -51,10 +51,8 @@ from functools import partial
 # Load workflow constants and Utility Methods
 ##################################################################################
 def check_length(instance, attribute, value):
-    if not len(instance.COLORS) + 1 == len(instance.THRESHOLDS) or \
-            not len(instance.LABELS) == len(instance.THRESHOLDS):
-                raise ValueError('Thresholds, colors and labels must all' +\
-                        ' be in 1-1 correspondence.')
+    if not len(instance.LABELS) == len(instance.THRESHOLDS): 
+        raise ValueError('Thresholds and labels must have equal length.')
 
 ##################################################################################
 # Define color bar template classes
@@ -74,15 +72,6 @@ class explicit_discrete(colorbars):
                 check_length,
                 ]
             )
-    COLORS:ListedColormap = field(
-            validator=[
-                validators.deep_iterable(
-                    member_validator=validators.instance_of(str),
-                    iterable_validator=validators.instance_of(list),
-                    ),
-                check_length,
-                ]
-            )
     LABELS:list = field(
             validator=[
                 validators.deep_iterable(
@@ -92,12 +81,22 @@ class explicit_discrete(colorbars):
                 check_length,
                 ]
             )
+    PALLETE = field()
+    @PALLETE.validator
+    def test_call(self, attribute, value):
+        try:
+            value(10)
+        except:
+            raise RuntimeError('PALLETE must be a function of a single' +\
+                    ' integer argument for the number of color bins.')
+
     def get_norm(self):
-        return BoundaryNorm(self.THRESHOLDS, ncolors=len(self.COLORS),
+        return BoundaryNorm(self.THRESHOLDS,
+                ncolors=(len(self.THRESHOLDS) - 1),
                 clip=True)
 
     def get_colormap(self):
-        return ListedColormap(self.COLORS)
+        return ListedColormap(self.PALLETE(len(self.THRESHOLDS) - 1))
 
     def get_ticks_labels(self):
         return self.THRESHOLDS, self.LABELS
@@ -187,49 +186,29 @@ class implicit_discrete(colorbars):
 ##################################################################################
 EXPLICIT_DISCRETE_MAPS = {
         'relative_diff': {
-            'THRESHOLDS': [-100., -50., -25., -15., -0.1,
-                0.1, 15., 25., 50., 100.],
-            'COLORS': [
-                '#762a83',
-                '#9970ab',
-                '#c2a5cf',
-                '#e7d4e8',
-                '#f7f7f7',
-                '#d9f0d3',
-                '#a6dba0',
-                '#5aae61',
-                '#1b7837',
-                ],
-            'LABELS': ['-100%', '-50%', '-25%', '-15%',
-                '-0.1%', '0.1%', '15%', '25%', '50%', '100%'],
+            'THRESHOLDS': [-100., -50., -25., -15., -10., -5., -1., -0.1,
+                0.1, 1., 5., 10., 15., 25., 50., 100.],
+            'LABELS': ['-100%', '-50%', '-25%', '-15%', '-10%', '-5%', '-1%',
+                '-0.1%', '0.1%', '1%', '5%', '10%', '15%', '25%', '50%', '100%'],
+            'PALLETE': lambda x : partial(sns.diverging_palette,
+                h_neg=145, h_pos=300, s=90)(n=x)
             },
         'normalized_skillful': {
             'THRESHOLDS': [0.0, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75,
                            0.8, 0.85, 0.9, 0.95, 1.0],
-            'COLORS': [
-                '#f2f2f2',
-                '#ffffe5',
-                '#fff7bc',
-                '#fee391',
-                '#fec44f',
-                '#fe9929',
-                '#ec7014',
-                '#cc4c02',
-                '#993404',
-                '#662506',
-                '#301103',
-                ],
             'LABELS': ['Non-skillful', '.50', '.55', '.60', '.65', '.70',
                        '.75', '.80', '.85', '.90', '.95', '1.0'],
+            'PALLETE': lambda x: partial(sns.color_palette,
+                palette='rocket_r')(n_colors=x),
             }
         }
 
 IMPLICIT_DISCRETE_MAPS = {
-        'dynamic_green_white': {
+        'dynamic_viridis_r': {
             'ALPHA': 5.0,
-            'PALLETE': partial(sns.cubehelix_palette, start=.75, rot=1.50,
-                reverse=False, dark=0.25),
             'NCOL': 10,
+            'PALLETE': lambda x: partial(sns.color_palette,
+                palette='viridis_r')(n_colors=x),
             'MIN': None,
             'MAX': None,
             },

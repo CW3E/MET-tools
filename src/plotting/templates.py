@@ -69,7 +69,7 @@ GEFS = control_flow(NAME='GEFS', PLT_LAB='GEFS mean',
 ##################################################################################
 relative_diff_cb = explicit_discrete(**EXPLICIT_DISCRETE_MAPS['relative_diff'])
 normalized_cb = explicit_discrete(**EXPLICIT_DISCRETE_MAPS['normalized_skillful'])
-dynamic_gw_cb = implicit_discrete(**IMPLICIT_DISCRETE_MAPS['dynamic_green_white'])
+dynamic_viridis_cb = implicit_discrete(**IMPLICIT_DISCRETE_MAPS['dynamic_viridis_r'])
 
 ##################################################################################
 # Templated lineplots
@@ -149,7 +149,7 @@ heatplot_multidate_rmse = {
         'MAX_LD': 120,
         'LD_INC': 24,
         'DT_FMT': '%Y-%m-%d',
-        'COLORBAR': dynamic_gw_cb,
+        'COLORBAR': dynamic_viridis_cb,
         'MET_TOOL': 'GridStat',
         'MSK': 'CA_All',
         'CSE': 'valid_date_2022-12-28T00',
@@ -210,9 +210,101 @@ heatplot_multilevel_fss = {
         'FIG_CSE': 'testing',
         'VRF_REF': 'StageIV',
         'VRF_FLD': 'QPF_24hr',
-        'LEV': '>=50.0',
         'IF_CNTR_PLT': IF_CNTR_PLT,
         'MEM_LAB': False,
+        'GRD_LAB': True,
+        'FIG_LAB': None,
+        'IF_SHOW': True,
+        }
+
+##################################################################################
+# Templated multidate / multilead relative difference heatplots
+##################################################################################
+heatplot_multidate_rmse_relative_diff = {
+        'ANL_CTR_FLW': WRF_9_3_WestCoast,
+        'REF_CTR_FLW': GEFS,
+        'VRF_STRT': '2022122400',
+        'VRF_STOP': '2022122800',
+        'DT_INC': '24',
+        'STAT_KEY': 'RMSE',
+        'ANL_GRD_KEY': 'd02',
+        'ANL_MEM_KEY': 'mean',
+        'REF_GRD_KEY': None,
+        'REF_MEM_KEY': None,
+        'MIN_LD': 24,
+        'MAX_LD': 120,
+        'LD_INC': 24,
+        'DT_FMT': '%Y-%m-%d',
+        'COLORBAR': relative_diff_cb,
+        'MET_TOOL': 'GridStat',
+        'MSK': 'CA_All',
+        'CSE': 'valid_date_2022-12-28T00',
+        'FIG_CSE': 'testing',
+        'VRF_REF': 'StageIV',
+        'VRF_FLD': 'QPF_24hr',
+        'LEV': None,
+        'IF_CNTR_PLT': IF_CNTR_PLT,
+        'MEM_LAB': True,
+        'GRD_LAB': True,
+        'FIG_LAB': None,
+        'IF_SHOW': True,
+        }
+
+heatplot_multidate_fss_relative_diff = {
+        'ANL_CTR_FLW': WRF_9_3_WestCoast,
+        'REF_CTR_FLW': GEFS,
+        'VRF_STRT': '2022122400',
+        'VRF_STOP': '2022122800',
+        'DT_INC': '24',
+        'STAT_KEY': 'FSS',
+        'ANL_GRD_KEY': 'd02',
+        'ANL_MEM_KEY': 'mean',
+        'REF_GRD_KEY': None,
+        'REF_MEM_KEY': None,
+        'MIN_LD': 24,
+        'MAX_LD': 120,
+        'LD_INC': 24,
+        'DT_FMT': '%Y-%m-%d',
+        'COLORBAR': relative_diff_cb,
+        'MET_TOOL': 'GridStat',
+        'MSK': 'CA_All',
+        'CSE': 'valid_date_2022-12-28T00',
+        'FIG_CSE': 'testing',
+        'VRF_REF': 'StageIV',
+        'VRF_FLD': 'QPF_24hr',
+        'LEV': '>=50.0',
+        'IF_CNTR_PLT': IF_CNTR_PLT,
+        'MEM_LAB': True,
+        'GRD_LAB': True,
+        'FIG_LAB': None,
+        'IF_SHOW': True,
+        }
+
+##################################################################################
+# Templated multidate all level fixed-lead relative difference heatplots
+##################################################################################
+heatplot_fixedlead_fss_relative_diff = {
+        'ANL_CTR_FLW': WRF_9_3_WestCoast,
+        'REF_CTR_FLW': GEFS,
+        'VRF_STRT': '2022122400',
+        'VRF_STOP': '2022122800',
+        'DT_INC': '24',
+        'STAT_KEY': 'FSS',
+        'ANL_GRD_KEY': 'd02',
+        'ANL_MEM_KEY': 'mean',
+        'REF_GRD_KEY': None,
+        'REF_MEM_KEY': None,
+        'FCST_LD': 24,
+        'DT_FMT': '%Y-%m-%d',
+        'COLORBAR': relative_diff_cb,
+        'MET_TOOL': 'GridStat',
+        'MSK': 'CA_All',
+        'CSE': 'valid_date_2022-12-28T00',
+        'FIG_CSE': 'testing',
+        'VRF_REF': 'StageIV',
+        'VRF_FLD': 'QPF_24hr',
+        'IF_CNTR_PLT': IF_CNTR_PLT,
+        'MEM_LAB': True,
         'GRD_LAB': True,
         'FIG_LAB': None,
         'IF_SHOW': True,

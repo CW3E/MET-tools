@@ -101,6 +101,9 @@ class dual_line_plot(plot):
                 validators.in_(CIS),
                 ])
             )
+    LEV:str = field(
+            validator=validators.optional(validators.instance_of(str)),
+            )
     def gen_cycs(self):
         return pd.date_range(start=self.STRT_DT, end=self.STOP_DT,
                              freq=self.DT_INC).to_pydatetime()
@@ -129,7 +132,7 @@ class dual_line_plot(plot):
 
     def gen_plot_text(self):
         title=VRF_REFS[self.VRF_REF]['fields'][self.VRF_FLD]['label']
-        if self.LEV:
+        if not self.LEV is None:
             title += ' - Threshold: ' + self.LEV + 'mm'
 
         title +='\n' +\
@@ -146,15 +149,15 @@ class dual_line_plot(plot):
     def gen_lines_labs(self):
         lines_labs = {}
         for ctr_flw in self.CTR_FLWS:
-            if ctr_flw.MEM_IDS:
-                mem_ids = ctr_flw.MEM_IDS
-            else:
+            if ctr_flw.MEM_IDS is None:
                 mem_ids = ['']
-
-            if ctr_flw.GRDS:
-                grds = ctr_flw.GRDS
             else:
+                mem_ids = ctr_flw.MEM_IDS
+
+            if ctr_flw.GRDS is None:
                 grds = ['']
+            else:
+                grds = ctr_flw.GRDS
 
             for grd in grds:
                 for mem in mem_ids:
@@ -168,10 +171,10 @@ class dual_line_plot(plot):
                             line_lab += ' ' + grd
 
                     key = ctr_flw.NAME
-                    if ctr_flw.MEM_IDS:
+                    if not ctr_flw.MEM_IDS is None:
                         key += '_' + mem
 
-                    if ctr_flw.GRDS:
+                    if not ctr_flw.GRDS is None:
                         key += '_' + grd
 
                     lines_labs[key] = {
@@ -232,12 +235,12 @@ class dual_line_plot(plot):
                             stat_name,
                            ]
 
-                    if self.LEV:
+                    if not self.LEV is None:
                         vals += ['FCST_THRESH']
 
                     # optionally include confidence intervals
                     CI = False
-                    if self.CI:
+                    if not self.CI is None:
                         stat_CI = stat_name + '_' + self.CI
                         if stat_CI + 'L' in data:
                             vals.append(stat_CI + 'L')
@@ -249,7 +252,7 @@ class dual_line_plot(plot):
                     stat_data = stat_data.loc[(stat_data['VX_MASK'] == self.MSK)]
                     stat_data = stat_data.loc[(stat_data['FCST_VALID_END'] ==
                         self.VALID_DT.strftime('%Y%m%d_%H%M%S'))]
-                    if self.LEV:
+                    if not self.LEV is None:
                         stat_data = \
                         stat_data.loc[(stat_data['FCST_THRESH'] == self.LEV)]
 
@@ -434,14 +437,14 @@ class dual_line_plot(plot):
         out_path = out_root + '/' + self.VALID_DT.strftime('%Y%m%d%H') + '_' +\
                 self.MSK + '_' + self.STAT_KEYS[0] + '_' + self.STAT_KEYS[1]
 
-        if self.LEV:
+        if not self.LEV is None:
             out_path += '_lev'
             lev_split = re.split(r'\D+', self.LEV)
             for split in lev_split:
                 if split:
                     out_path += '_' + split
 
-        if self.FIG_LAB:
+        if not self.FIG_LAB is None:
             out_path += '_' + self.FIG_LAB
 
         out_path += '_lineplot.png'

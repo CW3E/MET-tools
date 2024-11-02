@@ -61,7 +61,7 @@ export HOME="/expanse/nfs/cw3e/cwp168/MET-tools"
 export SITE="expanse-cwp168"
 
 # If plotting will be called from containerized envrionment (sets path binds)
-export IF_CNTR_PLT="FALSE"
+export IF_CNTR_PLT="TRUE"
 
 ##################################################################################
 # WORKFLOW RELATIVE PATHS (DO NOT CHANGE)
@@ -126,17 +126,17 @@ unset __mamba_setup
 ##################################################################################
 # PLOTTING UTILITIES AND DEFS
 ##################################################################################
-# Add the plotting directory to Python path for running outide of container
-export PYTHONPATH="${SRC}"
+# Add the plotting directory to Python path in raw and containerized paths
+export PYTHONPATH="${SRC}:/src_dir"
 
 # Define MET-tools-py Python execution with directory binds
 MTPY="singularity exec -B "
-MTPY+="${PLT}:/scrpt_dir:ro,${VRF_ROOT}:/in_root:ro,${VRF_ROOT}:/out_root:rw "
-MTPY+="${MET_TOOLS_PY} python /scrpt_dir/"
+MTPY+="${SRC}:/src_dir:ro,${VRF_ROOT}:/in_root:ro,${VRF_ROOT}:/out_root:rw "
+MTPY+="${MET_TOOLS_PY} python /src_dir/"
 
 # simple wrapper function for interactive shell calls of plotting scripts
 mtplot() {
-  cmd="${MTPY}$1 $2"
+  cmd="${MTPY}plotting/$1"
   echo "${cmd}"; eval ${cmd}
 }
 

@@ -344,3 +344,16 @@ heatplot_multilevel_multilead_fss_relative_diff = {
         }
 
 ##################################################################################
+# Run examples if called as script
+##################################################################################
+
+if __name__ == '__main__':
+    dual_lineplot(**lineplot_rmse_corr).gen_fig()
+    dual_lineplot(**lineplot_fss_afss).gen_fig()
+    multidate_multilead(**heatplot_multidate_rmse).gen_fig()
+    multidate_multilead(**heatplot_multidate_fss).gen_fig()
+    multilevel_multilead(**heatplot_multilevel_multilead_fss).gen_fig()
+    multidate_multilead_relative_diff(**heatplot_multidate_rmse_relative_diff).gen_fig()
+    multidate_multilead_relative_diff(**heatplot_multidate_fss_relative_diff).gen_fig()
+    multidate_fixedlead_relative_diff(**heatplot_fixedlead_fss_relative_diff).gen_fig()
+    multilevel_multilead_relative_diff(**heatplot_multilevel_multilead_fss_relative_diff).gen_fig()

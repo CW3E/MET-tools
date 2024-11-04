@@ -126,9 +126,8 @@ as in standardized CW3E data products.
 ### Generating Regional Landmasks for Verification
 In order to calculate relevant verification statistics, one should pre-generate
 a landmask for the region over which the verification is to take place. This
-region will be defined as a sub-domain of the StageIV grid, which can be generated
-in the following steps.
-
+region will be defined as a sub-domain of the ground truth grid.  The following steps
+illustrate the process of generating landmasks for the StageIV grid.
 
 #### Creating User-Defined Verification Regions From Google Earth
 
@@ -137,8 +136,8 @@ A variety of commonly used lat-lon regions are included in the
 MET-tools/settings/mask-root/lat-lon
 ```
 directory in this repository, which can be used to generate the NetCDF landmasks
-for the verification region in the StageIV grid. New lat-lon files can be added
-to this directory without changing the behavior of existing workflow routines.
+for the verification region. New lat-lon files can be added to this directory without
+changing the behavior of existing workflow routines.
 
 In this repository, the user also has the ability to create custom verification regions 
 from KML files. One can generate their own KML file for a region through Google Earth. 
@@ -151,7 +150,7 @@ The naming of the KML file should be of the form
 Mask_Name.kml
 ```
 where `Mask_Name` is the name of the verification region. This `Mask_Name` will match 
-the mask's printed name in plotting routines, with any underscores corresponding to 
+the mask's short name in plotting routines, with any underscores corresponding to 
 blank spaces - these underscores are parsed in the plotting scripts when defining 
 the printed name with spaces. Example KML files are located in the 
 ```
@@ -180,7 +179,6 @@ The formatting of the lat-lon text file should have the `Mask_Name` as the first
 the file. Each line after the first corresponds to a latitude-longitude pair
 defining the polygon region to be verified, with paired values separated by
 a single blank space.
-
 
 #### Computing NetCDF Landmasks From Lat-Lon Text Files
 

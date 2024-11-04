@@ -241,7 +241,7 @@ class multidate_multilead(plot):
                 subtitle += ' ' + self.GRD_KEY
 
         dmn_title = 'Domain: ' + self.MSK.replace('_', ' ')
-        obs_title = 'Obs Source: ' + self.VRF_REF
+        obs_title = 'Ground Truth: ' + self.VRF_REF
 
         return title, subtitle, dmn_title, obs_title
 
@@ -530,7 +530,7 @@ class multilevel_multilead(plot):
                 subtitle += ' ' + self.GRD_KEY
 
         dmn_title = 'Domain: ' + self.MSK.replace('_', ' ')
-        obs_title = 'Obs Source: ' + self.VRF_REF
+        obs_title = 'Ground Truth: ' + self.VRF_REF
 
         return title, subtitle, dmn_title, obs_title
 
@@ -898,7 +898,7 @@ class multidate_multilead_relative_diff(plot):
                 subtitle += ' ' + self.REF_GRD_KEY
 
         dmn_title = 'Domain: ' + self.MSK.replace('_', ' ')
-        obs_title = 'Obs Source: ' + self.VRF_REF
+        obs_title = 'Ground Truth: ' + self.VRF_REF
 
         return title, subtitle, dmn_title, obs_title
 
@@ -1300,7 +1300,7 @@ class multidate_fixedlead_relative_diff(plot):
                 subtitle += ' ' + self.REF_GRD_KEY
 
         dmn_title = 'Domain: ' + self.MSK.replace('_', ' ')
-        obs_title = 'Obs Source: ' + self.VRF_REF
+        obs_title = 'Ground Truth: ' + self.VRF_REF
 
         return title, subtitle, dmn_title, obs_title
 
@@ -1671,7 +1671,7 @@ class multilevel_multilead_relative_diff(plot):
                 subtitle += ' ' + self.REF_GRD_KEY
 
         dmn_title = 'Domain: ' + self.MSK.replace('_', ' ')
-        obs_title = 'Obs Source: ' + self.VRF_REF
+        obs_title = 'Ground Truth: ' + self.VRF_REF
 
         return title, subtitle, dmn_title, obs_title
 

@@ -157,7 +157,7 @@ class dual_lineplot(plot):
 
         subtitle = 'Valid: ' + self.VALID_DT.strftime('%HZ %d/%m/%Y')
         dmn_title = 'Domain: ' + self.MSK.replace('_', ' ')
-        obs_title = 'Obs Source: ' + self.VRF_REF
+        obs_title = 'Ground Truth: ' + self.VRF_REF
         panel_labels = []
         for i_s in range(2):
             panel_labels.append(\

@@ -159,17 +159,14 @@ MET-tools/settings/mask-root/kml_files
 directory.  
 
 The KML file must be converted to a MET software-compatible polygon for use in the MET-tools 
-workflow. This conversion can be done through the script `kml_2_poly.pl`. The purpose of 
-this script is to read in a KML formatted file and convert its polygon geographic data to
+workflow. This conversion can be done through the scripts
+```
+MET-tools/src/utilities/config_kml.pl
+MET-tools/src/utilities/kml_2_poly.pl
+```
+The `kml_2_poly.pl` script reads in a KML formatted file and convert its polygon geographic data to
 a lat-lon text file. The arguments required to run the `kml_2_poly.pl` script are defined
-in the configuration file `config_kml.pl`. The required arguments are as follows:
-
- * `${USR_HOME}`   - the directory path for the MET-tools clone. 
- * `${MSK_ROOT}`   - the root directory path for the landmasks, lat-lon files, KML files, and reference grids.
- * `${MSK_LTLN}`   - the directory path for the lat-lon files for mask generation. 
- * `${VRF_RGN}`    - the name of the verification region (i.e., the `Mask_Name`). 
- * `${KML_IN}`     - the directory path for the input KML file.
- * `${MSK_LST}`    - the directory path for the text file with a list of landmasks for the verification region. 
+in the configuration file `config_kml.pl`.
 
 Similar to the KML file, the naming of the output lat-lon text files should be of the form
 ```

@@ -105,7 +105,7 @@ where the executable singularity image is the output file `met-11.1.1.sif`.
 Supplementary libraries for running these workflows are provided in additional containers
 or can be installed indpendently.  In the 
 ```
-MET-tools/docs
+${HOME}/docs
 ```
 directory, you can find `.def` definition files for
 [building](https://apptainer.org/docs/user/latest/build_a_container.html#building-containers-from-apptainer-definition-files)
@@ -119,7 +119,7 @@ on a local system using the `MET-tools-py.yml`.  The convert_mpas tool can also 
 
 ## Running MET-tools Cylc templates
 Substeps of the workflow are templated for different use-cases illustrating analysis of WRF, MPAS and CW3E preprocessed
-global model outputs.  Utilities for preprocessing for WRF and MPAS for ingestion into MET are included in this
+global model outputs.  Utilities for preprocessing WRF and MPAS for ingestion into MET are included in this
 repository.  It is assumed that operational model data such as ECMWF, GFS, GEFS have already been preprocessed
 as in standardized CW3E data products.
 
@@ -127,13 +127,13 @@ as in standardized CW3E data products.
 In order to calculate relevant verification statistics, one should pre-generate
 a landmask for the region over which the verification is to take place. This
 region will be defined as a sub-domain of the ground truth grid.  The following steps
-illustrate the process of generating landmasks for the StageIV grid.
+illustrate the process of generating landmasks.
 
 #### Creating User-Defined Verification Regions From Google Earth
 
 A variety of commonly used lat-lon regions are included in the
 ```
-MET-tools/settings/mask-root/lat-lon
+${HOME}/settings/mask-root/lat-lon
 ```
 directory in this repository, which can be used to generate the NetCDF landmasks
 for the verification region. New lat-lon files can be added to this directory without
@@ -154,15 +154,15 @@ the mask's short name in plotting routines, with any underscores corresponding t
 blank spaces - these underscores are parsed in the plotting scripts when defining 
 the printed name with spaces. Example KML files are located in the 
 ```
-MET-tools/settings/mask-root/kml_files
+${HOME}/settings/mask-root/kml_files
 ```
 directory.  
 
-The KML file must be converted to a MET software-compatible polygon for use in the MET-tools 
+The KML file must be converted to a MET-compatible polygon for use in the MET-tools 
 workflow. This conversion can be done through the scripts
 ```
-MET-tools/src/utilities/config_kml.pl
-MET-tools/src/utilities/kml_2_poly.pl
+${HOME}/src/utilities/config_kml.pl
+${HOME}/src/utilities/kml_2_poly.pl
 ```
 The `kml_2_poly.pl` script reads in a KML formatted file and convert its polygon geographic data to
 a lat-lon text file. The arguments required to run the `kml_2_poly.pl` script are defined
@@ -185,7 +185,7 @@ and `run_GridStat.sh` scripts in the following. A landmask list is a text file
 with lines consisting of each `Mask_Name` region over which to perform
 verification. Example landmask lists can be found in the
 ```
-MET-tools/settings/mask-root/mask-lists
+${HOME}/settings/mask-root/mask-lists
 ```
 directory.
 
@@ -195,10 +195,37 @@ landmask list text file will include the `Mask_Name` of each polygon in the KML
 file that was processed by the script. 
 
 The NetCDF landmasks that will be ingested by GridStat are generated
-with the `run_vxmask.sh` script. The output NetCDF masks from this script can be re-used
-over multiple analyses that study the same verification regions.
+with the 
+```
+${HOME}/src/drivers/vxmask.sh
+```
+script. The output NetCDF masks from this script can be re-used
+over multiple analyses that study the same verification regions.  The
+`vxmask.sh` script is called in the workflow by installing and
+running the workflow
+```
+${HOME}/cylc-src/vxmask
+```
+with parameters for defining the reference grid and mask list to
+process in the `flow.cylc` file therein.
 
 ### Preprocessing WRF outputs
+WRF model outputs may not be ingestible to MET by default and preprocessing
+routines are included to bring WRF outputs into a format that can be
+analyzed in MET.  The script
+```
+${HOME}/src/drivers/preprocessWRF.sh
+```
+takes arguments in the workflow
+```
+${HOME}/cylc-src/preprocessWRF
+```
+to produce MET ingestible forecast files from batches of data.  This
+script uses the auxiliary module / script:
+```
+${HOME}/src/utilites/WRF-cf.py
+${HOME}/src/utilites/wrfout_to_cf.py
+```
 
 ### Preprocessing MPAS outputs
 

@@ -93,8 +93,10 @@ printf "rainc\n" >> ./include_fields
 printf "rainnc\n" >> ./include_fields
 
 # run convert mpas from singularity exec command
-singularity exec --home ${WORK_DIR} -B ${IN_MSH_DIR}:/in_msh_dir:ro,${IN_DIR}:/in_dir:ro ${CONVERT_MPAS} convert_mpas /in_msh_dir/${IN_MSH_F} /in_dir/${F_IN}
-error=$?
+cmd="singularity exec --home ${WORK_DIR} -B"
+cmd+=" ${IN_MSH_DIR}:/in_msh_dir:ro,${IN_DIR}:/in_dir:ro ${CONVERT_MPAS}"
+cmd+=" convert_mpas /in_msh_dir/${IN_MSH_F} /in_dir/${F_IN}; error=$?"
+printf "${cmd}\n"; eval "${cmd}"
 
 # remove link / configuration files
 rm -f ./target_domain

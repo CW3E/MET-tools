@@ -41,16 +41,20 @@
 ##################################################################################
 # Imports
 ##################################################################################
-from DataFrames import *
+import xarray as xr
+from datetime import datetime as dt
+from datetime import timedelta as td
+import numpy as np
+import pandas as pd
+import pickle
+import glob
+import re
+import os
+import sys
 
 ##################################################################################
-# arguments for makeDataFrames are taken from command line
-PRFX = sys.argv[1]
-IN_DIR = sys.argv[2]
-OUT_DIR = sys.argv[3]
-
-# execute and exit with status
-error = makeDataFrames(PRFX, IN_DIR, OUT_DIR)
-sys.exit(error)
+# UTILITY DEFINITIONS
+##################################################################################
+INDT = '    '
 
 ##################################################################################

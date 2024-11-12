@@ -121,7 +121,7 @@ on a local system using the `MET-tools-py.yml`.  The convert_mpas tool can also 
 Substeps of the workflow are templated for different use-cases illustrating analysis of WRF, MPAS and CW3E preprocessed
 global model outputs.  Utilities for preprocessing WRF and MPAS for ingestion into MET are included in this
 repository.  It is assumed that operational model data such as ECMWF, GFS, GEFS have already been preprocessed
-as in standardized CW3E data products.
+as in internally standardized CW3E data products.
 
 ### Generating Regional Landmasks for Verification
 In order to calculate relevant verification statistics, one should pre-generate
@@ -226,8 +226,38 @@ script uses the auxiliary module / script:
 ${HOME}/src/utilites/WRF-cf.py
 ${HOME}/src/utilites/wrfout_to_cf.py
 ```
+The `WRF-cf.py` module defines generic methods for ingesting raw WRF outputs in
+[xarray](https://docs.xarray.dev/en/stable/index.html) to compute [CF-compliant](https://cfconventions.org/)
+NetCDF files in MET readable formats.  The `wrfout_to_cf.py` is a simple wrapper that
+is called in the workflow to perform regridding and computation of CF-fields for analysis
+in MET.
 
 ### Preprocessing MPAS outputs
+MPAS model outputs are not ingestible to MET by default and preprocessing
+routines are included to bring MPAS outputs into a format that can be
+analyzed in MET.  The script
+```
+${HOME}/src/drivers/preprocessMPAS.sh
+```
+takes arguments in the workflow
+```
+${HOME}/cylc-src/preprocessMPAS
+```
+to produce MET ingestible forecast files from batches of data.  This
+script uses the auxiliary module / scripts:
+```
+${HOME}/src/utilites/mpas_to_latlon.sh
+${HOME}/src/utilites/MPAS-cf.py
+${HOME}/src/utilites/mpas_to_cf.py
+```
+The `mpas_to_latlon.sh` script utilizes the [convert_mpas utility](https://github.com/mgduda/convert_mpas)
+to transform the unstructured MPAS mesh to a generic lat-lon grid.  This executable has been containerized
+for portability and can be built from the
+[definition file](https://github.com/CW3E/MET-tools/blob/develop/settings/template_archive/build_examples/convert_mpas.def)
+included in the repository.  The workflow assumes that `convert_mpas` is called from the Singularity image
+and wraps containerized commands. The `MPAS-cf.py` module defines generic methods for ingesting regridded MPAS outputs in
+xarray to compute CF-compliant NetCDF files in MET readable formats.  The `mpas_to_cf.py` is a simple wrapper that
+is called in the workflow to perform computation of CF-fields for analysis in MET.
 
 ### Generating Ensemble Products from WRF and MPAS
 

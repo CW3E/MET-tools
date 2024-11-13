@@ -39,6 +39,9 @@ MET-tools/
     ├── plotting
     └── utilities
 ```
+Currently this repository only includes workflows for producing a deterministic or ensemble-based analysis with 
+the [GridStat tool](https://met.readthedocs.io/en/latest/Users_Guide/grid-stat.html) with further integrations
+pending.
 
 ## Installing Cylc
 Cylc can be run on an HPC system in a centralized or a distributed fashion.  This build procedure will
@@ -260,7 +263,17 @@ xarray to compute CF-compliant NetCDF files in MET readable formats.  The `mpas_
 is called in the workflow to perform computation of CF-fields for analysis in MET.
 
 ### Generating Ensemble Products from WRF and MPAS
+Once WRF / MPAS model outputs have been preprocessed with the workflows above, these preprocessed files can be ingested into
+GridStat directly following the instructions below, or these can be combined with the GenEnsProd tool in MET to generate
+ensemble forecast products including mean and spread products.  Outputs from GenEnsProd are handled specially by
+GridStat with switches included in these workflows for processing ensemble products and individual members respectively.
 
 ### Generating GridStat Analyses for WRF, MPAS and Background Operational Models
+Workflows are provided for running GridStat on:
+  * WRF ensemble member and ensemble mean outputs -- GridStatWRF;
+  * MPAS ensemble member and ensemble mean outputs -- GridStatMPAS; and
+  * Background operational global model products -- GridStatBKG.
+To run GridStat, one must have appropriate gridded ground truth at the corresponding valid times
+and land masks precomputed.
 
 ### Plotting

@@ -180,12 +180,16 @@ the file. Each line after the first corresponds to a latitude-longitude pair
 defining the polygon region to be verified, with paired values separated by
 a single blank space.
 
+Outputs of the 
+
 #### Computing NetCDF Landmasks From Lat-Lon Text Files
-In order to define a collection of landmasks to perform verification over,
-one will define a landmask list, which will be sourced by the `run_vxmask.sh`
-and `run_GridStat.sh` scripts in the following. A landmask list is a text file
-with lines consisting of each `Mask_Name` region over which to perform
-verification. Example landmask lists can be found in the
+A landmask list, which is sourced by the 
+```
+${HOME}/src/drivers/vxmask.sh
+```
+defines a collection of landmasks / regions to perform verification over.
+A landmask list is a text file with lines consisting of each `Mask_Name` region
+over which to perform verification. Example landmask lists can be found in the
 ```
 ${HOME}/settings/mask-root/mask-lists
 ```
@@ -196,12 +200,16 @@ If a custom verification region is created using a KML file, running the
 landmask list text file will include the `Mask_Name` of each polygon in the KML 
 file that was processed by the script. 
 
-The NetCDF landmasks that will be ingested by GridStat are generated
-with the 
+NetCDF landmasks generated with the 
 ```
 ${HOME}/src/drivers/vxmask.sh
 ```
-script. The output NetCDF masks from this script can be re-used
+script are written out to the directory
+```
+${VRF_STC}/vxmask
+```
+with `${VRF_STC}` specified in the site configuration.
+The output NetCDF masks from this script can be re-used
 over valid dates that study the same verification regions and ground truth data.
 The `vxmask.sh` script is called in the workflow by installing and
 running the workflow
@@ -358,7 +366,22 @@ Workflows are provided for running GridStat on:
     ```
 
 To run GridStat, one must have appropriate gridded ground truth at the corresponding valid times
-and land masks precomputed.  Gridded ground truth data is sourced in the workflows as
-
+and land masks precomputed.  Gridded ground truth data is sourced in the workflows from the
+`${STC_ROOT}` directory dfined in the site configuration.  Currently only CW3E preprocessed
+StageIV products are supported with further ground truth data sets pending integration.  Global
+model data is also templated to be sourced from the `${STC_ROOT}` directory as
+```
+IN_DIR = {{environ['STC_ROOT']}}/{{ctr_flw}}/{{IN_STC_SUBDIR}}/$CYC_DT/{{IN_DT_SUBDIR}}
+```
+where for example ECMWF precip data with a forecast start on 2022-12-23T00Z
+```
+${STC_ROOT}/ECMWF/Precip/2022122300
+```
+can be sourced by including ECMWF in the control flow list and setting
+```
+IN_STC_SUBDIR = 'Precip'
+IN_DT_SUBDIR = ''
+```
+in the workflow template.
 
 ### Plotting

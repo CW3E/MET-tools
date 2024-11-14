@@ -40,7 +40,7 @@ MET-tools/
     └── utilities
 ```
 Currently this repository only includes workflows for producing a deterministic or ensemble-based analysis with 
-the [GridStat tool](https://met.readthedocs.io/en/latest/Users_Guide/grid-stat.html) with further integrations
+the [GridStat tool](https://met.readthedocs.io/en/latest/Users_Guide/grid-stat.html) with further tool integrations
 pending.
 
 ## Installing Cylc
@@ -80,7 +80,6 @@ export MSH_ROOT= # Root directory for MPAS static files for sourcing static IO s
 ```
 
 ## Installing software
-
 The installation of software dependencies outlined below can be performed 
 on a shared system with the
 [Apptainer](https://apptainer.org/docs/user/latest/) 
@@ -118,7 +117,9 @@ the following `.sif` containers:
 
 to be used in this workflow.  The Python libraries can be alternatively
 [constructed as a conda environment](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file)
-on a local system using the `MET-tools-py.yml`.  The convert_mpas tool can also be compiled directly on a host system according to its instructions.
+on a local system using the `MET-tools-py.yml`.  This allows additional development of plotting and diagnostics and to add
+new libraries to the conda enviornment, where the `MET-tools-py.yml` file is to be frozen to the dependencies in the currently
+supported main branch.
 
 ## Running MET-tools Cylc templates
 Substeps of the workflow are templated for different use-cases illustrating analysis of WRF, MPAS and CW3E preprocessed
@@ -133,7 +134,6 @@ region will be defined as a sub-domain of the ground truth grid.  The following 
 illustrate the process of generating landmasks.
 
 #### Creating User-Defined Verification Regions From Google Earth
-
 A variety of commonly used lat-lon regions are included in the
 ```
 ${HOME}/settings/mask-root/lat-lon
@@ -153,9 +153,8 @@ The naming of the KML file should be of the form
 Mask_Name.kml
 ```
 where `Mask_Name` is the name of the verification region. This `Mask_Name` will match 
-the mask's short name in plotting routines, with any underscores corresponding to 
-blank spaces - these underscores are parsed in the plotting scripts when defining 
-the printed name with spaces. Example KML files are located in the 
+the mask's short name in plotting routines, with any underscores parsed in the plotting
+scripts and transformed into emtpy characters. Example KML files are located in the 
 ```
 ${HOME}/settings/mask-root/kml_files
 ```
@@ -181,7 +180,6 @@ defining the polygon region to be verified, with paired values separated by
 a single blank space.
 
 #### Computing NetCDF Landmasks From Lat-Lon Text Files
-
 In order to define a collection of landmasks to perform verification over,
 one will define a landmask list, which will be sourced by the `run_vxmask.sh`
 and `run_GridStat.sh` scripts in the following. A landmask list is a text file
@@ -203,14 +201,54 @@ with the
 ${HOME}/src/drivers/vxmask.sh
 ```
 script. The output NetCDF masks from this script can be re-used
-over multiple analyses that study the same verification regions.  The
-`vxmask.sh` script is called in the workflow by installing and
+over valid dates that study the same verification regions and ground truth data.
+The `vxmask.sh` script is called in the workflow by installing and
 running the workflow
 ```
 ${HOME}/cylc-src/vxmask
 ```
 with parameters for defining the reference grid and mask list to
 process in the `flow.cylc` file therein.
+
+### Case study / Configuration / Tool / Date Nesting
+In the following steps, processing the data assumes a generic directory structure for the
+input data and creates a consistent pattern through the outputs for interenal data pipelines.
+It is assumed that at the `${SIM_ROOT}` defined in the site paths, simulation data is nested
+according to a case study / configuration directory structure.  For example, in the path
+```
+${SIM_ROOT}/valid_date_2022-12-28T00/WRF_9-3_WestCoast/2021122300/wrf_model/ens_00/
+```
+the `valid_date_2022-12-28T00` directory would be the `CSE_NME` variable in the templates,
+at which control flow simulation outpus such as `WRF_9-3_WestCoast` would be nested.  In the
+example above, the forecast start date is `2021-12-23T00Z` and WRF model outputs are nested
+according to ensemble index in the `wrf_model` subdirectory.
+
+Using the case study / configuration nested convention helps to procedurally generate the paths for batch
+processing multiple control flows with heterogeneous data simulataneously. For example in preprocessing WRF
+data, IO is templated as
+```
+IN_DIR = {{environ['SIM_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/$CYC_DT/{{IN_DT_SUBDIR}}/{{ENS_PRFX}}{{idx}}
+WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT/{{ENS_PRFX}}{{idx}}/{{grd}}
+```
+In the above, this is designed for Cylc to distribute tasks to batch process data over:
+  * `{{ctr_flw}}` -- configuration names;
+  * `$CYC_DT/{{IN_DT_SUBDIR}}` -- forecast start valid dates / simulation output subdirectories; and
+  * `{{ENS_PRFX}}{{idx}}` -- ensemble member IDs.
+
+The above template writes output data according to the nested structures
+  * `{{ctr_flw}}` -- configuration names;
+  * `$CYC_DT/{{IN_DT_SUBDIR}}` -- forecast start valid dates;
+  * `{{ENS_PRFX}}{{idx}}` -- ensemble member IDs; and
+  * `{{grd}}` subdomains.
+
+The corresponding preprocessed outputs from the template above would be written to the
+two directories
+```
+${VRF_ROOT}/valid_date_2022-12-28T00/WRF_9-3_WestCoast/Preprocess/2022122300/ens_00/d01
+${VRF_ROOT}/valid_date_2022-12-28T00/WRF_9-3_WestCoast/Preprocess/2022122300/ens_00/d02
+```
+For other models such as MPAS which do not utilize the paradigm of nested domains,
+these domain sub-directories are neglected.
 
 ### Preprocessing WRF outputs
 WRF model outputs may not be ingestible to MET by default and preprocessing
@@ -232,13 +270,13 @@ ${HOME}/src/utilites/wrfout_to_cf.py
 The `WRF-cf.py` module defines generic methods for ingesting raw WRF outputs in
 [xarray](https://docs.xarray.dev/en/stable/index.html) to compute [CF-compliant](https://cfconventions.org/)
 NetCDF files in MET readable formats.  The `wrfout_to_cf.py` is a simple wrapper that
-is called in the workflow to perform regridding and computation of CF-fields for analysis
-in MET.
+is called in the workflow to perform computation of CF-fields and optionally regridding
+of WRF oputus for analysis in MET.
 
 ### Preprocessing MPAS outputs
-MPAS model outputs are not ingestible to MET by default and preprocessing
-routines are included to bring MPAS outputs into a format that can be
-analyzed in MET.  The script
+MPAS model outputs are not ingestible to MET by default due to the dependence on
+a lat-lon grid, and preprocessing routines are included to bring MPAS outputs into
+a format that can be analyzed in MET.  The script
 ```
 ${HOME}/src/drivers/preprocessMPAS.sh
 ```
@@ -256,8 +294,8 @@ ${HOME}/src/utilites/mpas_to_cf.py
 The `mpas_to_latlon.sh` script utilizes the [convert_mpas utility](https://github.com/mgduda/convert_mpas)
 to transform the unstructured MPAS mesh to a generic lat-lon grid.  This executable has been containerized
 for portability and can be built from the
-[definition file](https://github.com/CW3E/MET-tools/blob/develop/settings/template_archive/build_examples/convert_mpas.def)
-included in the repository.  The workflow assumes that `convert_mpas` is called from the Singularity image
+[definition file](https://github.com/CW3E/MET-tools/blob/main/settings/template_archive/build_examples/convert_mpas.def)
+included in the repository.  The workflow scripts call `convert_mpas` from the Singularity image
 and wraps containerized commands. The `MPAS-cf.py` module defines generic methods for ingesting regridded MPAS outputs in
 xarray to compute CF-compliant NetCDF files in MET readable formats.  The `mpas_to_cf.py` is a simple wrapper that
 is called in the workflow to perform computation of CF-fields for analysis in MET.
@@ -265,7 +303,7 @@ is called in the workflow to perform computation of CF-fields for analysis in ME
 ### Generating Ensemble Products from WRF and MPAS
 Once WRF / MPAS model outputs have been preprocessed with the workflows above, these preprocessed files can be ingested into
 GridStat directly following the instructions below, or these can be combined with the GenEnsProd tool in MET to generate
-ensemble forecast products including mean and spread products.  Outputs from GenEnsProd are handled specially by
+ensemble forecast statistics files including mean and spread products.  Outputs from GenEnsProd are handled specially by
 GridStat with switches included in these workflows for processing ensemble products and individual members respectively.
 
 ### Generating GridStat Analyses for WRF, MPAS and Background Operational Models

@@ -273,6 +273,7 @@ Workflows are provided for running GridStat on:
   * WRF ensemble member and ensemble mean outputs -- GridStatWRF;
   * MPAS ensemble member and ensemble mean outputs -- GridStatMPAS; and
   * Background operational global model products -- GridStatBKG.
+
 To run GridStat, one must have appropriate gridded ground truth at the corresponding valid times
 and land masks precomputed.
 

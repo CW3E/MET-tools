@@ -47,7 +47,7 @@ pending.
 Cylc can be run on an HPC system in a centralized or a distributed fashion.  This build procedure will
 create an embedded Cylc installation with the configuration of Cylc inferred from the `config_workflow.sh`
 at the root of the repository.  One should edit this file as in the following to define the local
-HPC system paramters for the workflow.
+HPC system paramters for the workflow and source this to define the Cylc environment when running the workflow.
 
 ###  Workflow configuration
 In the workflow configuration one should define the full path of clone
@@ -342,8 +342,24 @@ takes arguments in the workflows
 ${HOME}/cylc-src/GenEnsProdWRF
 ${HOME}/cylc-src/GenEnsProdMPAS
 ```
-to produce ensemble products as above. Outputs from GenEnsProd are handled specially by
-GridStat with switches included in these workflows for processing ensemble products and individual members respectively.
+to produce ensemble products as above. Inputs for GenEnsProd are determined by the minimum and maximum
+ensemble index, their padding and their prefix, e.g.
+```
+ENS_PRFX = 'ens_'
+ENS_PAD = 2
+ENS_MIN = 0
+ENS_MAX = 2
+```
+will search for preprocessed outputs in subdirectories
+```
+{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT/ens_00
+{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT/ens_01
+{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT/ens_02
+```
+and these naming conventions carry over to the outputs of GenEnsProd.
+
+Outputs from GenEnsProd are handled specially by GridStat with switches
+included in these workflows for processing ensemble products and individual members respectively.
 Outputs of GenEnsProd are templated to be written following the directory structure
 ```
 {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GenEnsProd/$CYC_DT
@@ -366,7 +382,7 @@ Workflows are provided for running GridStat on:
     ```
 
 To run GridStat, one must have appropriate gridded ground truth at the corresponding valid times
-and land masks precomputed.  Gridded ground truth data is sourced in the workflows from the
+and land masks precomputed for that grid.  Gridded ground truth data is sourced in the workflows from the
 `${STC_ROOT}` directory dfined in the site configuration.  Currently only CW3E preprocessed
 StageIV products are supported with further ground truth data sets pending integration.  Global
 model data is also templated to be sourced from the `${STC_ROOT}` directory as
@@ -383,5 +399,23 @@ IN_STC_SUBDIR = 'Precip'
 IN_DT_SUBDIR = ''
 ```
 in the workflow template.
+
+For WRF and MPAS, workflow switches are included to source data from ensemble members or from ensemble
+mean products as
+```
+IF_ENS_MEAN = 'TRUE'
+IF_ENS_MEMS = 'TRUE'
+```
+Setting values to `TRUE` directs the Cylc template to create tasks for running GridStat on
+  * the ensemble mean product generated over the indices specified, e.g.,
+    ```
+    IN_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GenEnsProd/$CYC_DT/{{grd}}
+    ```
+  * or the ensemble members over the indices specified, e.g.,
+    ```
+    IN_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT/{{ENS_PRFX}}{{idx}}/{{grd}}
+    ```
+
+respectively.
 
 ### Plotting

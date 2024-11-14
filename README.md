@@ -381,6 +381,17 @@ Workflows are provided for running GridStat on:
     ${HOME}/cylc-src/GridStatBKG
     ```
 
+Arguments from these files are propagated to the driving script
+```
+${HOME}/src/drivers/GridStat.sh
+```
+which utilizes the auxilliary module / script
+```
+${HOME}/src/utilities/DataFrames.py
+${HOME}/src/utilities/ASCII_to_DataFrames.py
+```
+to produce additional postprocessing of GridStat outputs.
+
 To run GridStat, one must have appropriate gridded ground truth at the corresponding valid times
 and land masks precomputed for that grid.  Gridded ground truth data is sourced in the workflows from the
 `${STC_ROOT}` directory dfined in the site configuration.  Currently only CW3E preprocessed
@@ -407,15 +418,28 @@ IF_ENS_MEAN = 'TRUE'
 IF_ENS_MEMS = 'TRUE'
 ```
 Setting values to `TRUE` directs the Cylc template to create tasks for running GridStat on
-  * the ensemble mean product generated over the indices specified, e.g.,
+  * the ensemble mean product generated over the indices specified, e.g., with IO as
     ```
     IN_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GenEnsProd/$CYC_DT/{{grd}}
+    WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GridStat/{{VRF_REF}}/$CYC_DT/mean/{{grd}}
     ```
-  * or the ensemble members over the indices specified, e.g.,
+  * or the ensemble members over the indices specified, e.g., with IO as
     ```
     IN_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT/{{ENS_PRFX}}{{idx}}/{{grd}}
+    WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GridStat/{{VRF_REF}}/$CYC_DT/{{ENS_PRFX}}{{idx}}/{{grd}}
     ```
 
-respectively.
+respectively, where `{{VRF_REF}}` is the specified ground truth.  For example, an output path produced by the templates
+for a WRF mean product on domain `d01` verified versus StageIV is
+```
+${VRF_ROOT}/valid_date_2022-12-28T00/WRF_9-3_WestCoast/GridStat/StageIV/2022122300/mean/d01
+```
+Raw outputs of GridStat are ASCII tables written to the work directories above, with naming conventions including
+the analyzed field, the lead and the valid time, e.g.,
+```
+grid_stat_QPF_24hr_1200000L_20221228_000000V_nbrcnt.txt
+```
+The types of ASCII tables output are described in the 
+[GridStat documentation](https://met.readthedocs.io/en/latest/Users_Guide/grid-stat.html#grid-stat-output).  For
 
 ### Plotting

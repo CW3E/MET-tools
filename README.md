@@ -154,7 +154,8 @@ Mask_Name.kml
 ```
 where `Mask_Name` is the name of the verification region. This `Mask_Name` will match 
 the mask's short name in plotting routines, with any underscores parsed in the plotting
-scripts and transformed into emtpy characters. Example KML files are located in the 
+scripts and transformed into emtpy characters when printed.
+Example KML files are located in the 
 ```
 ${HOME}/settings/mask-root/kml_files
 ```
@@ -211,17 +212,18 @@ with parameters for defining the reference grid and mask list to
 process in the `flow.cylc` file therein.
 
 ### Case study / Configuration / Tool / Date Nesting
-In the following steps, processing the data assumes a generic directory structure for the
-input data and creates a consistent pattern through the outputs for interenal data pipelines.
-It is assumed that at the `${SIM_ROOT}` defined in the site paths, simulation data is nested
-according to a case study / configuration directory structure.  For example, in the path
+In the following steps, processing the data assumes a generic directory structure (which can be
+created by linking) for the input data and creates a consistent pattern through the outputs for
+internal data pipelines. It is assumed that at the `${SIM_ROOT}` defined in the site paths,
+simulation data is nested according to a case study / configuration directory structure.
+For example, in the path
 ```
 ${SIM_ROOT}/valid_date_2022-12-28T00/WRF_9-3_WestCoast/2021122300/wrf_model/ens_00/
 ```
 the `valid_date_2022-12-28T00` directory would be the `CSE_NME` variable in the templates,
-at which control flow simulation outpus such as `WRF_9-3_WestCoast` would be nested.  In the
-example above, the forecast start date is `2021-12-23T00Z` and WRF model outputs are nested
-according to ensemble index in the `wrf_model` subdirectory.
+at which control flow simulation outpus such as `WRF_9-3_WestCoast` and `WRF_9_WestCoast` would
+be nested.  In the example above, the forecast start date is `2021-12-23T00Z` and WRF model
+outputs are nested according to ensemble index in the `wrf_model` subdirectory.
 
 Using the case study / configuration nested convention helps to procedurally generate the paths for batch
 processing multiple control flows with heterogeneous data simulataneously. For example in preprocessing WRF
@@ -241,14 +243,16 @@ The above template writes output data according to the nested structures
   * `{{ENS_PRFX}}{{idx}}` -- ensemble member IDs; and
   * `{{grd}}` subdomains.
 
-The corresponding preprocessed outputs from the template above would be written to the
+The corresponding preprocessed WRF outputs from the templates and exmaple above would be written to the
 two directories
 ```
 ${VRF_ROOT}/valid_date_2022-12-28T00/WRF_9-3_WestCoast/Preprocess/2022122300/ens_00/d01
 ${VRF_ROOT}/valid_date_2022-12-28T00/WRF_9-3_WestCoast/Preprocess/2022122300/ens_00/d02
 ```
 For other models such as MPAS which do not utilize the paradigm of nested domains,
-these domain sub-directories are neglected.
+these domain sub-directories are neglected, with model specific conventions included in their
+respective workflows.  The templated paths above can be changed arbitrarily, but note
+that the subsequent steps of the workflow also need to inherit IO changes.
 
 ### Preprocessing WRF outputs
 WRF model outputs may not be ingestible to MET by default and preprocessing
@@ -271,7 +275,11 @@ The `WRF-cf.py` module defines generic methods for ingesting raw WRF outputs in
 [xarray](https://docs.xarray.dev/en/stable/index.html) to compute [CF-compliant](https://cfconventions.org/)
 NetCDF files in MET readable formats.  The `wrfout_to_cf.py` is a simple wrapper that
 is called in the workflow to perform computation of CF-fields and optionally regridding
-of WRF oputus for analysis in MET.
+of WRF oputus for analysis in MET.  Verification outputs are templated to be written to
+```
+WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT/{{ENS_PRFX}}{{idx}}/{{grd}}
+```
+following the nesting conventions described above.
 
 ### Preprocessing MPAS outputs
 MPAS model outputs are not ingestible to MET by default due to the dependence on
@@ -296,7 +304,21 @@ to transform the unstructured MPAS mesh to a generic lat-lon grid.  This executa
 for portability and can be built from the
 [definition file](https://github.com/CW3E/MET-tools/blob/main/settings/template_archive/build_examples/convert_mpas.def)
 included in the repository.  The workflow scripts call `convert_mpas` from the Singularity image
-and wraps containerized commands. The `MPAS-cf.py` module defines generic methods for ingesting regridded MPAS outputs in
+and wraps containerized commands.  Following the conventions of the latest MPAS releases, static information can be
+sourced from a separate stream from the dynamic fields in MPAS outputs.  The root directory of static files
+`${MSH_ROOT}` can be specified in the site configuration, where it is templated such that if
+```
+IN_MSH_STRM = 'TRUE'
+```
+then mesh static files will be sourced from configuration static files as
+```
+IN_MSH_DIR = {{environ['MSH_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/static
+IN_MSH_F = {{msh_nme}}
+```
+These paths can be changed arbitrarily, and static information can be taken from MPAS outputs
+alternatively if this is available. 
+
+The `MPAS-cf.py` module defines generic methods for ingesting regridded MPAS outputs in
 xarray to compute CF-compliant NetCDF files in MET readable formats.  The `mpas_to_cf.py` is a simple wrapper that
 is called in the workflow to perform computation of CF-fields for analysis in MET.
 

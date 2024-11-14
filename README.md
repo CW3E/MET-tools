@@ -325,16 +325,40 @@ is called in the workflow to perform computation of CF-fields for analysis in ME
 ### Generating Ensemble Products from WRF and MPAS
 Once WRF / MPAS model outputs have been preprocessed with the workflows above, these preprocessed files can be ingested into
 GridStat directly following the instructions below, or these can be combined with the GenEnsProd tool in MET to generate
-ensemble forecast statistics files including mean and spread products.  Outputs from GenEnsProd are handled specially by
+ensemble forecast statistics files including mean and spread products.  The script
+```
+${HOME}/src/drivers/GenEnsProd.sh
+```
+takes arguments in the workflows
+```
+${HOME}/cylc-src/GenEnsProdWRF
+${HOME}/cylc-src/GenEnsProdMPAS
+```
+to produce ensemble products as above. Outputs from GenEnsProd are handled specially by
 GridStat with switches included in these workflows for processing ensemble products and individual members respectively.
+Outputs of GenEnsProd are templated to be written following the directory structure
+```
+{{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GenEnsProd/$CYC_DT
+```
+with additional subdirectories for subdomains therein.
 
 ### Generating GridStat Analyses for WRF, MPAS and Background Operational Models
 Workflows are provided for running GridStat on:
-  * WRF ensemble member and ensemble mean outputs -- GridStatWRF;
-  * MPAS ensemble member and ensemble mean outputs -- GridStatMPAS; and
-  * Background operational global model products -- GridStatBKG.
+  * WRF ensemble member and ensemble mean outputs
+    ```
+    ${HOME}/cylc-src/GridStatWRF
+    ```
+  * MPAS ensemble member and ensemble mean outputs
+    ```
+    ${HOME}/cylc-src/GridStatMPAS
+    ```
+  * Background operational global model products
+    ```
+    ${HOME}/cylc-src/GridStatBKG
+    ```
 
 To run GridStat, one must have appropriate gridded ground truth at the corresponding valid times
-and land masks precomputed.
+and land masks precomputed.  Gridded ground truth data is sourced in the workflows as
+
 
 ### Plotting

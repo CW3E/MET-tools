@@ -47,7 +47,7 @@ pending.
 Cylc can be run on an HPC system in a centralized or a distributed fashion.  This build procedure will
 create an embedded Cylc installation with the configuration of Cylc inferred from the `config_workflow.sh`
 at the root of the repository.  One should edit this file as in the following to define the local
-HPC system paramters for the workflow and source this to define the Cylc environment when running the workflow.
+HPC system parameters for the workflow and source this to define the Cylc environment when running the workflow.
 
 ###  Workflow configuration
 In the workflow configuration one should define the full path of clone
@@ -79,6 +79,48 @@ export STC_ROOT= # Root directory for verification static data including obs and
 export MSH_ROOT= # Root directory for MPAS static files for sourcing static IO streams
 ```
 
+### Building Cylc
+The Cylc build script
+```
+${HOME}/cylc/cylc_build.sh
+```
+sources the `config_workflow.sh` configuration file to configure the local installation of
+the Cylc executable in a self-contained Micromamba enviornment.  The Cylc installation
+will be built at
+```
+${HOME}/cylc/Micromamba/envs/${CYLC_ENV_NAME}
+```
+with the Cylc software environment defined in the file
+```
+${HOME}/scripts/environments/${CYLC_ENV_NAME}.yml
+```
+sourcing a `.yml` definition file for the build.  Sourcing the `config_workflow.sh` the `${PATH}`
+is set to source the cylc-wrapper script
+```
+${HOME}/cylc/cylc
+```
+configured to match the self-contained Micromamba environment.  Cylc command Bash auto-completion
+is configured by default by sourcing the `config_workflow.sh` file.  Additionally the 
+[cylc global configuration file](https://cylc.github.io/cylc-doc/stable/html/reference/config/global.html#global.cylc)
+```
+${HOME}/cylc/global.cylc
+```
+is configured so that workflow definitions will source the global variables
+in `config_workflow.sh`, and so that task job scripts will inherit these variables as well.
+
+### The cylc-run and log files
+The Cylc workflow manager uses the [cylc-run directory](https://cylc.github.io/cylc-doc/stable/html/glossary.html#term-cylc-run-directory)
+```
+${HOME}/cylc-run
+```
+to [install workflows](https://cylc.github.io/cylc-doc/stable/html/user-guide/installing-workflows.html),
+[run workflows](https://cylc.github.io/cylc-doc/latest/html/user-guide/running-workflows/index.html)
+and [manage their progress](https://cylc.github.io/cylc-doc/latest/html/user-guide/interventions/index.html)
+with automated logging of job status andt task execution within the associated run directories.  Job execution such as
+MPAS / WRF simulation IO will not be performed in the `cylc-run` directory, as this run directory only encompasses
+the execution of the workflow prior to calling the task driving script.  Task driving scripts will have
+work directories nested in the directory structure at `${WORK_ROOT}` defined in the `config_workflow.sh`.
+
 ## Installing software
 The installation of software dependencies outlined below can be performed 
 on a shared system with the
@@ -105,11 +147,11 @@ where the executable singularity image is the output file `met-11.1.1.sif`.
 
 ### Installing additional libraries
 Supplementary libraries for running these workflows are provided in additional containers
-or can be installed indpendently.  In the 
+or can be installed indpendently.  The directory
 ```
 ${HOME}/docs
 ```
-directory, you can find `.def` definition files for
+contains `.def` definition files for
 [building](https://apptainer.org/docs/user/latest/build_a_container.html#building-containers-from-apptainer-definition-files)
 the following `.sif` containers:
  * `MET-tools-py.def` is the definition for the `MET-tools-py.sif` for containerized calls of Python libraries; and
@@ -118,19 +160,21 @@ the following `.sif` containers:
 to be used in this workflow.  The Python libraries can be alternatively
 [constructed as a conda environment](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file)
 on a local system using the `MET-tools-py.yml`.  This allows additional development of plotting and diagnostics and to add
-new libraries to the conda enviornment, where the `MET-tools-py.yml` file is to be frozen to the dependencies in the currently
+new libraries to the MET-tools-py conda environment, where the `MET-tools-py.yml` file is to be frozen to the dependencies in the currently
 supported main branch.
 
 ## Running MET-tools Cylc templates
 Substeps of the workflow are templated for different use-cases illustrating analysis of WRF, MPAS and CW3E preprocessed
 global model outputs.  Utilities for preprocessing WRF and MPAS for ingestion into MET are included in this
 repository.  It is assumed that operational model data such as ECMWF, GFS, GEFS have already been preprocessed
-as in internally standardized CW3E data products.
+as in internally standardized CW3E data products.  All workflows below are templated in the `cylc-src` directory
+and are installable from there.  New workflows can be similarly constructed by defining a workflow name and configuration,
+and installing and running this.
 
 ### Generating Regional Landmasks for Verification
 In order to calculate relevant verification statistics, one should pre-generate
-a landmask for the region over which the verification is to take place. This
-region will be defined as a sub-domain of the ground truth grid.  The following steps
+a landmask for the relevant region(s) over which forecast verification is to take place. Verification
+regions are defined as a subdomain of the ground truth grid.  The following steps
 illustrate the process of generating landmasks.
 
 #### Creating User-Defined Verification Regions From Google Earth
@@ -153,9 +197,8 @@ The naming of the KML file should be of the form
 Mask_Name.kml
 ```
 where `Mask_Name` is the name of the verification region. This `Mask_Name` will match 
-the mask's short name in plotting routines, with any underscores parsed in the plotting
-scripts and transformed into emtpy characters when printed.
-Example KML files are located in the 
+the mask's short name in plotting routines, with any underscores 
+transformed into emtpy characters when printed. Example KML files are located in the 
 ```
 ${HOME}/settings/mask-root/kml_files
 ```
@@ -179,8 +222,6 @@ The formatting of the lat-lon text file should have the `Mask_Name` as the first
 the file. Each line after the first corresponds to a latitude-longitude pair
 defining the polygon region to be verified, with paired values separated by
 a single blank space.
-
-Outputs of the 
 
 #### Computing NetCDF Landmasks From Lat-Lon Text Files
 A landmask list, which is sourced by the 
@@ -222,15 +263,18 @@ process in the `flow.cylc` file therein.
 ### Case study / Configuration / Tool / Date Nesting
 In the following steps, processing the data assumes a generic directory structure (which can be
 created by linking) for the input data and creates a consistent pattern through the outputs for
-internal data pipelines. It is assumed that at the `${SIM_ROOT}` defined in the site paths,
-simulation data is nested according to a case study / configuration directory structure.
-For example, in the path
+internal data pipelines. It is assumed that at the `${SIM_ROOT}` defined in the site configuration paths,
+simulation data is nested according to a case study / configuration directory structure.  This
+matches the conventions of the
+[case stud example](https://github.com/CW3E/Ensemble-DA-Cycling-Template/blob/main/README.md#case-study--configuration--sub-configuration)
+for running an ensemble forecast with WRF or MPAS. For example, in the path
 ```
 ${SIM_ROOT}/valid_date_2022-12-28T00/WRF_9-3_WestCoast/2021122300/wrf_model/ens_00/
 ```
 the `valid_date_2022-12-28T00` directory would be the `CSE_NME` variable in the templates,
-at which control flow simulation outpus such as `WRF_9-3_WestCoast` and `WRF_9_WestCoast` would
-be nested.  In the example above, the forecast start date is `2021-12-23T00Z` and WRF model
+at which control flows such as `WRF_9-3_WestCoast` and `WRF_9_WestCoast` would
+have their simulation outputs nested.
+In the example above, the forecast start date is `2021-12-23T00Z` and WRF model
 outputs are nested according to ensemble index in the `wrf_model` subdirectory.
 
 Using the case study / configuration nested convention helps to procedurally generate the paths for batch
@@ -258,9 +302,9 @@ ${VRF_ROOT}/valid_date_2022-12-28T00/WRF_9-3_WestCoast/Preprocess/2022122300/ens
 ${VRF_ROOT}/valid_date_2022-12-28T00/WRF_9-3_WestCoast/Preprocess/2022122300/ens_00/d02
 ```
 For other models such as MPAS which do not utilize the paradigm of nested domains,
-these domain sub-directories are neglected, with model specific conventions included in their
-respective workflows.  The templated paths above can be changed arbitrarily, but note
-that the subsequent steps of the workflow also need to inherit IO changes.
+these domain subdirectories are neglected, with model specific conventions included in their
+respective workflows.  The templated output paths above can be changed arbitrarily, but
+note that the subsequent steps of the workflow also need to inherit IO changes.
 
 ### Preprocessing WRF outputs
 WRF model outputs may not be ingestible to MET by default and preprocessing
@@ -283,14 +327,15 @@ The `WRF-cf.py` module defines generic methods for ingesting raw WRF outputs in
 [xarray](https://docs.xarray.dev/en/stable/index.html) to compute [CF-compliant](https://cfconventions.org/)
 NetCDF files in MET readable formats.  The `wrfout_to_cf.py` is a simple wrapper that
 is called in the workflow to perform computation of CF-fields and optionally regridding
-of WRF oputus for analysis in MET.  Verification outputs are templated to be written to
+WRF outputs to a generic intermediate lat-lon grid for analysis in MET.
+Workflows are templated for preprocessing outputs to be written to
 ```
 WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT/{{ENS_PRFX}}{{idx}}/{{grd}}
 ```
 following the nesting conventions described above.
 
 ### Preprocessing MPAS outputs
-MPAS model outputs are not ingestible to MET by default due to the dependence on
+MPAS model outputs are not ingestible to MET by default due to MET's dependence on
 a lat-lon grid, and preprocessing routines are included to bring MPAS outputs into
 a format that can be analyzed in MET.  The script
 ```
@@ -311,10 +356,11 @@ The `mpas_to_latlon.sh` script utilizes the [convert_mpas utility](https://githu
 to transform the unstructured MPAS mesh to a generic lat-lon grid.  This executable has been containerized
 for portability and can be built from the
 [definition file](https://github.com/CW3E/MET-tools/blob/main/settings/template_archive/build_examples/convert_mpas.def)
-included in the repository.  The workflow scripts call `convert_mpas` from the Singularity image
-and wraps containerized commands.  Following the conventions of the latest MPAS releases, static information can be
-sourced from a separate stream from the dynamic fields in MPAS outputs.  The root directory of static files
-`${MSH_ROOT}` can be specified in the site configuration, where it is templated such that if
+included in the repository.  The workflow scripts call `convert_mpas` from the containerized executable
+and wraps containerized commands with site-specific bindings.  Following the conventions of the latest MPAS
+releases, static information can be sourced from a separate stream from the dynamic fields in MPAS outputs.
+The root directory of static files `${MSH_ROOT}` can be specified in the site configuration, where it is
+templated such that if
 ```
 IN_MSH_STRM = 'TRUE'
 ```

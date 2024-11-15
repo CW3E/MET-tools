@@ -234,12 +234,18 @@ fi
 # unless a mesh root directory and file name is supplied
 in_msh_strm=FALSE
 if [ -z ${IN_MSH_DIR+x} ]; then
-  printf "ERROR: Static information directory \${IN_MSH_DIR} is not declared.\n"
-  msg="Supply a blank string for this variable if static information is derived"
+  msg="ERROR: Static information directory \${IN_MSH_DIR} is not declared.\n"
+  msg+=" Supply a blank string for this variable if static information is derived"
   msg+=" from the same data stream as MPAS output files.\n"
   printf "${msg}"
   exit 1
-elif [ -n ${IN_MSH_DIR} ]; then
+elif [ -z ${IN_MSH_F+x} ]; then
+  msg="ERROR: Static file \${IN_MSH_F} is not declared.\n"
+  msg+=" Supply a blank string for this variable if static information is derived"
+  msg+=" from the same data stream as MPAS output files.\n"
+  printf "${msg}"
+  exit 1
+elif [[ -n ${IN_MSH_DIR} && -n ${IN_MSH_F} ]]; then
   if [[ ! -d  ${IN_MSH_DIR} || ! -x ${IN_MSH_DIR} ]]; then
     msg="ERROR: static information directory IN_MSH_DIR\n ${IN_MSH_DIR}\n"
     msg+=" is not a directory or is not executable.\n"
@@ -257,7 +263,7 @@ elif [ -n ${IN_MSH_DIR} ]; then
     printf "MPAS static fields are sourced from\n ${IN_MSH_DIR}/${IN_MSH_F}\n"
   fi
 else
-  # When MSH_ROOT is defined as an empty sting, static info sourced from input
+  # Static info sourced from input
   msg="\${IN_MSH_DIR} is an empty string, static information is derived"
   msg+=" from the same data stream as MPAS outputs.\n"
   printf "${msg}"

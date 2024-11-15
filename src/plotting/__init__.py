@@ -180,12 +180,10 @@ class plot:
     def gen_io_paths(self):
         if self.IF_CNTR_PLT:
             in_root = '/in_root/' + self.CSE
-            out_root = '/out_root/' + self.CSE + '/figures/' +\
-                    self.CSE
+            out_root = '/out_root/' + self.CSE + '/figures/'
         else:
             in_root = VRF_ROOT + '/' + self.CSE
-            out_root = VRF_ROOT + '/' + self.CSE + '/figures/' +\
-                    self.CSE
+            out_root = VRF_ROOT + '/' + self.CSE + '/figures/'
     
         if self.FIG_CSE:
                 out_root += '/' + self.FIG_CSE

@@ -149,7 +149,6 @@
                     CTR_FLW = {{ctr_flw}}
                     INT_WDTH = {{int_wdth}}
                     IN_DIR = {{environ['STC_ROOT']}}/{{ctr_flw}}/{{IN_STC_SUBDIR}}/$CYC_DT/{{IN_DT_SUBDIR}}
-                    {# WRF workflow outputs are nested relative to ISO/mem_id by domain #}
                     WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GridStat/{{VRF_REF}}/$CYC_DT
                 [[[directives]]]
                     {% if environ['SCHED'] == 'slurm' %}

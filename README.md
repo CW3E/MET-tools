@@ -427,7 +427,7 @@ Workflows are provided for running GridStat on:
     ${HOME}/cylc-src/GridStatBKG
     ```
 
-Arguments from these files are propagated to the driving script
+Arguments from these workflows are propagated to the driving script
 ```
 ${HOME}/src/drivers/GridStat.sh
 ```
@@ -440,7 +440,7 @@ to produce additional postprocessing of GridStat outputs.
 
 To run GridStat, one must have appropriate gridded ground truth at the corresponding valid times
 and land masks precomputed for that grid.  Gridded ground truth data is sourced in the workflows from the
-`${STC_ROOT}` directory dfined in the site configuration.  Currently only CW3E preprocessed
+`${STC_ROOT}` directory defined in the site configuration.  Currently only CW3E preprocessed
 StageIV products are supported with further ground truth data sets pending integration.  Global
 model data is also templated to be sourced from the `${STC_ROOT}` directory as
 ```
@@ -486,6 +486,26 @@ the analyzed field, the lead and the valid time, e.g.,
 grid_stat_QPF_24hr_1200000L_20221228_000000V_nbrcnt.txt
 ```
 The types of ASCII tables output are described in the 
-[GridStat documentation](https://met.readthedocs.io/en/latest/Users_Guide/grid-stat.html#grid-stat-output).  For
+[GridStat documentation](https://met.readthedocs.io/en/latest/Users_Guide/grid-stat.html#grid-stat-output).
+For plotting and analysis in a statistical language, the workflow utilizes the `DataFrames.py` module and
+the wrapping script `ASCII_to_DataFrames.py` to parse and aggregate the ASCII tables as Pandas dataframes
+in pickled binary dictonaries with the stat table codes used as dictionary key names. For example, in the directory
+```
+${VRF_ROOT}/valid_date_2022-12-28T00/WRF_9-3_WestCoast/GridStat/StageIV/2022122700/mean/d01
+```
+the GridStat ASCII output files
+```
+grid_stat_QPF_24hr_240000L_20221228_000000V_fho.txt     grid_stat_QPF_24hr_240000L_20221228_000000V_cnt.txt
+grid_stat_QPF_24hr_240000L_20221228_000000V_nbrcnt.txt  grid_stat_QPF_24hr_240000L_20221228_000000V_ctc.txt
+grid_stat_QPF_24hr_240000L_20221228_000000V_nbrctc.txt  grid_stat_QPF_24hr_240000L_20221228_000000V_cts.txt
+grid_stat_QPF_24hr_240000L_20221228_000000V_nbrcts.txt
+```
+are parsed and written into the binary file output `QPF_24hr.bin` where the table
+```
+grid_stat_QPF_24hr_240000L_20221228_000000V_nbrcnt.txt
+```
+can be called by the key name `nbrcnt` in the Pickled dictionary.  Additionaly, the directory contains the
+propagated GridStat configuration file template `GridStatConfig_QPF_24hr` that was utilized to perform the
+GridStat analysis generating this data.
 
 ### Plotting

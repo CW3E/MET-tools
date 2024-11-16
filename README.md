@@ -147,7 +147,7 @@ where the executable singularity image is the output file `met-11.1.1.sif`.
 
 ### Installing additional libraries
 Supplementary libraries for running these workflows are provided in additional containers
-or can be installed indpendently.  The directory
+or can be installed independently.  The directory
 ```
 ${HOME}/docs
 ```
@@ -266,7 +266,7 @@ created by linking) for the input data and creates a consistent pattern through 
 internal data pipelines. It is assumed that at the `${SIM_ROOT}` defined in the site configuration paths,
 simulation data is nested according to a case study / configuration directory structure.  This
 matches the conventions of the
-[case stud example](https://github.com/CW3E/Ensemble-DA-Cycling-Template/blob/main/README.md#case-study--configuration--sub-configuration)
+[case study example](https://github.com/CW3E/Ensemble-DA-Cycling-Template/blob/main/README.md#case-study--configuration--sub-configuration)
 for running an ensemble forecast with WRF or MPAS. For example, in the path
 ```
 ${SIM_ROOT}/valid_date_2022-12-28T00/WRF_9-3_WestCoast/2021122300/wrf_model/ens_00/
@@ -369,17 +369,19 @@ then mesh static files will be sourced from configuration static files as
 IN_MSH_DIR = {{environ['MSH_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/static
 IN_MSH_F = {{msh_nme}}
 ```
-These paths can be changed arbitrarily, and static information can be taken from MPAS outputs
-alternatively if this is available. 
+These paths can be changed arbitrarily, and static information can be taken from MPAS
+simulation outputs directly if this is alternatively available.
 
 The `MPAS-cf.py` module defines generic methods for ingesting regridded MPAS outputs in
-xarray to compute CF-compliant NetCDF files in MET readable formats.  The `mpas_to_cf.py` is a simple wrapper that
-is called in the workflow to perform computation of CF-fields for analysis in MET.
+xarray to compute CF-compliant NetCDF files in MET readable formats.  The `mpas_to_cf.py` 
+is a simple wrapper that is called in the workflow to perform computation of CF-fields for
+analysis in MET.
 
 ### Generating Ensemble Products from WRF and MPAS
-Once WRF / MPAS model outputs have been preprocessed with the workflows above, these preprocessed files can be ingested into
-GridStat directly following the instructions below, or these can be combined with the GenEnsProd tool in MET to generate
-ensemble forecast statistics files including mean and spread products.  The script
+Once WRF / MPAS model outputs have been preprocessed with the workflows above, these preprocessed
+files can be ingested into GridStat directly following the instructions below, or these can be
+combined with the GenEnsProd tool in MET to generate ensemble forecast statistics files including
+mean and spread products.  The script
 ```
 ${HOME}/src/drivers/GenEnsProd.sh
 ```
@@ -431,7 +433,7 @@ Arguments from these workflows are propagated to the driving script
 ```
 ${HOME}/src/drivers/GridStat.sh
 ```
-which utilizes the auxilliary module / script
+which utilizes the auxiliary module / script
 ```
 ${HOME}/src/utilities/DataFrames.py
 ${HOME}/src/utilities/ASCII_to_DataFrames.py
@@ -455,7 +457,8 @@ can be sourced by including ECMWF in the control flow list and setting
 IN_STC_SUBDIR = 'Precip'
 IN_DT_SUBDIR = ''
 ```
-in the workflow template.
+in the workflow template.  However, this input path can be changed arbitrarily as needed to
+source static (non-user simulation) data.
 
 For WRF and MPAS, workflow switches are included to source data from ensemble members or from ensemble
 mean products as
@@ -464,7 +467,7 @@ IF_ENS_MEAN = 'TRUE'
 IF_ENS_MEMS = 'TRUE'
 ```
 Setting values to `TRUE` directs the Cylc template to create tasks for running GridStat on
-  * the ensemble mean product generated over the indices specified, e.g., with IO as
+  * the GenEnsProd ensemble mean product generated over the indices specified, e.g., with IO as
     ```
     IN_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GenEnsProd/$CYC_DT/{{grd}}
     WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GridStat/{{VRF_REF}}/$CYC_DT/mean/{{grd}}
@@ -480,7 +483,7 @@ for a WRF mean product on domain `d01` verified versus StageIV is
 ```
 ${VRF_ROOT}/valid_date_2022-12-28T00/WRF_9-3_WestCoast/GridStat/StageIV/2022122300/mean/d01
 ```
-Raw outputs of GridStat are ASCII tables written to the work directories above, with naming conventions including
+Raw outputs of GridStat include ASCII tables written to the work directories above, with naming conventions including
 the analyzed field, the lead and the valid time, e.g.,
 ```
 grid_stat_QPF_24hr_1200000L_20221228_000000V_nbrcnt.txt
@@ -488,7 +491,7 @@ grid_stat_QPF_24hr_1200000L_20221228_000000V_nbrcnt.txt
 The types of ASCII tables output are described in the 
 [GridStat documentation](https://met.readthedocs.io/en/latest/Users_Guide/grid-stat.html#grid-stat-output).
 For plotting and analysis in a statistical language, the workflow utilizes the `DataFrames.py` module and
-the wrapping script `ASCII_to_DataFrames.py` to parse and aggregate the ASCII tables as Pandas dataframes
+the wrapping script `ASCII_to_DataFrames.py` to parse and aggregate the ASCII tables as Pandas data frames
 in pickled binary dictonaries with the stat table codes used as dictionary key names. For example, in the directory
 ```
 ${VRF_ROOT}/valid_date_2022-12-28T00/WRF_9-3_WestCoast/GridStat/StageIV/2022122700/mean/d01
@@ -504,8 +507,91 @@ are parsed and written into the binary file output `QPF_24hr.bin` where the tabl
 ```
 grid_stat_QPF_24hr_240000L_20221228_000000V_nbrcnt.txt
 ```
-can be called by the key name `nbrcnt` in the Pickled dictionary.  Additionaly, the directory contains the
-propagated GridStat configuration file template `GridStatConfig_QPF_24hr` that was utilized to perform the
-GridStat analysis generating this data.
+can be called by the key name `nbrcnt` in the pickled dictionary.  When there are multiple files of
+the same stat type but with different valid dates and forecast leads in the same directory, these
+tables are concatenated into the same data frame in the pickled dictionary under the stat key.
+
+Additionaly, the directory contains the propagated GridStat configuration file template
+`GridStatConfig_QPF_24hr` that was utilized to perform the GridStat analysis generating this data.
 
 ### Plotting
+Several templates are available in this repository for reading the above data frames and generating
+analysis visualizations with line plots and heat plots.  Plotting templates are written as classes
+and subclasses in the base plotting module
+```
+${HOME}/src/plotting
+```
+which is added to the system path by the workflow configuration file
+```
+export PYTHONPATH="${SRC}:/src_dir"
+```
+The workflow configuration file furthermore
+provides wrappers for containerized plotting calls and the switch
+```
+export IF_CNTR_PLT="TRUE"
+```
+sets plotting classes to look for IO paths at container bind targets rather than system paths. If the above switch
+is set to false, IO is performed relative to the system definition for `${VRF_ROOT}`.  Figures are automatically
+saved to a path
+```
+${VRF_ROOT}/${case_study}/figures/
+```
+with additional options therein. Plots are optionally forwarded for interactive work visualization if
+the plot class instance attribute is set to
+```
+'IF_SHOW': True,
+```
+For interactive work using the containerized MET-tools-py environment, the workflow
+configuration defines a wrapper function for command line calls
+```
+# Define MET-tools-py Python execution with directory binds
+MTPY="singularity exec -B "
+MTPY+="${SRC}:/src_dir:ro,${VRF_ROOT}:/in_root:ro,${VRF_ROOT}:/out_root:rw "
+MTPY+="${MET_TOOLS_PY} python /src_dir/"
+
+# simple wrapper function for interactive shell calls of plotting scripts
+mtplot() {
+  cmd="${MTPY}plotting/$1"
+  echo "${cmd}"; eval ${cmd}
+}
+```
+The `mtplot` function can be used to interactively call a plotting script utilizing
+the  plotting class templates.  In particular, the
+```
+${HOME}/src/plotting/templates.py
+```
+script illustrates how to instantiate standard plotting templates from dictionary
+key / value pairs and how to generate a figure using class methods on the instance.
+Calling this script directly
+```
+mtplot templates.py
+```
+can be used to test the plotting environment, and will
+generate a series of typical analyses for which the templates are currently capable.
+
+Classes are templated using the [attrs](https://www.attrs.org/en/stable/index.html) library
+with conventions for defining class intialization and validation discussed therein.
+Supported ground truth types, output statistics and their meta data are templated as
+dictionaries in the `plotting.py` module.  Class validators source these definitions
+to check for supported data / stats and their plotting labels, and new data types,
+data fields and supported statistics can be templated from the existing definitions.
+
+Color bars for heat plots are templated for both of explicitly and implicitly defined levels
+in the submodule
+```
+${HOME}/src/plotting/colorbars.py
+```
+The submodule defines the `PALLETTE` template to dynamically generate color maps as
+a function of the number of bins to be used.  For example, pallettes defined as
+```
+'PALLETE': lambda x : partial(sns.diverging_palette,
+                h_neg=145, h_pos=300, s=90)(n=x)
+'PALLETE': lambda x: partial(sns.color_palette,
+                palette='rocket_r')(n_colors=x)
+'PALLETE': lambda x: partial(sns.color_palette,
+                palette='viridis_r')(n_colors=x)
+```
+are templated in the module to produce a common API to call Seaborn color pallettes
+as a function of the number of bins.  Typical color bars including labels,
+pallettes, thresholds / data range parameters are included in the submodule.  New
+colorbar instances can be templated as in the templates provided.

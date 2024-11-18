@@ -124,7 +124,7 @@ fi
 unset __mamba_setup
 
 ##################################################################################
-# PLOTTING UTILITIES AND DEFS
+# PLOTTING UTILITIES AND DEFS (DO NOT CHANGE)
 ##################################################################################
 # Add the plotting directory to Python path in raw and containerized paths
 export PYTHONPATH="${SRC}:/src_dir"

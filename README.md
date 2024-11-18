@@ -320,10 +320,10 @@ ${HOME}/cylc-src/preprocessWRF
 to produce MET ingestible forecast files from batches of data.  This
 script uses the auxiliary module / script:
 ```
-${HOME}/src/utilites/WRF-cf.py
+${HOME}/src/utilites/WRF_cf.py
 ${HOME}/src/utilites/wrfout_to_cf.py
 ```
-The `WRF-cf.py` module defines generic methods for ingesting raw WRF outputs in
+The `WRF_cf.py` module defines generic methods for ingesting raw WRF outputs in
 [xarray](https://docs.xarray.dev/en/stable/index.html) to compute [CF-compliant](https://cfconventions.org/)
 NetCDF files in MET readable formats.  The `wrfout_to_cf.py` is a simple wrapper that
 is called in the workflow to perform computation of CF-fields and optionally regridding
@@ -349,7 +349,7 @@ to produce MET ingestible forecast files from batches of data.  This
 script uses the auxiliary module / scripts:
 ```
 ${HOME}/src/utilites/mpas_to_latlon.sh
-${HOME}/src/utilites/MPAS-cf.py
+${HOME}/src/utilites/MPAS_cf.py
 ${HOME}/src/utilites/mpas_to_cf.py
 ```
 The `mpas_to_latlon.sh` script utilizes the [convert_mpas utility](https://github.com/mgduda/convert_mpas)
@@ -372,7 +372,7 @@ IN_MSH_F = {{msh_nme}}
 These paths can be changed arbitrarily, and static information can be taken from MPAS
 simulation outputs directly if this is alternatively available.
 
-The `MPAS-cf.py` module defines generic methods for ingesting regridded MPAS outputs in
+The `MPAS_cf.py` module defines generic methods for ingesting regridded MPAS outputs in
 xarray to compute CF-compliant NetCDF files in MET readable formats.  The `mpas_to_cf.py` 
 is a simple wrapper that is called in the workflow to perform computation of CF-fields for
 analysis in MET.

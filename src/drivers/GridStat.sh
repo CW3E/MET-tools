@@ -409,8 +409,8 @@ if [[ ! -d ${UTLTY} || ! -x ${UTLTY} ]]; then
   exit 1
 fi
 
-if [ ! -r ${UTLTY}/config_DataFrames.py ]; then
-  msg="ERROR: Utility module\n ${UTLTY}/config_DataFrames.py\n"
+if [ ! -r ${UTLTY}/DataFrames.py ]; then
+  msg="ERROR: Utility module\n ${UTLTY}/DataFrames.py\n"
   msg+=" does not exist.\n"
   printf "${msg}"
   exit 1
@@ -440,7 +440,7 @@ met+="${IN_DIR}:/in_dir:ro ${MET}"
 
 # Define directory privileges for singularity exec MET_TOOLS_PY
 met_tools_py="singularity exec -B "
-met_tools_py+="${WRK_DIR}:/wrk_dir:rw,${WRK_DIR}:/in_dir:ro,${UTLTY}:/utlty:ro "
+met_tools_py+="${WRK_DIR}:/wrk_dir:rw,${WRK_DIR}:/in_dir:ro,${SRC}:/src_dir:ro "
 met_tools_py+="${MET_TOOLS_PY} python"
 
 # clean old data
@@ -642,7 +642,7 @@ printf "${cmd}\n"; eval "${cmd}"
 if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
   for acc_hr in ${acc_hrs[@]}; do 
     # run makeDataFrames to parse the ASCII outputs
-    cmd="${met_tools_py} /utlty/ASCII_to_DataFrames.py"
+    cmd="${met_tools_py} /src_dir/utilities/ASCII_to_DataFrames.py"
     cmd+=" '${VRF_FLD}_${acc_hr}hr' '/in_dir' '/wrk_dir'; error=\$?"
     printf "${cmd}\n"; eval "${cmd}"
     printf "ASCII_to_DataFrames.py exited with status ${error}.\n"
@@ -654,7 +654,7 @@ if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
   done
 else
   # run makeDataFrames to parse the ASCII outputs
-  cmd="${met_tools_py} /utlty/ASCII_to_DataFrames.py"
+  cmd="${met_tools_py} /src_dir/utilities/ASCII_to_DataFrames.py"
   cmd+=" '${VRF_FLD}' '/in_dir' '/wrk_dir'; error=\$?"
   printf "${cmd}\n"; eval "${cmd}"
   printf "ASCII_to_DataFrames.py exited with status ${error}.\n"

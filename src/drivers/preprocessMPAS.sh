@@ -291,8 +291,8 @@ if [[ ! -d ${UTLTY} || ! -x ${UTLTY} ]]; then
   exit 1
 fi
 
-if [ ! -r ${UTLTY}/config_mpascf.py ]; then
-  msg="ERROR: Utility module\n ${UTLTY}/config_mpas.py\n does not exist.\n"
+if [ ! -r ${UTLTY}/MPAS_cf.py ]; then
+  msg="ERROR: Utility module\n ${UTLTY}/MPAS_cf.py\n does not exist.\n"
   printf "${msg}"
   exit 1
 fi
@@ -318,7 +318,7 @@ met="singularity exec -B ${WRK_DIR}:/wrk_dir:rw,${WRK_DIR}:/in_dir:ro ${MET}"
 
 # Define directory privileges for singularity exec MET_TOOLS_PY
 met_tools_py="singularity exec -B "
-met_tools_py+="${WRK_DIR}:/wrk_dir:rw,${IN_DIR}:/in_dir:ro,${UTLTY}:/utlty:ro "
+met_tools_py+="${WRK_DIR}:/wrk_dir:rw,${IN_DIR}:/in_dir:ro,${SRC}:/src_dir:ro "
 met_tools_py+="${MET_TOOLS_PY} python"
 
 # NOTE: convert_mpas always writes outputs to working directory
@@ -367,7 +367,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
       # to regridded output, f_in is reused here to recover timing information
       anl_dt=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${anl_hr} hours"`
       f_out="mpascf_${anl_dt}.nc"
-      cmd="${met_tools_py} /utlty/mpas_to_cf.py"
+      cmd="${met_tools_py} /src_dir/utilities/mpas_to_cf.py"
       cmd+=" '/wrk_dir/${f_tmp}' '/wrk_dir/${f_out}'"
       cmd+=" '/in_dir/${f_in}'; error=\$?"
       printf "${cmd}\n"; eval "${cmd}"

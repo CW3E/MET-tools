@@ -19,6 +19,7 @@
 .ipython/
 .pdbhistory
 .config/
+.python_history
 
 # No x11 data #
 ###############

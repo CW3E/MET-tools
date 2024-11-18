@@ -78,7 +78,7 @@ export DRIVERS="${SRC}/drivers"
 # Defines constants / patterns used for driver scripts
 export CNST="${DRIVERS}/CONSTANTS.sh"
 
-# Root directory of task driver scripts
+# Root directory of task supporting scripts
 export UTLTY="${SRC}/utilities"
 
 # Directory for plotting routines

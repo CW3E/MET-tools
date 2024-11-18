@@ -290,8 +290,8 @@ if [[ ! -d ${UTLTY} || ! -x ${UTLTY} ]]; then
   exit 1
 fi
 
-if [ ! -r ${UTLTY}/config_wrfcf.py ]; then
-  msg="ERROR: Utility module\n ${UTLTY}/config_wrfcf.py\n does not exist.\n"
+if [ ! -r ${UTLTY}/WRF_cf.py ]; then
+  msg="ERROR: Utility module\n ${UTLTY}/WRF_cf.py\n does not exist.\n"
   printf "${msg}"
   exit 1
 fi
@@ -310,7 +310,7 @@ met="singularity exec -B ${WRK_DIR}:/wrk_dir:rw,${WRK_DIR}:/in_dir:ro ${MET}"
 
 # Define directory privileges for singularity exec MET_TOOLS_PY
 met_tools_py="singularity exec -B "
-met_tools_py+="${WRK_DIR}:/wrk_dir:rw,${IN_DIR}:/in_dir:ro,${UTLTY}:/utlty:ro "
+met_tools_py+="${WRK_DIR}:/wrk_dir:rw,${IN_DIR}:/in_dir:ro,${SRC}:/src_dir:ro "
 met_tools_py+="${MET_TOOLS_PY} python"
 
 # move to work directory
@@ -341,7 +341,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
     # set output file name with underscore formatting
     f_out="wrfcf_${anl_dt}.nc"
 
-    cmd="${met_tools_py} /utlty/wrfout_to_cf.py"
+    cmd="${met_tools_py} /src_dir/utilities/wrfout_to_cf.py"
     cmd+=" '/in_dir/${f_in}' '/wrk_dir/${f_out}' '${rgrd}'"
     cmd+=" '${init_offset}'; error=\$?"
     printf "${cmd}\n"; eval "${cmd}"

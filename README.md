@@ -618,3 +618,14 @@ global init-script = """
 ```
 sourcing the configuration file from the full system path instead of the `${HOME}` set
 in the configuration.
+
+## Posting issues
+If you encounter bugs, please post a detailed issue in the Github page, with steps and parameter
+settings that reproduce this issue, and please include any related error messages / logs that
+may be useful for solving this.  Limited support and debugging will be performed for issues that do
+not adhere to this request.
+
+## Fixing issues
+If you encounter a bug and have a solution, please follow the same steps as above to post the issue
+and then submit a pull request with your branch that fixes the issue with a detailed explanation of
+the solution.

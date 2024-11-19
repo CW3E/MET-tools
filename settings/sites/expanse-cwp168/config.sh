@@ -47,6 +47,9 @@ module load cpu/0.17.3b
 module load gcc/10.2.0/npcyll4
 module load openmpi/4.1.1
 
+# fixes plotting error messages on expanse
+export QT_XCB_GL_INTEGRATION=none
+
 ##################################################################################
 # HPC SYSTEM PATHS
 ##################################################################################

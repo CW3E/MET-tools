@@ -595,3 +595,26 @@ are templated in the module to produce a common API to call Seaborn color pallet
 as a function of the number of bins.  Typical color bars including labels,
 pallettes, thresholds / data range parameters are included in the submodule.  New
 colorbar instances can be templated as in the templates provided.
+
+## Known Issues
+On some systems, sourcing the `config_workflow.sh` file will not propagate workflow
+settings when running the Cylc workflow.  If configurations are not recognized or
+if the `config_workflow.sh` is not being sourced correctly prior to running jobs,
+the
+```
+${HOME}/cylc/global.cylc
+```
+file can be modified such that the line
+```
+global init-script = """
+    source ~/MET-tools/config_workflow.sh
+"""
+```
+is replaced with
+```
+global init-script = """
+    source <FULL_SYSTEM_PATH_TO_CLONE>/MET-tools/config_workflow.sh
+"""
+```
+sourcing the configuration file from the full system path instead of the `${HOME}` set
+in the configuration.

@@ -59,6 +59,8 @@ rsl*
 .Trashes
 ehthumbs.db
 Thumbs.db
+.lesshst
+.subversion/*
 
 # no vim backups #
 ##################

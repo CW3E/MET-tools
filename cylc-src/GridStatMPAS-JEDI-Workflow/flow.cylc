@@ -96,7 +96,7 @@
 {% set GRD_PROC = 124 %}
 
 {# Job mem argument #}
-{% set GRD_MEM = '249208M' %}
+{% set GRD_MEM = '240000M' %}
 
 {# Wallclock limit for ungrib jobs #}
 {% set GRD_WC = 'PT1H' %}

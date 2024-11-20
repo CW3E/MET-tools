@@ -61,6 +61,7 @@ ehthumbs.db
 Thumbs.db
 .lesshst
 .subversion/*
+core
 
 # no vim backups #
 ##################

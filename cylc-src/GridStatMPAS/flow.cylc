@@ -9,8 +9,8 @@
 {% set CTR_FLWS = 'MPAS_240-U', 'MPAS_240-U_LwrBnd' %}
 
 {# Neighborhood widths for neighborhood methods, references model domains #}
-{# with 1-1 correspondence looping in nesting order (d01, d02, d03...) #}
-{# NOTE: this is impacted if WRF has been regridded to an intermediate grid #}
+{# NOTE: this is impacted by the choice of intermediate grid for MPAS lat-lon #}
+{# Arguments are in 1-1 correspondence with control flows #}
 {% set INT_WDTHS = 3, 3 %}
 
 {# Define the min / max ensemble indices #}

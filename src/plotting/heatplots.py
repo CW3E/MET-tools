@@ -442,6 +442,7 @@ class multidate_multilead(plot):
         plt.savefig(out_path)
         if self.IF_SHOW:
             plt.show()
+        plt.close()
 
 ##################################################################################
 # Plots forecast threshold vertically versus forecast lead hour horizontally
@@ -724,6 +725,7 @@ class multilevel_multilead(plot):
         plt.savefig(out_path)
         if self.IF_SHOW:
             plt.show()
+        plt.close()
 
 ##################################################################################
 # Multi-date relative difference heat plots, forecast lead in vertical and
@@ -1154,6 +1156,7 @@ class multidate_multilead_relative_diff(plot):
         plt.savefig(out_path)
         if self.IF_SHOW:
             plt.show()
+        plt.close()
 
 ##################################################################################
 # Multi-date, fixed lead relative difference heat plots, threshold level in
@@ -1556,6 +1559,7 @@ class multidate_fixedlead_relative_diff(plot):
         plt.savefig(out_path)
         if self.IF_SHOW:
             plt.show()
+        plt.close()
 
 ##################################################################################
 # Plots forecast threshold vertically versus forecast lead hour horizontally
@@ -1918,5 +1922,6 @@ class multilevel_multilead_relative_diff(plot):
         plt.savefig(out_path)
         if self.IF_SHOW:
             plt.show()
+        plt.close()
 
 ##################################################################################

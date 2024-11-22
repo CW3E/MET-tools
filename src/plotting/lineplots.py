@@ -458,5 +458,6 @@ class dual_lineplot(plot):
         plt.savefig(out_path)
         if self.IF_SHOW:
             plt.show()
+        plt.close()
 
 ##################################################################################

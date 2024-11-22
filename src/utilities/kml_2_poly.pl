@@ -62,7 +62,6 @@ if (! defined $MSK_ROOT) {die "ERROR: MSK_ROOT is not defined! $!"};
 if (! defined $MSK_LTLN) {die "ERROR: MSK_LTLN is not defined! $!"};
 if (! defined $VRF_RGN) {die "ERROR: VRF_RGN is not defined! $!"};
 if (! defined $KML_IN) {die "ERROR: KML_IN is not defined! $!"};
-if (! defined $MSK_LST) {die "ERROR: MSK_LST is not defined! $!"};
 
 #################################################################################
 # GENERATE MET POLYGON FILE(S)
@@ -70,9 +69,6 @@ if (! defined $MSK_LST) {die "ERROR: MSK_LST is not defined! $!"};
 
 # Open KML file to read  
   open(FILE,'<',$KML_IN) or die "Cannot open '$KML_IN': $!";
-
-# Open output MaskList file
-  open(MASKLST,'>',$MSK_LST) or die "Cannot open '$MSK_LST': $!";
 
 # Loop through data lines of KML file
   while ($line=<FILE>) {

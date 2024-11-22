@@ -7,7 +7,7 @@
 # provided by Matthew Simpson. 
 #
 # TBD: Currently a Perl script. Once/if converted to a Shell script, many of
-# these pathways can be sourced from config_MET-tools.sh. 
+# these pathways can be sourced from config_workflow.sh. 
 ##################################################################################
 # KML to MET Polygon Parameters
 ##################################################################################
@@ -16,17 +16,13 @@
 $USR_HOME = '/expanse/nfs/cw3e/cwp168/MET-tools'; # TBD: not needed if converted to shell
 
 # Root directory for landmasks, lat-lon files, kml files, and reference grids 
-$MSK_ROOT = "$USR_HOME/vxmask"; # TBD
+$MSK_ROOT = "$USR_HOME/settings/mask-root"; # TBD
 
 # Path to lat-lon text files for mask generation
 $MSK_LTLN = "$MSK_ROOT/lat-lon"; # TBD
 
 # Verification region name
-$VRF_RGN = 'CA_Climate_Zone_16'; # should be of the form 'Mask_Name'
+$VRF_RGN = 'PNW_NorCal'; # should be of the form 'Mask_Name'
 
 # Path to KML input file
 $KML_IN = "$MSK_ROOT/kml_files/$VRF_RGN.kml";
-
-# Path to file with list of landmasks for verification region
-$MSK_LST = "$MSK_ROOT/mask-lists/${VRF_RGN}_MaskList.txt";
-

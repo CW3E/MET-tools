@@ -143,9 +143,8 @@ fi
 # Process data
 #################################################################################
 # Set up singularity container with specific directory privileges
-cmd="singularity instance start -B ${STC_ROOT}:/STC_ROOT:ro,"
-cmd+="${MSK_LTLN}:/MSK_LTLN:ro,${MSK_GRDS}:/MSK_GRDS:rw ${MET} MET"
-printf "${cmd}\n"; eval "${cmd}"
+met="singularity exec -B ${STC_ROOT}:/STC_ROOT:ro,"
+met+="${MSK_LTLN}:/MSK_LTLN:ro,${MSK_GRDS}:/MSK_GRDS:rw ${MET}"
 
 while read msk; do
   # masks are recreated depending on the existence of files from previous analyses
@@ -153,11 +152,17 @@ while read msk; do
   out_path="${MSK_GRDS}/${fname}"
   if [ ! -r "${out_path}" ]; then
     # regridded mask does not exist in mask out, create from scratch
-    cmd="singularity exec instance://MET gen_vx_mask -v 10 \
+    cmd="${met} gen_vx_mask -v 10 \
     /STC_ROOT/${GRD_IN} \
     -type poly /MSK_LTLN/${msk}.txt \
-    /MSK_GRDS/${fname}"
+    /MSK_GRDS/${fname}; error=\$?"
     printf "${cmd}\n"; eval "${cmd}"
+    if [ ${error} -ne 0 ]; then
+      error_check=1
+      msg="ERROR: vxmask failed to produce landmask\n"
+      msg+=" ${fname}\n"
+      printf "${msg}"
+    fi
   else
     # mask exists and is readable, skip this step
     msg="Land mask\n ${out_path}\n already exists in\n ${MSK_GRDS}\n "
@@ -166,13 +171,18 @@ while read msk; do
   fi
 done<${MSK_LST}
 
-# End MET Process and singularity stop
-cmd="singularity instance stop MET"
-printf "${cmd}\n"; eval "${cmd}"
-
 msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`, verify "
-msg+="outputs at MSK_GRDS:\n ${MSK_GRDS}\n"
 printf "${msg}"
+
+if [ ${error_check} = 1 ]; then
+  msg="ERROR: vxmask did not complete successfully, see above errors.\n"
+  printf "${msg}"
+  exit 1
+else
+  msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`,"
+  msg+="verify outputs at MSK_GRDS:\n ${MSK_GRDS}\n"
+  printf "${msg}"
+fi
 
 #################################################################################
 # end

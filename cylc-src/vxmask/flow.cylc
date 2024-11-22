@@ -9,7 +9,7 @@
 # Mask Parameters
 ##################################################################################
 # Verification region group name
-{% set VRF_RGN = 'NRT' %}
+{% set VRF_RGN = 'West_Coast' %}
 
 # Set the verification product grid name
 {% set GRD_NME = 'StageIV' %}

@@ -48,7 +48,7 @@
 {% set NBRHD_WDTH = 9 %}
 
 {# Verification region group name - used for mask list file name #}
-{% set VRF_RGNS = 'PNW_NorCal' %}
+{% set VRF_RGNS = 'West_Coast' %}
 
 {# Number of bootstrap resamplings, set 0 for off #}
 {% set BTSTRP = 0 %}

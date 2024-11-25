@@ -93,6 +93,9 @@ CTR_FLWS = [
 # Define forecast accumulation thresholds
 LEVS = ['>=1.0', '>=10.0', '>=25.0', '>=50.0', '>=100.0']
 
+# Define land masks to produce verification diagnostics over
+MSKS = ['PNW_NorCal', 'CA_All']
+
 # Define event forecast start dates range / valid date triplets
 DTS = [
        ['2021011900', '2021012000', '2021012100'],
@@ -129,7 +132,6 @@ lineplot_rmse_corr = {
         'STAT1_LIM': None,
         'CI': 'NC',
         'MET_TOOL': 'GridStat',
-        'MSK': 'CA_All',
         'CSE': 'season_2021_cycling',
         'FIG_CSE': 'lineplots',
         'VRF_REF': 'StageIV',
@@ -150,7 +152,6 @@ lineplot_fss_afss = {
         'STAT1_LIM': None,
         'CI': 'NC',
         'MET_TOOL': 'GridStat',
-        'MSK': 'CA_All',
         'CSE': 'season_2021_cycling',
         'FIG_CSE': 'lineplots',
         'VRF_REF': 'StageIV',
@@ -179,7 +180,6 @@ heatplot_multidate_rmse = {
         'DT_FMT': '%Y-%m-%d',
         'COLORBAR': high_rmse_cb,
         'MET_TOOL': 'GridStat',
-        'MSK': 'CA_All',
         'CSE': 'season_2021_cycling',
         'FIG_CSE': 'multidate_multilead_heatplots',
         'VRF_REF': 'StageIV',
@@ -205,7 +205,6 @@ heatplot_multidate_fss = {
         'DT_FMT': '%Y-%m-%d',
         'COLORBAR': normalized_cb,
         'MET_TOOL': 'GridStat',
-        'MSK': 'CA_All',
         'CSE': 'season_2021_cycling',
         'FIG_CSE': 'multidate_multilead_heatplots',
         'VRF_REF': 'StageIV',
@@ -224,7 +223,6 @@ heatplot_multilevel_multilead_fss = {
         'MEM_KEY': 'ens_00',
         'COLORBAR': normalized_cb,
         'MET_TOOL': 'GridStat',
-        'MSK': 'CA_All',
         'CSE': 'season_2021_cycling',
         'FIG_CSE': 'all_level_multilead_heatplots',
         'VRF_REF': 'StageIV',
@@ -254,7 +252,6 @@ heatplot_multidate_rmse_relative_diff = {
         'DT_FMT': '%Y-%m-%d',
         'COLORBAR': relative_diff_cb,
         'MET_TOOL': 'GridStat',
-        'MSK': 'CA_All',
         'CSE': 'season_2021_cycling',
         'FIG_CSE': 'relative_diff_multidate_multilead_plots',
         'VRF_REF': 'StageIV',
@@ -282,7 +279,6 @@ heatplot_multidate_fss_relative_diff = {
         'DT_FMT': '%Y-%m-%d',
         'COLORBAR': relative_diff_cb,
         'MET_TOOL': 'GridStat',
-        'MSK': 'CA_All',
         'CSE': 'season_2021_cycling',
         'FIG_CSE': 'relative_diff_multidate_multilead_plots',
         'VRF_REF': 'StageIV',
@@ -307,7 +303,6 @@ heatplot_fixedlead_fss_relative_diff = {
         'DT_FMT': '%Y-%m-%d',
         'COLORBAR': relative_diff_cb,
         'MET_TOOL': 'GridStat',
-        'MSK': 'CA_All',
         'CSE': 'season_2021_cycling',
         'FIG_CSE': 'relative_diff_multidate_fixedlead',
         'VRF_REF': 'StageIV',
@@ -328,7 +323,6 @@ heatplot_multilevel_multilead_fss_relative_diff = {
         'REF_MEM_KEY': 'ens_00',
         'COLORBAR': relative_diff_cb,
         'MET_TOOL': 'GridStat',
-        'MSK': 'CA_All',
         'CSE': 'season_2021_cycling',
         'FIG_CSE': 'relative_diff_multilevel_multilead',
         'VRF_REF': 'StageIV',
@@ -344,74 +338,84 @@ heatplot_multilevel_multilead_fss_relative_diff = {
 # Run plotting if called as script
 ##################################################################################
 if __name__ == '__main__':
-    # lineplots
-    for DT in DTS:
-        STRT_DT = DT[0]
-        STOP_DT = DT[1]
-        VALID_DT = DT[2]
-
-        lineplot_rmse_corr['STRT_DT'] = STRT_DT
-        lineplot_rmse_corr['STOP_DT'] = STOP_DT
-        lineplot_rmse_corr['VALID_DT'] = VALID_DT
-
-        lineplot_fss_afss['STRT_DT'] = STRT_DT
-        lineplot_fss_afss['STOP_DT'] = STOP_DT
-        lineplot_fss_afss['VALID_DT'] = VALID_DT
-
-        dual_lineplot(**lineplot_rmse_corr).gen_fig()
-        for LEV in LEVS:
-            lineplot_fss_afss['LEV'] = LEV
-            dual_lineplot(**lineplot_fss_afss).gen_fig()
-
-    # raw stat heat plots
-    for CTR_FLW in CTR_FLWS:
-        heatplot_multidate_rmse['CTR_FLW'] = CTR_FLW
-        heatplot_multidate_fss['CTR_FLW'] = CTR_FLW
-        multidate_multilead(**heatplot_multidate_rmse).gen_fig()
-        for LEV in LEVS:
-            heatplot_multidate_fss['LEV'] = LEV
-            multidate_multilead(**heatplot_multidate_fss).gen_fig()
-
+    for MSK in MSKS:
+        # lineplots
         for DT in DTS:
             STRT_DT = DT[0]
             STOP_DT = DT[1]
             VALID_DT = DT[2]
 
-            heatplot_multilevel_multilead_fss['CTR_FLW'] = CTR_FLW
-            heatplot_multilevel_multilead_fss['STRT_DT'] = STRT_DT
-            heatplot_multilevel_multilead_fss['STOP_DT'] = STOP_DT
-            heatplot_multilevel_multilead_fss['VALID_DT'] = VALID_DT
-            multilevel_multilead(**heatplot_multilevel_multilead_fss).gen_fig()
+            lineplot_rmse_corr['STRT_DT'] = STRT_DT
+            lineplot_rmse_corr['STOP_DT'] = STOP_DT
+            lineplot_rmse_corr['VALID_DT'] = VALID_DT
+            lineplot_rmse_corr['MSK'] = MSK 
 
-    # relative diff heat plots
-    for DIFF in DIFFS:
-        ANL = DIFF[0]
-        REF = DIFF[1]
+            lineplot_fss_afss['STRT_DT'] = STRT_DT
+            lineplot_fss_afss['STOP_DT'] = STOP_DT
+            lineplot_fss_afss['VALID_DT'] = VALID_DT
+            lineplot_fss_afss['MSK'] = MSK 
 
-        heatplot_multidate_rmse_relative_diff['ANL_CTR_FLW'] = ANL
-        heatplot_multidate_rmse_relative_diff['REF_CTR_FLW'] = REF
-        multidate_multilead_relative_diff(**heatplot_multidate_rmse_relative_diff).gen_fig()
+            dual_lineplot(**lineplot_rmse_corr).gen_fig()
+            for LEV in LEVS:
+                lineplot_fss_afss['LEV'] = LEV
+                dual_lineplot(**lineplot_fss_afss).gen_fig()
 
-        heatplot_fixedlead_fss_relative_diff['ANL_CTR_FLW'] = ANL
-        heatplot_fixedlead_fss_relative_diff['REF_CTR_FLW'] = REF
-        multidate_fixedlead_relative_diff(**heatplot_fixedlead_fss_relative_diff).gen_fig()
+        # raw stat heat plots
+        for CTR_FLW in CTR_FLWS:
+            heatplot_multidate_rmse['CTR_FLW'] = CTR_FLW
+            heatplot_multidate_rmse['MSK'] = MSK 
+            heatplot_multidate_fss['CTR_FLW'] = CTR_FLW
+            heatplot_multidate_fss['MSK'] = MSK 
+            multidate_multilead(**heatplot_multidate_rmse).gen_fig()
+            for LEV in LEVS:
+                heatplot_multidate_fss['LEV'] = LEV
+                multidate_multilead(**heatplot_multidate_fss).gen_fig()
 
-        heatplot_multidate_fss_relative_diff['ANL_CTR_FLW'] = ANL
-        heatplot_multidate_fss_relative_diff['REF_CTR_FLW'] = REF
-        for LEV in LEVS:
-            heatplot_multidate_fss_relative_diff['LEV'] = LEV
-            multidate_multilead_relative_diff(**heatplot_multidate_fss_relative_diff).gen_fig()
+            for DT in DTS:
+                STRT_DT = DT[0]
+                STOP_DT = DT[1]
+                VALID_DT = DT[2]
 
-        heatplot_multilevel_multilead_fss_relative_diff['ANL_CTR_FLW'] = ANL
-        heatplot_multilevel_multilead_fss_relative_diff['REF_CTR_FLW'] = REF
+                heatplot_multilevel_multilead_fss['CTR_FLW'] = CTR_FLW
+                heatplot_multilevel_multilead_fss['STRT_DT'] = STRT_DT
+                heatplot_multilevel_multilead_fss['STOP_DT'] = STOP_DT
+                heatplot_multilevel_multilead_fss['VALID_DT'] = VALID_DT
+                heatplot_multilevel_multilead_fss['MSK'] = MSK 
+                multilevel_multilead(**heatplot_multilevel_multilead_fss).gen_fig()
 
-        for DT in DTS:
-            STRT_DT = DT[0]
-            STOP_DT = DT[1]
-            VALID_DT = DT[2]
+        # relative diff heat plots
+        for DIFF in DIFFS:
+            ANL = DIFF[0]
+            REF = DIFF[1]
 
-            heatplot_multilevel_multilead_fss_relative_diff['STRT_DT'] = STRT_DT
-            heatplot_multilevel_multilead_fss_relative_diff['STOP_DT'] = STOP_DT
-            heatplot_multilevel_multilead_fss_relative_diff['VALID_DT'] = VALID_DT
-            
-            multilevel_multilead_relative_diff(**heatplot_multilevel_multilead_fss_relative_diff).gen_fig()
+            heatplot_multidate_rmse_relative_diff['ANL_CTR_FLW'] = ANL
+            heatplot_multidate_rmse_relative_diff['REF_CTR_FLW'] = REF
+            heatplot_multidate_rmse_relative_diff['MSK'] = MSK 
+            multidate_multilead_relative_diff(**heatplot_multidate_rmse_relative_diff).gen_fig()
+
+            heatplot_fixedlead_fss_relative_diff['ANL_CTR_FLW'] = ANL
+            heatplot_fixedlead_fss_relative_diff['REF_CTR_FLW'] = REF
+            heatplot_fixedlead_fss_relative_diff['MSK'] = MSK 
+            multidate_fixedlead_relative_diff(**heatplot_fixedlead_fss_relative_diff).gen_fig()
+
+            heatplot_multidate_fss_relative_diff['ANL_CTR_FLW'] = ANL
+            heatplot_multidate_fss_relative_diff['REF_CTR_FLW'] = REF
+            heatplot_multidate_fss_relative_diff['MSK'] = MSK 
+            for LEV in LEVS:
+                heatplot_multidate_fss_relative_diff['LEV'] = LEV
+                multidate_multilead_relative_diff(**heatplot_multidate_fss_relative_diff).gen_fig()
+
+            heatplot_multilevel_multilead_fss_relative_diff['ANL_CTR_FLW'] = ANL
+            heatplot_multilevel_multilead_fss_relative_diff['REF_CTR_FLW'] = REF
+            heatplot_multilevel_multilead_fss_relative_diff['MSK'] = MSK 
+
+            for DT in DTS:
+                STRT_DT = DT[0]
+                STOP_DT = DT[1]
+                VALID_DT = DT[2]
+
+                heatplot_multilevel_multilead_fss_relative_diff['STRT_DT'] = STRT_DT
+                heatplot_multilevel_multilead_fss_relative_diff['STOP_DT'] = STOP_DT
+                heatplot_multilevel_multilead_fss_relative_diff['VALID_DT'] = VALID_DT
+                
+                multilevel_multilead_relative_diff(**heatplot_multilevel_multilead_fss_relative_diff).gen_fig()

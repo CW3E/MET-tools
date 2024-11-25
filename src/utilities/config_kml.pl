@@ -22,7 +22,7 @@ $MSK_ROOT = "$USR_HOME/settings/mask-root"; # TBD
 $MSK_LTLN = "$MSK_ROOT/lat-lon"; # TBD
 
 # Verification region name
-$VRF_RGN = 'PNW_NorCal'; # should be of the form 'Mask_Name'
+$VRF_RGN = 'OR_CA'; # should be of the form 'Mask_Name'
 
 # Path to KML input file
 $KML_IN = "$MSK_ROOT/kml_files/$VRF_RGN.kml";

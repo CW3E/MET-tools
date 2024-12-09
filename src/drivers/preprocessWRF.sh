@@ -227,7 +227,7 @@ elif [[ ! ${INIT_OFFSET} =~ ${INT_RE} ]]; then
   printf "${msg}"
   exit 1
 else
-  init_offset=$(( 10#${anl_hr} ))
+  init_offset=$(( 10#${INIT_OFFSET} ))
 fi
 
 # control flow to be processed

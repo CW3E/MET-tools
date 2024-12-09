@@ -1,0 +1,167 @@
+#!jinja2
+{################################################################################}
+{# MPAS CONFIGURATIONS #}
+{################################################################################}
+{# Define the name of case study #}
+{% set CSE_NME = 'season_2021_cycling' %}
+
+{# Configuration name including tunable parameters #}
+{% set CTR_FLWS = 'MPAS-JEDI_60km_ARO_MHS', 'MPAS-JEDI_60km_noARO_MHS', 'MPAS-JEDI_60km_noARO_noMHS', 'MPAS-JEDI_60km_ARO_noMHS'%}
+
+{# Switch to call static IO stream separate from dynamic TRUE / FALSE #}
+{% set IN_MSH_STRM = 'TRUE' %}
+
+{# Mesh information file names, must be in 1-1 correspondence with control flow names #}
+{# if static information comes from separate stream (IN_MSH_STRM = 'TRUE') #}
+{% set MSH_NMES = 'x1.163842.static.nc', 'x1.163842.static.nc', 'x1.163842.static.nc', 'x1.163842.static.nc' %}
+
+{# MPAS output file prefix to source model outputs from, e.g., hist / diag #}
+{% set MPAS_PRFX = 'diag' %}
+
+{# Define the min / max ensemble indices #}
+{% set ENS_MIN = 0 %}
+{% set ENS_MAX = 0 %}
+
+{# Define the number of digits to pad ensemble indices #}
+{% set ENS_PAD = 2 %}
+
+{# Define ensemble index prefix #}
+{% set ENS_PRFX = 'ens_' %}
+
+{################################################################################}
+{# PREPROCESSING SETTINGS #}
+{################################################################################}
+{# Preprocessing fails on missing data TRUE / FALSE #}
+{% set FULL_DATA = 'TRUE' %}
+
+{# Compute precipitation accumulations from cf files, TRUE or FALSE #}
+{% set CMP_ACC = 'TRUE' %}
+
+{# Defines the min / max accumulation interval for precip #}
+{% set ACC_MIN = 24 %}
+{% set ACC_MAX = 72 %}
+
+{# Defines the increment between min / max to compute accumulation intervals #}
+{% set ACC_INC = 24 %}
+
+{# Define the directory to find mpas outputs relative to ISO cycle directories #}
+{% set IN_DT_SUBDIR = 'mean' %}
+
+{################################################################################}
+{# CYCLING SETTINGS #}
+{################################################################################}
+{# First initial time for a forecast YYYY-MM-DDTHH #}
+{% set CYC_STRT = '2021-01-19T00' %}
+
+{# Last initial time for a forecast YYYY-MM-DDTHH #}
+{% set CYC_STOP = '2021-02-02T00' %}
+
+{# Interval between cycle start times hours INT #}
+{% set CYC_INC = 24 %}
+
+{# Define min / max forecast hours for cf outputs to be generated #}
+{% set ANL_MIN = 0 %}
+{% set ANL_MAX = 120 %}
+
+{# Define the increment at which to generate cf outputs (HH) #}
+{% set ANL_INC = 24 %}
+
+{# OPTIONAL ARGUMENT to set a verification termination date -- processing will #}
+{# stop automatically at this valid date, define as blank string if unused #}
+{% set EXP_VRF = '' %}
+
+{################################################################################}
+{# JOB SETTINGS #}
+{################################################################################}
+{# Job mem argument #}
+{% set PRE_MEM = '20000M' %}
+
+{# Wallclock limit for ungrib jobs #}
+{% set PRE_WC = 'PT30M' %}
+
+{################################################################################}
+{# CYLC SETTINGS #}
+{################################################################################}
+[scheduler]
+    UTC mode = True
+    allow implicit tasks = True
+[scheduling]
+    initial cycle point = {{CYC_STRT}}
+    final cycle point = {{CYC_STOP}}
+    [[graph]]
+        PT{{CYC_INC}}H = """
+        {# Loop model control flows #}
+        {% for ctr_flw in CTR_FLWS %}
+            {# loop ensemble members to process #}
+            {% set ens_size = ENS_MAX + 1 %}
+            {% for mem in range(ENS_MIN, ens_size) %}
+                {% set idx = mem | pad(ENS_PAD, '0') %}
+                preprocess_{{ctr_flw}}_ens_{{idx}}
+            {% endfor %}
+        {% endfor %}
+        """
+
+[runtime]
+    [[root]]
+        platform = {{environ['SCHED']}}
+        [[[environment]]]
+            FULL_DATA = {{FULL_DATA}}
+            CMP_ACC = {{CMP_ACC}}
+            ACC_MIN = {{ACC_MIN}}
+            ACC_MAX = {{ACC_MAX}}
+            ACC_INC = {{ACC_INC}}
+            MPAS_PRFX = {{MPAS_PRFX}}
+            CYC_DT = $(isodatetime ${CYLC_TASK_CYCLE_POINT} --f '%Y%m%d%H')
+            ANL_MIN = {{ANL_MIN}}
+            ANL_MAX = {{ANL_MAX}}
+            ANL_INC = {{ANL_INC}}
+            {% if EXP_VRF == '' %}
+                EXP_VRF = {{EXP_VRF}}
+            {% else %}
+                EXP_VRF = $(isodatetime {{EXP_VRF}} --f '%Y%m%d%H')
+            {% endif %}
+
+    {# Loop model control flows #}
+    {% for ctr_flw in CTR_FLWS %}
+        {% if IN_MSH_STRM == 'TRUE' %}
+            {# inherit the mesh name to process from 1-1 correspondence #}
+            {% set msh_nme = MSH_NMES[loop.index0] %}
+        {% endif %}
+        {# loop ensemble members to process #}
+        {% set ens_size = ENS_MAX + 1 %}
+        {% for mem in range(ENS_MIN, ens_size) %}
+            {% set idx = mem | pad(ENS_PAD, '0') %}
+            [[preprocess_{{ctr_flw}}_ens_{{idx}}]]
+                execution time limit = {{PRE_WC}}
+                script = {{environ['DRIVERS']}}/preprocessMPAS.sh
+                execution retry delays = 3*PT5M
+                [[[environment]]]
+                    CTR_FLW = {{ctr_flw}}
+                    IN_DIR = {{environ['SIM_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/ExtendedFC/$CYC_DT/{{IN_DT_SUBDIR}}
+                    WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT/{{ENS_PRFX}}{{idx}}
+                    {% if IN_MSH_STRM == 'TRUE' %}
+                        IN_MSH_DIR = {{environ['MSH_ROOT']}}
+                        IN_MSH_F = {{msh_nme}}
+                    {% else %}
+                        IN_MSH_DIR = ''
+                        IN_MSH_F = ''
+                    {% endif %}
+                [[[directives]]]
+                    {% if environ['SCHED'] == 'slurm' %}
+                        {% if environ['SYS_TYPE' ] == 'penguin' %}
+                            --partition = general
+                            --qos = {{environ['PART_SRL']}}
+                            --nodes = 1
+                            --ntasks-per-node = 1
+                        {% else %}
+                            --partition = {{environ['PART_SRL']}}
+                            --nodes = 1
+                            --ntasks-per-node = 1
+                            --mem = {{PRE_MEM}}
+                        {% endif %}
+                    {% elif environ['SCHED'] == 'pbs' %}
+                        -q = {{environ['PART_SRL']}}
+                        -l select=1:mpiprocs=1:ncpus=1:mem={{PRE_MEM}}
+                    {% endif %}
+        {% endfor %}
+    {% endfor %}

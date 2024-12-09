@@ -1,4 +1,0 @@
-OR_All
-WA_All
-WA_OR
-CA_All

@@ -6,10 +6,10 @@
 {% set CSE_NME = 'valid_date_2022-12-28T00' %}
 
 {# Configuration name including tunable parameters #}
-{% set CTR_FLWS = 'WRF_9-3_WestCoast', 'WRF_9_WestCoast' %}
+{% set CTR_FLWS = [ 'WRF_9-3_WestCoast', 'WRF_9_WestCoast' ] %}
 
 {# Max number of sub-domain to be processed, 1-1 correspondence with CTR_FLWS #}
-{% set MAX_DOMS = 2, 1 %}
+{% set MAX_DOMS = [ 2, 1 ] %}
 
 {# WRF output file prefix to source model outputs from, e.g., wrfout / wrfcf #}
 {% set WRF_PRFX = 'wrfout' %}
@@ -33,8 +33,11 @@
 {# Regrid to generic lat-lon for MET if native grid errors (TRUE or FALSE) #}
 {% set RGRD = 'TRUE' %}
 
+{# Create averaged IVT products from cf files, TRUE or FALSE #}
+{% set IVT_PRD = 'TRUE' %}
+
 {# Compute precipitation accumulations from cf files, TRUE or FALSE #}
-{% set CMP_ACC = 'TRUE' %}
+{% set PCP_PRD = 'TRUE' %}
 
 {# Defines the min / max accumulation interval for precip #}
 {% set ACC_MIN = 24 %}

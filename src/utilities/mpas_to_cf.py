@@ -50,16 +50,35 @@ f_in = sys.argv[1]
 f_out = sys.argv[2]
 
 try:
-    f_time = sys.argv[3]
+    pcp_prd = bool(int(sys.argv[3]))
+except:
+    print('ERROR: precipitation product flag must be set to 0 or 1')
+    sys.exit(1)
 
+try:
+    ivt_prd = bool(int(sys.argv[4]))
+except:
+    print('ERROR: IVT product flag must be set to 0 or 1')
+    sys.exit(1)
+
+try:
+    # optionally provide file path to derive time information from
+    f_time = sys.argv[5]
 except:
     f_time = None
 
 # load datasets in xarray
 ds_in = xr.open_dataset(f_in)
+ds_out = xr.Dataset()
 
-# extract cf precip
-ds_out = cf_precip(ds_in, f_time)
+if pcp_prd:
+    ds_precip = cf_precip(ds_in, f_time)
+    ds_out = xr.merge(ds_precip, ds_out)
+
+if ivt_prd:
+    ds_ivt = cf_ivt(ds_in, f_time)
+    ds_out = xr.merge(ds_ivt, ds_out)
+
 ds_out.to_netcdf(path=f_out)
 
 ##################################################################################

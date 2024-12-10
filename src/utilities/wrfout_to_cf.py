@@ -56,23 +56,32 @@ from WRF_cf import *
 from cdo import Cdo
 
 ##################################################################################
-
 # file name paths are taken as script arguments
 f_in = sys.argv[1]
 f_out = sys.argv[2]
 
 try:
-    # check for regridding (1/0), convert to bool
-    rgrd = bool(int(sys.argv[3]))
-
+    pcp_prd = bool(int(sys.argv[3]))
 except:
-    # no regridding unless specified
-    print('ERROR: Regridding option not specified or not integer, must be 1 or 0.')
+    print('ERROR: precipitation product flag must be set to 0 or 1')
     sys.exit(1)
 
 try:
+    ivt_prd = bool(int(sys.argv[4]))
+except:
+    print('ERROR: IVT product flag must be set to 0 or 1')
+    sys.exit(1)
+
+try:
+    # check for regridding (1/0), convert to bool
+    rgrd = bool(int(sys.argv[5]))
+except:
+    # no regridding unless specified
+    rgrd = False
+
+try:
     # check for initialization offset value, e.g., for restart
-    init_offset = int(sys.argv[4])
+    init_offset = int(sys.argv[6])
     print('Initialization times will be computed with an offset of minus ' +\
             str(init_offset) + ' hours.')
 
@@ -80,20 +89,26 @@ except:
     init_offset=0
     pass
 
-# load dataset in xarray
+# load dataset in xarray with empty output dataset to merge variables
 ds_in = xr.open_dataset(f_in)
+ds_out = xr.Dataset()
 
-# extract cf precip
-ds_out = cf_precip(ds_in, init_offset=init_offset)
+if pcp_prd:
+    ds_precip = cf_precip(ds_in, init_offset=init_offset)
+    ds_out = xr.merge(ds_precip, ds_out)
+
+if ivt_prd:
+    ds_ivt = cf_ivt(ds_in, init_offset=init_offset)
+    ds_out = xr.merge(ds_ivt, ds_out)
+
 ds_out.to_netcdf(path=f_out)
 
 if rgrd:
     # use CDO for regridding the data for MET compatibility
     cdo = Cdo()
     rgr_ds = cdo.sellonlatbox(LON1, LON2, LAT1, LAT2,
-            input=cdo.remapbil(GRES, input=f_out,
-                returnXarray='precip'),
-            returnXarray='precip',  options='-f nc4' )
+            input=cdo.remapbil(GRES, input=f_out, returnCdf=True),
+            returnCdf=True, options='-f nc4' )
 
     rgr_ds = xr.open_dataset(rgr_ds)
     tmp_ds = xr.open_dataset(f_out)

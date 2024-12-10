@@ -70,8 +70,37 @@ else
   exit 1
 fi
 
+# create averaged IVT product from cf file, TRUE or FALSE
+if [[ ${IVT_PRD} =~ ${TRUE} ]]; then
+  printf "run_preprocessMPAS creates averaged IVT products.\n"
+  if [[ ! ${IVT_AVG} =~ ${INT_RE} ]]; then
+    msg="ERROR: IVT average window \${IVT_AVG},\n ${IVT_AVG}\n"
+    msg+=" is not an integer.\n"
+    printf "${msg}"
+    exit 1
+  elif [[ ! ${IVT_INC} =~ ${INT_RE} ]]; then
+    msg="ERROR: IVT hour increment between files \${IVT_INC},\n ${IVT_INC}\n"
+    msg+=" is not an integer.\n"
+    printf "${msg}"
+    exit 1
+  elif [ ! $(( ${IVT_AVG} % ${IVT_INC} )) = 0 ]; then
+    msg="ERROR: the interval [0, \${IVT_AVG}]\n"
+    msg+=" [0, ${IVT_AVG}] must be evenly divisible into\n"
+    msg+=" increments of \${IVT_INC}, ${IVT_INC}.\n"
+    printf "${msg}"
+    exit 1
+  fi
+elif [[ ${IVT_PRD} =~ ${FALSE} ]]; then
+  printf "run_preprocessMPAS does not create averaged IVT products.\n"
+else
+  msg="ERROR: \${IVT_PRD} must be set to 'TRUE' or 'FALSE' to decide if "
+  msg+="creating IVT products from cf files."
+  printf "${msg}"
+  exit 1
+fi
+
 # compute accumulation from cf file, TRUE or FALSE
-if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
+if [[ ${PCP_PRD} =~ ${TRUE} ]]; then
   # define the accumulation intervals for precip
   if [[ ! ${ACC_MIN} =~ ${INT_RE} ]]; then
     msg="ERROR: min accumulation interval \${ACC_MIN},\n ${ACC_MIN}\n"
@@ -108,7 +137,7 @@ if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
     # define array of accumulation interval computation hours
     acc_hrs=()
     for (( acc_hr=${ACC_MIN}; acc_hr <= ${ACC_MAX}; acc_hr += ${ACC_INC} )); do
-      # check that the precip accumulations are summable from wrfcf files
+      # check that the precip accumulations are summable from cf files
       if [ ! $(( ${acc_hr} % ${ANL_INC} )) = 0 ]; then
         msg="ERROR: precip accumulation ${acc_hr} is not a multiple"
         msg+=" of ${ANL_INC}.\n"
@@ -122,11 +151,11 @@ if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
       fi
     done
   fi
-elif [[ ${CMP_ACC} =~ ${FALSE} ]]; then
-  printf "run_preprocessWRF does not compute accumulations.\n"
+elif [[ ${PCP_PRD} =~ ${FALSE} ]]; then
+  printf "run_preprocessMPAS does not compute accumulations.\n"
 else
-  msg="ERROR: \${CMP_ACC} must be set to 'TRUE' or 'FALSE' to decide if "
-  msg+="computing accumulations from wrfcf files."
+  msg="ERROR: \${PCP_PRD} must be set to 'TRUE' or 'FALSE' to decide if "
+  msg+="computing accumulations from cf files."
   printf "${msg}"
   exit 1
 fi
@@ -392,7 +421,68 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
       printf "${msg}"
     fi
   fi
-  if [[ ${CMP_ACC} = ${TRUE} ]]; then
+  if [[ ${IVT_PRD} =~ ${TRUE} ]]; then
+    if [ ${anl_hr} -ge ${IVT_AVG} ]; then
+      # set flag to skip computing accumulation if missing files
+      avg_check=1
+      avg_files=()
+
+      for (( back_hr = ${IVT_AVG}; back_hr >= 0; back_hr - ${IVT_INC} )); do
+        # Currently looking backward to hr_val
+        hr_val=$(( ${anl_hr}  - ${back_hr} ))
+
+        # start / stop date strings
+        hr_iso=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${hr_val} hours"`
+        cf_file="mpascf_${hr_iso}.nc"
+
+        if [ ! -r "${WRK_DIR}/${cf_file}" ]; then
+          if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
+            msg="ERROR: cf file\n ${WRK_DIR}/${cf_file}\n does not exist" 
+            msg+=" or is not readable to compute forecast hour ${anl_hr} IVT"
+            msg+=" averaged over previous ${IVT_AVG} hours.\n"
+            error_check=1
+            printf "${msg}"
+          else
+            msg="WARNING: cf file\n ${WRK_DIR}/${cf_file}\n does not exist" 
+            msg+=" or is not readable, skipping forecast hour ${anl_hr} /"
+            msg+=" averaged over ${IVT_AVG} hours.\n"
+            printf "${msg}"
+          fi
+        else
+          # store readable files in a list
+          avg_files+=( "${cf_file}" )
+
+          # At least one file is needed to take the average
+          avg_check=0
+        fi
+      done
+      if [ ${avg_check} = 0 ]; then
+        # define padded forecast hour for name strings
+        pdd_hr=`printf %03d $(( 10#${anl_hr} ))`
+
+        # CTR_FLW QPF file name convention following similar products
+        cf_avg="${CTR_FLW}_${IVT_AVG}IVT_${CYC_DT}_F${pdd_hr}.nc"
+
+        # Combine precip to accumulation period
+        cmd="${met} pcp_combine -derive mean "
+        for fname in ${avg_files[@]}; do
+          cmd+="/in_dir/${fname} "
+        done
+        cmd+="/wrk_dir/${cf_avg} \
+        -field 'name=\"IVT\"; level=\"(0,*,*)\";'\
+        -name \"IVT_${IVT_AVG}hr\"; error=\$?"
+        printf "${cmd}\n"; eval "${cmd}"
+        printf "pcp_combine exited with status ${error}.\n"
+        if [ ${error} -ne 0 ]; then
+          error_check=1
+          msg="ERROR: pcp_combine failed to produce average file\n"
+          msg+=" ${cf_avg}\n"
+          printf "${msg}"
+        fi
+      fi
+    fi
+  fi
+  if [[ ${PCP_PRD} =~ ${TRUE} ]]; then
     for acc_hr in ${acc_hrs[@]}; do
       if [ ${anl_hr} -ge ${acc_hr} ]; then
         # define accumulation start / stop hours

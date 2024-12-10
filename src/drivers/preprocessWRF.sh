@@ -81,8 +81,37 @@ else
   exit 1
 fi
 
+# create averaged IVT product from cf file, TRUE or FALSE
+if [[ ${IVT_PRD} =~ ${TRUE} ]]; then
+  printf "run_preprocessMPAS creates averaged IVT products.\n"
+  if [[ ! ${IVT_AVG} =~ ${INT_RE} ]]; then
+    msg="ERROR: IVT average window \${IVT_AVG},\n ${IVT_AVG}\n"
+    msg+=" is not an integer.\n"
+    printf "${msg}"
+    exit 1
+  elif [[ ! ${IVT_INC} =~ ${INT_RE} ]]; then
+    msg="ERROR: IVT hour increment between files \${IVT_INC},\n ${IVT_INC}\n"
+    msg+=" is not an integer.\n"
+    printf "${msg}"
+    exit 1
+  elif [ ! $(( ${IVT_AVG} % ${IVT_INC} )) = 0 ]; then
+    msg="ERROR: the interval [0, \${IVT_AVG}]\n"
+    msg+=" [0, ${IVT_AVG}] must be evenly divisible into\n"
+    msg+=" increments of \${IVT_INC}, ${IVT_INC}.\n"
+    printf "${msg}"
+    exit 1
+  fi
+elif [[ ${IVT_PRD} =~ ${FALSE} ]]; then
+  printf "run_preprocessMPAS does not create averaged IVT products.\n"
+else
+  msg="ERROR: \${IVT_PRD} must be set to 'TRUE' or 'FALSE' to decide if "
+  msg+="creating IVT products from cf files."
+  printf "${msg}"
+  exit 1
+fi
+
 # compute accumulation from cf file, TRUE or FALSE
-if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
+if [[ ${PCP_PRD} =~ ${TRUE} ]]; then
   # define the accumulation intervals for precip
   if [[ ! ${ACC_MIN} =~ ${INT_RE} ]]; then
     msg="ERROR: min accumulation interval \${ACC_MIN},\n ${ACC_MIN}\n"
@@ -133,10 +162,10 @@ if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
       fi
     done
   fi
-elif [[ ${CMP_ACC} =~ ${FALSE} ]]; then
+elif [[ ${PCP_PRD} =~ ${FALSE} ]]; then
   printf "run_preprocessWRF does not compute accumulations.\n"
 else
-  msg="ERROR: \${CMP_ACC} must be set to 'TRUE' or 'FALSE' to decide if "
+  msg="ERROR: \${PCP_PRD} must be set to 'TRUE' or 'FALSE' to decide if "
   msg+="computing accumulations from wrfcf files."
   printf "${msg}"
   exit 1
@@ -365,7 +394,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
       printf "${msg}"
     fi
   fi
-  if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
+  if [[ ${PCP_PRD} =~ ${TRUE} ]]; then
     for acc_hr in ${acc_hrs[@]}; do
       if [ ${anl_hr} -ge ${acc_hr} ]; then
         # define accumulation start / stop hours

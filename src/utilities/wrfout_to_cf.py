@@ -91,7 +91,7 @@ except:
 
 # load dataset in xarray with empty output dataset to merge variables
 ds_in = xr.open_dataset(f_in)
-ds_out = xr.Dataset()
+ds_out = global_attrs(xr.Dataset())
 
 if pcp_prd:
     ds_precip = cf_precip(ds_in, init_offset=init_offset)
@@ -106,14 +106,13 @@ ds_out.to_netcdf(path=f_out)
 if rgrd:
     # use CDO for regridding the data for MET compatibility
     cdo = Cdo()
-    rgr_ds = cdo.sellonlatbox(LON1, LON2, LAT1, LAT2,
-            input=cdo.remapbil(GRES, input=f_out, returnCdf=True),
-            returnCdf=True, options='-f nc4' )
+    rgrd_ds = cdo.sellonlatbox(LON1, LON2, LAT1, LAT2,
+            input=cdo.remapbil(GRES, input=f_out, returnXDataset=True),
+            returnXDataset=True, options='-f nc4' )
 
-    rgr_ds = xr.open_dataset(rgr_ds)
     tmp_ds = xr.open_dataset(f_out)
-    rgr_ds['forecast_reference_time'] = tmp_ds.forecast_reference_time
+    rgrd_ds['forecast_reference_time'] = tmp_ds.forecast_reference_time
     os.system('rm -f ' + f_out)
-    rgr_ds.to_netcdf(path=f_out)
+    rgrd_ds.to_netcdf(path=f_out)
 
 ##################################################################################

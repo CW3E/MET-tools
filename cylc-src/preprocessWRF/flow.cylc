@@ -6,17 +6,17 @@
 {% set CSE_NME = 'valid_date_2022-12-28T00' %}
 
 {# Configuration name including tunable parameters #}
-{% set CTR_FLWS = [ 'WRF_9-3_WestCoast', 'WRF_9_WestCoast' ] %}
+{% set CTR_FLWS = [ 'WRF_9_WestCoast' ] %}
 
 {# Max number of sub-domain to be processed, 1-1 correspondence with CTR_FLWS #}
-{% set MAX_DOMS = [ 2, 1 ] %}
+{% set MAX_DOMS = [ 1 ] %}
 
 {# WRF output file prefix to source model outputs from, e.g., wrfout / wrfcf #}
 {% set WRF_PRFX = 'wrfout' %}
 
 {# Define the min / max ensemble indices #}
 {% set ENS_MIN = 0 %}
-{% set ENS_MAX = 5 %}
+{% set ENS_MAX = 3 %}
 
 {# Define the number of digits to pad ensemble indices #}
 {% set ENS_PAD = 2 %}
@@ -36,15 +36,27 @@
 {# Create averaged IVT products from cf files, TRUE or FALSE #}
 {% set IVT_PRD = 'TRUE' %}
 
+{# Define the interval over which to take IVT averages for verification #}
+{% set IVT_AVG = 6 %}
+
+{# Define hour increment between files within the interval to average over #}
+{% set IVT_INC = 3 %}
+
+{# Define at what hour interval IVT averages are computed #}
+{% set IVT_INT = 6 %}
+
 {# Compute precipitation accumulations from cf files, TRUE or FALSE #}
 {% set PCP_PRD = 'TRUE' %}
 
 {# Defines the min / max accumulation interval for precip #}
 {% set ACC_MIN = 24 %}
-{% set ACC_MAX = 72 %}
+{% set ACC_MAX = 24 %}
 
 {# Defines the increment between min / max to compute accumulation intervals #}
 {% set ACC_INC = 24 %}
+
+{# Define at what hour interval precip accumulationas are computed #}
+{% set ACC_INT = 12 %}
 
 {# Define the directory to find wrf outputs relative to ISO cycle directories #}
 {% set IN_DT_SUBDIR = 'wrf_model' %}
@@ -56,7 +68,7 @@
 {% set CYC_STRT = '2022-12-23T00' %}
 
 {# Last initial time for a forecast YYYY-MM-DDTHH #}
-{% set CYC_STOP = '2022-12-27T00' %}
+{% set CYC_STOP = '2022-12-23T00' %}
 
 {# Interval between cycle start times hours INT #}
 {% set CYC_INC = 24 %}
@@ -66,7 +78,7 @@
 {% set ANL_MAX = 120 %}
 
 {# Define the increment at which to generate cf outputs (HH) #}
-{% set ANL_INC = 24 %}
+{% set ANL_INC = 3 %}
 
 {# OPTIONAL ARGUMENT to set a verification termination date -- preprocessing will #}
 {# stop automatically at this valid date, define as blank string if unused #}
@@ -121,10 +133,15 @@
         [[[environment]]]
             FULL_DATA = {{FULL_DATA}}
             RGRD = {{RGRD}}
-            CMP_ACC = {{CMP_ACC}}
+            IVT_PRD = {{IVT_PRD}}
+            IVT_AVG = {{IVT_AVG}}
+            IVT_INC = {{IVT_INC}}
+            IVT_INT = {{IVT_INT}}
+            PCP_PRD = {{PCP_PRD}}
             ACC_MIN = {{ACC_MIN}}
             ACC_MAX = {{ACC_MAX}}
             ACC_INC = {{ACC_INC}}
+            ACC_INT = {{ACC_INT}}
             WRF_PRFX = {{WRF_PRFX}}
             CYC_DT = $(isodatetime ${CYLC_TASK_CYCLE_POINT} --f '%Y%m%d%H')
             ANL_MIN = {{ANL_MIN}}

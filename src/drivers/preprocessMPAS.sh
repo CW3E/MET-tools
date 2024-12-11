@@ -70,6 +70,17 @@ else
   exit 1
 fi
 
+# define the increment at which to process forecast outputs (HH)
+if [[ ! ${ANL_INC} =~ ${N_RE} ]]; then
+  printf "ERROR: hours increment between analyses \${ANL_INC} is not numeric.\n"
+  exit 1
+elif [ ! $(( (${ANL_MAX} - ${ANL_MIN}) % ${ANL_INC} )) = 0 ]; then
+  msg="ERROR: the interval [\${ANL_MIN}, \${ANL_MAX}]\n [${ANL_MIN}, ${ANL_MAX}]\n" 
+  msg+=" must be evenly divisible into increments of \${ANL_INC}, ${ANL_INC}.\n"
+  printf "${msg}"
+  exit 1
+fi
+
 # compute accumulation from cf file, TRUE or FALSE
 if [[ ${PCP_PRD} =~ ${TRUE} ]]; then
   pcp_prd=1
@@ -99,10 +110,21 @@ if [[ ${PCP_PRD} =~ ${TRUE} ]]; then
     msg+=" is not integer.\n"
     printf "${msg}"
     exit 1
+  elif [[ ! ${ACC_INT} =~ ${INT_RE} ]]; then
+    msg="ERROR: interval between computing precip accumulations \${ACC_INT}"
+    msg+=" is not integer.\n"
+    printf "${msg}"
+    exit 1
   elif [ ! $(( (${ACC_MAX} - ${ACC_MIN}) % ${ACC_INC} )) = 0 ]; then
     msg="ERROR: the interval [\${ACC_MIN}, \${ACC_MAX}]\n"
     msg+=" [${ACC_MIN}, ${ACC_MAX}] must be evenly divisible into\n"
     msg+=" increments of \${ACC_INC}, ${ACC_INC}.\n"
+    printf "${msg}"
+    exit 1
+  elif [ ! $(( ${ACC_INT} % ${ANL_INC} )) = 0 ]; then
+    msg="ERROR: the interval at which precip accumulations are computed,"
+    msg+=" \${ACC_INT}, ${ACC_INT} is not divisible by the interval at"
+    msg+=" which cf files are created, ${ANL_INC}.\n" 
     printf "${msg}"
     exit 1
   else
@@ -143,7 +165,12 @@ if [[ ${IVT_PRD} =~ ${TRUE} ]]; then
     printf "${msg}"
     exit 1
   elif [[ ! ${IVT_INC} =~ ${INT_RE} ]]; then
-    msg="ERROR: IVT hour increment between files \${IVT_INC},\n ${IVT_INC}\n"
+    msg="ERROR: hour increment between IVT files \${IVT_INC},\n ${IVT_INC}\n"
+    msg+=" is not an integer.\n"
+    printf "${msg}"
+    exit 1
+  elif [[ ! ${IVT_INT} =~ ${INT_RE} ]]; then
+    msg="ERROR: hour increment between IVT averags \${IVT_INT},\n ${IVT_INT}\n"
     msg+=" is not an integer.\n"
     printf "${msg}"
     exit 1
@@ -151,6 +178,12 @@ if [[ ${IVT_PRD} =~ ${TRUE} ]]; then
     msg="ERROR: the interval [0, \${IVT_AVG}]\n"
     msg+=" [0, ${IVT_AVG}] must be evenly divisible into\n"
     msg+=" increments of \${IVT_INC}, ${IVT_INC}.\n"
+    printf "${msg}"
+    exit 1
+  elif [ ! $(( ${IVT_INT} % ${ANL_INC} )) = 0 ]; then
+    msg="ERROR: the interval at which IVT averages are taken, \${IVT_INT},"
+    msg+=" ${IVT_INT} is not divisible by the interval at which cf files"
+    msg+=" are created, ${ANL_INC}.\n" 
     printf "${msg}"
     exit 1
   fi
@@ -195,17 +228,6 @@ elif [[ ! ${ANL_MAX} =~ ${N_RE} ]]; then
 elif [ ${ANL_MAX} -lt ${ANL_MIN} ]; then
   msg="ERROR: max forecast hour ${ANL_MAX} must be greater than or equal to"
   msg+="min forecast hour ${ANL_MIN}.\n"
-  printf "${msg}"
-  exit 1
-fi
-
-# define the increment at which to process forecast outputs (HH)
-if [[ ! ${ANL_INC} =~ ${N_RE} ]]; then
-  printf "ERROR: hours increment between analyses \${ANL_INC} is not numeric.\n"
-  exit 1
-elif [ ! $(( (${ANL_MAX} - ${ANL_MIN}) % ${ANL_INC} )) = 0 ]; then
-  msg="ERROR: the interval [\${ANL_MIN}, \${ANL_MAX}]\n [${ANL_MIN}, ${ANL_MAX}]\n" 
-  msg+=" must be evenly divisible into increments of \${ANL_INC}, ${ANL_INC}.\n"
   printf "${msg}"
   exit 1
 fi
@@ -427,7 +449,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
     fi
   fi
   if [[ ${IVT_PRD} =~ ${TRUE} ]]; then
-    if [ ${anl_hr} -ge ${IVT_AVG} ]; then
+    if [[ ${anl_hr} -ge ${IVT_AVG} && $(( ${anl_hr} % ${IVT_INT} )) -eq 0 ]]; then
       # set flag to skip computing accumulation if missing files
       avg_check=1
       avg_files=()
@@ -489,7 +511,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
   fi
   if [[ ${PCP_PRD} =~ ${TRUE} ]]; then
     for acc_hr in ${acc_hrs[@]}; do
-      if [ ${anl_hr} -ge ${acc_hr} ]; then
+      if [[ ${anl_hr} -ge ${acc_hr} && $(( ${anl_hr} % ${ACC_INT} )) -eq 0 ]]; then
         # define accumulation start / stop hours
         acc_strt=$(( ${anl_hr}  - ${acc_hr} ))
         acc_stop=${anl_hr}
@@ -502,37 +524,25 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
         anl_stop=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${acc_stop} hours"`
         cf_strt="mpascf_${anl_strt}.nc"
         cf_stop="mpascf_${anl_stop}.nc"
+	cf_files=( "${cf_strt}" "${cf_stop}" )
 
-        if [ ! -r "${WRK_DIR}/${cf_strt}" ]; then
-          acc_check=1
-          if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
-            msg="ERROR: cf file\n ${WRK_DIR}/${cf_strt}\n does not exist" 
-            msg+=" or is not readable to compute forecast hour ${anl_hr} /"
-            msg+=" accumulation hour ${acc_hr}.\n"
-            error_check=1
-            printf "${msg}"
-          else
-            msg="WARNING: cf file\n ${WRK_DIR}/${cf_strt}\n does not exist" 
-            msg+=" or is not readable, skipping forecast hour ${anl_hr} /"
-            msg+=" accumulation hour ${acc_hr}.\n"
-            printf "${msg}"
+	for fname in ${cf_files[@]}; do
+          if [ ! -r "${WRK_DIR}/${fname}" ]; then
+            acc_check=1
+            if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
+              msg="ERROR: cf file\n ${WRK_DIR}/${fname}\n does not exist" 
+              msg+=" or is not readable to compute forecast hour ${anl_hr} /"
+              msg+=" accumulation hour ${acc_hr}.\n"
+              error_check=1
+              printf "${msg}"
+            else
+              msg="WARNING: cf file\n ${WRK_DIR}/${fname}\n does not exist" 
+              msg+=" or is not readable, skipping forecast hour ${anl_hr} /"
+              msg+=" accumulation hour ${acc_hr}.\n"
+              printf "${msg}"
+            fi
           fi
-        fi
-        if [ ! -r "${WRK_DIR}/${cf_stop}" ]; then
-          acc_check=1
-          if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
-            msg="ERROR: cf file\n ${WRK_DIR}/${cf_stop}\n does not exist" 
-            msg+=" or is not readable to compute forecast hour ${anl_hr} /"
-            msg+=" accumulation hour ${acc_hr}.\n"
-            error_check=1
-            printf "${msg}"
-          else
-            msg="WARNING: cf file\n ${WRK_DIR}/${cf_stop}\n does not exist" 
-            msg+=" or is not readable, skipping forecast hour ${anl_hr} /"
-            msg+=" accumulation hour ${acc_hr}.\n"
-            printf "${msg}"
-          fi
-        fi
+        done
         if [ ${acc_check} = 0 ]; then
           # define padded forecast hour for name strings
           pdd_hr=`printf %03d $(( 10#${anl_hr} ))`

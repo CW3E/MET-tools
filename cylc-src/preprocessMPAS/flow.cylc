@@ -43,15 +43,21 @@
 {# Define hour increment between files within the interval to average over #}
 {% set IVT_INC = 3 %}
 
+{# Define at what hour interval IVT averages are computed #}
+{% set IVT_INT = 6 %}
+
 {# Compute precipitation accumulations from cf files, TRUE or FALSE #}
 {% set PCP_PRD = 'TRUE' %}
 
-{# Defines the min / max accumulation interval for precip #}
+{# Define the min / max accumulation interval for precip #}
 {% set ACC_MIN = 24 %}
 {% set ACC_MAX = 24 %}
 
-{# Defines the increment between min / max to compute accumulation intervals #}
+{# Define the increment between min / max to compute accumulations #}
 {% set ACC_INC = 24 %}
+
+{# Define at what hour interval precip accumulationas are computed #}
+{% set ACC_INT = 12 %}
 
 {# Define the directory to find mpas outputs relative to ISO cycle directories #}
 {% set IN_DT_SUBDIR = 'mpas_model' %}
@@ -118,10 +124,12 @@
             IVT_PRD = {{IVT_PRD}}
             IVT_AVG = {{IVT_AVG}}
             IVT_INC = {{IVT_INC}}
+            IVT_INT = {{IVT_INT}}
             PCP_PRD = {{PCP_PRD}}
             ACC_MIN = {{ACC_MIN}}
             ACC_MAX = {{ACC_MAX}}
             ACC_INC = {{ACC_INC}}
+            ACC_INT = {{ACC_INT}}
             MPAS_PRFX = {{MPAS_PRFX}}
             CYC_DT = $(isodatetime ${CYLC_TASK_CYCLE_POINT} --f '%Y%m%d%H')
             ANL_MIN = {{ANL_MIN}}

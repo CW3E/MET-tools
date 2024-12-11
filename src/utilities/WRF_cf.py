@@ -31,6 +31,16 @@ LON2=272.
 # Utility Methods
 ##################################################################################
 
+def global_attrs(ds_in):
+    # Global DS attribute
+    ds_in.attrs = {
+            'Conventions':'CF-1.6', 
+            'notes':'Created with MET-Tools', 
+            'institution':'CW3E - Scripps Institution of Oceanography',
+            }
+
+    return ds_in
+
 def unstagger(var, stagger_dim):
     """
     Function from WRF-python to unstagger variables.
@@ -80,7 +90,7 @@ def unstagger_uv(u, v):
 
     return unstag_u, unstag_v
 
-def global_attrs(ds_in, ds_out, init_offset=0):
+def gen_attrs(ds_in, ds_out, init_offset=0):
     """
     Function to set global xarray data attributes.
     """
@@ -119,7 +129,6 @@ def global_attrs(ds_in, ds_out, init_offset=0):
             'valid_time_ut':valid_nx, 
             'init_time':start_is, 
             'init_time_ut':start_nx,
-            'accum_time_sec': accu_sec,
             }
 
     # Global DS attributes
@@ -177,43 +186,63 @@ def global_attrs(ds_in, ds_out, init_offset=0):
         'description': 'Simulation initial time',
         }
     
-    return ds_out, repeat_attrs
+    return ds_out, repeat_attrs, accu_sec
 
-def prep_attrs(ds_in, ds_out, init_offset=0):
+def assign_attrs(ds_in, ds_out, init_offset=0):
     """
     Function to assign attributes to new data variables.
     """
 
     # Sets up global WRF dataset attributes
-    ds_out, repeat_attrs = global_attrs(ds_in, ds_out, init_offset)
+    ds_out, repeat_attrs, accu_sec = gen_attrs(ds_in, ds_out, init_offset)
 
     if 'precip' in ds_out.data_vars:
-        ds_out.precip.attrs = {'description': 'Sum of grid- / convective-scale precipitation',
-                               'standard_name': 'total_precipitation_amount',
-                               'long_name': 'Accumulated Total Precipitation Over Simulation',
-                               'units': 'mm', **repeat_attrs}
+        ds_out.precip.attrs = {
+                'description': 'Sum of grid- / convective-scale precipitation',
+                'standard_name': 'total_precipitation_amount',
+                'long_name': 'Accumulated Total Precipitation Over Simulation',
+                'units': 'mm',
+                'accum_time_sec': accu_sec,
+                **repeat_attrs
+                }
 
     if 'IWV' in ds_out.data_vars:
-        ds_out.IWV.attrs = {'description':'Column-integrated water vapor',
-                            'standard_name':'integrated_water_vapor',
-                            'long_name':'Integrated Water Vapor',
-                            'units':'kg m-2', **repeat_attrs}
-    if 'IVT' in ds_out.data_vars:
-        ds_out.IVT.attrs = {'description':'Column-integrated vapor transport',
-                            'standard_name':'integrated_vapor_transport',
-                            'long_name':'Integrated Vapor Transport',
-                            'units':'kg m-1 s-1', **repeat_attrs}
-    if 'IVTU' in ds_out.data_vars:
-        ds_out.IVTU.attrs = {'description':'Column-integrated vapor transport u-component',
-                             'standard_name':'integrated_vapor_transport_u',
-                             'long_name':'Integrated Vapor Transport U-component',
-                             'units':'kg m-1 s-1', **repeat_attrs}
-    if 'IVTV' in ds_out.data_vars:
-        ds_out.IVTV.attrs = {'description':'Column-integrated vapor transport v-component',
-                             'standard_name':'integrated_vapor_transport_v',
-                             'long_name':'Integrated Vapor Transport V-component',
-                             'units':'kg m-1 s-1', **repeat_attrs}
+        ds_out.IWV.attrs = {
+                'description':'Column-integrated water vapor',
+                'standard_name':'integrated_water_vapor',
+                'long_name':'Integrated Water Vapor',
+                'units':'kg m-2',
+                **repeat_attrs
+                }
 
+    if 'IVT' in ds_out.data_vars:
+        ds_out.IVT.attrs = {
+                'description':'Column-integrated vapor transport',
+                'standard_name':'integrated_vapor_transport',
+                'long_name':'Integrated Vapor Transport',
+                'units':'kg m-1 s-1',
+                **repeat_attrs
+                }
+
+    if 'IVTU' in ds_out.data_vars:
+        ds_out.IVTU.attrs = {
+                'description':'Column-integrated vapor transport u-component',
+                'standard_name':'integrated_vapor_transport_u',
+                'long_name':'Integrated Vapor Transport U-component',
+                'units':'kg m-1 s-1',
+                **repeat_attrs
+                }
+
+    if 'IVTV' in ds_out.data_vars:
+        ds_out.IVTV.attrs = {
+                'description':'Column-integrated vapor transport v-component',
+                'standard_name':'integrated_vapor_transport_v',
+                'long_name':'Integrated Vapor Transport V-component',
+                'units':'kg m-1 s-1',
+                **repeat_attrs
+                }
+
+    ds_out = global_attrs(ds_out)
     return ds_out
 
 def cf_precip(ds_in, init_offset=0):
@@ -251,7 +280,7 @@ def cf_precip(ds_in, init_offset=0):
 
 
     # Assigns attributes
-    ds_out = prep_attrs(ds_in, ds_out, init_offset)
+    ds_out = assign_attrs(ds_in, ds_out, init_offset)
 
     return ds_out
 
@@ -288,7 +317,7 @@ def cf_precip_bkt(ds_curr, ds_prev):
 
     return ds_out
 
-def cf_ivt(ds_in):
+def cf_ivt(ds_in, init_offset=0):
     """
     Function to calculate IVT and IVW and put into cf-compliant xarray dataset.
     """
@@ -341,7 +370,7 @@ def cf_ivt(ds_in):
             )
 
     # Assigns attributes
-    ds_out = prep_attrs(ds_in, ds_out)
+    ds_out = assign_attrs(ds_in, ds_out, init_offset)
 
     return ds_out
 

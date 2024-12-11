@@ -1,16 +1,7 @@
+#!/bin/bash
 ##################################################################################
 # Description
 ##################################################################################
-# This script utilizes methods in the config_wrfcf module and CDO Python wrappers
-# to postprocess wrfout files into cf-compliant NetCDF files compatible with MET.  
-# If the native WRF grid is not compatible with MET, optionally the CDO wrappers
-# will regrid the data into a lat-lon grid with parameters defined below.
-#
-# This is based on NCL script wrfout_to_cf.ncl of Mark Seefeldt and others:
-#
-#    http://foehn.colorado.edu/wrfout_to_cf/
-#
-# Regridding method for WRF is based on original code from Dan Steinhoff.
 #
 ##################################################################################
 # License Statement:
@@ -48,72 +39,66 @@
 # OBLIGATIONS TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
 # MODIFICATIONS.
 # 
-# 
 ##################################################################################
-# Imports
+# MODULE LOADS
 ##################################################################################
-from WRF_cf import *
-from cdo import Cdo
 
 ##################################################################################
-# file name paths are taken as script arguments
-f_in = sys.argv[1]
-f_out = sys.argv[2]
+# HPC SYSTEM PATHS
+##################################################################################
+# Root directory for software environment singularity images
+export SOFT_ROOT="/p/home/cgrudz/SOFT_ROOT"
 
-try:
-    pcp_prd = bool(int(sys.argv[3]))
-except:
-    print('ERROR: precipitation product flag must be set to 0 or 1')
-    sys.exit(1)
+# Root directory of simulation IO
+export SIM_ROOT="/p/work2/cgrudz/SIMULATION_IO"
 
-try:
-    ivt_prd = bool(int(sys.argv[4]))
-except:
-    print('ERROR: IVT product flag must be set to 0 or 1')
-    sys.exit(1)
+# Root directory of simulation verification IO
+export VRF_ROOT="/p/work2/cgrudz/VERIFICATION_IO"
 
-try:
-    # check for regridding (1/0), convert to bool
-    rgrd = bool(int(sys.argv[5]))
-except:
-    # no regridding unless specified
-    rgrd = False
+# Root directory for verification static data
+export STC_ROOT="/p/home/cgrudz/DATA/VERIFICATION_STATIC"
 
-try:
-    # check for initialization offset value, e.g., for restart
-    init_offset = int(sys.argv[6])
-    print('Initialization times will be computed with an offset of minus ' +\
-            str(init_offset) + ' hours.')
+# Root directory for MPAS static files for sourcing static IO streams
+export MSH_ROOT="/p/home/cgrudz/Ensemble-DA-Cycling-Template/cylc-src"
 
-except:
-    init_offset=0
-    pass
+##################################################################################
+# MET EXECUTABLE AND DEPENDENCIES PATHS
+##################################################################################
+# MET version
+export MET_VER="11.1.1"
 
-# load dataset in xarray with empty output dataset to merge variables
-ds_in = xr.open_dataset(f_in)
-ds_out = xr.Dataset()
+# MET singularity image path 
+export MET="${SOFT_ROOT}/met-${MET_VER}.sif"
 
-if pcp_prd:
-    ds_precip = cf_precip(ds_in, init_offset=init_offset)
-    ds_out = ds_out.merge(ds_precip)
+# MET-tools-py singularity image path
+export MET_TOOLS_PY="${SOFT_ROOT}/MET-tools-py.sif"
 
-if ivt_prd:
-    ds_ivt = cf_ivt(ds_in, init_offset=init_offset)
-    ds_out = ds_out.merge(ds_ivt)
+# convert_mpas singularity image path
+export CONVERT_MPAS="${SOFT_ROOT}/convert_mpas.sif"
 
-ds_out.to_netcdf(path=f_out)
+# Root directory for landmask gridded files outputs
+export MSK_GRDS="${STC_ROOT}/vxmask"
 
-if rgrd:
-    # use CDO for regridding the data for MET compatibility
-    cdo = Cdo()
-    rgr_ds = cdo.sellonlatbox(LON1, LON2, LAT1, LAT2,
-            input=cdo.remapbil(GRES, input=f_out, returnCdf=True),
-            returnCdf=True, options='-f nc4' )
+##################################################################################
+# HPC SYSTEM WORKLOAD MANAGER PARAMETERS
+##################################################################################
+# System scheduler
+export SCHED="slurm"
 
-    rgr_ds = xr.open_dataset(rgr_ds)
-    tmp_ds = xr.open_dataset(f_out)
-    rgr_ds['forecast_reference_time'] = tmp_ds.forecast_reference_time
-    os.system('rm -f ' + f_out)
-    rgr_ds.to_netcdf(path=f_out)
+# Define additional sub-cases for system platform, currently only includes penguin
+# define as empty string if not needed
+export SYS_TYPE="penguin"
+
+# Project billing account
+export PROJECT="OUSAF48525822"
+
+# Compute queue for standard mpi jobs
+export PART_CMP="standard"
+
+# Debug queue for small / rapid parallel jobs
+export PART_DBG="debug"
+
+# Serial queue for non-mpi jobs
+export PART_SRL="debug"
 
 ##################################################################################

@@ -53,12 +53,12 @@ export XAUTHORITY="$HOME/.Xauthority"
 # SYSTEM-DEPENDENT WORKLFOW SETTINGS (EDIT TO LOCAL SETTINGS)
 ##################################################################################
 # Full path of clone used as BASH HOME for embedded Cylc installation
-export HOME="/expanse/nfs/cw3e/cwp168/MET-tools"
+export HOME="/p/home/cgrudz/MET-tools"
 
 # Define the site-specific configuration to source for HPC globals
 # New "sites" can be defined by copying the directory structure of the
 # expanse-cwp168 template and edited to set local paths / computing environment
-export SITE="expanse-cwp168"
+export SITE="nautilus"
 
 # If plotting will be called from containerized envrionment (sets path binds)
 export IF_CNTR_PLT="TRUE"

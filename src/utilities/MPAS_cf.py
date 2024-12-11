@@ -13,7 +13,17 @@ from utilities import *
 # Utility Methods
 ##################################################################################
 
-def global_attrs(ds_in, ds_out, f_time):
+def global_attrs(ds_in):
+    # Global DS attribute
+    ds_in.attrs = {
+            'Conventions':'CF-1.6', 
+            'notes':'Created with MET-Tools', 
+            'institution':'CW3E - Scripps Institution of Oceanography',
+            }
+
+    return ds_in
+
+def gen_attrs(ds_in, ds_out, f_time):
     """
     Function to set global xarray data attributes.
     """
@@ -58,14 +68,6 @@ def global_attrs(ds_in, ds_out, f_time):
             'valid_time_ut':valid_nx, 
             'init_time':start_is, 
             'init_time_ut':start_nx,
-            'accum_time_sec': accu_sec,
-            }
-
-    # Global DS attribute
-    ds_out.attrs = {
-            'Conventions':'CF-1.6', 
-            'notes':'Created with MET-Tools', 
-            'institution':'CW3E - Scripps Institution of Oceanography',
             }
 
     # Global ds dimension and coordinate attributes
@@ -104,15 +106,15 @@ def global_attrs(ds_in, ds_out, f_time):
         'description': 'Simulation initial time',
         }
     
-    return ds_out, repeat_attrs
+    return ds_out, repeat_attrs, accu_sec
 
-def prep_attrs(ds_in, ds_out, f_time=None):
+def assign_attrs(ds_in, ds_out, f_time=None):
     """
     Function to assign attributes to new data variables.
     """
 
     # Sets up global dataset attributes
-    ds_out, repeat_attrs = global_attrs(ds_in, ds_out, f_time)
+    ds_out, repeat_attrs, accu_sec = gen_attrs(ds_in, ds_out, f_time)
 
     if 'precip' in ds_out.data_vars:
         ds_out.precip.attrs = {
@@ -120,6 +122,7 @@ def prep_attrs(ds_in, ds_out, f_time=None):
                 'standard_name': 'total_precipitation_amount',
                 'long_name': 'Accumulated Total Precipitation Over Simulation',
                 'units': 'mm',
+                'accum_time_sec': accu_sec,
                 **repeat_attrs
                 }
 
@@ -159,6 +162,7 @@ def prep_attrs(ds_in, ds_out, f_time=None):
                 **repeat_attrs
                 }
 
+    ds_out = global_attrs(ds_out)
     return ds_out
 
 def cf_precip(ds_in, f_time=None):
@@ -192,7 +196,7 @@ def cf_precip(ds_in, f_time=None):
             )
 
     # Assigns attributes
-    ds_out = prep_attrs(ds_in, ds_out, f_time)
+    ds_out = assign_attrs(ds_in, ds_out, f_time)
 
     return ds_out
 
@@ -284,7 +288,7 @@ def cf_ivt(ds_in, f_time=None):
             )
 
     # Assigns attributes
-    ds_out = prep_attrs(ds_in, ds_out, f_time)
+    ds_out = assign_attrs(ds_in, ds_out, f_time)
 
     return ds_out
 

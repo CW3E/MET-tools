@@ -59,6 +59,12 @@ IN_DIR=$5
 # take the input file from script argument
 F_IN=$6
 
+# 1 / 0 regrid precip fields True / False
+PCP_PRD=$7
+
+# 1 / 0 regrid IVT fields True / False
+IVT_PRD=$8
+
 printf "Running convert_mpas from singularity image:\n ${CONVERT_MPAS}\n"
 printf "Work directory is:\n ${WORK_DIR}\n"
 printf "Mesh input file path is:\n ${IN_MSH_DIR}/${IN_MSH_F}\n"
@@ -89,8 +95,16 @@ printf "endlat = ${lat2}\n" >> ./target_domain
 printf "endlon = ${lon2}\n" >> ./target_domain
 
 # set fields to be regridded
-printf "rainc\n" >> ./include_fields
-printf "rainnc\n" >> ./include_fields
+if [ ${PCP_PRD} = 1 ]; then
+  printf "rainc\n" >> ./include_fields
+  printf "rainnc\n" >> ./include_fields
+fi
+if [ ${IVT_PRD} = 1 ]; then
+  printf "pressure\n" >> ./include_fields
+  printf "qv\n" >> ./include_fields
+  printf "uReconstructZonal\n" >> ./include_fields
+  printf "uReconstructMeridional\n" >> ./include_fields
+fi
 
 # run convert mpas from singularity exec command
 cmd="singularity exec --home ${WORK_DIR} -B"

@@ -70,38 +70,10 @@ else
   exit 1
 fi
 
-# create averaged IVT product from cf file, TRUE or FALSE
-if [[ ${IVT_PRD} =~ ${TRUE} ]]; then
-  printf "run_preprocessMPAS creates averaged IVT products.\n"
-  if [[ ! ${IVT_AVG} =~ ${INT_RE} ]]; then
-    msg="ERROR: IVT average window \${IVT_AVG},\n ${IVT_AVG}\n"
-    msg+=" is not an integer.\n"
-    printf "${msg}"
-    exit 1
-  elif [[ ! ${IVT_INC} =~ ${INT_RE} ]]; then
-    msg="ERROR: IVT hour increment between files \${IVT_INC},\n ${IVT_INC}\n"
-    msg+=" is not an integer.\n"
-    printf "${msg}"
-    exit 1
-  elif [ ! $(( ${IVT_AVG} % ${IVT_INC} )) = 0 ]; then
-    msg="ERROR: the interval [0, \${IVT_AVG}]\n"
-    msg+=" [0, ${IVT_AVG}] must be evenly divisible into\n"
-    msg+=" increments of \${IVT_INC}, ${IVT_INC}.\n"
-    printf "${msg}"
-    exit 1
-  fi
-elif [[ ${IVT_PRD} =~ ${FALSE} ]]; then
-  printf "run_preprocessMPAS does not create averaged IVT products.\n"
-else
-  msg="ERROR: \${IVT_PRD} must be set to 'TRUE' or 'FALSE' to decide if "
-  msg+="creating IVT products from cf files."
-  printf "${msg}"
-  exit 1
-fi
-
 # compute accumulation from cf file, TRUE or FALSE
 if [[ ${PCP_PRD} =~ ${TRUE} ]]; then
-  # define the accumulation intervals for precip
+  pcp_prd=1
+  printf "run_preprocessMPAS creates accumulated precip products.\n"
   if [[ ! ${ACC_MIN} =~ ${INT_RE} ]]; then
     msg="ERROR: min accumulation interval \${ACC_MIN},\n ${ACC_MIN}\n"
     msg+=" is not an integer.\n"
@@ -152,10 +124,42 @@ if [[ ${PCP_PRD} =~ ${TRUE} ]]; then
     done
   fi
 elif [[ ${PCP_PRD} =~ ${FALSE} ]]; then
+  pcp_prd=0
   printf "run_preprocessMPAS does not compute accumulations.\n"
 else
   msg="ERROR: \${PCP_PRD} must be set to 'TRUE' or 'FALSE' to decide if "
   msg+="computing accumulations from cf files."
+  printf "${msg}"
+  exit 1
+fi
+
+# create averaged IVT product from cf file, TRUE or FALSE
+if [[ ${IVT_PRD} =~ ${TRUE} ]]; then
+  ivt_prd=1
+  printf "run_preprocessMPAS creates averaged IVT products.\n"
+  if [[ ! ${IVT_AVG} =~ ${INT_RE} ]]; then
+    msg="ERROR: IVT average window \${IVT_AVG},\n ${IVT_AVG}\n"
+    msg+=" is not an integer.\n"
+    printf "${msg}"
+    exit 1
+  elif [[ ! ${IVT_INC} =~ ${INT_RE} ]]; then
+    msg="ERROR: IVT hour increment between files \${IVT_INC},\n ${IVT_INC}\n"
+    msg+=" is not an integer.\n"
+    printf "${msg}"
+    exit 1
+  elif [ ! $(( ${IVT_AVG} % ${IVT_INC} )) = 0 ]; then
+    msg="ERROR: the interval [0, \${IVT_AVG}]\n"
+    msg+=" [0, ${IVT_AVG}] must be evenly divisible into\n"
+    msg+=" increments of \${IVT_INC}, ${IVT_INC}.\n"
+    printf "${msg}"
+    exit 1
+  fi
+elif [[ ${IVT_PRD} =~ ${FALSE} ]]; then
+  ivt_prd=0
+  printf "run_preprocessMPAS does not create averaged IVT products.\n"
+else
+  msg="ERROR: \${IVT_PRD} must be set to 'TRUE' or 'FALSE' to decide if "
+  msg+="creating IVT products from cf files."
   printf "${msg}"
   exit 1
 fi
@@ -380,7 +384,8 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
 
     # run script from work directory to hold temp outputs from convert_mpas
     cmd="${UTLTY}/mpas_to_latlon.sh ${CONVERT_MPAS}"
-    cmd+=" ${WRK_DIR} ${in_msh_dir} ${in_msh_f} ${IN_DIR} ${f_in} 2>&1; error=\$?"
+    cmd+=" ${WRK_DIR} ${in_msh_dir} ${in_msh_f} ${IN_DIR} ${f_in}"
+    cmd+=" ${pcp_prd} ${ivt_prd} 2>&1; error=\$?"
     printf "${cmd}\n"; eval "${cmd}"
     printf "mpas_to_latlon.sh exited with status ${error}.\n"
     if [ ${error} -ne 0 ]; then
@@ -397,7 +402,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
       anl_dt=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${anl_hr} hours"`
       f_out="mpascf_${anl_dt}.nc"
       cmd="${met_tools_py} /src_dir/utilities/mpas_to_cf.py"
-      cmd+=" '/wrk_dir/${f_tmp}' '/wrk_dir/${f_out}'"
+      cmd+=" '/wrk_dir/${f_tmp}' '/wrk_dir/${f_out}' '${pcp_prd}' '${ivt_prd}'"
       cmd+=" '/in_dir/${f_in}'; error=\$?"
       printf "${cmd}\n"; eval "${cmd}"
       printf "mpas_to_cf.sh exited with status ${error}.\n"
@@ -427,7 +432,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
       avg_check=1
       avg_files=()
 
-      for (( back_hr = ${IVT_AVG}; back_hr >= 0; back_hr - ${IVT_INC} )); do
+      for (( back_hr = ${IVT_AVG}; back_hr >= 0; back_hr -= ${IVT_INC} )); do
         # Currently looking backward to hr_val
         hr_val=$(( ${anl_hr}  - ${back_hr} ))
 

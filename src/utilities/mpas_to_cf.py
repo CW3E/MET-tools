@@ -69,15 +69,15 @@ except:
 
 # load datasets in xarray
 ds_in = xr.open_dataset(f_in)
-ds_out = xr.Dataset()
+ds_out = global_attrs(xr.Dataset())
 
 if pcp_prd:
     ds_precip = cf_precip(ds_in, f_time)
-    ds_out = xr.merge(ds_precip, ds_out)
+    ds_out = ds_out.merge(ds_precip)
 
 if ivt_prd:
     ds_ivt = cf_ivt(ds_in, f_time)
-    ds_out = xr.merge(ds_ivt, ds_out)
+    ds_out = ds_out.merge(ds_ivt)
 
 ds_out.to_netcdf(path=f_out)
 

@@ -69,136 +69,6 @@ else
   exit 1
 fi
 
-# define the increment at which to process forecast outputs (HH)
-if [[ ! ${ANL_INC} =~ ${INT_RE} ]]; then
-  msg="ERROR: hours increment between analyses \${ANL_INC},\n ${ANL_INC}\n"
-  msg+=" is not an integer.\n"
-  printf "${msg}"
-  exit 1
-elif [ ! $(( (${ANL_MAX} - ${ANL_MIN}) % ${ANL_INC} )) = 0 ]; then
-  msg="ERROR: the interval [\${ANL_MIN}, \${ANL_MAX}]\n"
-  msg+=" [${ANL_MIN}, ${ANL_MAX}]\n" 
-  msg+=" must be evenly divisible into increments of \${ANL_INC}, ${ANL_INC}.\n"
-  printf "${msg}"
-  exit 1
-fi
-
-# compute accumulation from cf file, TRUE or FALSE
-if [[ ${PCP_PRD} =~ ${TRUE} ]]; then
-  pcp_prd=1
-  printf "run_preprocessWRF creates accumulated precip products.\n"
-  if [[ ! ${ACC_MIN} =~ ${INT_RE} ]]; then
-    msg="ERROR: min accumulation interval \${ACC_MIN},\n ${ACC_MIN}\n"
-    msg+=" is not an integer.\n"
-    printf "${msg}"
-    exit 1
-  elif [ ${ACC_MIN} -le 0 ]; then
-    msg="ERROR: min accumulation interval ${ACC_MIN} must be greater than"
-    msg+=" zero.\n"
-    printf "${msg}"
-    exit 1
-  elif [[ ! ${ACC_MAX} =~ ${INT_RE} ]]; then
-    msg="ERROR: max accumulation interval \${ACC_MAX},\n ${ACC_MAX}\n"
-    msg+=" is not integer.\n"
-    printf "${msg}"
-    exit 1
-  elif [ ${ACC_MAX} -lt ${ACC_MIN} ]; then
-    msg="ERROR: max precip accumulation interval ${ACC_MAX} must be greater than"
-    msg+=" min accumulation interval ${ACC_MIN}.\n"
-    printf "${msg}"
-    exit 1
-  elif [[ ! ${ACC_INC} =~ ${INT_RE} ]]; then
-    msg="ERROR: increment between precip accumulation intervals \${ACC_INC}"
-    msg+=" is not integer.\n"
-    printf "${msg}"
-    exit 1
-  elif [[ ! ${ACC_INT} =~ ${INT_RE} ]]; then
-    msg="ERROR: interval between computing precip accumulations \${ACC_INT}"
-    msg+=" is not integer.\n"
-    printf "${msg}"
-    exit 1
-  elif [ ! $(( (${ACC_MAX} - ${ACC_MIN}) % ${ACC_INC} )) = 0 ]; then
-    msg="ERROR: the interval [\${ACC_MIN}, \${ACC_MAX}]\n"
-    msg+=" [${ACC_MIN}, ${ACC_MAX}] must be evenly divisible into\n"
-    msg+=" increments of \${ACC_INC}, ${ACC_INC}.\n"
-    printf "${msg}"
-    exit 1
-  elif [ ! $(( ${ACC_INT} % ${ANL_INC} )) = 0 ]; then
-    msg="ERROR: the interval at which precip accumulations are computed,"
-    msg+=" \${ACC_INT}, ${ACC_INT} is not divisible by the interval at"
-    msg+=" which cf files are created, ${ANL_INC}.\n" 
-    printf "${msg}"
-    exit 1
-  else
-    # define array of accumulation interval computation hours
-    acc_hrs=()
-    for (( acc_hr=${ACC_MIN}; acc_hr <= ${ACC_MAX}; acc_hr += ${ACC_INC} )); do
-      # check that the precip accumulations are summable from cf files
-      if [ ! $(( ${acc_hr} % ${ANL_INC} )) = 0 ]; then
-        msg="ERROR: precip accumulation ${acc_hr} is not a multiple"
-        msg+=" of ${ANL_INC}.\n"
-        printf "${msg}"
-        exit 1
-      else
-       msg="Computing precipitation accumulation for interval"
-       msg+=" ${acc_hr} hours.\n"
-       printf "${msg}"
-       acc_hrs+=( ${acc_hr} )
-      fi
-    done
-  fi
-elif [[ ${PCP_PRD} =~ ${FALSE} ]]; then
-  pcp_prd=0
-  printf "run_preprocessWRF does not compute accumulations.\n"
-else
-  msg="ERROR: \${PCP_PRD} must be set to 'TRUE' or 'FALSE' to decide if "
-  msg+="computing accumulations from cf files."
-  printf "${msg}"
-  exit 1
-fi
-
-# create averaged IVT product from cf file, TRUE or FALSE
-if [[ ${IVT_PRD} =~ ${TRUE} ]]; then
-  ivt_prd=1
-  printf "run_preprocessWRF creates averaged IVT products.\n"
-  if [[ ! ${IVT_AVG} =~ ${INT_RE} ]]; then
-    msg="ERROR: IVT average window \${IVT_AVG},\n ${IVT_AVG}\n"
-    msg+=" is not an integer.\n"
-    printf "${msg}"
-    exit 1
-  elif [[ ! ${IVT_INC} =~ ${INT_RE} ]]; then
-    msg="ERROR: hour increment between IVT files \${IVT_INC},\n ${IVT_INC}\n"
-    msg+=" is not an integer.\n"
-    printf "${msg}"
-    exit 1
-  elif [[ ! ${IVT_INT} =~ ${INT_RE} ]]; then
-    msg="ERROR: hour increment between IVT averags \${IVT_INT},\n ${IVT_INT}\n"
-    msg+=" is not an integer.\n"
-    printf "${msg}"
-    exit 1
-  elif [ ! $(( ${IVT_AVG} % ${IVT_INC} )) = 0 ]; then
-    msg="ERROR: the interval [0, \${IVT_AVG}]\n"
-    msg+=" [0, ${IVT_AVG}] must be evenly divisible into\n"
-    msg+=" increments of \${IVT_INC}, ${IVT_INC}.\n"
-    printf "${msg}"
-    exit 1
-  elif [ ! $(( ${IVT_INT} % ${ANL_INC} )) = 0 ]; then
-    msg="ERROR: the interval at which IVT averages are taken, \${IVT_INT},"
-    msg+=" ${IVT_INT} is not divisible by the interval at which cf files"
-    msg+=" are created, ${ANL_INC}.\n" 
-    printf "${msg}"
-    exit 1
-  fi
-elif [[ ${IVT_PRD} =~ ${FALSE} ]]; then
-  ivt_prd=0
-  printf "run_preprocessWRF does not create averaged IVT products.\n"
-else
-  msg="ERROR: \${IVT_PRD} must be set to 'TRUE' or 'FALSE' to decide if "
-  msg+="creating IVT products from cf files."
-  printf "${msg}"
-  exit 1
-fi
-
 if [[ ${RGRD} =~ ${TRUE} ]]; then
   # standard coordinates that can be used to regrid West-WRF
   printf "WRF outputs will be regridded for MET compatibility.\n"
@@ -208,13 +78,6 @@ elif [[ ${RGRD} =~ ${FALSE} ]]; then
   rgrd="0"
 else
   printf "ERROR: \${RGRD} must equal 'TRUE' or 'FALSE' (case insensitive).\n"
-  exit 1
-fi
-
-if [ -z ${WRF_PRFX} ]; then
-  msg="ERROR: WRF file type \${WRF_PRFX} is undefined.  Supply an output"
-  msg+=" name e.g., wrfout / wrfcf, to source fields from.\n"
-  printf "${msg}"
   exit 1
 fi
 
@@ -246,6 +109,20 @@ elif [[ ! ${ANL_MAX} =~ ${INT_RE} ]]; then
 elif [ ${ANL_MAX} -lt ${ANL_MIN} ]; then
   msg="ERROR: max forecast hour ${ANL_MAX} must be greater than or equal to"
   msg+="min forecast hour ${ANL_MIN}.\n"
+  printf "${msg}"
+  exit 1
+fi
+
+# define the increment at which to process forecast outputs (HH)
+if [[ ! ${ANL_INC} =~ ${INT_RE} ]]; then
+  msg="ERROR: hours increment between analyses \${ANL_INC},\n ${ANL_INC}\n"
+  msg+=" is not an integer.\n"
+  printf "${msg}"
+  exit 1
+elif [ ! $(( (${ANL_MAX} - ${ANL_MIN}) % ${ANL_INC} )) = 0 ]; then
+  msg="ERROR: the interval [\${ANL_MIN}, \${ANL_MAX}]\n"
+  msg+=" [${ANL_MIN}, ${ANL_MAX}]\n" 
+  msg+=" must be evenly divisible into increments of \${ANL_INC}, ${ANL_INC}.\n"
   printf "${msg}"
   exit 1
 fi
@@ -283,6 +160,161 @@ elif [[ ! ${INIT_OFFSET} =~ ${INT_RE} ]]; then
   exit 1
 else
   init_offset=$(( 10#${INIT_OFFSET} ))
+fi
+
+# compute accumulation from cf file, TRUE or FALSE
+if [[ ${PCP_PRD} =~ ${TRUE} ]]; then
+  pcp_prd=1
+  printf "Creating accumulated precip products.\n"
+  if [[ ! ${PCP_INT} =~ ${INT_RE} ]]; then
+    msg="ERROR: interval between computing precip accumulations \${PCP_INT}"
+    msg+=" is not integer.\n"
+    printf "${msg}"
+    exit 1
+  elif [ ! $(( ${PCP_INT} % ${ANL_INC} )) = 0 ]; then
+    msg="ERROR: the interval at which precip accumulations are computed,"
+    msg+=" \${PCP_INT}, ${PCP_INT} is not divisible by the interval at"
+    msg+=" which cf files are created, ${ANL_INC}.\n" 
+    printf "${msg}"
+    exit 1
+  elif [[ ! ${ACC_MIN} =~ ${INT_RE} ]]; then
+    msg="ERROR: min accumulation interval \${ACC_MIN},\n ${ACC_MIN}\n"
+    msg+=" is not an integer.\n"
+    printf "${msg}"
+    exit 1
+  elif [ ${ACC_MIN} -le 0 ]; then
+    msg="ERROR: min accumulation interval ${ACC_MIN} must be greater than"
+    msg+=" zero.\n"
+    printf "${msg}"
+    exit 1
+  elif [[ ! ${ACC_MAX} =~ ${INT_RE} ]]; then
+    msg="ERROR: max accumulation interval \${ACC_MAX},\n ${ACC_MAX}\n"
+    msg+=" is not integer.\n"
+    printf "${msg}"
+    exit 1
+  elif [ ${ACC_MAX} -lt ${ACC_MIN} ]; then
+    msg="ERROR: max precip accumulation interval ${ACC_MAX} must be greater than"
+    msg+=" min accumulation interval ${ACC_MIN}.\n"
+    printf "${msg}"
+    exit 1
+  elif [[ ! ${ACC_INC} =~ ${INT_RE} ]]; then
+    msg="ERROR: increment between precip accumulation intervals \${ACC_INC}"
+    msg+=" is not integer.\n"
+    printf "${msg}"
+    exit 1
+  elif [ ! $(( (${ACC_MAX} - ${ACC_MIN}) % ${ACC_INC} )) = 0 ]; then
+    msg="ERROR: the interval [\${ACC_MIN}, \${ACC_MAX}]\n"
+    msg+=" [${ACC_MIN}, ${ACC_MAX}] must be evenly divisible into\n"
+    msg+=" increments of \${ACC_INC}, ${ACC_INC}.\n"
+    printf "${msg}"
+    exit 1
+  else
+    # define array of accumulation interval computation hours
+    acc_hrs=()
+    for (( acc_hr=${ACC_MIN}; acc_hr <= ${ACC_MAX}; acc_hr += ${ACC_INC} )); do
+      # check that the precip accumulations are computable from cf files
+      if [ ! $(( ${acc_hr} % ${ANL_INC} )) = 0 ]; then
+        msg="ERROR: precip accumulation ${acc_hr} is not a multiple"
+        msg+=" of ${ANL_INC}.\n"
+        printf "${msg}"
+        exit 1
+      else
+       msg="Computing precipitation accumulation for interval"
+       msg+=" ${acc_hr} hours.\n"
+       printf "${msg}"
+       acc_hrs+=( ${acc_hr} )
+      fi
+    done
+  fi
+elif [[ ${PCP_PRD} =~ ${FALSE} ]]; then
+  pcp_prd=0
+  printf "Preprocesing does not compute precip accumulations.\n"
+else
+  msg="ERROR: \${PCP_PRD} must be set to 'TRUE' or 'FALSE' to decide if "
+  msg+="computing accumulations from cf files."
+  printf "${msg}"
+  exit 1
+fi
+
+# create averaged IVT product from cf file, TRUE or FALSE
+if [[ ${IVT_PRD} =~ ${TRUE} ]]; then
+  ivt_prd=1
+  printf "Creating time averaged IVT products.\n"
+  if [[ ! ${IVT_INT} =~ ${INT_RE} ]]; then
+    msg="ERROR: interval between computing IVT averages \${IVT_INT},"
+    msg+=" \n ${IVT_INT}\n is not integer.\n"
+    printf "${msg}"
+    exit 1
+  elif [ ! $(( ${IVT_INT} % ${ANL_INC} )) = 0 ]; then
+    msg="ERROR: the interval at which IVT averages are taken, \${IVT_INT},"
+    msg+=" ${IVT_INT} is not divisible by the interval at which cf files"
+    msg+=" are created, ${ANL_INC}.\n" 
+    printf "${msg}"
+    exit 1
+  elif [[ ! ${AVG_MIN} =~ ${INT_RE} ]]; then
+    msg="ERROR: min avg interval \${AVG_MIN},\n ${AVG_MIN}\n"
+    msg+=" is not an integer.\n"
+    printf "${msg}"
+    exit 1
+  elif [ ${AVG_MIN} -lt 0 ]; then
+    msg="ERROR: min avg interval ${AVG_MIN} must be greater than"
+    msg+=" or equal to zero.\n"
+    printf "${msg}"
+    exit 1
+  elif [[ ! ${AVG_MAX} =~ ${INT_RE} ]]; then
+    msg="ERROR: max avg interval \${AVG_MAX},\n ${AVG_MAX}\n"
+    msg+=" is not integer.\n"
+    printf "${msg}"
+    exit 1
+  elif [ ${AVG_MAX} -lt ${AVG_MIN} ]; then
+    msg="ERROR: the max IVT avg interval ${AVG_MAX} must be greater than"
+    msg+=" or equal to the min avg interval ${AVG_MIN}.\n"
+    printf "${msg}"
+    exit 1
+  elif [[ ! ${AVG_INC} =~ ${INT_RE} ]]; then
+    msg="ERROR: increment between IVT avg intervals \${AVG_INC}"
+    msg+=" is not integer.\n"
+    printf "${msg}"
+    exit 1
+  elif [ ! $(( (${AVG_MAX} - ${AVG_MIN}) % ${AVG_INC} )) = 0 ]; then
+    msg="ERROR: the interval [\${AVG_MIN}, \${AVG_MAX}]\n"
+    msg+=" [${AVG_MIN}, ${AVG_MAX}] must be evenly divisible into\n"
+    msg+=" increments of \${AVG_INC}, ${AVG_INC}.\n"
+    printf "${msg}"
+    exit 1
+  else
+    # define array of accumulation interval computation hours
+    avg_hrs=()
+    for (( avg_hr=${AVG_MIN}; avg_hr <= ${AVG_MAX}; avg_hr += ${AVG_INC} )); do
+      # check that the precip accumulations are computable from cf files
+      if [ ! $(( ${avg_hr} % ${ANL_INC} )) = 0 ]; then
+        msg="ERROR: IVT average ${avg_hr} is not a multiple"
+        msg+=" of ${ANL_INC}.\n"
+        printf "${msg}"
+        exit 1
+      else
+       msg="Computing IVT averages for interval of"
+       msg+=" ${avg_hr} hours.\n"
+       printf "${msg}"
+       avg_hrs+=( ${avg_hr} )
+      fi
+    done
+  fi
+elif [[ ${IVT_PRD} =~ ${FALSE} ]]; then
+  ivt_prd=0
+  printf "Preprocessing does not create averaged IVT products.\n"
+else
+  msg="ERROR: \${IVT_PRD} must be set to 'TRUE' or 'FALSE' to decide if "
+  msg+="creating IVT products from cf files."
+  printf "${msg}"
+  exit 1
+fi
+
+if [ -z ${WRF_PRFX} ]; then
+  msg="ERROR: WRF file type \${WRF_PRFX} is undefined.  Supply an output"
+  msg+=" name e.g., wrfout / wrfcf, to source fields from.\n"
+  printf "${msg}"
+  exit 1
 fi
 
 # control flow to be processed
@@ -421,67 +453,70 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
     fi
   fi
   if [[ ${IVT_PRD} =~ ${TRUE} ]]; then
-    if [[ ${anl_hr} -ge ${IVT_AVG} && $(( ${anl_hr} % ${IVT_INT} )) -eq 0 ]]; then
-      # set flag to skip computing accumulation if missing files
-      avg_check=1
-      avg_files=()
+    for avg_hr in ${avg_hrs[@]}; do
+      if [[ ${anl_hr} -ge ${avg_hr} && $(( ${anl_hr} % ${IVT_INT} )) -eq 0 ]]; then
+        # set flag to skip computing accumulation if missing files
+        avg_check=1
+        avg_files=()
 
-      for (( back_hr = ${IVT_AVG}; back_hr >= 0; back_hr -= ${IVT_INC} )); do
-        # Currently looking backward to hr_val
-        hr_val=$(( ${anl_hr}  - ${back_hr} ))
-        hr_iso=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${hr_val} hours"`
-        cf_file="wrfcf_${hr_iso}.nc"
+        for (( back_hr = ${avg_hr}; back_hr >= 0; back_hr -= ${ANL_INC} )); do
+          # Currently looking backward to hr_val
+          hr_val=$(( ${anl_hr}  - ${back_hr} ))
+          hr_iso=`date +%Y-%m-%d_%H_%M_%S -d "${cyc_dt} ${hr_val} hours"`
+          cf_file="wrfcf_${hr_iso}.nc"
 
-        if [ ! -r "${WRK_DIR}/${cf_file}" ]; then
-          if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
-            msg="ERROR: cf file\n ${WRK_DIR}/${cf_file}\n does not exist" 
-            msg+=" or is not readable to compute forecast hour ${anl_hr} IVT"
-            msg+=" averaged over previous ${IVT_AVG} hours.\n"
-            error_check=1
-            printf "${msg}"
+          if [ ! -r "${WRK_DIR}/${cf_file}" ]; then
+            if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
+              msg="ERROR: cf file\n ${WRK_DIR}/${cf_file}\n does not exist" 
+              msg+=" or is not readable to compute forecast hour ${anl_hr} IVT"
+              msg+=" averaged over previous ${IVT_AVG} hours.\n"
+              error_check=1
+              printf "${msg}"
+            else
+              msg="WARNING: cf file\n ${WRK_DIR}/${cf_file}\n does not exist" 
+              msg+=" or is not readable, skipping forecast hour ${anl_hr} /"
+              msg+=" averaged over ${IVT_AVG} hours.\n"
+              printf "${msg}"
+            fi
           else
-            msg="WARNING: cf file\n ${WRK_DIR}/${cf_file}\n does not exist" 
-            msg+=" or is not readable, skipping forecast hour ${anl_hr} /"
-            msg+=" averaged over ${IVT_AVG} hours.\n"
+            # store readable files in a list
+            avg_files+=( "${cf_file}" )
+
+            # At least one file is needed to take the average
+            avg_check=0
+          fi
+        done
+        if [ ${avg_check} = 0 ]; then
+          # define padded avg / forecast hour for name strings
+          pad_a_hr=`printf %02d $(( 10#${avg_hr} ))`
+          pad_f_hr=`printf %03d $(( 10#${anl_hr} ))`
+
+          # CTR_FLW IVT file name convention following similar products
+          cf_avg="${CTR_FLW}_${pad_a_hr}IVT_${CYC_DT}_F${pad_f_hr}.nc"
+
+          # Combine precip to accumulation period
+          cmd="${met} pcp_combine -derive mean "
+          for fname in ${avg_files[@]}; do
+            cmd+="/in_dir/${fname} "
+          done
+          cmd+="/wrk_dir/${cf_avg} \
+          -field 'name=\"IVT\"; level=\"(0,*,*)\";'\
+          -name \"IVT_${pad_a_hr}hr\"; error=\$?"
+          printf "${cmd}\n"; eval "${cmd}"
+          printf "pcp_combine exited with status ${error}.\n"
+          if [ ${error} -ne 0 ]; then
+            error_check=1
+            msg="ERROR: pcp_combine failed to produce average file\n"
+            msg+=" ${cf_avg}\n"
             printf "${msg}"
           fi
-        else
-          # store readable files in a list
-          avg_files+=( "${cf_file}" )
-
-          # At least one file is needed to take the average
-          avg_check=0
-        fi
-      done
-      if [ ${avg_check} = 0 ]; then
-        # define padded forecast hour for name strings
-        pdd_hr=`printf %03d $(( 10#${anl_hr} ))`
-
-        # CTR_FLW QPF file name convention following similar products
-        cf_avg="${CTR_FLW}_${IVT_AVG}IVT_${CYC_DT}_F${pdd_hr}.nc"
-
-        # Combine precip to accumulation period
-        cmd="${met} pcp_combine -derive mean "
-        for fname in ${avg_files[@]}; do
-          cmd+="/in_dir/${fname} "
-        done
-        cmd+="/wrk_dir/${cf_avg} \
-        -field 'name=\"IVT\"; level=\"(0,*,*)\";'\
-        -name \"IVT_${IVT_AVG}hr\"; error=\$?"
-        printf "${cmd}\n"; eval "${cmd}"
-        printf "pcp_combine exited with status ${error}.\n"
-        if [ ${error} -ne 0 ]; then
-          error_check=1
-          msg="ERROR: pcp_combine failed to produce average file\n"
-          msg+=" ${cf_avg}\n"
-          printf "${msg}"
         fi
       fi
-    fi
+    done
   fi
   if [[ ${PCP_PRD} =~ ${TRUE} ]]; then
     for acc_hr in ${acc_hrs[@]}; do
-      if [[ ${anl_hr} -ge ${acc_hr} && $(( ${anl_hr} % ${ACC_INT} )) -eq 0 ]]; then
+      if [[ ${anl_hr} -ge ${acc_hr} && $(( ${anl_hr} % ${PCP_INT} )) -eq 0 ]]; then
         # define accumulation start / stop hours
         acc_strt=$(( ${anl_hr}  - ${acc_hr} ))
         acc_stop=${anl_hr}
@@ -514,18 +549,19 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
           fi
         done
         if [ ${acc_check} = 0 ]; then
-          # define padded forecast hour for name strings
-          pdd_hr=`printf %03d $(( 10#${anl_hr} ))`
+          # define padded accumulation / forecast hour for name strings
+          pad_a_hr=`printf %02d $(( 10#${acc_hr} ))`
+          pad_f_hr=`printf %03d $(( 10#${anl_hr} ))`
 
           # CTR_FLW QPF file name convention following similar products
-          cf_acc=${CTR_FLW}_${acc_hr}QPF_${CYC_DT}_F${pdd_hr}.nc
+          cf_acc=${CTR_FLW}_${pad_a_hr}QPF_${CYC_DT}_F${pad_f_hr}.nc
 
           # Combine precip to accumulation period
           cmd="${met} pcp_combine \
           -subtract /in_dir/${cf_stop} /in_dir/${cf_strt}\
           /wrk_dir/${cf_acc} \
           -field 'name=\"precip\"; level=\"(0,*,*)\";'\
-          -name \"QPF_${acc_hr}hr\"; error=\$?"
+          -name \"QPF_${pad_a_hr}hr\"; error=\$?"
           printf "${cmd}\n"; eval "${cmd}"
           printf "pcp_combine exited with status ${error}.\n"
           if [ ${error} -ne 0 ]; then

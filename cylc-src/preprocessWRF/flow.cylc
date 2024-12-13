@@ -33,30 +33,31 @@
 {# Regrid to generic lat-lon for MET if native grid errors (TRUE or FALSE) #}
 {% set RGRD = 'TRUE' %}
 
-{# Create averaged IVT products from cf files, TRUE or FALSE #}
-{% set IVT_PRD = 'TRUE' %}
-
-{# Define the interval over which to take IVT averages for verification #}
-{% set IVT_AVG = 6 %}
-
-{# Define hour increment between files within the interval to average over #}
-{% set IVT_INC = 3 %}
-
-{# Define at what hour interval IVT averages are computed #}
-{% set IVT_INT = 6 %}
-
 {# Compute precipitation accumulations from cf files, TRUE or FALSE #}
 {% set PCP_PRD = 'TRUE' %}
 
-{# Defines the min / max accumulation interval for precip #}
-{% set ACC_MIN = 24 %}
-{% set ACC_MAX = 24 %}
+{# Define interval of forecast hours at which accumulated precip is computed #}
+{% set PCP_INT = 24 %}
 
-{# Defines the increment between min / max to compute accumulation intervals #}
+{# Define the min / max accumulation interval for precip #}
+{% set ACC_MIN = 24 %}
+{% set ACC_MAX = 72 %}
+
+{# Define the increment between min / max to compute accumulations #}
 {% set ACC_INC = 24 %}
 
-{# Define at what hour interval precip accumulationas are computed #}
-{% set ACC_INT = 12 %}
+{# Create averaged IVT products from cf files, TRUE or FALSE #}
+{% set IVT_PRD = 'TRUE' %}
+
+{# Define interval of forecast hours at which IVT averages are computed #}
+{% set IVT_INT = 6 %}
+
+{# Define the min / max hours of forecast history to compute IVT averages #}
+{% set AVG_MIN = 6 %}
+{% set AVG_MAX = 12 %}
+
+{# Define the increment between min / max to compute averages #}
+{% set AVG_INC = 6 %}
 
 {# Define the directory to find wrf outputs relative to ISO cycle directories #}
 {% set IN_DT_SUBDIR = 'wrf_model' %}
@@ -133,16 +134,6 @@
         [[[environment]]]
             FULL_DATA = {{FULL_DATA}}
             RGRD = {{RGRD}}
-            IVT_PRD = {{IVT_PRD}}
-            IVT_AVG = {{IVT_AVG}}
-            IVT_INC = {{IVT_INC}}
-            IVT_INT = {{IVT_INT}}
-            PCP_PRD = {{PCP_PRD}}
-            ACC_MIN = {{ACC_MIN}}
-            ACC_MAX = {{ACC_MAX}}
-            ACC_INC = {{ACC_INC}}
-            ACC_INT = {{ACC_INT}}
-            WRF_PRFX = {{WRF_PRFX}}
             CYC_DT = $(isodatetime ${CYLC_TASK_CYCLE_POINT} --f '%Y%m%d%H')
             ANL_MIN = {{ANL_MIN}}
             ANL_MAX = {{ANL_MAX}}
@@ -153,6 +144,17 @@
                 EXP_VRF = $(isodatetime {{EXP_VRF}} --f '%Y%m%d%H')
             {% endif %}
             INIT_OFFSET = {{INIT_OFFSET}}
+            PCP_PRD = {{PCP_PRD}}
+            PCP_INT = {{PCP_INT}}
+            ACC_MIN = {{ACC_MIN}}
+            ACC_MAX = {{ACC_MAX}}
+            ACC_INC = {{ACC_INC}}
+            IVT_PRD = {{IVT_PRD}}
+            IVT_INT = {{IVT_INT}}
+            AVG_MIN = {{AVG_MIN}}
+            AVG_MAX = {{AVG_MAX}}
+            AVG_INC = {{AVG_INC}}
+            WRF_PRFX = {{WRF_PRFX}}
 
     {# Loop model control flows #}
     {% for ctr_flw in CTR_FLWS %}

@@ -319,12 +319,12 @@ def cf_ivt(ds_in, init_offset=0):
     # Vertical Pa differences between layer interfaces
     d_pres = pres[:, :-1, :, :] - pres[:, 1:, :, :]
 
-    # calculate the integral with midpoint for trapeziodal rule
+    # calculate the integral with average for trapeziodal rule
     avg_q = 0.5 * (q[:, :-1, :, :] + q[:, 1:, :, :])
     IWV = np.nansum((avg_q * d_pres) / 9.81, axis=1)
 
     # generate u/v components of the unstaggered wind [m/s]
-    # calculate the integral with midpoint for trapeziodal rule
+    # calculate the integral with average for trapeziodal rule
     u, v = unstagger_uv(ds_in.U, ds_in.V)
     avg_u = 0.5 * (u[:, :-1, :, :] + u[:, 1:, :, :])
     avg_v = 0.5 * (v[:, :-1, :, :] + v[:, 1:, :, :])

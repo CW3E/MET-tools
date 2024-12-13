@@ -314,7 +314,7 @@ def cf_ivt(ds_in, init_offset=0):
     # convert to specific humidity filling with nan at null levs
     qv = ds_in.QVAPOR
     q = qv / ( qv + 1.0 )
-    q = np.where(pres <= 10000.0, q, np.nan)
+    q = np.where(pres >= 10000.0, q, np.nan)
 
     # Vertical Pa differences between layer interfaces
     d_pres = pres[:, :-1, :, :] - pres[:, 1:, :, :]

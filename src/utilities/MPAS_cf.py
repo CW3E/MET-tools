@@ -210,7 +210,7 @@ def cf_ivt(ds_in, f_time=None):
     pres = ds_in['pressure']
     qv = ds_in['qv']
     q = qv / ( qv + 1.0 )
-    q = np.where(pres <= 10000.0, q, np.nan)
+    q = np.where(pres >= 10000.0, q, np.nan)
    
     # Vertical Pa differences between layer interfaces
     d_pres = pres[:, :-1, :, :] - pres[:, 1:, :, :]

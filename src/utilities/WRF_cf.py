@@ -43,9 +43,24 @@ def global_attrs(ds_in):
 
 def unstagger(var, stagger_dim):
     """
-    Function from WRF-python to unstagger variables.
+    Function copied from WRF-python to unstagger variables.
+
+    This function destaggers the variable by taking the average of the
+    values located on either side of the grid box.
+
+    Args:
+
+        var (:class:`xarray.DataArray` or :class:`numpy.ndarray`): A variable
+            on a staggered grid.
+
+        stagger_dim (:obj:`int`): The dimension index to destagger.
+            Negative values can be used to choose dimensions referenced
+            from the right hand side (-1 is the rightmost dimension).
+
+    Returns:
+        :class:`numpy.ndarray` object with no metadata.
     """
-    
+
     var_shape = var.shape
     num_dims = var.ndim
     stagger_dim_size = var_shape[stagger_dim]
@@ -262,7 +277,6 @@ def cf_precip(ds_in, init_offset=0):
     precip_c = ds_in.RAINC
     precip = precip_g + precip_c
 
-
     ds_out = xr.Dataset(
             data_vars=dict(
                 precip=(['time', 'south_north', 'west_east'], precip.values),
@@ -278,42 +292,8 @@ def cf_precip(ds_in, init_offset=0):
                 ),
             )
 
-
     # Assigns attributes
     ds_out = assign_attrs(ds_in, ds_out, init_offset)
-
-    return ds_out
-
-def cf_precip_bkt(ds_curr, ds_prev):
-    """Computes accumulated precip between two model times from time series.
-
-    Inputs are precip data arrays at current and previous time over which to
-    compute the accumulation bucket.
-    """
-    ds_out = ds_curr.rename_vars({'precip': 'precip_bkt'})
-    ds_out.precip_bkt.values = ds_curr.precip.values - ds_prev.precip.values
-    curr_nx = ds_curr.precip.valid_time_ut
-    curr_is = ds_curr.precip.valid_time
-    curr_ac = ds_curr.precip.accum_time_sec
-    prev_nx = ds_prev.precip.valid_time_ut
-    prev_is = ds_prev.precip.valid_time
-    prev_ac = ds_prev.precip.accum_time_sec
-    accu_sec = curr_ac - prev_ac
-
-    acc_str = str(int((curr_nx - prev_nx) / 3600 ))
-    fill_val = 1e20
-    ds_out.precip_bkt.attrs = {
-        'standard_name': 'precipitation_amount_' + acc_str + '_hours',
-        'long_name': 'Accumulated Precipitation Over Past ' +\
-                acc_str + ' Hours',
-        'units': 'mm',
-        'missing_value': fill_val,
-        'valid_time': curr_is,
-        'valid_time_ut': curr_nx,
-        'init_time': prev_is,
-        'init_time_ut': prev_nx,
-        'accum_time_sec': accu_sec,
-        }
 
     return ds_out
 
@@ -322,51 +302,57 @@ def cf_ivt(ds_in, init_offset=0):
     Function to calculate IVT and IVW and put into cf-compliant xarray dataset.
     """
 
-    # Unpack IVT variables
-    p_eta = ds_in.P + ds_in.PB
+    # Calculate pressure in Pa at the layer interfaces, replacing surface / top
+    p_eta = (ds_in.P + ds_in.PB) * 100
     p_surf = ds_in.PSFC
-    u_gr, v_gr = unstagger_uv(ds_in.U, ds_in.V)
-    qvapor = ds_in.QVAPOR
+    p_top = ds_in.P_TOP
+    pres = (p_eta + np.roll(p_eta, 1, axis=1))*0.5
+    pres[:, 0, :, :] = p_surf
+    pres[:, -1, :, :] = p_top
 
-    # calculate the pressure at the intersection between eta levels
-    p_int = (p_eta + np.roll(p_eta, 1, axis=1))*0.5
-    p_int[:, 0, :, :] = p_surf
+    # Calc IVT from surface to 100hPa, extract water vapor mixing ratio [kg/kg]
+    # convert to specific humidity filling with nan at null levs
+    qv = ds_in.QVAPOR
+    q = qv / ( qv + 1.0 )
+    q = np.where(pres <= 10000.0, q, np.nan)
 
-    # Limits IVT calc from surface to >= ~250 mb
-    top_idx = np.min(np.argwhere(p_int.values <= 2500.0)[:, 1])
-    p_int = p_int.isel(bottom_top=slice(0, top_idx))
-    u_gr = u_gr.isel(bottom_top = slice(0, top_idx-1))
-    v_gr = v_gr.isel(bottom_top = slice(0, top_idx-1))
-    qvapor = qvapor.isel(bottom_top = slice(0, top_idx-1))
+    # Vertical Pa differences between layer interfaces
+    d_pres = pres[:, :-1, :, :] - pres[:, 1:, :, :]
 
-    # Do calcs
-    r_v_eta = qvapor/(qvapor+1)
+    # calculate the integral with midpoint for trapeziodal rule
+    avg_q = 0.5 * (q[:, :-1, :, :] + q[:, 1:, :, :])
+    IWV = np.nansum((avg_q * d_pres) / 9.81, axis=1)
 
-    # calculate the difference in pressure between eta levels
-    d_pres = np.diff(p_int, axis=1)
+    # generate u/v components of the unstaggered wind [m/s]
+    # calculate the integral with midpoint for trapeziodal rule
+    u, v = unstagger_uv(ds_in.U, ds_in.V)
+    avg_u = 0.5 * (u[:, :-1, :, :] + u[:, 1:, :, :])
+    avg_v = 0.5 * (v[:, :-1, :, :] + v[:, 1:, :, :])
 
-    # calculate the IVT and IWV
-    IWV = ((r_v_eta * d_pres)/9.81).sum(dim='bottom_top')
-    IVTU = ((r_v_eta * d_pres * u_gr)/9.81).sum(dim='bottom_top')
-    IVTV = ((r_v_eta * d_pres * v_gr)/9.81).sum(dim='bottom_top')
-    IVT = np.sqrt((IVTU**2)+(IVTV**2))
+    # Calculates u and v components of IVT
+    IVTU = np.nansum((avg_q * d_pres * avg_u) / 9.81, axis=1)
+    IVTV = np.nansum((avg_q * d_pres * avg_v) / 9.81, axis=1)
+
+    # Combines components into IVT magnitude
+    IVT = np.sqrt(IVTU**2 + IVTV**2)
 
     # Prepares output ds
     ds_out = xr.Dataset(
             data_vars = dict(
-                IWV=(['time', 'south_north', 'west_east'], IWV.values),
-                IVT=(['time', 'south_north', 'west_east'], IVT.values),
-                IVTU=(['time', 'south_north', 'west_east'], IVTU.values),
-                IVTV=(['time', 'south_north', 'west_east'], IVTV.values)),
+                IWV=(['time', 'south_north', 'west_east'], IWV),
+                IVT=(['time', 'south_north', 'west_east'], IVT),
+                IVTU=(['time', 'south_north', 'west_east'], IVTU),
+                IVTV=(['time', 'south_north', 'west_east'], IVTV)
+                ),
             coords = dict(
                 time = (['time'], np.array([0])),
                 lat = (['south_north', 'west_east'],
-                    np.squeeze(IVT.XLAT.values)),
+                    np.squeeze(ds_in.XLAT.values)),
                 lon = (['south_north', 'west_east'],
-                    np.squeeze(IVT.XLONG.values)),
-                south_north = ('south_north', IVT.south_north.values),
-                west_east = ('west_east', IVT.west_east.values),
-                )
+                    np.squeeze(ds_in.XLONG.values)),
+                south_north = ('south_north', ds_in.south_north.values),
+                west_east = ('west_east', ds_in.west_east.values),
+                ),
             )
 
     # Assigns attributes

@@ -200,91 +200,52 @@ def cf_precip(ds_in, f_time=None):
 
     return ds_out
 
-def cf_precip_bkt(ds_curr, ds_prev):
-    """Computes accumulated precip between two model times from time series.
-
-    Inputs are precip data arrays at current and previous time over which to
-    compute the accumulation bucket.
-    """
-    ds_out = ds_curr.rename_vars({'precip': 'precip_bkt'})
-    ds_out.precip_bkt.values = ds_curr.precip.values - ds_prev.precip.values
-    curr_nx = ds_curr.precip.valid_time_ut
-    curr_is = ds_curr.precip.valid_time
-    curr_ac = ds_curr.precip.accum_time_sec
-    prev_nx = ds_prev.precip.valid_time_ut
-    prev_is = ds_prev.precip.valid_time
-    prev_ac = ds_prev.precip.accum_time_sec
-    accu_sec = curr_ac - prev_ac
-
-    acc_str = str(int((curr_nx - prev_nx) / 3600 ))
-    fill_val = 1e20
-    ds_out.precip_bkt.attrs = {
-        'standard_name': 'precipitation_amount_' + acc_str + '_hours',
-        'long_name': 'Accumulated Precipitation Over Past ' +\
-                acc_str + ' Hours',
-        'units': 'mm',
-        'missing_value': fill_val,
-        'valid_time': curr_is,
-        'valid_time_ut': curr_nx,
-        'init_time': prev_is,
-        'init_time_ut': prev_nx,
-        'accum_time_sec': accu_sec,
-        }
-
-    return ds_out
-
 def cf_ivt(ds_in, f_time=None):
     """
     Function to calculate IVT and IWV and put into cf-compliant xarray dataset.
     """
 
-    # infer grid dimensions
-    nlat = len(ds_in.latitude.values)
-    nlon = len(ds_in.longitude.values)
-
-    # Limits IVT calc from surface to ~200 mb
+    # Calc IVT from surface to 100hPa, extract water vapor mixing ratio [kg/kg],
+    # convert to specific humidity filling with nan at null levs
     pres = ds_in['pressure']
-    top_idx = np.min(np.argwhere(pres.values <= 2500.0)[:, 1])
-    pres = pres.isel(nVertLevels=slice(0, top_idx))
-
-    # water vapor mixing ratio [kg/kg]
-    qv = ds_in['qv'].isel(nVertLevels=slice(0, top_idx-1))
+    qv = ds_in['qv']
+    q = qv / ( qv + 1.0 )
+    q = np.where(pres <= 10000.0, q, np.nan)
    
-    # u component of the wind [m/s]
-    u = ds_in['uReconstructZonal'].isel(nVertLevels=slice(0, top_idx-1))
-    
-    # v component of the wind [m/s]
-    v = ds_in['uReconstructMeridional'].isel(nVertLevels=slice(0, top_idx-1))
-
     # Vertical Pa differences between layer interfaces
-    d_pres = pres.diff(dim='nVertLevels')
+    d_pres = pres[:, :-1, :, :] - pres[:, 1:, :, :]
 
-    # Calculates IWV
-    IWV =((qv * d_pres)/9.81).sum(dim='nVertLevels') 
+    # calculate the integral with midpoint for trapeziodal rule
+    avg_q = 0.5 * (q[:, :-1, :, :] + q[:, 1:, :, :])
+    IWV = np.nansum((avg_q * d_pres) / 9.81, axis=1)
+
+    # u/v components of the wind [m/s]
+    # calculate the integral with midpoint for trapeziodal rule
+    u = ds_in['uReconstructZonal']
+    v = ds_in['uReconstructMeridional']
+    avg_u = 0.5 * (u[:, :-1, :, :] + u[:, 1:, :, :])
+    avg_v = 0.5 * (v[:, :-1, :, :] + v[:, 1:, :, :])
 
     # Calculates u and v components of IVT
-    IVTU = ((qv * d_pres * u)/9.81).sum(dim='nVertLevels')
-    IVTV = ((qv * d_pres * v)/9.81).sum(dim='nVertLevels')
+    IVTU = np.nansum((avg_q * d_pres * avg_u) / 9.81, axis=1)
+    IVTV = np.nansum((avg_q * d_pres * avg_v) / 9.81, axis=1)
 
-    # Combines components into full IVT values
-    IVT = np.sqrt((IVTV**2)+(IVTU**2))
+    # Combines components into IVT magnitude
+    IVT = np.sqrt(IVTU**2 + IVTV**2)
 
     # Prepares output ds
     ds_out = xr.Dataset(
             data_vars = dict(
-                IWV=(['time', 'lat', 'lon'],
-                    np.reshape(IWV.values, [1, nlat, nlon])),
-                IVT=(['time', 'lat', 'lon'],
-                    np.reshape(IVT.values, [1, nlat, nlon])),
-                IVTU=(['time', 'lat', 'lon'],
-                    np.reshape(IVTU.values, [1, nlat, nlon])),
-                IVTV=(['time', 'lat', 'lon'],
-                    np.reshape(IVTU.values, [1, nlat, nlon]))),
+                IWV=(['time', 'lat', 'lon'], IWV),
+                IVT=(['time', 'lat', 'lon'], IVT),
+                IVTU=(['time', 'lat', 'lon'], IVTU),
+                IVTV=(['time', 'lat', 'lon'], IVTV),
+                ),
             coords = dict(
                 time = (['time'], np.array([0])),
                 lat = ('lat', ds_in.latitude.values),
                 lon = ('lon', ds_in.longitude.values),
-                )
+                ),
             )
 
     # Assigns attributes

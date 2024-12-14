@@ -30,9 +30,6 @@
 {# Preprocessing fails on missing data TRUE / FALSE #}
 {% set FULL_DATA = 'TRUE' %}
 
-{# Regrid to generic lat-lon for MET if native grid errors (TRUE or FALSE) #}
-{% set RGRD = 'TRUE' %}
-
 {# Compute precipitation accumulations from cf files, TRUE or FALSE #}
 {% set PCP_PRD = 'TRUE' %}
 
@@ -133,7 +130,6 @@
         platform = {{environ['SCHED']}}
         [[[environment]]]
             FULL_DATA = {{FULL_DATA}}
-            RGRD = {{RGRD}}
             CYC_DT = $(isodatetime ${CYLC_TASK_CYCLE_POINT} --f '%Y%m%d%H')
             ANL_MIN = {{ANL_MIN}}
             ANL_MAX = {{ANL_MAX}}

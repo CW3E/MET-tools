@@ -73,15 +73,8 @@ except:
     sys.exit(1)
 
 try:
-    # check for regridding (1/0), convert to bool
-    rgrd = bool(int(sys.argv[5]))
-except:
-    # no regridding unless specified
-    rgrd = False
-
-try:
     # check for initialization offset value, e.g., for restart
-    init_offset = int(sys.argv[6])
+    init_offset = int(sys.argv[5])
     print('Initialization times will be computed with an offset of minus ' +\
             str(init_offset) + ' hours.')
 
@@ -103,16 +96,15 @@ if ivt_prd:
 
 ds_out.to_netcdf(path=f_out)
 
-if rgrd:
-    # use CDO for regridding the data for MET compatibility
-    cdo = Cdo()
-    rgrd_ds = cdo.sellonlatbox(LON1, LON2, LAT1, LAT2,
-            input=cdo.remapbil(GRES, input=f_out, returnXDataset=True),
-            returnXDataset=True, options='-f nc4' )
+# use CDO for regridding the data for MET compatibility
+cdo = Cdo()
+rgrd_ds = cdo.sellonlatbox(LON1, LON2, LAT1, LAT2,
+        input=cdo.remapbil(GRES, input=f_out, returnXDataset=True),
+        returnXDataset=True, options='-f nc4' )
 
-    tmp_ds = xr.open_dataset(f_out)
-    rgrd_ds['forecast_reference_time'] = tmp_ds.forecast_reference_time
-    os.system('rm -f ' + f_out)
-    rgrd_ds.to_netcdf(path=f_out)
+tmp_ds = xr.open_dataset(f_out)
+rgrd_ds['forecast_reference_time'] = tmp_ds.forecast_reference_time
+os.system('rm -f ' + f_out)
+rgrd_ds.to_netcdf(path=f_out)
 
 ##################################################################################

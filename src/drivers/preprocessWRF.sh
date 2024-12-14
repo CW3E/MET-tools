@@ -69,18 +69,6 @@ else
   exit 1
 fi
 
-if [[ ${RGRD} =~ ${TRUE} ]]; then
-  # standard coordinates that can be used to regrid West-WRF
-  printf "WRF outputs will be regridded for MET compatibility.\n"
-  rgrd="1"
-elif [[ ${RGRD} =~ ${FALSE} ]]; then
-  printf "WRF outputs will be used with MET in their native grid.\n"
-  rgrd="0"
-else
-  printf "ERROR: \${RGRD} must equal 'TRUE' or 'FALSE' (case insensitive).\n"
-  exit 1
-fi
-
 if [[ ! ${CYC_DT} =~ ${ISO_RE} ]]; then
   msg="ERROR: cycle date \${CYC_DT}\n ${CYC_DT}\n"
   msg+=" is not in YYYYMMDDHH format.\n"
@@ -430,7 +418,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
 
     cmd="${met_tools_py} /src_dir/utilities/wrfout_to_cf.py"
     cmd+=" '/in_dir/${f_in}' '/wrk_dir/${f_out}' '${pcp_prd}' '${ivt_prd}'"
-    cmd+=" '${rgrd}' '${init_offset}'; error=\$?"
+    cmd+=" '${init_offset}'; error=\$?"
     printf "${cmd}\n"; eval "${cmd}"
     printf "wrfout_to_cf.py exited with status ${error}.\n"
     if [ ${error} -ne 0 ]; then

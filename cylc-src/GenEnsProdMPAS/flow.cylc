@@ -8,11 +8,6 @@
 {# Configuration name including tunable parameters #}
 {% set CTR_FLWS = [ 'MPAS_240-U' ] %}
 
-{# Neighborhood widths for neighborhood methods, references model domains #}
-{# with 1-1 correspondence looping CTR_FLWS $}
-{# NOTE: this is impacted by choice of convert_mpas intermediate grid #}
-{% set NBRHD_WDTHS = [ 3 ] %}
-
 {# Define the min / max ensemble indices #}
 {% set ENS_MIN = 0 %}
 {% set ENS_MAX = 3 %}
@@ -27,18 +22,8 @@
 {# defined as empty string if not necessary #}
 {% set CTR_MEM = '00' %}
 
-{################################################################################}
-{# GENENSPROD SETTINGS #}
-{################################################################################}
 {# Require all ensemble members, no missing files, TRUE or FALSE #}
 {% set FULL_DATA = 'TRUE' %}
-
-{# Define the verification fields #}
-{% set VRF_FLDS = ['QPF', 'IVT'] %}
-
-{# Specify LISTS of thresholds levels for verification (NEEDS INTERNAL QUOTES "")#}
-{% set CAT_THRS = [ '"[ >=1.0, >=10.0, >=25.0, >=50.0, >=100.0 ]"',
-                    '"[ >=250.0, >=500.0, >=750.0, >=1000.0, >=1250.0"' ] %}
 
 {################################################################################}
 {# CYCLING SETTINGS #}
@@ -52,38 +37,61 @@
 {# Interval between cycle start times hours INT #}
 {% set CYC_INC = 24 %}
 
-{# Define min / max forecast hours for preprocessed outputs #}
-{% set ANL_MIN = '6' %}
-{% set ANL_MAX = '120' %}
-
-{# Define the increment at which to generate cf outputs (HH) #}
-{% set ANL_INC = '24' %}
-
-{# OPTIONAL ARGUMENT to set a verification termination date -- preprocessing will #}
-{# stop automatically at this valid date, define as blank string if unused #}
+{# OPTIONAL ARGUMENT to set a verification termination date -- processing #}
+{# forecasts stops automatically at this valid date, blank string if unused #}
 {% set EXP_VRF = '2022-12-28T00' %}
 
-{# Create averaged IVT products from cf files, TRUE or FALSE #}
-{% set IVT_PRD = 'TRUE' %}
-
-{# Define the IVT averages for verification #}
-{% set IVT_AVG = 6 %}
-
-{# Define at what hour interval IVT averages are available #}
-{% set IVT_INT = 6 %}
-
-{# Compute precipitation accumulations from cf files, TRUE or FALSE #}
+{################################################################################}
+{# GENENSPROD PRECIP SETTINGS #}
+{################################################################################}
+{# Compute precip ensemble products, TRUE or FALSE #}
 {% set PCP_PRD = 'TRUE' %}
 
-{# Define at what hour interval precip accumulationas are computed #}
-{% set ACC_INT = 12 %}
+{# LIST of thresholds levels for ensemble prod (NEEDS INTERNAL QUOTES "")#}
+{% set PCP_THR = '"[ >=1.0, >=10.0, >=25.0, >=50.0, >=100.0 ]"' %}
 
-{# Defines the min / max accumulation interval for precip #}
-{% set ACC_MIN = '24' %}
-{% set ACC_MAX = '24' %}
+{# Precip neighborhood widths, in interpolated ~4km intermediate grid points #}
+{% set PCP_NBRHD = 9 %}
 
-{# Defines the increment between min / max to compute accumulation intervals #}
-{% set ACC_INC = '24' %}
+{# Define min / max forecast hours for precip analysis #}
+{% set PCP_ANL_MIN = 24 %}
+{% set PCP_ANL_MAX = 120 %}
+
+{# Define the increment at which to generate precip analysis (HH) #}
+{% set PCP_ANL_INC = 24%}
+
+{# Define the min / max accumulation interval for precip #}
+{% set ACC_MIN = 24 %}
+{% set ACC_MAX = 72 %}
+
+{# Define the increment between min / max accumulations #}
+{% set ACC_INC = 24 %}
+
+{################################################################################}
+{# GENENSPROD IVT SETTINGS #}
+{################################################################################}
+{# Compute IVT ensemble products, TRUE or FALSE #}
+{% set IVT_PRD = 'TRUE' %}
+
+{# LIST of thresholds levels for ensemble prod (NEEDS INTERNAL QUOTES "")#}
+{% set IVT_THR = [ '"[ >=250.0, >=500.0, >=750.0, >=1000.0, >=1250.0"' ] %} 
+
+{# IVT neighborhood widths, in interpolated ~4km intermediate grid points #}
+{% set IVT_NBRHD = 18 %}
+
+{# Define min / max forecast hours for IVT analysis #}
+{% set IVT_ANL_MIN = 24 %}
+{% set IVT_ANL_MAX = 120 %}
+
+{# Define the increment at which to generate precip analysis (HH) #}
+{% set IVT_ANL_INC = 24%}
+
+{# Define the min / max hours of forecast averages #}
+{% set AVG_MIN = 6 %}
+{% set AVG_MAX = 12 %}
+
+{# Define the increment between min / max of averages #}
+{% set AVG_INC = 6 %}
 
 {################################################################################}
 {# JOB SETTINGS #}
@@ -100,6 +108,18 @@
 {################################################################################}
 {# CYLC SETTINGS #}
 {################################################################################}
+{# Construct iterables for loop over precip / IVT #}
+{% set ANLS = [PCP_PRD, IVT_PRD] %}
+{% set FLDS = ['QPF', 'IVT'] %}
+{% set THRS = [PCP_THR, IVT_THR] %}
+{% set ANL_MINS = [PCP_ANL_MIN, IVT_ANL_MIN] %}
+{% set ANL_MAXS = [PCP_ANL_MAX, IVT_ANL_MAX] %}
+{% set ANL_INCS = [PCP_ANL_INC, IVT_ANL_INC] %}
+{% set INT_MINS = [ACC_MIN, AVG_MIN] %}
+{% set INT_MAXS = [ACC_MAX, AVG_MAX] %}
+{% set INT_INCS = [ACC_INC, AVG_INC] %}
+{% set NBRHDS = [PCP_NBRHD, IVT_NBRHD] %}
+
 [scheduler]
     UTC mode = True
     allow implicit tasks = True
@@ -108,9 +128,15 @@
     final cycle point = {{CYC_STOP}}
     [[graph]]
         PT{{CYC_INC}}H = """
-        {# Loop model control flows #}
-        {% for ctr_flw in CTR_FLWS %}
-          GenEnsProd_{{ctr_flw}}
+        {# Loop analyses #}
+        {% for anl in ANLS %}
+            {% if anl == 'TRUE' %}
+                {% set fld = FLDS[loop.index0] %}
+                {# Loop model control flows #}
+                {% for ctr_flw in CTR_FLWS %}
+                  GenEnsProd_{{ctr_flw}}_{{fld}}
+                {% endfor %}
+            {% endif %}
         {% endfor %}
         """
 
@@ -120,18 +146,7 @@
         [[[environment]]]
             OMP_NUM_THREADS = {{ENS_PROC}}
             FULL_DATA = {{FULL_DATA}}
-            IVT_PRD = {{IVT_PRD}}
-            IVT_AVG = {{IVT_AVG}}
-            IVT_INT = {{IVT_INT}}
-            PCP_PRD = {{PCP_PRD}}
-            ACC_MIN = {{ACC_MIN}}
-            ACC_MAX = {{ACC_MAX}}
-            ACC_INC = {{ACC_INC}}
-            ACC_INT = {{ACC_INT}}
             CYC_DT = $(isodatetime ${CYLC_TASK_CYCLE_POINT} --f '%Y%m%d%H')
-            ANL_MIN = {{ANL_MIN}}
-            ANL_MAX = {{ANL_MAX}}
-            ANL_INC = {{ANL_INC}}
             {% if EXP_VRF == '' %}
                 EXP_VRF = {{EXP_VRF}}
             {% else %}
@@ -142,40 +157,61 @@
             ENS_PRFX = {{ENS_PRFX}}
             ENS_PAD = {{ENS_PAD}}
             CTR_MEM = {{CTR_MEM}}
-            VRF_FLD = {{VRF_FLD}}
-            CAT_THR = {{CAT_THR}}
 
-    {# Loop model control flows #}
-    {% for ctr_flw in CTR_FLWS %}
-        {# Neighborhood width is in 1-1 correspondence with model grd #}
-        {% set nbrhd_wdth = NBRHD_WDTHS[loop.index0] %}
-        [[GenEnsProd_{{ctr_flw}}]]
-            execution time limit = {{ENS_WC}}
-            script = {{environ['DRIVERS']}}/GenEnsProd.sh
-            execution retry delays = 3*PT5M
-            [[[environment]]]
-                CTR_FLW = {{ctr_flw}}
-                NBRHD_WDTH = {{nbrhd_wdth}}
-                IN_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT
-                {# MPAS workflow outpus have no directory nesting structure #}
-                IN_DT_SUBDIR = ""
-                WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GenEnsProd/$CYC_DT
-                OUT_DT_SUBDIR = ""
-            [[[directives]]]
-                {% if environ['SCHED'] == 'slurm' %}
-                    {% if environ['SYS_TYPE' ] == 'penguin' %}
-                        --partition = general
-                        --qos = {{environ['PART_DBG']}}
-                        --nodes = 1
-                        --ntasks-per-node = {{ENS_PROC}}
-                    {% else %}
-                        --partition = {{environ['PART_DBG']}}
-                        --nodes = 1
-                        --ntasks-per-node = {{ENS_PROC}}
-                        --mem = {{ENS_MEM}}
-                    {% endif %}
-                {% elif environ['SCHED'] == 'pbs' %}
-                    -q = {{environ['PART_DBG']}}
-                    -l select=1:mpiprocs={{ENS_PROC}}:ncpus=1
-                {% endif %}
-    {% endfor %}
+    {# Loop analyses #}
+    {% for anl in ANLS %}
+        {% if anl == 'TRUE' %}
+            {% set fld = FLDS[loop.index0] %}
+            {% set thr = THRS[loop.index0] %}
+            {% set anl_min = ANL_MINS[loop.index0] %}
+            {% set anl_max = ANL_MAXS[loop.index0] %}
+            {% set anl_inc = ANL_INCS[loop.index0] %}
+            {% set int_min = INT_MINS[loop.index0] %}
+            {% set int_max = INT_MAXS[loop.index0] %}
+            {% set int_inc = INT_INCS[loop.index0] %}
+            {% set nbrhd = NBRHDS[loop.index0] %}
+            {# Loop model control flows #}
+            {% for ctr_flw in CTR_FLWS %}
+                {# Neighborhood width is in 1-1 correspondence with model grd #}
+                {% set nbrhd_wdth = NBRHD_WDTHS[loop.index0] %}
+                [[GenEnsProd_{{ctr_flw}}_{{fld}}]]
+                    execution time limit = {{ENS_WC}}
+                    script = {{environ['DRIVERS']}}/GenEnsProd.sh
+                    execution retry delays = 3*PT5M
+                    [[[environment]]]
+                        {# Set the analysis hours depending on field #}
+                        ANL_MIN = {{anl_min}}
+                        ANL_MAX = {{anl_max}}
+                        ANL_INC = {{anl_inc}}
+                        {# Set the time interval bounds depending on the field #}
+                        INT_MIN = {{int_min}}
+                        INT_MAX = {{int_max}}
+                        INT_INC = {{int_inc}}
+                        VRF_FLD = {{fld}}
+                        CAT_THR = {{thr}}
+                        CTR_FLW = {{ctr_flw}}
+                        NBRHD_WDTH = {{nbrhd}}
+                        IN_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT
+                        {# MPAS workflow outpus have no directory nesting structure #}
+                        IN_DT_SUBDIR = ""
+                        WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GenEnsProd/$CYC_DT
+                        OUT_DT_SUBDIR = {{fld}}
+                    [[[directives]]]
+                        {% if environ['SCHED'] == 'slurm' %}
+                            {% if environ['SYS_TYPE' ] == 'penguin' %}
+                                --partition = general
+                                --qos = {{environ['PART_DBG']}}
+                                --nodes = 1
+                                --ntasks-per-node = {{ENS_PROC}}
+                            {% else %}
+                                --partition = {{environ['PART_DBG']}}
+                                --nodes = 1
+                                --ntasks-per-node = {{ENS_PROC}}
+                                --mem = {{ENS_MEM}}
+                            {% endif %}
+                        {% elif environ['SCHED'] == 'pbs' %}
+                            -q = {{environ['PART_DBG']}}
+                            -l select=1:mpiprocs={{ENS_PROC}}:ncpus=1
+                        {% endif %}
+            {% endfor %}
+        {% endfor %}

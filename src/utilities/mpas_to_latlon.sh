@@ -72,9 +72,9 @@ printf "Input file path is:\n ${IN_DIR}/${F_IN}\n"
 
 # Regrid to generic lat-lon grid for MET, passed to convert_mpas tool
 # NOTE: need to revise to regrid directly to verification grid
-nlat=750
-nlon=1375
-lat1=4.96
+nlat=1500
+nlon=2750
+lat1=5.
 lat2=65.
 lon1=162.
 lon2=272.

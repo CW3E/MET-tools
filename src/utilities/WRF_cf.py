@@ -21,7 +21,7 @@ from utilities import *
 ##################################################################################
 # regridding values for CDO
 # NOTE: need to revise to regrid directly to verification grid
-GRES='global_0.08'
+GRES='global_0.04'
 LAT1=5.
 LAT2=65.
 LON1=162.

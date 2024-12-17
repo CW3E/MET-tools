@@ -41,34 +41,82 @@
 ##################################################################################
 # Imports
 ##################################################################################
-import xarray as xr
-from datetime import datetime as dt
-from datetime import timedelta as td
-import numpy as np
-import pandas as pd
-import pickle
-import glob
-import re
-import os
-import sys
+from utilities import *
 
 ##################################################################################
-# UTILITY DEFINITIONS
-##################################################################################
-INDT = '    '
 
-##################################################################################
-# UTILITY METHODS
-##################################################################################
+#def gen_coord_attrs(ds_in, ds_out):
 
-def global_attrs(ds_in):
-    # Global DS attribute
-    ds_in.attrs = {
-            'Conventions':'CF-1.6', 
-            'notes':'Created with MET-Tools', 
-            'institution':'CW3E - Scripps Institution of Oceanography',
-            }
+#def assign_attrs(ds_in, ds_out):
 
-    return ds_in
+def split_grib_on_dates(f_in, f_out_dir, f_out_basename):
+    data = xr.open_dataset(f_in, engine='cfgrib')
+    times = data.time.values
+    date_times = pd.to_datetime(times).to_pydatetime()
+    for i_t, time in enumerate(times):
+        date_time = date_times[i_t].strftime('%Y-%m-%d_%H_%M_%S')
+        date_data = data.sel({'time': time})
+        f_out = f_out_dir + '/' + f_out_basename + '_' + date_time + '.nc'
+        print('Writing out sub-dataset valid on ' + date_time + ' to file:')
+        print(INDT + f_out)
+        date_data.to_netcdf(path=f_out)
+    print('Completed splitting all dates in file:')
+    print(INDT + f_in)
+    print('to directory:')
+    print(INDT + f_out_dir)
+
+    return None
+
+def cf_ivt(ds_in):
+    """
+    Function to calculate IVT and IWV and put into cf-compliant xarray dataset.
+    """
+
+    # Calc IVT from surface to 100hPa, extract water vapor mixing ratio [kg/kg],
+    # convert to specific humidity filling with nan at null levs
+    pres = ds_in['isobaricInhPa'] * 100
+    q = ds_in['q']
+    q = np.where(pres >= 10000.0, q, np.nan)
+   
+    # Vertical Pa differences between layer interfaces
+    d_pres = pres[:-1] - pres[1:]
+
+    # calculate the integral with average for trapeziodal rule
+    avg_q = 0.5 * (q[:-1, :, :] + q[1:, :, :])
+    IWV = np.nansum((avg_q * d_pres) / 9.81, axis=0)
+
+    # calculate the u/v components of the *staggered* wind [m/s] to
+    # calculate the integral with the average for trapeziodal rule
+    u = ds_in['u']
+    v = ds_in['v']
+    avg_u = 0.5 * (u[:-1, :, :] + u[1:, :, :])
+    avg_v = 0.5 * (v[:-1, :, :] + v[1:, :, :])
+
+    # Calculates u and v components of IVT
+    IVTU = np.nansum((avg_q * d_pres * avg_u) / 9.81, axis=1)
+    IVTV = np.nansum((avg_q * d_pres * avg_v) / 9.81, axis=1)
+
+    # Combines components into IVT magnitude
+    IVT = np.sqrt(IVTU**2 + IVTV**2)
+
+    # Prepares output ds
+    ds_out = xr.Dataset(
+            data_vars = dict(
+                IWV=(['time', 'lat', 'lon'], IWV),
+                IVT=(['time', 'lat', 'lon'], IVT),
+                IVTU=(['time', 'lat', 'lon'], IVTU),
+                IVTV=(['time', 'lat', 'lon'], IVTV),
+                ),
+            coords = dict(
+                time = (['time'], np.array([0])),
+                lat = ('lat', ds_in.latitude.values),
+                lon = ('lon', ds_in.longitude.values),
+                ),
+            )
+
+    # Assigns attributes
+    ds_out = assign_attrs(ds_in, ds_out, f_time)
+
+    return ds_out
 
 ##################################################################################

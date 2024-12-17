@@ -13,17 +13,7 @@ from utilities import *
 # Utility Methods
 ##################################################################################
 
-def global_attrs(ds_in):
-    # Global DS attribute
-    ds_in.attrs = {
-            'Conventions':'CF-1.6', 
-            'notes':'Created with MET-Tools', 
-            'institution':'CW3E - Scripps Institution of Oceanography',
-            }
-
-    return ds_in
-
-def gen_attrs(ds_in, ds_out, f_time):
+def gen_coord_attrs(ds_in, ds_out, f_time):
     """
     Function to set global xarray data attributes.
     """
@@ -114,7 +104,7 @@ def assign_attrs(ds_in, ds_out, f_time=None):
     """
 
     # Sets up global dataset attributes
-    ds_out, repeat_attrs, accu_sec = gen_attrs(ds_in, ds_out, f_time)
+    ds_out, repeat_attrs, accu_sec = gen_coord_attrs(ds_in, ds_out, f_time)
 
     if 'precip' in ds_out.data_vars:
         ds_out.precip.attrs = {

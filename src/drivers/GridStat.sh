@@ -508,7 +508,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
           fi
 
           # Run gridstat
-          cmd="${met} grid_stat -v 10 \
+          cmd="${met} grid_stat \
           /in_dir/${for_in} \
           /STC_ROOT/${obs_in} \
           /wrk_dir/GridStatConfig_${VRF_FLD}_${acc_hr}hr \
@@ -585,7 +585,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
           fi
 
           # Run gridstat
-          cmd="${met} grid_stat -v 10 \
+          cmd="${met} grid_stat \
           /in_dir/${for_in} \
           /STC_ROOT/${obs_in} \
           /wrk_dir/GridStatConfig_${VRF_FLD} \

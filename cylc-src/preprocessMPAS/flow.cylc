@@ -77,8 +77,8 @@
 {% set IVT_INT = 6 %}
 
 {# Define the min / max hours of forecast history to compute IVT averages #}
-{% set AVG_MIN = 6 %}
-{% set AVG_MAX = 12 %}
+{% set AVG_MIN = 0 %}
+{% set AVG_MAX = 6 %}
 
 {# Define the increment between min / max to compute averages #}
 {% set AVG_INC = 6 %}
@@ -93,7 +93,7 @@
 {% set PRE_MEM = '20000M' %}
 
 {# Wallclock limit for ungrib jobs #}
-{% set PRE_WC = 'PT30M' %}
+{% set PRE_WC = 'PT60M' %}
 
 {################################################################################}
 {# CYLC SETTINGS #}

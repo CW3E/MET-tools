@@ -96,9 +96,9 @@ export PROJECT="OUSAF48525822"
 export PART_CMP="standard"
 
 # Debug queue for small / rapid parallel jobs
-export PART_DBG="debug"
+export PART_DBG="standard"
 
 # Serial queue for non-mpi jobs
-export PART_SRL="debug"
+export PART_SRL="standard"
 
 ##################################################################################

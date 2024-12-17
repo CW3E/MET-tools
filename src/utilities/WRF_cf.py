@@ -31,16 +31,6 @@ LON2=272.
 # Utility Methods
 ##################################################################################
 
-def global_attrs(ds_in):
-    # Global DS attribute
-    ds_in.attrs = {
-            'Conventions':'CF-1.6', 
-            'notes':'Created with MET-Tools', 
-            'institution':'CW3E - Scripps Institution of Oceanography',
-            }
-
-    return ds_in
-
 def unstagger(var, stagger_dim):
     """
     Function copied from WRF-python to unstagger variables.
@@ -105,7 +95,7 @@ def unstagger_uv(u, v):
 
     return unstag_u, unstag_v
 
-def gen_attrs(ds_in, ds_out, init_offset=0):
+def gen_coord_attrs(ds_in, ds_out, init_offset=0):
     """
     Function to set global xarray data attributes.
     """
@@ -144,13 +134,6 @@ def gen_attrs(ds_in, ds_out, init_offset=0):
             'valid_time_ut':valid_nx, 
             'init_time':start_is, 
             'init_time_ut':start_nx,
-            }
-
-    # Global DS attributes
-    ds_out.attrs = {
-            'Conventions':'CF-1.6', 
-            'notes':'Created with MET-Tools', 
-            'institution':'CW3E - Scripps Institution of Oceanography',
             }
 
     # Global ds dimension and coordinate attributes
@@ -209,7 +192,7 @@ def assign_attrs(ds_in, ds_out, init_offset=0):
     """
 
     # Sets up global WRF dataset attributes
-    ds_out, repeat_attrs, accu_sec = gen_attrs(ds_in, ds_out, init_offset)
+    ds_out, repeat_attrs, accu_sec = gen_coord_attrs(ds_in, ds_out, init_offset)
 
     if 'precip' in ds_out.data_vars:
         ds_out.precip.attrs = {

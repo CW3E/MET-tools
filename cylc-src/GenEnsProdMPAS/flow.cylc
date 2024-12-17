@@ -10,7 +10,7 @@
 
 {# Define the min / max ensemble indices #}
 {% set ENS_MIN = 0 %}
-{% set ENS_MAX = 3 %}
+{% set ENS_MAX = 2 %}
 
 {# Define the number of digits to pad ensemble indices #}
 {% set ENS_PAD = 2 %}
@@ -74,21 +74,21 @@
 {% set IVT_PRD = 'TRUE' %}
 
 {# LIST of thresholds levels for ensemble prod (NEEDS INTERNAL QUOTES "")#}
-{% set IVT_THR = [ '"[ >=250.0, >=500.0, >=750.0, >=1000.0, >=1250.0"' ] %} 
+{% set IVT_THR = '"[ >=250.0, >=500.0, >=750.0, >=1000.0, >=1250.0 ]"' %} 
 
 {# IVT neighborhood widths, in interpolated ~4km intermediate grid points #}
-{% set IVT_NBRHD = 18 %}
+{% set IVT_NBRHD = 17 %}
 
 {# Define min / max forecast hours for IVT analysis #}
-{% set IVT_ANL_MIN = 24 %}
+{% set IVT_ANL_MIN = 6 %}
 {% set IVT_ANL_MAX = 120 %}
 
 {# Define the increment at which to generate precip analysis (HH) #}
-{% set IVT_ANL_INC = 24%}
+{% set IVT_ANL_INC = 6%}
 
 {# Define the min / max hours of forecast averages #}
-{% set AVG_MIN = 6 %}
-{% set AVG_MAX = 12 %}
+{% set AVG_MIN = 0 %}
+{% set AVG_MAX = 6 %}
 
 {# Define the increment between min / max of averages #}
 {% set AVG_INC = 6 %}
@@ -97,13 +97,13 @@
 {# JOB SETTINGS #}
 {################################################################################}
 {# Job mem argument #}
-{% set ENS_PROC = 124 %}
+{% set ENS_PROC = 128 %}
 
 {# Job mem argument #}
 {% set ENS_MEM = '249208M' %}
 
 {# Wallclock limit for ungrib jobs #}
-{% set ENS_WC = 'PT1H' %}
+{% set ENS_WC = 'PT2H30M' %}
 
 {################################################################################}
 {# CYLC SETTINGS #}
@@ -173,7 +173,6 @@
             {# Loop model control flows #}
             {% for ctr_flw in CTR_FLWS %}
                 {# Neighborhood width is in 1-1 correspondence with model grd #}
-                {% set nbrhd_wdth = NBRHD_WDTHS[loop.index0] %}
                 [[GenEnsProd_{{ctr_flw}}_{{fld}}]]
                     execution time limit = {{ENS_WC}}
                     script = {{environ['DRIVERS']}}/GenEnsProd.sh
@@ -214,4 +213,5 @@
                             -l select=1:mpiprocs={{ENS_PROC}}:ncpus=1
                         {% endif %}
             {% endfor %}
-        {% endfor %}
+        {% endif %}
+    {% endfor %}

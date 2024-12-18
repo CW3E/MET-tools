@@ -101,6 +101,8 @@ if [ ${PCP_PRD} = 1 ]; then
 fi
 if [ ${IVT_PRD} = 1 ]; then
   printf "pressure\n" >> ./include_fields
+  printf "surface_pressure\n" >> ./include_fields
+  printf "plrad\n" >> ./include_fields
   printf "qv\n" >> ./include_fields
   printf "uReconstructZonal\n" >> ./include_fields
   printf "uReconstructMeridional\n" >> ./include_fields

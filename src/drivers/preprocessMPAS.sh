@@ -611,7 +611,7 @@ if [ ${error_check} = 1 ]; then
 else
   print "Cleaning temporary latlon files.\n"
   cmd="rm -f *.latlon.*"
-  printf "${cmd}\n"; eval "${cmd}"
+  #printf "${cmd}\n"; eval "${cmd}"
   msg="Script completed at `date +%Y-%m-%d_%H_%M_%S`,"
   msg+="verify outputs at \${WRK_DIR}:\n ${WRK_DIR}\n"
   printf "${msg}"

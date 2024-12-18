@@ -286,10 +286,12 @@ def cf_ivt(ds_in, init_offset=0):
     """
 
     # Calculate pressure in Pa at the layer interfaces, replacing surface / top
-    p_eta = (ds_in.P + ds_in.PB) * 100
+    p_eta = ds_in.P + ds_in.PB
+    nvert, n_sn, n_we = np.shape(p_eta[0, :, :, :])
     p_surf = ds_in.PSFC
     p_top = ds_in.P_TOP
-    pres = (p_eta + np.roll(p_eta, 1, axis=1))*0.5
+    pres = np.empty([1, nvert + 1, n_sn, n_we]) 
+    pres[0, 1:, :, :] = (p_eta + np.roll(p_eta, 1, axis=1))*0.5
     pres[:, 0, :, :] = p_surf
     pres[:, -1, :, :] = p_top
 
@@ -297,24 +299,20 @@ def cf_ivt(ds_in, init_offset=0):
     # convert to specific humidity filling with nan at null levs
     qv = ds_in.QVAPOR
     q = qv / ( qv + 1.0 )
-    q = np.where(pres >= 10000.0, q, np.nan)
+    q = np.where(pres[:, 1:, :, :] >= 10000.0, q, np.nan)
 
     # Vertical Pa differences between layer interfaces
     d_pres = pres[:, :-1, :, :] - pres[:, 1:, :, :]
 
-    # calculate the integral with average for trapeziodal rule
-    avg_q = 0.5 * (q[:, :-1, :, :] + q[:, 1:, :, :])
-    IWV = np.nansum((avg_q * d_pres) / 9.81, axis=1)
+    # calculate the integral
+    IWV = np.nansum((q * d_pres) / 9.81, axis=1)
 
     # generate u/v components of the unstaggered wind [m/s]
-    # calculate the integral with average for trapeziodal rule
     u, v = unstagger_uv(ds_in.U, ds_in.V)
-    avg_u = 0.5 * (u[:, :-1, :, :] + u[:, 1:, :, :])
-    avg_v = 0.5 * (v[:, :-1, :, :] + v[:, 1:, :, :])
 
     # Calculates u and v components of IVT
-    IVTU = np.nansum((avg_q * d_pres * avg_u) / 9.81, axis=1)
-    IVTV = np.nansum((avg_q * d_pres * avg_v) / 9.81, axis=1)
+    IVTU = np.nansum((q * d_pres * u) / 9.81, axis=1)
+    IVTV = np.nansum((q * d_pres * v) / 9.81, axis=1)
 
     # Combines components into IVT magnitude
     IVT = np.sqrt(IVTU**2 + IVTV**2)

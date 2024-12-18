@@ -196,29 +196,42 @@ def cf_ivt(ds_in, f_time=None):
     """
 
     # Calc IVT from surface to 100hPa, extract water vapor mixing ratio [kg/kg],
-    # convert to specific humidity filling with nan at null levs
-    pres = ds_in['pressure']
+    # convert to specific humidity filling with nan at null model levels
+    p_slab = ds_in['pressure']
+    p_surf = ds_in['surface_pressure']
+    try:
+        # model top pressure not a default output
+        p_top = ds_in['plrad']
+
+    except:
+        msg = 'WARNING: Dataset does not include model top pressure.  IVT'
+        msg += ' calculation will be inaccurate if model top is >=100hPa.'
+        print(msg)
+        p_top = np.full_like(p_surf, np.nan)
+
+    nvert, n_sn, n_we = np.shape(p_slab[0, :, :, :])
+    pres = np.empty([1, nvert + 1, n_sn, n_we])
+    pres[:, 0, :, :] = p_surf
+    pres[0, 1:, :, :] = (p_slab + np.roll(p_slab, 1, axis=1))*0.5
+    pres[:, -1, :, :] = p_top
+
     qv = ds_in['qv']
     q = qv / ( qv + 1.0 )
-    q = np.where(pres >= 10000.0, q, np.nan)
+    q = np.where(pres[:, 1:, :, :] >= 10000.0, q, np.nan)
    
-    # Vertical Pa differences between layer interfaces
+    # Vertical Pa differences between model level slabs
     d_pres = pres[:, :-1, :, :] - pres[:, 1:, :, :]
 
-    # calculate the integral with average for trapeziodal rule
-    avg_q = 0.5 * (q[:, :-1, :, :] + q[:, 1:, :, :])
-    IWV = np.nansum((avg_q * d_pres) / 9.81, axis=1)
+    # calculate the integral
+    IWV = np.nansum((q * d_pres) / 9.81, axis=1)
 
-    # calculate the u/v components of the *staggered* wind [m/s] to
-    # calculate the integral with the average for trapeziodal rule
+    # extract the u/v components of the horizontal wind [m/s]
     u = ds_in['uReconstructZonal']
     v = ds_in['uReconstructMeridional']
-    avg_u = 0.5 * (u[:, :-1, :, :] + u[:, 1:, :, :])
-    avg_v = 0.5 * (v[:, :-1, :, :] + v[:, 1:, :, :])
 
     # Calculates u and v components of IVT
-    IVTU = np.nansum((avg_q * d_pres * avg_u) / 9.81, axis=1)
-    IVTV = np.nansum((avg_q * d_pres * avg_v) / 9.81, axis=1)
+    IVTU = np.nansum((q * d_pres * u) / 9.81, axis=1)
+    IVTV = np.nansum((q * d_pres * v) / 9.81, axis=1)
 
     # Combines components into IVT magnitude
     IVT = np.sqrt(IVTU**2 + IVTV**2)

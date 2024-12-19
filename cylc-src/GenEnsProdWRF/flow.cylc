@@ -201,7 +201,7 @@
                             INT_MIN = {{int_min}}
                             INT_MAX = {{int_max}}
                             INT_INC = {{int_inc}}
-                            VRF_FLD = {{fld}}
+                            MOD_FLD = {{fld}}
                             CAT_THR = {{thr}}
                             CTR_FLW = {{ctr_flw}}
                             NBRHD_WDTH = {{nbrhd}}

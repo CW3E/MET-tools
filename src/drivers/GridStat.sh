@@ -66,67 +66,6 @@ else
   exit 1
 fi
 
-# compute accumulation from cf file, TRUE or FALSE
-if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
-  # define the accumulation intervals for precip
-  if [[ ! ${ACC_MIN} =~ ${INT_RE} ]]; then
-    msg="ERROR: min accumulation interval \${ACC_MIN},\n ${ACC_MIN}\n"
-    msg+=" is not an integer.\n"
-    printf "${msg}"
-    exit 1
-  elif [ ${ACC_MIN} -le 0 ]; then
-    msg="ERROR: min accumulation interval ${ACC_MIN} must be greater than"
-    msg+=" zero.\n"
-    printf "${msg}"
-    exit 1
-  elif [[ ! ${ACC_MAX} =~ ${INT_RE} ]]; then
-    msg="ERROR: max accumulation interval \${ACC_MAX},\n ${ACC_MAX}\n"
-    msg+=" is not integer.\n"
-    printf "${msg}"
-    exit 1
-  elif [ ${ACC_MAX} -lt ${ACC_MIN} ]; then
-    msg="ERROR: max precip accumulation interval ${ACC_MAX} must be greater"
-    msg+=" than min accumulation interval ${ACC_MIN}.\n"
-    printf "${msg}"
-    exit 1
-  elif [[ ! ${ACC_INC} =~ ${INT_RE} ]]; then
-    msg="ERROR: increment between precip accumulation intervals \${ACC_INC}"
-    msg+=" is not integer.\n"
-    printf "${msg}"
-    exit 1
-  elif [ ! $(( (${ACC_MAX} - ${ACC_MIN}) % ${ACC_INC} )) = 0 ]; then
-    msg="ERROR: the interval [\${ACC_MIN}, \${ACC_MAX}]\n"
-    msg+=" [${ACC_MIN}, ${ACC_MAX}] must be evenly divisible into\n"
-    msg+=" increments of \${ACC_INC}, ${ACC_INC}.\n"
-    printf "${msg}"
-    exit 1
-  else
-    # define array of accumulation interval computation hours
-    acc_hrs=()
-    for (( acc_hr=${ACC_MIN}; acc_hr <= ${ACC_MAX}; acc_hr += ${ACC_INC} )); do
-      # check that the precip accumulations are summable from wrfcf files
-      if [ ! $(( ${acc_hr} % ${ANL_INC} )) = 0 ]; then
-        msg="ERROR: precip accumulation ${acc_hr} is not a multiple"
-        msg+=" of ${ANL_INC}.\n"
-        printf "${msg}"
-        exit 1
-      else
-       msg="Computing precipitation accumulation for interval"
-       msg+=" ${acc_hr} hours.\n"
-       printf "${msg}"
-       acc_hrs+=( ${acc_hr} )
-      fi
-    done
-  fi
-elif [[ ${CMP_ACC} =~ ${FALSE} ]]; then
-  printf "run_preprocessWRF does not compute accumulations.\n"
-else
-  msg="ERROR: \${CMP_ACC} must be set to 'TRUE' or 'FALSE' to decide if "
-  msg+="computing statistics on accumulation fields."
-  printf "${msg}"
-  exit 1
-fi
-
 if [[ ! ${CYC_DT} =~ ${INT_RE} ]]; then
   msg="ERROR: cycle date directory string \${CYC_DT}\n ${CYC_DT}\n is not numeric."
   printf "${msg}"
@@ -134,27 +73,6 @@ if [[ ! ${CYC_DT} =~ ${INT_RE} ]]; then
 else
   cyc_dt="${CYC_DT:0:8} ${CYC_DT:8:2}"
   cyc_dt=`date -d "${cyc_dt}"`
-fi
-
-# define min / max forecast hours for forecast outputs to be processed
-if [[ ! ${ANL_MIN} =~ ${INT_RE} ]]; then
-  msg="ERROR: min forecast hour \${ANL_MIN},\n ${ANL_MIN}\n is not"
-  msg+=" an integer.\n"
-  printf "${msg}"
-  exit 1
-elif [ ${ANL_MIN} -lt 0 ]; then
-  printf "ERROR: min forecast hour ${ANL_MIN} must be non-negative.\n"
-  exit 1
-elif [[ ! ${ANL_MAX} =~ ${INT_RE} ]]; then
-  msg="ERROR: max forecast hour \${ANL_MAX},\n ${ANL_MAX}\n is not"
-  msg+=" an integer.\n"
-  printf "${msg}"
-  exit 1
-elif [ ${ANL_MAX} -lt ${ANL_MIN} ]; then
-  msg="ERROR: max forecast hour ${ANL_MAX} must be greater than or equal to"
-  msg+="min forecast hour ${ANL_MIN}.\n"
-  printf "${msg}"
-  exit 1
 fi
 
 # define the increment at which to process forecast outputs (HH)
@@ -192,6 +110,52 @@ else
   anl_max=$(( ${anl_max} / 3600 ))
 fi
 
+# define the intervals for accumulations / averages
+if [[ ! ${INT_MIN} =~ ${INT_RE} ]]; then
+  msg="ERROR: min interval \${INT_MIN},\n ${INT_MIN}\n is not an integer.\n"
+  printf "${msg}"
+  exit 1
+elif [ ${INT_MIN} -lt 0 ]; then
+  msg="ERROR: min interval ${INT_MIN} must be greater than or equal to zero.\n"
+  printf "${msg}"
+  exit 1
+elif [[ ! ${INT_MAX} =~ ${INT_RE} ]]; then
+  msg="ERROR: max interval \${INT_MAX},\n ${INT_MAX}\n is not integer.\n"
+  printf "${msg}"
+  exit 1
+elif [ ${INT_MAX} -lt ${INT_MIN} ]; then
+  msg="ERROR: max interval ${INT_MAX} must be greater than"
+  msg+=" min interval ${INT_MIN}.\n"
+  printf "${msg}"
+  exit 1
+elif [[ ! ${INT_INC} =~ ${INT_RE} ]]; then
+  msg="ERROR: increment between intervals \${INT_INC} is not integer.\n"
+  printf "${msg}"
+  exit 1
+elif [ ! $(( (${INT_MAX} - ${INT_MIN}) % ${INT_INC} )) = 0 ]; then
+  msg="ERROR: the interval [\${INT_MIN}, \${INT_MAX}]\n"
+  msg+=" [${INT_MIN}, ${INT_MAX}] must be evenly divisible into\n"
+  msg+=" increments of \${INT_INC}, ${INT_INC}.\n"
+  printf "${msg}"
+  exit 1
+else
+  # define array of interval computation hours
+  int_hrs=()
+  for (( int_hr=${INT_MIN}; int_hr <= ${INT_MAX}; int_hr += ${INT_INC} )); do
+    if [ ! $(( ${int_hr} % ${ANL_INC} )) = 0 ]; then
+      msg="ERROR: interval ${int_hr} is not a multiple"
+      msg+=" of ${ANL_INC}.\n"
+      printf "${msg}"
+      exit 1
+    else
+     msg="Computing interval of"
+     msg+=" ${int_hr} hours.\n"
+     printf "${msg}"
+     int_hrs+=( ${int_hr} )
+    fi
+  done
+fi
+
 # define the verification field
 if [ -z "${VRF_REF}" ]; then
   printf "ERROR: verification obs type \${VRF_REF} is not defined.\n"
@@ -199,8 +163,8 @@ if [ -z "${VRF_REF}" ]; then
 fi
 
 # define the verification field
-if [ -z "${VRF_FLD}" ]; then
-  printf "ERROR: verification field \${VRF_FLD} is not defined.\n"
+if [ -z "${MOD_FLD}" ]; then
+  printf "ERROR: model verification field \${MOD_FLD} is not defined.\n"
   exit 1
 fi
 
@@ -444,10 +408,10 @@ met_tools_py+="${WRK_DIR}:/wrk_dir:rw,${WRK_DIR}:/in_dir:ro,${SRC}:/src_dir:ro "
 met_tools_py+="${MET_TOOLS_PY} python"
 
 # clean old data
-rm -f ${WRK_DIR}/grid_stat_${VRF_FLD}*.txt
-rm -f ${WRK_DIR}/grid_stat_${VRF_FLD}*.stat
-rm -f ${WRK_DIR}/grid_stat_${VRF_FLD}*.nc
-rm -f ${WRK_DIR}/GridStatConfig_${VRF_FLD}*
+rm -f ${WRK_DIR}/grid_stat_${MOD_FLD}*.txt
+rm -f ${WRK_DIR}/grid_stat_${MOD_FLD}*.stat
+rm -f ${WRK_DIR}/grid_stat_${MOD_FLD}*.nc
+rm -f ${WRK_DIR}/GridStatConfig_${MOD_FLD}*
 rm -f ${WRK_DIR}/PLY_MSK.txt
 
 # loop lines of the mask list, generate PLY_MSK.txt for GridStatConfig insert
@@ -471,47 +435,53 @@ error_check=0
 for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
   # define valid times for verification
   anl_dt=`date +%Y%m%d%H -d "${cyc_dt} ${anl_hr} hours"`
-  pdd_hr=`printf %03d $(( 10#${anl_hr} ))`
+  pad_hr=`printf %03d $(( 10#${anl_hr} ))`
 
-  for acc_hr in ${acc_hrs[@]}; do
-    if [[ ${CMP_ACC} =~ ${TRUE} && ${acc_hr} -le ${anl_hr} ]]; then
-      for_in=${CTR_FLW}_${acc_hr}${VRF_FLD}_${CYC_DT}_F${pdd_hr}${pstfx}.nc
+  for int_hr in ${int_hrs[@]}; do
+    if [[ ${int_hr} -le ${anl_hr} ]]; then
+      for_in=${CTR_FLW}_${int_hr}${MOD_FLD}_${CYC_DT}_F${pad_hr}${pstfx}.nc
       if [[ ${IF_ENS_PRD} =~ ${TRUE} ]]; then
-        fld=${VRF_FLD}_${acc_hr}hr_0_all_all_ENS_MEAN
+        mod_fld="${MOD_FLD}_${int_hr}hr_0_all_all_ENS_MEAN"
       else
-        fld=${VRF_FLD}_${acc_hr}hr
+        mod_fld="${MOD_FLD}_${int_hr}hr"
       fi
 
       # obs file defined in terms of valid time, path relative to STC_ROOT
+      # IVT files are designed after the StageIV files generated at CW3E
       if [[ "${VRF_REF}" = "StageIV" ]]; then
-        obs_in=StageIV/StageIV_QPE_${anl_dt}.nc
+        obs_in="StageIV/StageIV_QPE_${anl_dt}.nc"
+        obs_fld="QPE_${int_hr}h"
+      elif [[ "${VRF_REF}" = "ERA5" ]]; then
+        obs_in="ERA5/ERA5_IVT_${anl_dt}.nc"
+        obs_fld="IVT_${int_hr}h"
       fi
 
       if [ -r ${IN_DIR}/${for_in} ]; then
         if [ -r ${STC_ROOT}/${obs_in} ]; then
           # update GridStatConfigTemplate archiving file in working directory
           # this remains unchanged on inner loop
-          if [ ! -r ${WRK_DIR}/GridStatConfig_${VRF_FLD}_${acc_hr}hr ]; then
+          if [ ! -r ${WRK_DIR}/GridStatConfig_${MOD_FLD}_${int_hr}hr ]; then
             cat ${SHARED}/GridStatConfigTemplate \
               | sed "s/CTR_FLW/model = \"${CTR_FLW}\"/" \
               | sed "s/INT_WDTH/width = ${INT_WDTH}/" \
               | sed "s/RNK_CRR/rank_corr_flag      = ${RNK_CRR}/" \
-              | sed "s/VRF_FLD/name       = \"${fld}\"/" \
+              | sed "s/MOD_FLD/name       = \"${mod_fld}\"/" \
+              | sed "s/OBS_FLD/name       = \"${obs_fld}\"/" \
               | sed "s/CAT_THR/cat_thresh = ${CAT_THR}/" \
               | sed "/PLY_MSK/r ${WRK_DIR}/PLY_MSK.txt" \
               | sed "/PLY_MSK/d " \
               | sed "s/BTSTRP/n_rep    = ${BTSTRP}/" \
               | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
-              | sed "s/PRFX/output_prefix    = \"${VRF_FLD}_${acc_hr}hr\"/" \
+              | sed "s/PRFX/output_prefix    = \"${MOD_FLD}_${int_hr}hr\"/" \
               | sed "s/MET_VER/version           = \"V${MET_VER}\"/" \
-              > ${WRK_DIR}/GridStatConfig_${VRF_FLD}_${acc_hr}hr
+              > ${WRK_DIR}/GridStatConfig_${MOD_FLD}_${int_hr}hr
           fi
 
           # Run gridstat
           cmd="${met} grid_stat \
           /in_dir/${for_in} \
           /STC_ROOT/${obs_in} \
-          /wrk_dir/GridStatConfig_${VRF_FLD}_${acc_hr}hr \
+          /wrk_dir/GridStatConfig_${MOD_FLD}_${int_hr}hr \
           -outdir /wrk_dir; error=\$?"
           printf "${cmd}\n"; eval "${cmd}"
           printf "grid_stat exited with status ${error}.\n"
@@ -552,110 +522,21 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
       # clean up working directory from accumulation time
       cmd="rm -f ${WRK_DIR}/${for_in}"
       printf "${cmd}\n"; eval "${cmd}"
-    elif [[ ${CMP_ACC} =~ ${FALSE} ]]; then
-      for_in=${CTR_FLW}_${VRF_FLD}_${CYC_DT}_F${pdd_hr}${pstfx}.nc
-
-      if [[ ${IF_ENS_PRD} =~ ${TRUE} ]]; then
-        fld=${VRF_FLD}_0_all_all_ENS_MEAN
-      else
-        fld=${VRF_FLD}
-      fi
-
-      # obs file defined in terms of valid time
-      obs_in=${VRF_REF}_${VRF_FLD}_${CYC_DT}_F${pdd_hr}.nc
-      
-      if [ -r ${IN_DIR}/${for_in} ]; then
-        if [ -r ${STC_ROOT}/${obs_in} ]; then
-          # update GridStatConfigTemplate archiving file in working directory
-          # this remains unchanged on inner loop
-          if [ ! -r ${WRK_DIR}/GridStatConfig_${VRF_FLD} ]; then
-            cat ${SHARED}/GridStatConfigTemplate \
-              | sed "s/CTR_FLW/model = \"${CTR_FLW}\"/" \
-              | sed "s/INT_WDTH/width = ${INT_WDTH}/" \
-              | sed "s/RNK_CRR/rank_corr_flag      = ${RNK_CRR}/" \
-              | sed "s/VRF_FLD/name       = \"${fld}\"/" \
-              | sed "s/CAT_THR/cat_thresh = ${CAT_THR}/" \
-              | sed "/PLY_MSK/r ${WRK_DIR}/PLY_MSK.txt" \
-              | sed "/PLY_MSK/d " \
-              | sed "s/BTSTRP/n_rep    = ${BTSTRP}/" \
-              | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
-              | sed "s/PRFX/output_prefix    = \"${VRF_FLD}\"/" \
-              | sed "s/MET_VER/version           = \"V${MET_VER}\"/" \
-              > ${WRK_DIR}/GridStatConfig_${VRF_FLD}
-          fi
-
-          # Run gridstat
-          cmd="${met} grid_stat \
-          /in_dir/${for_in} \
-          /STC_ROOT/${obs_in} \
-          /wrk_dir/GridStatConfig_${VRF_FLD} \
-          -outdir /wrk_dir; error=\$?"
-          printf "${cmd}\n"; eval "${cmd}"
-          printf "grid_stat exited with status ${error}.\n"
-          if [ ${error} -ne 0 ]; then
-            msg="ERROR: grid_stat failed to produce verification for input\n"
-            msg+=" ${for_in}\n and ground truth\n ${obs_in}\n"
-            printf "${msg}" 
-            error_check=1
-          fi
-        else
-          if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
-            msg="ERROR: Observation verification file\n ${STC_ROOT}/${obs_in}\n"
-            msg+=" is not readable or does not exist.\n"
-            printf "${msg}"
-            error_check=1
-          else
-            msg="WARNING: Observation verification file\n ${STC_ROOT}/${obs_in}\n"
-            msg+=" is not readable or does not exist, skipping grid_stat for"
-            msg+=" forecast initialization ${CYC_DT}, forecast hour ${anl_hr}.\n"
-            printf "${msg}"
-          fi
-        fi
-      else
-        if [[ ${FULL_DATA} =~ ${TRUE} ]]; then
-          msg="ERROR: gridstat input file\n ${IN_DIR}/${for_in}\n is not"
-          msg+=" readable or does not exist.\n"
-          printf "${msg}"
-          error_check=1
-        else
-          msg="WARNING: gridstat input file\n ${IN_DIR}/${for_in}\n is not"
-          msg+=" readable or does not exist, skipping grid_stat for forecast"
-          msg+=" initialization ${CYC_DT}, forecast hour ${anl_hr}.\n"
-          printf "${msg}"
-        fi
-      fi
-
-      # clean up working directory from accumulation time
-      cmd="rm -f ${WRK_DIR}/${for_in}"
-      printf "${cmd}\n"; eval "${cmd}"
     fi
   done
 done
 
 # clean up working directory from forecast start time
-cmd="rm -f ${WRK_DIR}/*_StageIV.nc"
+cmd="rm -f ${WRK_DIR}/*_StageIV.nc; rm -f ${WRK_DIR}/*_ERA5.nc"
 printf "${cmd}\n"; eval "${cmd}"
 
 cmd="rm -f ${WRK_DIR}/PLY_MSK.txt"
 printf "${cmd}\n"; eval "${cmd}"
 
-if [[ ${CMP_ACC} =~ ${TRUE} ]]; then
-  for acc_hr in ${acc_hrs[@]}; do 
-    # run makeDataFrames to parse the ASCII outputs
-    cmd="${met_tools_py} /src_dir/utilities/ASCII_to_DataFrames.py"
-    cmd+=" '${VRF_FLD}_${acc_hr}hr' '/in_dir' '/wrk_dir'; error=\$?"
-    printf "${cmd}\n"; eval "${cmd}"
-    printf "ASCII_to_DataFrames.py exited with status ${error}.\n"
-    if [ ${error} -ne 0 ]; then
-      msg="ERROR: ASCII_to_DataFrames.py failed to produce parsed binaries.\n"
-      printf "${msg}"
-      error_check=1
-    fi
-  done
-else
+for int_hr in ${int_hrs[@]}; do 
   # run makeDataFrames to parse the ASCII outputs
   cmd="${met_tools_py} /src_dir/utilities/ASCII_to_DataFrames.py"
-  cmd+=" '${VRF_FLD}' '/in_dir' '/wrk_dir'; error=\$?"
+  cmd+=" '${MOD_FLD}_${int_hr}hr' '/in_dir' '/wrk_dir'; error=\$?"
   printf "${cmd}\n"; eval "${cmd}"
   printf "ASCII_to_DataFrames.py exited with status ${error}.\n"
   if [ ${error} -ne 0 ]; then
@@ -663,7 +544,7 @@ else
     printf "${msg}"
     error_check=1
   fi
-fi
+done
 
 if [ ${error_check} = 1 ]; then
   printf "ERROR: GridStat.sh failed on one or more analyses.\n"

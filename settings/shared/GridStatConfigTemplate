@@ -62,7 +62,7 @@ fcst = {
 
    field = [
       {
-        VRF_FLD;
+        MOD_FLD;
         level      = [ "(*,*)" ];
         CAT_THR;
       }
@@ -72,7 +72,7 @@ fcst = {
 obs = {
    field = [
      {
-       name="QPE_24h";
+       OBS_FLD;
        level = [ "(*,*)" ];
        CAT_THR;
       }

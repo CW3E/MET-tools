@@ -260,8 +260,8 @@ else
 fi
 
 # define the verification field
-if [ -z "${VRF_FLD}" ]; then
-  printf "ERROR: verification field \${VRF_FLD} is not defined.\n"
+if [ -z "${MOD_FLD}" ]; then
+  printf "ERROR: model verification field \${MOD_FLD} is not defined.\n"
   exit 1
 fi
 
@@ -379,11 +379,11 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
       pad_i_hr=`printf %02d $(( 10#${int_hr} ))`
 
       # define output file name depending on parameters
-      f_out="${CTR_FLW}_${pad_i_hr}${VRF_FLD}_${CYC_DT}_F${pad_f_hr}"
+      f_out="${CTR_FLW}_${pad_i_hr}${MOD_FLD}_${CYC_DT}_F${pad_f_hr}"
       f_out+="_${ENS_PRFX}${ens_min}-${ENS_PRFX}${ens_max}_prd.nc"
 
       # define the ensemble member list name and cleanup existing
-      mem_lst="ens_list_${CTR_FLW}_${pad_i_hr}${VRF_FLD}_${CYC_DT}_F${pad_f_hr}"
+      mem_lst="ens_list_${CTR_FLW}_${pad_i_hr}${MOD_FLD}_${CYC_DT}_F${pad_f_hr}"
       mem_lst+="_${ENS_PRFX}${ens_min}-${ens_max}_prd.txt"
 
       cmd="rm -f ${mem_lst}"
@@ -391,7 +391,7 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
 
       for mem_id in ${mem_ids[@]}; do
         in_path="${IN_DIR}/${mem_id}/${IN_DT_SUBDIR}"
-        f_in="${in_path}/${CTR_FLW}_${pad_i_hr}${VRF_FLD}_${CYC_DT}_F${pad_f_hr}.nc"
+        f_in="${in_path}/${CTR_FLW}_${pad_i_hr}${MOD_FLD}_${CYC_DT}_F${pad_f_hr}.nc"
          if [ -r ${f_in} ]; then
            if [ ${mem_id} != ${ctr_id} ]; then
              # generate list of ensemble members used on the fly
@@ -420,13 +420,13 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
       else
         # update GenEnsProdConfigTemplate archiving file in working directory
         # this remains unchanged on intervals
-        fld=${VRF_FLD}_${pad_i_hr}hr
+        fld=${MOD_FLD}_${pad_i_hr}hr
         printf "Computing verification field ${fld}.\n"
 
         if [ ! -r GenEnsProdConfig${pad_i_hr} ]; then
           cat ${SHARED}/GenEnsProdConfigTemplate \
             | sed "s/CTR_FLW/model = \"${CTR_FLW}\"/" \
-            | sed "s/VRF_FLD/name       = \"${fld}\"/" \
+            | sed "s/MOD_FLD/name       = \"${fld}\"/" \
             | sed "s/CAT_THR/cat_thresh = ${CAT_THR}/" \
             | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
             | sed "s/MET_VER/version           = \"V${MET_VER}\"/" \

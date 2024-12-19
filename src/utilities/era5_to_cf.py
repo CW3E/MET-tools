@@ -48,12 +48,19 @@ import ipdb
 ##################################################################################
 # Define script parameters
 ##################################################################################
-f_in = '/p/work2/cgrudz/ERA5_2021-01-23T00_to_2021-01-29T23.grib'
-f_out_dir = '/p/work2/cgrudz/DATA/VERIFICATION_STATIC/ERA5'
+f_in = '/p/work2/cgrudz/test/ERA5_2023-03-10T00_to_2023-03-15T23.grib'
+f_out_dir = '/p/work2/cgrudz/DATA/VERIFICATION_STATIC/ERA5/valid_date_2023-03-15T00'
 anl_inc = 6
 
-# split the large grib into dates and return list of files
-f_list = split_grib_on_dates(f_in, f_out_dir, 'ERA5-datesplit')
+#print('Splitting file:')
+#print(INDT + f_in)
+#print('to outputs in directory:')
+#print(INDT + f_out_dir)
+#print('with averages taken on ' + str(anl_inc) + ' hour intervals.')
+#
+## split the large grib into dates and return list of files
+##f_list = split_grib_on_dates(f_in, f_out_dir, 'ERA5-datesplit')
+f_list = sorted(glob.glob(f_out_dir + '/ERA5-datesplit*'))
 
 avg_list = []
 for i_f, fname in enumerate(f_list):
@@ -62,13 +69,18 @@ for i_f, fname in enumerate(f_list):
     ds_out = cf_ivt(ds_in)
     f_out = f_out_dir + '/ERA5_00IVT_' + date
     ds_out.to_netcdf(path=f_out)
+    print('Created instantaneous IVT file:')
+    print(INDT + f_out)
     avg_list.append(f_out)
 
     if i_f % anl_inc == 0 and not i_f == 0:
-        ipdb.set_trace()
         f_range = avg_list[i_f - anl_inc: i_f + 1]
-        #NOTE: the average and reload data set operation is incomplete
-        average_ivt(f_range)
+        f_out = average_ivt(f_range)
+        print('Created averaged IVT file:')
+        print(INDT + f_out)
 
+print('Completed splitting file for IVT outputs.')
+#print('Removing temporary split files.')
+#os.system('rm ' + f_out_dir + '/ERA5-datesplit*')
 
 ##################################################################################

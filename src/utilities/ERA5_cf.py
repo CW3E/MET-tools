@@ -42,7 +42,6 @@
 # Imports
 ##################################################################################
 from utilities import *
-import ipdb
 
 ##################################################################################
 
@@ -72,18 +71,9 @@ def split_grib_on_dates(f_in, f_out_dir, f_out_basename):
 def gen_coord_attrs(ds_in, ds_out):
     """
     Function to set global xarray data attributes.
+    
+    NOTE: TIME COORDS ARE NEGLECTED for consistency with CW3E StageIV prod
     """
-
-    # read in the valid date from a single-date-time file
-    valid_dt = pd.to_datetime(ds_in.time.values).to_pydatetime()
-
-    # we write out valid time in iso / unix for MET attributes
-    unix_dt = dt(1970, 1, 1)
-    valid_is = valid_dt.strftime('%Y%m%d_%H%M%S')
-    valid_nx = int((valid_dt - unix_dt).total_seconds())
-
-    # Fixes time dim and adds forecast_reference_time var
-    ds_out['time'] = np.array([valid_nx])
 
     # Declares fill value
     fill_val = 1e20
@@ -92,20 +82,9 @@ def gen_coord_attrs(ds_in, ds_out):
     # For data vars, who share these attributes
     repeat_attrs = {
             'missing_value':fill_val, 
-            'valid_time':valid_is, 
-            'valid_time_ut':valid_nx, 
             }
 
     # Global ds dimension and coordinate attributes
-    ds_out.time.attrs = {
-        'long_name': 'Time',
-        'standard_name': 'time',
-        'description': 'Time',
-        'units': 'seconds since 1970-01-01T00:00:00',
-        'calendar': 'standard',
-        'axis': 'T',
-        }
-    
     ds_out.lat.attrs = {
         'long_name': 'Latitude',
         'standard_name': 'latitude',
@@ -130,7 +109,7 @@ def assign_attrs(ds_in, ds_out):
     """
 
     # Sets up global dataset attributes
-    ds_out, repeat_attrs, = gen_coord_attrs(ds_in, ds_out)
+    ds_out, repeat_attrs = gen_coord_attrs(ds_in, ds_out)
 
     if 'IWV' in ds_out.data_vars:
         ds_out.IWV.attrs = {
@@ -212,10 +191,10 @@ def cf_ivt(ds_in):
     # Prepares output ds
     ds_out = xr.Dataset(
             data_vars = dict(
-                IWV=(['time', 'lat', 'lon'], IWV[np.newaxis, :, :]),
-                IVT=(['time', 'lat', 'lon'], IVT[np.newaxis, :, :]),
-                IVTU=(['time', 'lat', 'lon'], IVTU[np.newaxis, :, :]),
-                IVTV=(['time', 'lat', 'lon'], IVTV[np.newaxis, :, :]),
+                IWV_00h=(['lat', 'lon'], IWV[:, :]),
+                IVT_00h=(['lat', 'lon'], IVT[:, :]),
+                IVTU_00h=(['lat', 'lon'], IVTU[:, :]),
+                IVTV_00h=(['lat', 'lon'], IVTV[:, :]),
                 ),
             coords = dict(
                 time = (['time'], np.array([0])),
@@ -231,17 +210,50 @@ def cf_ivt(ds_in):
 
 def average_ivt(f_list):
     # averages hourly IVT values into single file, valid at final time
+    # inclusive of all files in list in temporal order
     n_hrs = len(f_list)
-    ipdb.set_trace()
-    ds_out = xr.open_dataset(f_list[-1]).IVT
-    ivt_avg = ds_out.values
+    valid_file = f_list[-1]
+    split_path = valid_file.split('/')
+    date = split_path[-1].split('_')[-1]
+    path = ''
+    for i_s in range(len(split_path) - 1 ):
+        path += split_path[i_s] + '/'
+
+    ds_valid = xr.open_dataset(valid_file).IVT_00h
+    ivt_avg = ds_valid.values
 
     for i_f in range(n_hrs - 1):
-        ds = xr.open_dataset(fname).IVT.values
-        ivt_avg += ds
+        fname = f_list[i_f]
+        ivt = xr.open_dataset(fname).IVT_00h.values
+        ivt_avg += ivt
 
     ivt_avg = ivt_avg / n_hrs
-    ds_out.values = ivt_avg
+    ds_out = global_attrs(xr.Dataset())
+    # Declares fill value
+    coords = ds_valid.coords
+    fill_val = 1e20
 
+    ds_out = ds_out.assign_coords({
+        'lat': coords['lat'].values,
+        'lon': coords['lon'].values,
+        })
+    ds_out, repeat_attrs = gen_coord_attrs(ds_valid, ds_out)
+
+    # turn this into the number of hours between end points
+    n_hrs = str(n_hrs - 1).zfill(2) 
+    ds_out['IVT_' + n_hrs + 'h'] = (['lat', 'lon'], ivt_avg)
+    ds_out['IVT_' + n_hrs + 'h'].attrs = {
+            'description':'Column-integrated vapor transport averaged over time',
+            'standard_name':'time_averaged_integrated_vapor_transport',
+            'long_name':'Time averaged integrated Vapor Transport',
+            'units':'kg m-1 s-1',
+            'time_average': n_hrs + ' hours',
+            **repeat_attrs,
+            }
+
+    f_out = path + 'ERA5_' + n_hrs + 'IVT_' + date
+    ds_out.to_netcdf(path=f_out)
+
+    return f_out
 
 ##################################################################################

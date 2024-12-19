@@ -50,7 +50,7 @@ ens = {
 
    field = [
       {
-         VRF_FLD;
+         MOD_FLD;
          level      = [ "(*,*)" ];
          CAT_THR;
          ensemble_flag = TRUE;

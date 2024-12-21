@@ -13,7 +13,7 @@
 ##################################################################################
 
 # Root directory for MET-tools git clone
-$USR_HOME = '/expanse/nfs/cw3e/cwp168/MET-tools'; # TBD: not needed if converted to shell
+$USR_HOME = '/p/home/cgrudz/MET-tools'; # TBD: not needed if converted to shell
 
 # Root directory for landmasks, lat-lon files, kml files, and reference grids 
 $MSK_ROOT = "$USR_HOME/settings/mask-root"; # TBD
@@ -22,7 +22,7 @@ $MSK_ROOT = "$USR_HOME/settings/mask-root"; # TBD
 $MSK_LTLN = "$MSK_ROOT/lat-lon"; # TBD
 
 # Verification region name
-$VRF_RGN = 'OR_CA'; # should be of the form 'Mask_Name'
+$VRF_RGN = 'Northeast_Pacific'; # should be of the form 'Mask_Name'
 
 # Path to KML input file
 $KML_IN = "$MSK_ROOT/kml_files/$VRF_RGN.kml";

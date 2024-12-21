@@ -75,6 +75,26 @@ else
   cyc_dt=`date -d "${cyc_dt}"`
 fi
 
+# define min / max forecast hours for forecast outputs to be processed
+if [[ ! ${ANL_MIN} =~ ${INT_RE} ]]; then
+  msg="ERROR: min forecast hour \${ANL_MIN},\n ${ANL_MIN}\n is not"
+  msg+=" an integer.\n"
+  printf "${msg}"
+  exit 1
+elif [ ${ANL_MIN} -lt 0 ]; then
+  printf "ERROR: min forecast hour ${ANL_MIN} must be non-negative.\n"
+  exit 1
+elif [[ ! ${ANL_MAX} =~ ${INT_RE} ]]; then
+  msg="ERROR: max forecast hour \${ANL_MAX},\n ${ANL_MAX}\n is not"
+  msg+=" an integer.\n"
+  printf "${msg}"
+  exit 1
+elif [ ${ANL_MAX} -lt ${ANL_MIN} ]; then
+  msg="ERROR: max forecast hour ${ANL_MAX} must be greater than or equal to"
+  msg+="min forecast hour ${ANL_MIN}.\n"
+  printf "${msg}"
+fi
+
 # define the increment at which to process forecast outputs (HH)
 if [[ ! ${ANL_INC} =~ ${INT_RE} ]]; then
   msg="ERROR: hours increment between analyses \${ANL_INC},\n ${ANL_INC}\n"
@@ -435,32 +455,33 @@ error_check=0
 for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
   # define valid times for verification
   anl_dt=`date +%Y%m%d%H -d "${cyc_dt} ${anl_hr} hours"`
-  pad_hr=`printf %03d $(( 10#${anl_hr} ))`
+  pad_a_hr=`printf %03d $(( 10#${anl_hr} ))`
 
   for int_hr in ${int_hrs[@]}; do
     if [[ ${int_hr} -le ${anl_hr} ]]; then
-      for_in=${CTR_FLW}_${int_hr}${MOD_FLD}_${CYC_DT}_F${pad_hr}${pstfx}.nc
+      pad_i_hr=`printf %02d $(( 10#${int_hr} ))`
+      for_in=${CTR_FLW}_${pad_i_hr}${MOD_FLD}_${CYC_DT}_F${pad_a_hr}${pstfx}.nc
       if [[ ${IF_ENS_PRD} =~ ${TRUE} ]]; then
-        mod_fld="${MOD_FLD}_${int_hr}hr_0_all_all_ENS_MEAN"
+        mod_fld="${MOD_FLD}_${pad_i_hr}hr_0_all_all_ENS_MEAN"
       else
-        mod_fld="${MOD_FLD}_${int_hr}hr"
+        mod_fld="${MOD_FLD}_${pad_i_hr}hr"
       fi
 
       # obs file defined in terms of valid time, path relative to STC_ROOT
       # IVT files are designed after the StageIV files generated at CW3E
       if [[ "${VRF_REF}" = "StageIV" ]]; then
         obs_in="StageIV/StageIV_QPE_${anl_dt}.nc"
-        obs_fld="QPE_${int_hr}h"
+        obs_fld="QPE_${pad_i_hr}h"
       elif [[ "${VRF_REF}" = "ERA5" ]]; then
-        obs_in="ERA5/ERA5_IVT_${anl_dt}.nc"
-        obs_fld="IVT_${int_hr}h"
+        obs_in="ERA5/ERA5_${pad_i_hr}IVT_${anl_dt}.nc"
+        obs_fld="IVT_${pad_i_hr}h"
       fi
 
       if [ -r ${IN_DIR}/${for_in} ]; then
         if [ -r ${STC_ROOT}/${obs_in} ]; then
           # update GridStatConfigTemplate archiving file in working directory
           # this remains unchanged on inner loop
-          if [ ! -r ${WRK_DIR}/GridStatConfig_${MOD_FLD}_${int_hr}hr ]; then
+          if [ ! -r ${WRK_DIR}/GridStatConfig_${MOD_FLD}_${pad_i_hr}hr ]; then
             cat ${SHARED}/GridStatConfigTemplate \
               | sed "s/CTR_FLW/model = \"${CTR_FLW}\"/" \
               | sed "s/INT_WDTH/width = ${INT_WDTH}/" \
@@ -472,16 +493,16 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
               | sed "/PLY_MSK/d " \
               | sed "s/BTSTRP/n_rep    = ${BTSTRP}/" \
               | sed "s/NBRHD_WDTH/width = [ ${NBRHD_WDTH} ]/" \
-              | sed "s/PRFX/output_prefix    = \"${MOD_FLD}_${int_hr}hr\"/" \
+              | sed "s/PRFX/output_prefix    = \"${MOD_FLD}_${pad_i_hr}hr\"/" \
               | sed "s/MET_VER/version           = \"V${MET_VER}\"/" \
-              > ${WRK_DIR}/GridStatConfig_${MOD_FLD}_${int_hr}hr
+              > ${WRK_DIR}/GridStatConfig_${MOD_FLD}_${pad_i_hr}hr
           fi
 
           # Run gridstat
           cmd="${met} grid_stat \
           /in_dir/${for_in} \
           /STC_ROOT/${obs_in} \
-          /wrk_dir/GridStatConfig_${MOD_FLD}_${int_hr}hr \
+          /wrk_dir/GridStatConfig_${MOD_FLD}_${pad_i_hr}hr \
           -outdir /wrk_dir; error=\$?"
           printf "${cmd}\n"; eval "${cmd}"
           printf "grid_stat exited with status ${error}.\n"
@@ -526,17 +547,19 @@ for (( anl_hr = ${ANL_MIN}; anl_hr <= ${anl_max}; anl_hr += ${ANL_INC} )); do
   done
 done
 
-# clean up working directory from forecast start time
+# clean up working directory from previous outputs
 cmd="rm -f ${WRK_DIR}/*_StageIV.nc; rm -f ${WRK_DIR}/*_ERA5.nc"
 printf "${cmd}\n"; eval "${cmd}"
-
 cmd="rm -f ${WRK_DIR}/PLY_MSK.txt"
 printf "${cmd}\n"; eval "${cmd}"
 
 for int_hr in ${int_hrs[@]}; do 
+  # set the padded hour for field / file name
+  pad_i_hr=`printf %02d $(( 10#${int_hr} ))`
+
   # run makeDataFrames to parse the ASCII outputs
   cmd="${met_tools_py} /src_dir/utilities/ASCII_to_DataFrames.py"
-  cmd+=" '${MOD_FLD}_${int_hr}hr' '/in_dir' '/wrk_dir'; error=\$?"
+  cmd+=" '${MOD_FLD}_${pad_i_hr}hr' '/in_dir' '/wrk_dir'; error=\$?"
   printf "${cmd}\n"; eval "${cmd}"
   printf "ASCII_to_DataFrames.py exited with status ${error}.\n"
   if [ ${error} -ne 0 ]; then

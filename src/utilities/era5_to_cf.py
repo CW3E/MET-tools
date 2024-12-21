@@ -49,7 +49,7 @@ import ipdb
 # Define script parameters
 ##################################################################################
 f_in = '/p/work2/cgrudz/test/ERA5_2023-03-10T00_to_2023-03-15T23.grib'
-f_out_dir = '/p/work2/cgrudz/DATA/VERIFICATION_STATIC/ERA5/valid_date_2023-03-15T00'
+f_out_dir = '/p/work2/cgrudz/DATA/VERIFICATION_STATIC/ERA5/valid_date_2022-12-28T00'
 anl_inc = 6
 
 #print('Splitting file:')

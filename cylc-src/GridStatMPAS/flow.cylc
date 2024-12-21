@@ -67,11 +67,11 @@
 {# Verification region group name - used for mask list file name #}
 {% set PCP_RGN = 'West_Coast' %}
 
-{# Number of grid points in ~4km intermediate grid points to use when #}
+{# Number of grid points in ~4km intermediate grid to use when #}
 {# interpolating to the observation grid with distance weighted mean #}
 {% set PCP_INT_WDTH = 3 %}
 
-{# Neighborhood statistics widths in interpolated OBS GRID POINTS #}
+{# Neighborhood statistics widths in interpolated *OBS GRID POINTS* #}
 {% set PCP_NBRHD = 9 %}
 
 {# Define min / max forecast hours for precip analysis #}
@@ -83,7 +83,7 @@
 
 {# Define the min / max accumulation interval for precip #}
 {% set ACC_MIN = 24 %}
-{% set ACC_MAX = 72 %}
+{% set ACC_MAX = 24 %}
 
 {# Define the increment between min / max accumulations #}
 {% set ACC_INC = 24 %}
@@ -101,14 +101,14 @@
 {% set IVT_THR = '"[ >=250.0, >=500.0, >=750.0, >=1000.0, >=1250.0 ]"' %} 
 
 {# Verification region group name - used for mask list file name #}
-{% set IVT_RGN = 'West_Coast' %}
+{% set IVT_RGN = 'Northeast_Pacific' %}
 
 {# Number of grid points in ~4km intermediate grid points to use when #}
 {# interpolating to the observation grid with distance weighted mean #}
-{% set IVT_INT_WDTH = 3 %}
+{% set IVT_INT_WDTH = 17 %}
 
 {# Neighborhood statistics widths in interpolated OBS GRID POINTS #}
-{% set IVT_NBRHD = 17 %}
+{% set IVT_NBRHD = 3 %}
 
 {# Define min / max forecast hours for IVT analysis #}
 {% set IVT_ANL_MIN = 6 %}
@@ -134,7 +134,7 @@
 {% set GRD_MEM = '249208M' %}
 
 {# Wallclock limit for ungrib jobs #}
-{% set GRD_WC = 'PT1H' %}
+{% set GRD_WC = 'PT30M' %}
 
 {################################################################################}
 {# CYLC SETTINGS #}
@@ -216,7 +216,7 @@
             {# Loop model control flows #}
             {% for ctr_flw in CTR_FLWS %}
                 {% if IF_ENS_MEAN == 'TRUE' %}
-                    [[GridStat_{{ctr_flw}}_mean]]
+                    [[GridStat_{{ctr_flw}}_mean_{{fld}}]]
                         execution time limit = {{GRD_WC}}
                         script = {{environ['DRIVERS']}}/GridStat.sh
                         execution retry delays = 3*PT5M
@@ -228,8 +228,8 @@
                             ENS_PAD = {{ENS_PAD}}
                             CTR_FLW = {{ctr_flw}}
                             INT_WDTH = {{int_wdth}}
-                            IN_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GenEnsProd/$CYC_DT
-                            WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GridStat/{{VRF_REF}}/$CYC_DT/mean
+                            IN_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GenEnsProd/$CYC_DT/{{fld}}
+                            WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GridStat/{{ref}}/$CYC_DT/mean
                             MSK_LST = {{environ['MSK_ROOT']}}/mask-lists/{{rgn}}.txt
                             {# Set the analysis hours depending on field #}
                             ANL_MIN = {{anl_min}}
@@ -239,6 +239,7 @@
                             INT_MIN = {{int_min}}
                             INT_MAX = {{int_max}}
                             INT_INC = {{int_inc}}
+                            VRF_REF = {{ref}}
                             MOD_FLD = {{fld}}
                             CAT_THR = {{thr}}
                             CTR_FLW = {{ctr_flw}}
@@ -247,17 +248,17 @@
                             {% if environ['SCHED'] == 'slurm' %}
                                 {% if environ['SYS_TYPE' ] == 'penguin' %}
                                     --partition = general
-                                    --qos = {{environ['PART_DBG']}}
+                                    --qos = {{environ['PART_CMP']}}
                                     --nodes = 1
                                     --ntasks-per-node = {{GRD_PROC}}
                                 {% else %}
-                                    --partition = {{environ['PART_DBG']}}
+                                    --partition = {{environ['PART_CMP']}}
                                     --nodes = 1
                                     --ntasks-per-node = {{GRD_PROC}}
                                     --mem = {{GRD_MEM}}
                                 {% endif %}
                             {% elif environ['SCHED'] == 'pbs' %}
-                                -q = {{environ['PART_DBG']}}
+                                -q = {{environ['PART_CMP']}}
                                 -l select=1:mpiprocs={{GRD_PROC}}:ncpus=1
                             {% endif %}
                 {% endif %}
@@ -265,7 +266,7 @@
                     {% set ens_size = ENS_MAX + 1 %}
                     {% for mem in range(ENS_MIN,ens_size) %}
                         {% set idx = mem | pad(ENS_PAD, '0') %}
-                        [[GridStat_{{ctr_flw}}_ens_{{idx}}]]
+                        [[GridStat_{{ctr_flw}}_ens_{{idx}}_{{fld}}]]
                             execution time limit = {{GRD_WC}}
                             script = {{environ['DRIVERS']}}/GridStat.sh
                             execution retry delays = 3*PT5M
@@ -274,7 +275,7 @@
                                 INT_WDTH = {{int_wdth}}
                                 IN_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT/{{ENS_PRFX}}{{idx}}
                                 {# WRF workflow outputs are nested relative to ISO/mem_id by domain #}
-                                WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GridStat/{{VRF_REF}}/$CYC_DT/{{ENS_PRFX}}{{idx}}
+                                WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GridStat/{{ref}}/$CYC_DT/{{ENS_PRFX}}{{idx}}
                                 IF_ENS_PRD = 'FALSE'
                                 MSK_LST = {{environ['MSK_ROOT']}}/mask-lists/{{rgn}}.txt
                                 {# Set the analysis hours depending on field #}
@@ -286,6 +287,7 @@
                                 INT_MAX = {{int_max}}
                                 INT_INC = {{int_inc}}
                                 MOD_FLD = {{fld}}
+                                VRF_REF = {{ref}}
                                 CAT_THR = {{thr}}
                                 CTR_FLW = {{ctr_flw}}
                                 NBRHD_WDTH = {{nbrhd}}
@@ -293,19 +295,21 @@
                                 {% if environ['SCHED'] == 'slurm' %}
                                     {% if environ['SYS_TYPE' ] == 'penguin' %}
                                         --partition = general
-                                        --qos = {{environ['PART_DBG']}}
+                                        --qos = {{environ['PART_CMP']}}
                                         --nodes = 1
                                         --ntasks-per-node = {{GRD_PROC}}
                                     {% else %}
-                                        --partition = {{environ['PART_DBG']}}
+                                        --partition = {{environ['PART_CMP']}}
                                         --nodes = 1
                                         --ntasks-per-node = {{GRD_PROC}}
                                         --mem = {{GRD_MEM}}
                                     {% endif %}
                                 {% elif environ['SCHED'] == 'pbs' %}
-                                    -q = {{environ['PART_DBG']}}
+                                    -q = {{environ['PART_CMP']}}
                                     -l select=1:mpiprocs={{GRD_PROC}}:ncpus=1
                                 {% endif %}
                     {% endfor %}
                 {% endif %}
             {% endfor %}
+        {% endif %}
+    {% endfor %}

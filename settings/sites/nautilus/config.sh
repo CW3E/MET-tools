@@ -56,7 +56,7 @@ export SIM_ROOT="/p/work2/cgrudz/SIMULATION_IO"
 export VRF_ROOT="/p/work2/cgrudz/VERIFICATION_IO"
 
 # Root directory for verification static data
-export STC_ROOT="/p/home/cgrudz/DATA/VERIFICATION_STATIC"
+export STC_ROOT="/p/work2/cgrudz/DATA/VERIFICATION_STATIC"
 
 # Root directory for MPAS static files for sourcing static IO streams
 export MSH_ROOT="/p/home/cgrudz/Ensemble-DA-Cycling-Template/cylc-src"

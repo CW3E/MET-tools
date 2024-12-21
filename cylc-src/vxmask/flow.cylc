@@ -9,14 +9,14 @@
 # Mask Parameters
 ##################################################################################
 # Verification region group name
-{% set VRF_RGN = 'West_Coast' %}
+{% set VRF_RGN = 'Northeast_Pacific' %}
 
 # Set the verification product grid name
-{% set GRD_NME = 'StageIV' %}
+{% set GRD_NME = 'ERA5' %}
 
 # Full path to generic data product for reference verfication grid relative to
 # STC_ROOT (must be set as a bind path from this location for singularity)
-{% set GRD_IN = [GRD_NME, 'StageIV_QPE_2022122800.nc'] | join('/') %}
+{% set GRD_IN = [GRD_NME, 'ERA5_00IVT_2023031000.nc'] | join('/') %}
 
 ##################################################################################
 # JOB SETTINGS
@@ -25,7 +25,7 @@
 {% set VXMASK_MEM = '2000M' %}
 
 # Wallclock limit for ungrib jobs
-{% set VXMASK_WC = 'PT2H30M' %}
+{% set VXMASK_WC = 'PT30M' %}
 
 ##################################################################################
 # CYLC SETTINGS

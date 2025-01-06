@@ -70,26 +70,29 @@ else
   exit 1
 fi
 
-# Convert CYC_DT from 'YYYYMMDDHH' format to cyc_dt Unix date format
 if [[ ! ${CYC_DT} =~ ${ISO_RE} ]]; then
   msg="ERROR: cycle date \${CYC_DT}\n ${CYC_DT}\n"
   msg+=" is not in YYYYMMDDHH format.\n"
   printf "${msg}"
   exit 1
 else
+  # Convert CYC_DT from 'YYYYMMDDHH' format to cyc_dt Unix date format
   cyc_dt="${CYC_DT:0:8} ${CYC_DT:8:2}"
   cyc_dt=`date -d "${cyc_dt}"`
 fi
 
 # define min / max forecast hours for forecast outputs to be processed
-if [[ ! ${ANL_MIN} =~ ${N_RE} ]]; then
-  printf "ERROR: min forecast hour \${ANL_MIN} is not numeric.\n"
+if [[ ! ${ANL_MIN} =~ ${INT_RE} ]]; then
+  msg+=" an integer.\n"
+  printf "${msg}"
   exit 1
 elif [ ${ANL_MIN} -lt 0 ]; then
   printf "ERROR: min forecast hour ${ANL_MIN} must be non-negative.\n"
   exit 1
-elif [[ ! ${ANL_MAX} =~ ${N_RE} ]]; then
-  printf "ERROR: max forecast hour \${ANL_MAX} is not numeric.\n"
+elif [[ ! ${ANL_MAX} =~ ${INT_RE} ]]; then
+  msg="ERROR: max forecast hour \${ANL_MAX},\n ${ANL_MAX}\n is not"
+  msg+=" an integer.\n"
+  printf "${msg}"
   exit 1
 elif [ ${ANL_MAX} -lt ${ANL_MIN} ]; then
   msg="ERROR: max forecast hour ${ANL_MAX} must be greater than or equal to"
@@ -99,11 +102,14 @@ elif [ ${ANL_MAX} -lt ${ANL_MIN} ]; then
 fi
 
 # define the increment at which to process forecast outputs (HH)
-if [[ ! ${ANL_INC} =~ ${N_RE} ]]; then
-  printf "ERROR: hours increment between analyses \${ANL_INC} is not numeric.\n"
+if [[ ! ${ANL_INC} =~ ${INT_RE} ]]; then
+  msg="ERROR: hours increment between analyses \${ANL_INC},\n ${ANL_INC}\n"
+  msg+=" is not an integer.\n"
+  printf "${msg}"
   exit 1
 elif [ ! $(( (${ANL_MAX} - ${ANL_MIN}) % ${ANL_INC} )) = 0 ]; then
-  msg="ERROR: the interval [\${ANL_MIN}, \${ANL_MAX}]\n [${ANL_MIN}, ${ANL_MAX}]\n" 
+  msg="ERROR: the interval [\${ANL_MIN}, \${ANL_MAX}]\n"
+  msg+=" [${ANL_MIN}, ${ANL_MAX}]\n" 
   msg+=" must be evenly divisible into increments of \${ANL_INC}, ${ANL_INC}.\n"
   printf "${msg}"
   exit 1
@@ -286,7 +292,7 @@ if [ -z ${MPAS_PRFX} ]; then
 fi
 
 # control flow to be processed
-if [ ! ${CTR_FLW} ]; then
+if [ -z ${CTR_FLW} ]; then
   printf "ERROR: control flow name \${CTR_FLW} is not defined.\n"
   exit 1
 fi

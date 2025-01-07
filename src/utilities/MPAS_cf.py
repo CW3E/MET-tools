@@ -195,8 +195,7 @@ def cf_ivt(ds_in, f_time=None):
     Function to calculate IVT and IWV and put into cf-compliant xarray dataset.
     """
 
-    # Calc IVT from surface to 100hPa, extract water vapor mixing ratio [kg/kg],
-    # convert to specific humidity filling with nan at null model levels
+    # Calculate pressure in Pa at the layer interfaces, replacing surface / top
     p_slab = ds_in['pressure']
     p_surf = ds_in['surface_pressure']
     try:
@@ -215,6 +214,8 @@ def cf_ivt(ds_in, f_time=None):
     pres[0, 1:, :, :] = (p_slab + np.roll(p_slab, 1, axis=1))*0.5
     pres[:, -1, :, :] = p_top
 
+    # Calc IVT from surface to 100hPa, extract water vapor mixing ratio [kg/kg],
+    # convert to specific humidity filling with nan at null model levels
     qv = ds_in['qv']
     q = qv / ( qv + 1.0 )
     q = np.where(pres[:, 1:, :, :] >= 10000.0, q, np.nan)

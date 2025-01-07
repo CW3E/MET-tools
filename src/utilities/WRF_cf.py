@@ -15,6 +15,7 @@
 # Imports
 ##################################################################################
 from utilities import *
+import ipdb
 
 ##################################################################################
 # Utility definitions
@@ -50,6 +51,7 @@ def unstagger(var, stagger_dim):
     Returns:
         :class:`numpy.ndarray` object with no metadata.
     """
+    ipdb.set_trace()
 
     var_shape = var.shape
     num_dims = var.ndim
@@ -286,13 +288,15 @@ def cf_ivt(ds_in, init_offset=0):
     """
 
     # Calculate pressure in Pa at the layer interfaces, replacing surface / top
-    p_eta = ds_in.P + ds_in.PB
-    nvert, n_sn, n_we = np.shape(p_eta[0, :, :, :])
+    ipdb.set_trace()
+    p_slab = ds_in.P + ds_in.PB
     p_surf = ds_in.PSFC
     p_top = ds_in.P_TOP
+
+    nvert, n_sn, n_we = np.shape(p_slab[0, :, :, :])
     pres = np.empty([1, nvert + 1, n_sn, n_we]) 
-    pres[0, 1:, :, :] = (p_eta + np.roll(p_eta, 1, axis=1))*0.5
     pres[:, 0, :, :] = p_surf
+    pres[0, 1:, :, :] = (p_slab + np.roll(p_slab, 1, axis=1))*0.5
     pres[:, -1, :, :] = p_top
 
     # Calc IVT from surface to 100hPa, extract water vapor mixing ratio [kg/kg]

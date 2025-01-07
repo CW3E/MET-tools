@@ -15,7 +15,6 @@
 # Imports
 ##################################################################################
 from utilities import *
-import ipdb
 
 ##################################################################################
 # Utility definitions
@@ -51,7 +50,6 @@ def unstagger(var, stagger_dim):
     Returns:
         :class:`numpy.ndarray` object with no metadata.
     """
-    ipdb.set_trace()
 
     var_shape = var.shape
     num_dims = var.ndim
@@ -288,7 +286,6 @@ def cf_ivt(ds_in, init_offset=0):
     """
 
     # Calculate pressure in Pa at the layer interfaces, replacing surface / top
-    ipdb.set_trace()
     p_slab = ds_in.P + ds_in.PB
     p_surf = ds_in.PSFC
     p_top = ds_in.P_TOP

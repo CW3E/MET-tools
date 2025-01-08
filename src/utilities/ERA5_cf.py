@@ -188,18 +188,26 @@ def cf_ivt(ds_in):
     # Combines components into IVT magnitude
     IVT = np.sqrt(IVTU**2 + IVTV**2)
 
+    # Convert lats to ascending with index
+    lats = ds_in.latitude.values[::-1]
+
+    # Convert lons to E coords alone
+    lons = ds_in.longitude.values
+    west = lons < 0.0
+    lons[west] = lons[west] + 360.0
+
     # Prepares output ds
     ds_out = xr.Dataset(
             data_vars = dict(
-                IWV_00h=(['lat', 'lon'], IWV[:, :]),
-                IVT_00h=(['lat', 'lon'], IVT[:, :]),
-                IVTU_00h=(['lat', 'lon'], IVTU[:, :]),
-                IVTV_00h=(['lat', 'lon'], IVTV[:, :]),
+                IWV_00h=(['lat', 'lon'], IWV[::-1, :]),
+                IVT_00h=(['lat', 'lon'], IVT[::-1, :]),
+                IVTU_00h=(['lat', 'lon'], IVTU[::-1, :]),
+                IVTV_00h=(['lat', 'lon'], IVTV[::-1, :]),
                 ),
             coords = dict(
                 time = (['time'], np.array([0])),
-                lat = ('lat', ds_in.latitude.values),
-                lon = ('lon', ds_in.longitude.values),
+                lat = ('lat', lats),
+                lon = ('lon', lons),
                 ),
             )
 

@@ -150,6 +150,7 @@ while read msk; do
   # masks are recreated depending on the existence of files from previous analyses
   fname="${msk}_${GRD_NME}.nc"
   out_path="${MSK_GRDS}/${fname}"
+  error_check=0
   if [ ! -r "${out_path}" ]; then
     # regridded mask does not exist in mask out, create from scratch
     cmd="${met} gen_vx_mask -v 10 \

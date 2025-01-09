@@ -16,7 +16,7 @@
 
 # Full path to generic data product for reference verfication grid relative to
 # STC_ROOT (must be set as a bind path from this location for singularity)
-{% set GRD_IN = [GRD_NME, 'ERA5_00IVT_2023031000.nc'] | join('/') %}
+{% set GRD_IN = [GRD_NME, 'ERA5_00IVT_2022030100.nc'] | join('/') %}
 
 ##################################################################################
 # JOB SETTINGS

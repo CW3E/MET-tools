@@ -3,42 +3,33 @@
 {# BKG CONFIGURATIONS #}
 {################################################################################}
 {# Define the name of case study #}
-{% set CSE_NME = 'valid_date_2022-12-28T00' %}
+{% set CSE_NME = 'valid_date_2022-03-02T00' %}
 
 {# Configuration name including tunable parameters #}
 {% set CTR_FLWS = 'ECMWF', 'GFS', 'GEFS' %}
 
-{# Neighborhood widths for neighborhood methods, references model domains #}
-{# Arguments are in 1-1 correspondence with control flows #}
-{% set INT_WDTHS = 3, 3, 3 %}
-
-{################################################################################}
-{# GRIDSTAT SETTINGS #}
-{################################################################################}
 {# Require all data, no missing files, TRUE or FALSE #}
-{% set FULL_DATA = 'TRUE' %}
+{% set FULL_DATA = 'FALSE' %}
 
-{# Define the observation / ground truth data type #}
-{% set VRF_REF = 'StageIV' %}
+{################################################################################}
+{# CYCLING SETTINGS #}
+{################################################################################}
+{# First initial time for a forecast YYYY-MM-DDTHH #}
+{% set CYC_STRT = '2022-02-23T00' %}
 
-{# Define the verification field #}
-{% set VRF_FLD = 'QPF' %}
+{# Last initial time for a forecast YYYY-MM-DDTHH #}
+{% set CYC_STOP = '2022-03-01T00' %}
 
-{# Subdirectory relative to control flow name to find ISO directories #}
-{% set IN_STC_SUBDIR = 'Precip' %}
+{# Interval between cycle start times hours INT #}
+{% set CYC_INC = 24 %}
 
-{# Subdirectory relative to ISO directories to find fields #}
-{% set IN_DT_SUBDIR = '' %}
+{# OPTIONAL ARGUMENT to set a verification termination date -- processing #}
+{# forecasts stops automatically at this valid date, blank string if unused #}
+{% set EXP_VRF = '2022-03-02T00' %}
 
-{# Specify thresholds levels for verification (NEEDS INTERNAL QUOTES "")#}
-{% set CAT_THR='"[ >=1.0, >=10.0, >=25.0, >=50.0, >=100.0 ]"' %}
-
-{# Neighborhood size for stats computation on observation grid #}
-{% set NBRHD_WDTH = 9 %}
-
-{# Verification region group name - used for mask list file name #}
-{% set VRF_RGNS = 'CA_Climate_Zones' %}
-
+{################################################################################}
+{# GRIDSTAT GENERAL SETTINGS #}
+{################################################################################}
 {# Number of bootstrap resamplings, set 0 for off #}
 {% set BTSTRP = 0 %}
 
@@ -46,43 +37,82 @@
 {% set RNK_CRR = 'FALSE' %}
 
 {################################################################################}
-{# CYCLING SETTINGS #}
+{# GRIDSTAT PRECIP SETTINGS #}
 {################################################################################}
-{# First initial time for a forecast YYYY-MM-DDTHH #}
-{% set CYC_STRT = '2022-12-23T00' %}
+{# Compute precip ensemble products, TRUE or FALSE #}
+{% set PCP_PRD = 'TRUE' %}
 
-{# Last initial time for a forecast YYYY-MM-DDTHH #}
-{% set CYC_STOP = '2022-12-27T00' %}
+{# Define the observation / ground truth data type #}
+{% set PCP_REF = 'StageIV' %}
 
-{# Interval between cycle start times hours INT #}
-{% set CYC_INC = 24 %}
+{# Specify thresholds levels for verification (NEEDS INTERNAL QUOTES "")#}
+{% set PCP_THR = '"[ >=1.0, >=10.0, >=25.0, >=50.0, >=100.0 ]"' %}
 
-{# Define min / max forecast hours for ensemble products to be generated #}
-{% set ANL_MIN = 24 %}
-{% set ANL_MAX = 120 %}
+{# Verification region group name - used for mask list file name #}
+{% set PCP_RGN = 'West_Coast' %}
 
-{# Define the increment at which to generate cf outputs (HH) #}
-{% set ANL_INC = 24 %}
+{# Number of grid points in ~4km intermediate grid to use when #}
+{# interpolating to the observation grid with distance weighted mean #}
+{% set PCP_INT_WDTH = 3 %}
 
-{# OPTIONAL ARGUMENT to set a verification termination date -- preprocessing will #}
-{# stop automatically at this valid date, define as blank string if unused #}
-{% set EXP_VRF = '2022-12-28T00' %}
+{# Neighborhood statistics widths in interpolated *OBS GRID POINTS* #}
+{% set PCP_NBRHD = 9 %}
 
-{# Compute precipitation accumulations from cf files, TRUE or FALSE #}
-{% set CMP_ACC = 'TRUE' %}
+{# Define min / max forecast hours for precip analysis #}
+{% set PCP_ANL_MIN = 24 %}
+{% set PCP_ANL_MAX = 120 %}
 
-{# Defines the min / max accumulation interval for precip #}
+{# Define the increment at which to generate precip analysis (HH) #}
+{% set PCP_ANL_INC = 24%}
+
+{# Define the min / max accumulation interval for precip #}
 {% set ACC_MIN = 24 %}
 {% set ACC_MAX = 24 %}
 
-{# Defines the increment between min / max to compute accumulation intervals #}
+{# Define the increment between min / max accumulations #}
 {% set ACC_INC = 24 %}
+
+{################################################################################}
+{# GRIDSTAT IVT SETTINGS #}
+{################################################################################}
+{# Compute IVT ensemble products, TRUE or FALSE #}
+{% set IVT_PRD = 'TRUE' %}
+
+{# Define the observation / ground truth data type #}
+{% set IVT_REF = 'ERA5' %}
+
+{# LIST of thresholds levels for ensemble prod (NEEDS INTERNAL QUOTES "")#}
+{% set IVT_THR = '"[ >=250.0, >=500.0, >=750.0, >=1000.0, >=1250.0 ]"' %} 
+
+{# Verification region group name - used for mask list file name #}
+{% set IVT_RGN = 'Northeast_Pacific' %}
+
+{# Number of grid points in ~4km intermediate grid points to use when #}
+{# interpolating to the observation grid with distance weighted mean #}
+{% set IVT_INT_WDTH = 3  %}
+
+{# Neighborhood statistics widths in interpolated OBS GRID POINTS #}
+{% set IVT_NBRHD = 3 %}
+
+{# Define min / max forecast hours for IVT analysis #}
+{% set IVT_ANL_MIN = 6 %}
+{% set IVT_ANL_MAX = 120 %}
+
+{# Define the increment at which to generate precip analysis (HH) #}
+{% set IVT_ANL_INC = 6%}
+
+{# Define the min / max hours of forecast averages #}
+{% set AVG_MIN = 0 %}
+{% set AVG_MAX = 6 %}
+
+{# Define the increment between min / max of averages #}
+{% set AVG_INC = 6 %}
 
 {################################################################################}
 {# JOB SETTINGS #}
 {################################################################################}
 {# Job mem argument #}
-{% set GRD_PROC = 124 %}
+{% set GRD_PROC = 128 %}
 
 {# Job mem argument #}
 {% set GRD_MEM = '249208M' %}
@@ -93,6 +123,21 @@
 {################################################################################}
 {# CYLC SETTINGS #}
 {################################################################################}
+{# Construct iterables for loop over precip / IVT #}
+{% set ANLS = [PCP_PRD, IVT_PRD] %}
+{% set FLDS = ['QPF', 'IVT'] %}
+{% set REFS = [PCP_REF, IVT_REF] %}
+{% set RGNS = [PCP_RGN, IVT_RGN] %}
+{% set THRS = [PCP_THR, IVT_THR] %}
+{% set ANL_MINS = [PCP_ANL_MIN, IVT_ANL_MIN] %}
+{% set ANL_MAXS = [PCP_ANL_MAX, IVT_ANL_MAX] %}
+{% set ANL_INCS = [PCP_ANL_INC, IVT_ANL_INC] %}
+{% set INT_MINS = [ACC_MIN, AVG_MIN] %}
+{% set INT_MAXS = [ACC_MAX, AVG_MAX] %}
+{% set INT_INCS = [ACC_INC, AVG_INC] %}
+{% set INT_WDTHS = [PCP_INT_WDTH, IVT_INT_WDTH] %}
+{% set NBRHDS = [PCP_NBRHD, IVT_NBRHD] %}
+
 [scheduler]
     UTC mode = True
     allow implicit tasks = True
@@ -100,13 +145,20 @@
     initial cycle point = {{CYC_STRT}}
     final cycle point = {{CYC_STOP}}
     [[graph]]
-        PT{{CYC_INC}}H = """
-        {# Loop model control flows #}
-        {% for ctr_flw in CTR_FLWS %}
-            {# inherit the max domain to process from 1-1 correspondence #}
-            GridStat_{{ctr_flw}}
+        {# Loop analyses #}
+        {% for anl in ANLS %}
+            {% if anl == 'TRUE' %}
+                {% set fld = FLDS[loop.index0] %}
+                {# Loop model control flows #}
+                PT{{CYC_INC}}H = """
+                {# Loop model control flows #}
+                {% for ctr_flw in CTR_FLWS %}
+                    {# inherit the max domain to process from 1-1 correspondence #}
+                    GridStat_{{ctr_flw}}_{{fld}}
+                {% endfor %}
+                """
+            {% endif %}
         {% endfor %}
-        """
 
 [runtime]
     [[root]]
@@ -114,56 +166,72 @@
         [[[environment]]]
             OMP_NUM_THREADS = {{GRD_PROC}}
             FULL_DATA = {{FULL_DATA}}
-            CMP_ACC = {{CMP_ACC}}
-            ACC_MIN = {{ACC_MIN}}
-            ACC_MAX = {{ACC_MAX}}
-            ACC_INC = {{ACC_INC}}
             CYC_DT = $(isodatetime ${CYLC_TASK_CYCLE_POINT} --f '%Y%m%d%H')
-            ANL_MIN = {{ANL_MIN}}
-            ANL_MAX = {{ANL_MAX}}
-            ANL_INC = {{ANL_INC}}
             {% if EXP_VRF == '' %}
                 EXP_VRF = {{EXP_VRF}}
             {% else %}
                 EXP_VRF = $(isodatetime {{EXP_VRF}} --f '%Y%m%d%H')
             {% endif %}
-            VRF_REF = {{VRF_REF}}
-            VRF_FLD = {{VRF_FLD}}
-            CAT_THR = {{CAT_THR}}
-            MSK_LST = {{environ['MSK_ROOT']}}/mask-lists/{{VRF_RGNS}}.txt
-            NBRHD_WDTH = {{NBRHD_WDTH}}
             BTSTRP = {{BTSTRP}}
             RNK_CRR = {{RNK_CRR}}
 
-    {# Loop model control flows #}
-    {% for ctr_flw in CTR_FLWS %}
-        {# Neighborhood width is in 1-1 correspondence with CTR_FLWS #}
-        {% set int_wdth = INT_WDTHS[loop.index0] %}
-            [[GridStat_{{ctr_flw}}]]
-                execution time limit = {{GRD_WC}}
-                script = {{environ['DRIVERS']}}/GridStat.sh
-                execution retry delays = 3*PT5M
-                [[[environment]]]
-                    IF_ENS_PRD = 'FALSE'
-                    CTR_FLW = {{ctr_flw}}
-                    INT_WDTH = {{int_wdth}}
-                    IN_DIR = {{environ['STC_ROOT']}}/{{ctr_flw}}/{{IN_STC_SUBDIR}}/$CYC_DT/{{IN_DT_SUBDIR}}
-                    WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GridStat/{{VRF_REF}}/$CYC_DT
-                [[[directives]]]
-                    {% if environ['SCHED'] == 'slurm' %}
-                        {% if environ['SYS_TYPE' ] == 'penguin' %}
-                            --partition = general
-                            --qos = {{environ['PART_DBG']}}
-                            --nodes = 1
-                            --ntasks-per-node = {{GRD_PROC}}
-                        {% else %}
-                            --partition = {{environ['PART_DBG']}}
-                            --nodes = 1
-                            --ntasks-per-node = {{GRD_PROC}}
-                            --mem = {{GRD_MEM}}
+    {# Loop analyses #}
+    {% for anl in ANLS %}
+        {% if anl == 'TRUE' %}
+            {% set fld = FLDS[loop.index0] %}
+            {% set thr = THRS[loop.index0] %}
+            {% set ref = REFS[loop.index0] %}
+            {% set rgn = RGNS[loop.index0] %}
+            {% set anl_min = ANL_MINS[loop.index0] %}
+            {% set anl_max = ANL_MAXS[loop.index0] %}
+            {% set anl_inc = ANL_INCS[loop.index0] %}
+            {% set int_min = INT_MINS[loop.index0] %}
+            {% set int_max = INT_MAXS[loop.index0] %}
+            {% set int_inc = INT_INCS[loop.index0] %}
+            {% set int_wdth = INT_WDTHS[loop.index0] %}
+            {% set nbrhd = NBRHDS[loop.index0] %}
+            {# Loop model control flows #}
+            {% for ctr_flw in CTR_FLWS %}
+                [[GridStat_{{ctr_flw}}_{{fld}}]]
+                    execution time limit = {{GRD_WC}}
+                    script = {{environ['DRIVERS']}}/GridStat.sh
+                    execution retry delays = 3*PT5M
+                    [[[environment]]]
+                        CTR_FLW = {{ctr_flw}}
+                        INT_WDTH = {{int_wdth}}
+                        IN_DIR = {{environ['STC_ROOT']}}/{{ctr_flw}}/{{fld}}/$CYC_DT
+                        WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GridStat/{{ref}}/$CYC_DT
+                        IF_ENS_PRD = 'FALSE'
+                        {# Set the analysis hours depending on field #}
+                        ANL_MIN = {{anl_min}}
+                        ANL_MAX = {{anl_max}}
+                        ANL_INC = {{anl_inc}}
+                        {# Set the time interval bounds depending on the field #}
+                        INT_MIN = {{int_min}}
+                        INT_MAX = {{int_max}}
+                        INT_INC = {{int_inc}}
+                        MOD_FLD = {{fld}}
+                        VRF_REF = {{ref}}
+                        CAT_THR = {{thr}}
+                        CTR_FLW = {{ctr_flw}}
+                        NBRHD_WDTH = {{nbrhd}}
+                    [[[directives]]]
+                        {% if environ['SCHED'] == 'slurm' %}
+                            {% if environ['SYS_TYPE' ] == 'penguin' %}
+                                --partition = general
+                                --qos = {{environ['PART_DBG']}}
+                                --nodes = 1
+                                --ntasks-per-node = {{GRD_PROC}}
+                            {% else %}
+                                --partition = {{environ['PART_DBG']}}
+                                --nodes = 1
+                                --ntasks-per-node = {{GRD_PROC}}
+                                --mem = {{GRD_MEM}}
+                            {% endif %}
+                        {% elif environ['SCHED'] == 'pbs' %}
+                            -q = {{environ['PART_DBG']}}
+                            -l select=1:mpiprocs={{GRD_PROC}}:ncpus=1
                         {% endif %}
-                    {% elif environ['SCHED'] == 'pbs' %}
-                        -q = {{environ['PART_DBG']}}
-                        -l select=1:mpiprocs={{GRD_PROC}}:ncpus=1
-                    {% endif %}
+            {% endfor %}
+        {% endif %}
     {% endfor %}

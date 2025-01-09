@@ -3,20 +3,20 @@
 {# WRF CONFIGURATIONS #}
 {################################################################################}
 {# Define the name of case study #}
-{% set CSE_NME = 'valid_date_2022-12-28T00' %}
+{% set CSE_NME = 'valid_date_2022-03-02T00' %}
 
 {# Configuration name including tunable parameters #}
-{% set CTR_FLWS = [ 'WRF_9_WestCoast' ] %}
+{% set CTR_FLWS = [ 'WRF_9-3_WestCoast' ] %}
 
 {# Max number of sub-domain to be processed, 1-1 correspondence with CTR_FLWS #}
-{% set MAX_DOMS = [ 1 ] %}
+{% set MAX_DOMS = [ 2 ] %}
 
 {# WRF output file prefix to source model outputs from, e.g., wrfout / wrfcf #}
 {% set WRF_PRFX = 'wrfout' %}
 
 {# Define the min / max ensemble indices #}
 {% set ENS_MIN = 0 %}
-{% set ENS_MAX = 3 %}
+{% set ENS_MAX = 30 %}
 
 {# Define the number of digits to pad ensemble indices #}
 {% set ENS_PAD = 2 %}
@@ -57,16 +57,16 @@
 {% set AVG_INC = 6 %}
 
 {# Define the directory to find wrf outputs relative to ISO cycle directories #}
-{% set IN_DT_SUBDIR = 'wrf_model' %}
+{% set IN_DT_SUBDIR = '' %}
 
 {################################################################################}
 {# CYCLING SETTINGS #}
 {################################################################################}
 {# First initial time for a forecast YYYY-MM-DDTHH #}
-{% set CYC_STRT = '2022-12-23T00' %}
+{% set CYC_STRT = '2022-02-23T00' %}
 
 {# Last initial time for a forecast YYYY-MM-DDTHH #}
-{% set CYC_STOP = '2022-12-23T00' %}
+{% set CYC_STOP = '2022-03-01T00' %}
 
 {# Interval between cycle start times hours INT #}
 {% set CYC_INC = 24 %}
@@ -80,7 +80,7 @@
 
 {# OPTIONAL ARGUMENT to set a verification termination date -- preprocessing will #}
 {# stop automatically at this valid date, define as blank string if unused #}
-{% set EXP_VRF = '2022-12-28T00' %}
+{% set EXP_VRF = '2022-03-02T00' %}
 
 {# Defines the offset to the initialization time in HH #}
 {# Use to correct for the offset in start time / forecast hour in a restart run #}

@@ -3,22 +3,17 @@
 {# WRF CONFIGURATIONS #}
 {################################################################################}
 {# Define the name of case study #}
-{% set CSE_NME = 'valid_date_2022-12-28T00' %}
+{% set CSE_NME = 'valid_date_2022-03-02T00' %}
 
 {# Configuration name including tunable parameters #}
-{% set CTR_FLWS = [ 'WRF_9_WestCoast' ] %}
+{% set CTR_FLWS = [ 'WRF_9-3_WestCoast' ] %}
 
 {# Max number of sub-domain to be processed, 1-1 correspondence with CTR_FLWS #}
-{% set MAX_DOMS = [ 1 ] %}
-
-{# Neighborhood widths for neighborhood methods, references model domains #}
-{# with 1-1 correspondence looping in nesting order (d01, d02, d03...) #}
-{# NOTE: this is impacted if WRF has been regridded to an intermediate grid #}
-{% set INT_WDTHS = 3, 3 %}
+{% set MAX_DOMS = [ 2 ] %}
 
 {# Define the min / max ensemble indices #}
 {% set ENS_MIN = 0 %}
-{% set ENS_MAX = 2 %}
+{% set ENS_MAX = 30 %}
 
 {# Define the number of digits to pad ensemble indices #}
 {% set ENS_PAD = 2 %}
@@ -30,7 +25,7 @@
 {% set IF_ENS_MEAN = 'TRUE' %}
 
 {# If computing individual ensemble member verification #}
-{% set IF_ENS_MEMS = 'TRUE' %}
+{% set IF_ENS_MEMS = 'FALSE' %}
 
 {# Require all data, no missing files, TRUE or FALSE #}
 {% set FULL_DATA = 'TRUE' %}
@@ -39,17 +34,17 @@
 {# CYCLING SETTINGS #}
 {################################################################################}
 {# First initial time for a forecast YYYY-MM-DDTHH #}
-{% set CYC_STRT = '2022-12-23T00' %}
+{% set CYC_STRT = '2022-02-28T00' %}
 
 {# Last initial time for a forecast YYYY-MM-DDTHH #}
-{% set CYC_STOP = '2022-12-23T00' %}
+{% set CYC_STOP = '2022-03-01T00' %}
 
 {# Interval between cycle start times hours INT #}
 {% set CYC_INC = 24 %}
 
 {# OPTIONAL ARGUMENT to set a verification termination date -- processing #}
 {# forecasts stops automatically at this valid date, blank string if unused #}
-{% set EXP_VRF = '2022-12-28T00' %}
+{% set EXP_VRF = '2022-03-02T00' %}
 
 {################################################################################}
 {# GRIDSTAT GENERAL SETTINGS #}
@@ -235,8 +230,6 @@
                 {% for dom in range(0,max_dom) %}
                     {% set grd = loop.index | pad(2, '0') %}
                     {% set grd = ['d', grd] | join %}
-                    {# Neighborhood width is in 1-1 correspondence with model grd #}
-                    {% set int_wdth = INT_WDTHS[loop.index0] %}
                     {% if IF_ENS_MEAN == 'TRUE' %}
                         [[GridStat_{{ctr_flw}}_mean_{{grd}}_{{fld}}]]
                             execution time limit = {{GRD_WC}}
@@ -294,12 +287,12 @@
                                 script = {{environ['DRIVERS']}}/GridStat.sh
                                 execution retry delays = 3*PT5M
                                 [[[environment]]]
+                                    IF_ENS_PRD = 'FALSE'
                                     CTR_FLW = {{ctr_flw}}
                                     INT_WDTH = {{int_wdth}}
                                     IN_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/Preprocess/$CYC_DT/{{ENS_PRFX}}{{idx}}/{{grd}}
                                     {# WRF workflow outputs are nested relative to ISO/mem_id by domain #}
                                     WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GridStat/{{ref}}/$CYC_DT/{{ENS_PRFX}}{{idx}}/{{grd}}
-                                    IF_ENS_PRD = 'FALSE'
                                     MSK_LST = {{environ['MSK_ROOT']}}/mask-lists/{{rgn}}.txt
                                     {# Set the analysis hours depending on field #}
                                     ANL_MIN = {{anl_min}}

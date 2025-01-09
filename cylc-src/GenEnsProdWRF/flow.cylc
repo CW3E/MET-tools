@@ -3,17 +3,17 @@
 {# WRF CONFIGURATIONS #}
 {################################################################################}
 {# Define the name of case study #}
-{% set CSE_NME = 'valid_date_2022-12-28T00' %}
+{% set CSE_NME = 'valid_date_2022-03-02T00' %}
 
 {# Configuration name including tunable parameters #}
-{% set CTR_FLWS = [ 'WRF_9_WestCoast' ] %}
+{% set CTR_FLWS = [ 'WRF_9-3_WestCoast' ] %}
 
 {# Max number of sub-domain to be processed, 1-1 correspondence with CTR_FLWS #}
-{% set MAX_DOMS = [ 1 ] %}
+{% set MAX_DOMS = [ 2 ] %}
 
 {# Define the min / max ensemble indices #}
 {% set ENS_MIN = 0 %}
-{% set ENS_MAX = 2 %}
+{% set ENS_MAX = 30 %}
 
 {# Define the number of digits to pad ensemble indices #}
 {% set ENS_PAD = 2 %}
@@ -26,23 +26,23 @@
 {% set CTR_MEM = '00' %}
 
 {# Require all ensemble members, no missing files, TRUE or FALSE #}
-{% set FULL_DATA = 'TRUE' %}
+{% set FULL_DATA = 'FALSE' %}
 
 {################################################################################}
 {# CYCLING SETTINGS #}
 {################################################################################}
 {# First initial time for a forecast YYYY-MM-DDTHH #}
-{% set CYC_STRT = '2022-12-23T00' %}
+{% set CYC_STRT = '2022-02-23T00' %}
 
 {# Last initial time for a forecast YYYY-MM-DDTHH #}
-{% set CYC_STOP = '2022-12-23T00' %}
+{% set CYC_STOP = '2022-03-01T00' %}
 
 {# Interval between cycle start times hours INT #}
 {% set CYC_INC = 24 %}
 
 {# OPTIONAL ARGUMENT to set a verification termination date -- processing #}
 {# forecasts stops automatically at this valid date, blank string if unused #}
-{% set EXP_VRF = '2022-12-28T00' %}
+{% set EXP_VRF = '2022-03-02T00' %}
 
 {################################################################################}
 {# GENENSPROD PRECIP SETTINGS #}
@@ -51,7 +51,7 @@
 {% set PCP_PRD = 'TRUE' %}
 
 {# LIST of thresholds levels for ensemble prod (NEEDS INTERNAL QUOTES "")#}
-{% set PCP_THR = '"[ >=1.0, >=10.0, >=25.0, >=50.0, >=100.0 ]"' %}
+{% set PCP_THR = '"[ >=1.0 ]"' %}
 
 {# Precip neighborhood widths, in interpolated ~4km intermediate grid points #}
 {% set PCP_NBRHD = 9 %}
@@ -77,7 +77,7 @@
 {% set IVT_PRD = 'TRUE' %}
 
 {# LIST of thresholds levels for ensemble prod (NEEDS INTERNAL QUOTES "")#}
-{% set IVT_THR = '"[ >=250.0, >=500.0, >=750.0, >=1000.0, >=1250.0 ]"' %} 
+{% set IVT_THR = '"[ >=250.0 ]"' %} 
 
 {# IVT neighborhood widths, in interpolated ~4km intermediate grid points #}
 {% set IVT_NBRHD = 17 %}

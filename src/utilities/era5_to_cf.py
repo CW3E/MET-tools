@@ -43,23 +43,22 @@
 # Imports
 ##################################################################################
 from ERA5_cf import *
-import ipdb
 
 ##################################################################################
 # Define script parameters
 ##################################################################################
-f_in = '/p/work2/cgrudz/test/ERA5_2023-03-10T00_to_2023-03-15T23.grib'
-f_out_dir = '/p/work2/cgrudz/DATA/VERIFICATION_STATIC/ERA5/valid_date_2022-12-28T00'
+f_in = '/p/work2/cgrudz/downloads/2023-03-10T00_to_2023-03-15T23.grib'
+f_out_dir = '/p/work2/cgrudz/DATA/VERIFICATION_STATIC/ERA5/valid_date_2023-03-15T00'
 anl_inc = 6
 
-#print('Splitting file:')
-#print(INDT + f_in)
-#print('to outputs in directory:')
-#print(INDT + f_out_dir)
-#print('with averages taken on ' + str(anl_inc) + ' hour intervals.')
-#
+print('Splitting file:')
+print(INDT + f_in)
+print('to outputs in directory:')
+print(INDT + f_out_dir)
+print('with averages taken on ' + str(anl_inc) + ' hour intervals.')
+
 ## split the large grib into dates and return list of files
-##f_list = split_grib_on_dates(f_in, f_out_dir, 'ERA5-datesplit')
+#f_list = split_grib_on_dates(f_in, f_out_dir, 'ERA5-datesplit')
 f_list = sorted(glob.glob(f_out_dir + '/ERA5-datesplit*'))
 
 avg_list = []

@@ -197,11 +197,12 @@
                     script = {{environ['DRIVERS']}}/GridStat.sh
                     execution retry delays = 3*PT5M
                     [[[environment]]]
+                        IF_ENS_PRD = 'FALSE'
                         CTR_FLW = {{ctr_flw}}
                         INT_WDTH = {{int_wdth}}
                         IN_DIR = {{environ['STC_ROOT']}}/{{ctr_flw}}/{{fld}}/$CYC_DT
                         WRK_DIR = {{environ['VRF_ROOT']}}/{{CSE_NME}}/{{ctr_flw}}/GridStat/{{ref}}/$CYC_DT
-                        IF_ENS_PRD = 'FALSE'
+                        MSK_LST = {{environ['MSK_ROOT']}}/mask-lists/{{rgn}}.txt
                         {# Set the analysis hours depending on field #}
                         ANL_MIN = {{anl_min}}
                         ANL_MAX = {{anl_max}}

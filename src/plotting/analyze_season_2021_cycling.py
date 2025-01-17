@@ -119,7 +119,7 @@ DIFFS = [
 ##################################################################################
 relative_diff_cb = explicit_discrete(**EXPLICIT_DISCRETE_MAPS['relative_diff'])
 normalized_cb = explicit_discrete(**EXPLICIT_DISCRETE_MAPS['normalized_skillful'])
-high_rmse_cb = explicit_discrete(**EXPLICIT_DISCRETE_MAPS['high_rmse'])
+high_QPF_rmse_cb = explicit_discrete(**EXPLICIT_DISCRETE_MAPS['high_QPF_rmse'])
 
 ##################################################################################
 # Line plot templates (not including substituted arguments)
@@ -178,7 +178,7 @@ heatplot_multidate_rmse = {
         'MAX_LD': 120,
         'LD_INC': 24,
         'DT_FMT': '%Y-%m-%d',
-        'COLORBAR': high_rmse_cb,
+        'COLORBAR': high_QPF_rmse_cb,
         'MET_TOOL': 'GridStat',
         'CSE': 'season_2021_cycling',
         'FIG_CSE': 'multidate_multilead_heatplots',

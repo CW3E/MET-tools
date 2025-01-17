@@ -201,11 +201,19 @@ EXPLICIT_DISCRETE_MAPS = {
             'PALLETE': lambda x: partial(sns.color_palette,
                 palette='rocket_r')(n_colors=x),
             },
-        'high_rmse': {
+        'high_QPF_rmse': {
             'THRESHOLDS': [0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 24.0,
                            28.0, 32.0, 36.0, 40.0, 44.0],
             'LABELS': ['0', '4', '8', '12', '16', '20', '24', '28',
                        '32', '36', '40', '44'],
+            'PALLETE': lambda x: partial(sns.color_palette,
+                palette='viridis_r')(n_colors=x),
+            },
+        'IVT_rmse': {
+            'THRESHOLDS': [0.0, 20.0, 40.0, 60.0, 80.0, 100.0, 125.0,
+                           150.0, 175.0, 200.0, 250.0, 300.0],
+            'LABELS': ['0', '20', '40', '60', '80', '100', '125', '150',
+                       '175', '200', '250', '300'],
             'PALLETE': lambda x: partial(sns.color_palette,
                 palette='viridis_r')(n_colors=x),
             },

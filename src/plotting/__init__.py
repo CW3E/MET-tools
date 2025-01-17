@@ -65,7 +65,7 @@ MET_TOOLS = {
              'GridStat':
              {
                  'RMSE': {
-                     'label': 'Root-Mean Squared Error (mm)',
+                     'label': 'Root-Mean Squared Error',
                      'type': 'cnt',
                      },
                  'PR_CORR': {
@@ -97,7 +97,15 @@ VRF_REFS = {
                 'label': 'StageIV',
                 'fields': {
                     'QPF_24hr': {
-                        'label': '24hr Accumulated Precipitation',
+                        'label': '24hr QPF (mm)',
+                        }
+                    }
+                },
+            'ERA5': {
+                'label': 'ERA5',
+                'fields': {
+                    'IVT_00hr': {
+                        'label': 'IVT (kg m-1 s-1)',
                         }
                     }
                 }

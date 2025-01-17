@@ -3,7 +3,7 @@
 {# BKG CONFIGURATIONS #}
 {################################################################################}
 {# Define the name of case study #}
-{% set CSE_NME = 'valid_date_2022-03-02T00' %}
+{% set CSE_NME = 'valid_date_2021-01-29T00' %}
 
 {# Configuration name including tunable parameters #}
 {% set CTR_FLWS = 'ECMWF', 'GFS', 'GEFS' %}
@@ -15,17 +15,17 @@
 {# CYCLING SETTINGS #}
 {################################################################################}
 {# First initial time for a forecast YYYY-MM-DDTHH #}
-{% set CYC_STRT = '2022-02-23T00' %}
+{% set CYC_STRT = '2021-01-23T00' %}
 
 {# Last initial time for a forecast YYYY-MM-DDTHH #}
-{% set CYC_STOP = '2022-03-01T00' %}
+{% set CYC_STOP = '2021-01-28T00' %}
 
 {# Interval between cycle start times hours INT #}
 {% set CYC_INC = 24 %}
 
 {# OPTIONAL ARGUMENT to set a verification termination date -- processing #}
 {# forecasts stops automatically at this valid date, blank string if unused #}
-{% set EXP_VRF = '2022-03-02T00' %}
+{% set EXP_VRF = '2021-01-29T00' %}
 
 {################################################################################}
 {# GRIDSTAT GENERAL SETTINGS #}
@@ -40,7 +40,7 @@
 {# GRIDSTAT PRECIP SETTINGS #}
 {################################################################################}
 {# Compute precip ensemble products, TRUE or FALSE #}
-{% set PCP_PRD = 'TRUE' %}
+{% set PCP_PRD = 'FALSE' %}
 
 {# Define the observation / ground truth data type #}
 {% set PCP_REF = 'StageIV' %}
@@ -99,11 +99,11 @@
 {% set IVT_ANL_MAX = 120 %}
 
 {# Define the increment at which to generate precip analysis (HH) #}
-{% set IVT_ANL_INC = 6%}
+{% set IVT_ANL_INC = 6 %}
 
 {# Define the min / max hours of forecast averages #}
 {% set AVG_MIN = 0 %}
-{% set AVG_MAX = 6 %}
+{% set AVG_MAX = 0 %}
 
 {# Define the increment between min / max of averages #}
 {% set AVG_INC = 6 %}

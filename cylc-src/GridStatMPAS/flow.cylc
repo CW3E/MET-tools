@@ -3,14 +3,14 @@
 {# MPAS CONFIGURATIONS #}
 {################################################################################}
 {# Define the name of case study #}
-{% set CSE_NME = 'valid_date_2022-12-28T00' %}
+{% set CSE_NME = 'valid_date_2023-01-01T00' %}
 
 {# Configuration name including tunable parameters #}
-{% set CTR_FLWS = [ 'MPAS_240-U' ] %}
+{% set CTR_FLWS = [ 'MPAS_60-3_WestCoast' ] %}
 
 {# Define the min / max ensemble indices #}
 {% set ENS_MIN = 0 %}
-{% set ENS_MAX = 2 %}
+{% set ENS_MAX = 30 %}
 
 {# Define the number of digits to pad ensemble indices #}
 {% set ENS_PAD = 2 %}
@@ -22,7 +22,7 @@
 {% set IF_ENS_MEAN = 'TRUE' %}
 
 {# If computing individual ensemble member verification #}
-{% set IF_ENS_MEMS = 'TRUE' %}
+{% set IF_ENS_MEMS = 'FALSE' %}
 
 {# Require all data, no missing files, TRUE or FALSE #}
 {% set FULL_DATA = 'TRUE' %}
@@ -31,17 +31,17 @@
 {# CYCLING SETTINGS #}
 {################################################################################}
 {# First initial time for a forecast YYYY-MM-DDTHH #}
-{% set CYC_STRT = '2022-12-23T00' %}
+{% set CYC_STRT = '2022-12-28T00' %}
 
 {# Last initial time for a forecast YYYY-MM-DDTHH #}
-{% set CYC_STOP = '2022-12-23T00' %}
+{% set CYC_STOP = '2022-12-28T00' %}
 
 {# Interval between cycle start times hours INT #}
 {% set CYC_INC = 24 %}
 
 {# OPTIONAL ARGUMENT to set a verification termination date -- processing #}
 {# forecasts stops automatically at this valid date, blank string if unused #}
-{% set EXP_VRF = '2022-12-28T00' %}
+{% set EXP_VRF = '2023-01-01T00' %}
 
 {################################################################################}
 {# GRIDSTAT GENERAL SETTINGS #}
@@ -92,7 +92,7 @@
 {# GRIDSTAT IVT SETTINGS #}
 {################################################################################}
 {# Compute IVT ensemble products, TRUE or FALSE #}
-{% set IVT_PRD = 'TRUE' %}
+{% set IVT_PRD = 'FALSE' %}
 
 {# Define the observation / ground truth data type #}
 {% set IVT_REF = 'ERA5' %}
@@ -134,7 +134,7 @@
 {% set GRD_MEM = '249208M' %}
 
 {# Wallclock limit for ungrib jobs #}
-{% set GRD_WC = 'PT30M' %}
+{% set GRD_WC = 'PT60M' %}
 
 {################################################################################}
 {# CYLC SETTINGS #}

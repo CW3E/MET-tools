@@ -3,7 +3,7 @@
 {# WRF CONFIGURATIONS #}
 {################################################################################}
 {# Define the name of case study #}
-{% set CSE_NME = 'valid_date_2022-03-02T00' %}
+{% set CSE_NME = 'valid_date_2023-01-01T00' %}
 
 {# Configuration name including tunable parameters #}
 {% set CTR_FLWS = [ 'WRF_9-3_WestCoast' ] %}
@@ -32,17 +32,17 @@
 {# CYCLING SETTINGS #}
 {################################################################################}
 {# First initial time for a forecast YYYY-MM-DDTHH #}
-{% set CYC_STRT = '2022-02-23T00' %}
+{% set CYC_STRT = '2022-12-26T00' %}
 
 {# Last initial time for a forecast YYYY-MM-DDTHH #}
-{% set CYC_STOP = '2022-03-01T00' %}
+{% set CYC_STOP = '2022-12-31T00' %}
 
 {# Interval between cycle start times hours INT #}
 {% set CYC_INC = 24 %}
 
 {# OPTIONAL ARGUMENT to set a verification termination date -- processing #}
 {# forecasts stops automatically at this valid date, blank string if unused #}
-{% set EXP_VRF = '2022-03-02T00' %}
+{% set EXP_VRF = '2023-01-01T00' %}
 
 {################################################################################}
 {# GENENSPROD PRECIP SETTINGS #}
@@ -106,7 +106,7 @@
 {% set ENS_MEM = '249208M' %}
 
 {# Wallclock limit for ungrib jobs #}
-{% set ENS_WC = 'PT2H30M' %}
+{% set ENS_WC = 'PT60M' %}
 
 {################################################################################}
 {# CYLC SETTINGS #}
